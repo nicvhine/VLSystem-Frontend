@@ -1,0 +1,61 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Navigation, Autoplay } from 'swiper/modules';
+
+export default function HeroSection() {
+  const slides = [
+    { img: './image1.jpg', alt: 'Slide 1' },
+    { img: '/image2.jpg', alt: 'Slide 2' },
+    { img: '/image3.jpg', alt: 'Slide 3' },
+  ];
+
+  return (
+    <section>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 mt-20 flex flex-col md:flex-row items-center md:items-start gap-8">
+        {/* Text Content */}
+        <div className="w-full md:w-1/2 md:text-left px-6 md:px-12">
+          <p className="text-xl mb-2">VLSystem by Vistula Lending Corporation</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-4">
+            Empowering Lives <br /> Through Better Lending
+          </h1>
+          <p className="text-xl">
+            Experience seamless lending with our cutting-edge platform — fast, secure, and tailored to your needs.
+          </p>
+        </div>
+
+        {/* Image Slider */}
+        <div className=" md:w-2/6 relative">
+          <Swiper
+            modules={[Navigation, Autoplay]}
+            navigation={{
+              nextEl: '.custom-next',
+              prevEl: '.custom-prev',
+            }}
+            autoplay={{ delay: 5000 }}
+            loop
+            className="w-full rounded-xl shadow-xl"
+          >
+            {slides.map((slide, index) => (
+              <SwiperSlide key={index} className="flex justify-center items-center">
+                <img
+                  src={slide.img}
+                  alt={slide.alt}
+                  className="w-full h-[400px] object-cover rounded-xl"
+                />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          {/* Navigation Buttons */}
+          <div className="custom-prev swiper-button-prev"></div>
+          <div className="custom-next swiper-button-next"></div>
+        </div>
+      </div>
+    </section>
+  );
+}
