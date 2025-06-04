@@ -51,6 +51,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       if (res.ok) {
         console.log('Login success data:', data);
+        localStorage.setItem('fullName', data.fullName || data.name || data.username); 
         onClose(); 
         const role = data.role.toLowerCase();
         if (role === 'head') {
