@@ -4,7 +4,7 @@ import { useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import axios from "axios";
-import Navbar from "../navbar";
+import Navbar from "../components/landing/landingNavbar";
 
 function MapComponent({ setAddress }: { setAddress: (address: string) => void }) {
   const [marker, setMarker] = useState<L.Marker | null>(null);
