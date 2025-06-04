@@ -1,6 +1,6 @@
-interface AboutSectionProps {
-  language: 'en' | 'ceb';
-}
+// interface AboutSectionProps {
+//   language: 'en' | 'ceb';
+// }
 
 export default function AboutSection({ language }: AboutSectionProps) {
   return (

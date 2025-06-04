@@ -16,7 +16,7 @@ export default function HeroSection() {
 
   return (
     <section>
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 mt-20 flex flex-col md:flex-row items-center md:items-start gap-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 mt-20 flex flex-col md:flex-row items-center md:items-start gap-8 bg-white">
         {/* Text Content */}
         <div className="w-full md:w-1/2 md:text-left px-6 md:px-12">
           <p className="text-xl mb-2">VLSystem by Vistula Lending Corporation</p>

@@ -21,7 +21,7 @@ export default function Navbar({ language, setLanguage }: NavbarProps) {
   
   const navItems = [
   
-    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => setIsCalculationOpen(true),},
+    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '/ApplicationPage'},
     { name: 'Team', href: '#team' },
     { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: "#about" },
     { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer' },
@@ -34,7 +34,7 @@ export default function Navbar({ language, setLanguage }: NavbarProps) {
       <div className="w-full px-6 py-3">
         <div className="flex flex-wrap items-center justify-between">
           <Link
-            href="/"
+            href="/ApplicationPage/page.tsx"
             className="text-2xl font-bold text-transparent bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text hover:from-red-700 hover:to-red-900 transition-all"
           >
             VLSystem
