@@ -43,7 +43,7 @@ const features = [
 export default function FeatureSection() {
   return (
     <section className="py-24 bg-gradient-to-br from-white to-gray-100">
-      <div className="max-w-6xl mx-auto px-6">
+      <div className=" mx-auto px-6">
         <h2 className="text-4xl font-bold text-center text-gray-800 mb-16">Why Choose Vistula Lending Corporation?</h2>
 
         <div className="grid md:grid-cols-3 gap-10">

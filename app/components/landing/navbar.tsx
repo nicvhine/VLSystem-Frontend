@@ -3,9 +3,7 @@
 import Link from 'next/link';
 import { useState, Dispatch, SetStateAction } from 'react';
 import { usePathname } from 'next/navigation';
-import LoginModal from './loginmodal';
-import TrackModal from './trackmodal';
-import CalculationModal from './calculation';
+import SimulatorModal from './loanSimulator';
 
 interface NavbarProps {
   language: 'en' | 'ceb';
@@ -17,11 +15,11 @@ export default function Navbar({ language, setLanguage }: NavbarProps) {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCalculationOpen, setIsCalculationOpen] = useState(false);
+  const [isLoanSimulatorOpen, setIsLoanSimulatorOpen] = useState(false);
   
   const navItems = [
   
-    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '/ApplicationPage'},
+    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => setIsLoanSimulatorOpen(true),},
     { name: 'Team', href: '#team' },
     { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: "#about" },
     { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer' },
@@ -110,7 +108,12 @@ export default function Navbar({ language, setLanguage }: NavbarProps) {
 
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <TrackModal isOpen={isTrackOpen} onClose={() => setIsTrackOpen(false)} />
-      <CalculationModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} />
+      {isLoanSimulatorOpen && (
+      <SimulatorModal
+        isOpen={isLoanSimulatorOpen}
+        onClose={() => setIsLoanSimulatorOpen(false)}
+      />
+    )}
     </div>
   );
 }

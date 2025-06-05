@@ -29,7 +29,6 @@ export default function Navbar() {
     { name: 'Applications', href: '/head/applications' },
     { name: 'Agents', href: '/head/agents' },
     { name: 'Collections', href: '/head/collections' },
-    { name: 'Users', href: '/components/head/userPage' },
   ];
 
   useEffect(() => {
