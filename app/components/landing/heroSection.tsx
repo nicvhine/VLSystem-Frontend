@@ -26,6 +26,22 @@ export default function HeroSection() {
           <p className="text-xl">
             Experience seamless lending with our cutting-edge platform — fast, secure, and tailored to your needs.
           </p>
+
+           <div className="flex flex-col mt-10 sm:flex-row items-center justify-center md:justify-start gap-4">
+            <Link
+              href="/ApplicationPage"
+              className="bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition"
+            >
+              Apply Now
+            </Link>
+
+            <button
+              //onClick={() => setIsTrackOpen(true)}
+              className="bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition"
+            >
+              Track Application
+            </button>
+          </div>
         </div>
 
         {/* Image Slider */}
