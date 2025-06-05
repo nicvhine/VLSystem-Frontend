@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
-interface CalculationModalProps {
+interface SimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export default function CalculationModal({ isOpen, onClose }: CalculationModalProps) {
+export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps) {
   const [loanType, setLoanType] = useState('');
   const [amount, setAmount] = useState<number | ''>('');
   const [result, setResult] = useState<string>('');
@@ -70,8 +70,9 @@ export default function CalculationModal({ isOpen, onClose }: CalculationModalPr
     );
   } else if (loanType === 'openTerm') {
     loanOption = selectedTable.find(
-      (opt) =>
-        (amt >= opt.amountRange?.min && amt <= opt.amountRange?.max) || amt === opt.amount
+  (opt) =>
+    (opt.amountRange && amt >= opt.amountRange.min && amt <= opt.amountRange.max) ||
+    amt === opt.amount
     );
   } else {
     loanOption = selectedTable.find(

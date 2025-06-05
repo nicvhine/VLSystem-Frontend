@@ -15,7 +15,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [forgotRole, setForgotRole] = useState<'borrower' | 'staff' | null>(null);
   const router = useRouter();
 
-  // 👇 Prevent background scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = isOpen || showForgotModal ? 'hidden' : 'auto';
     return () => {
@@ -23,7 +22,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     };
   }, [isOpen, showForgotModal]);
 
-  // 👇 Skip rendering when modal should be hidden
   if (!isOpen && !showForgotModal) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,12 +49,15 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       if (res.ok) {
         console.log('Login success data:', data);
+        localStorage.setItem('fullName', data.fullName || data.name || data.username); 
         onClose(); 
         const role = data.role.toLowerCase();
         if (role === 'head') {
           router.push('components/head');
         } else if (role === 'manager') {
           router.push('components/manager');
+        } else if (role === 'loan officer') {
+          router.push('components/loanOfficer');
         } else {
           router.push('/');
         }
