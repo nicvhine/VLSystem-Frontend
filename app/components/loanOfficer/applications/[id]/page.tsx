@@ -295,7 +295,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
                 <FiMessageSquare className="w-5 h-5 text-blue-500 mr-2" />
                 <h2 className="text-xl font-semibold text-gray-800">Notes</h2>
               </div>
-              <div className="space-y-4">
+              <div className="relative">
                 <div>
                   <textarea
                     value={comment}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from 'react';
+import { useState } from 'react';
 import Navbar from '../navbar';
 import { FiSearch, FiChevronDown, FiLoader } from 'react-icons/fi';
 import Link from 'next/link';
@@ -28,7 +28,6 @@ export default function ApplicationsPage() {
   const [activeFilter, setActiveFilter] = useState('Pending');
 
   const applications: Application[] = [
-   
     {
       id: "APP002",
       name: "Jane Smith",
@@ -67,9 +66,7 @@ export default function ApplicationsPage() {
     const matchesSearch = Object.values(application).some(value => 
       value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
     if (!matchesSearch) return false;
-    
     if (activeFilter === 'All') return true;
     return application.status === activeFilter;
   });
@@ -92,75 +89,54 @@ export default function ApplicationsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-[1600px] mx-auto px-6 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Loan Applications</h1>
-            <p className="text-gray-500 mt-1">Manage and review loan applications</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Loan Applications</h1>
           </div>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex items-center space-x-2 mb-6 bg-white p-2 rounded-lg shadow-sm">
-          <button
-            onClick={() => setActiveFilter('All')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeFilter === 'All'
-                ? 'bg-blue-50 text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
+        {/* Filter - Responsive */}
+          <div className="mb-6">
+        {/* Dropdown for mobile */}
+        <div className="block sm:hidden relative">
+          <select
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value)}
+            className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
           >
-            All
-          </button>
-          
-          <button
-            onClick={() => setActiveFilter('Pending')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeFilter === 'Pending'
-                ? 'bg-yellow-50 text-yellow-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Pending
-          </button>
-          <button
-            onClick={() => setActiveFilter('Accepted')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeFilter === 'Accepted'
-                ? 'bg-green-50 text-green-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Accepted
-          </button>
-          <button
-            onClick={() => setActiveFilter('Denied')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeFilter === 'Denied'
-                ? 'bg-red-50 text-red-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Denied
-          </button>
-          <button
-            onClick={() => setActiveFilter('Onhold')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeFilter === 'Onhold'
-                ? 'bg-orange-50 text-orange-600 shadow-sm'
-                : 'text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            On Hold
-          </button>
+            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold'].map((status) => (
+              <option key={status} value={status}>
+                {status === 'Onhold' ? 'On Hold' : status}
+              </option>
+            ))}
+          </select>
+          <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
         </div>
 
-        {/* Search and Sort Controls */}
-        <div className="flex gap-4 mb-6">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400 w-5 h-5" />
-            </div>
+
+        {/* Tabs for desktop */}
+          <div className="hidden w-100 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setActiveFilter(status)}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeFilter === status
+                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-600 shadow-sm`
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                {status === 'Onhold' ? 'On Hold' : status}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Search and Sort */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <div className="relative w-full">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
             <input
               type="text"
               placeholder="Search by name, ID or amount..."
@@ -169,8 +145,7 @@ export default function ApplicationsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
-          <div className="relative min-w-[180px]">
+          <div className="relative w-full sm:w-[200px]">
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -180,29 +155,29 @@ export default function ApplicationsPage() {
               <option value="date">Release Date</option>
               <option value="amount">Amount</option>
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-              <FiChevronDown className="text-gray-400 w-4 h-4" />
-            </div>
+            <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
           </div>
         </div>
 
-        {/* Applications Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {/* Responsive Table */}
+        <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
           <table className="min-w-full">
             <thead>
               <tr>
-                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Application Date</th>
-                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Principal Amount</th>
-                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Interest Rate</th>
-                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                {['ID', 'Name', 'Application Date', 'Principal Amount', 'Interest Rate', 'Status'].map((heading) => (
+                  <th
+                    key={heading}
+                    className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    {heading}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {filteredApplications.map((application) => (
                 <tr 
-                  key={application.id} 
+                  key={application.id}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
@@ -213,15 +188,9 @@ export default function ApplicationsPage() {
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">{application.name}</div>
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{formatDate(application.applicationDate)}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">{formatCurrency(application.principalAmount)}</div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-600">{application.interestRate}%</div>
-                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.applicationDate)}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.principalAmount)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{application.interestRate}%</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                       application.status === 'Accepted' ? 'bg-green-100 text-green-800' :
@@ -240,4 +209,4 @@ export default function ApplicationsPage() {
       </div>
     </div>
   );
-} 
+}

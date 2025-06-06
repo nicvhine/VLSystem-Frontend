@@ -1,4 +1,4 @@
-"use client"; 
+'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,14 +15,15 @@ export default function Navbar() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const router = useRouter();
-  
+
   const navItems = [
-    { name: 'Loans', href: '/loanOfficer/loans'},
-    { name: 'Applications', href: '/components/loanOfficer/applications'},
-    { name: 'Agents', href: '/loanOfficer/agents'},
-    { name: 'Collections', href: '/loanOfficer/collections'},
+    { name: 'Loans', href: '/loanOfficer/loans' },
+    { name: 'Applications', href: '/components/loanOfficer/applications' },
+    { name: 'Agents', href: '/loanOfficer/agents' },
+    { name: 'Collections', href: '/loanOfficer/collections' },
   ];
 
   const toggleDropdown = () => {
@@ -38,61 +39,90 @@ export default function Navbar() {
     }
   };
 
-  
   const handleLogout = () => {
     router.push('/');
   };
-  
+
   return (
     <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
-          <div className="w-full px-6 py-3">
+      <div className="w-full px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link 
-            href="/dashboard" 
-            className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
+          <Link
+            href="/dashboard"
+            className="text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent"
           >
-            <span>VLSystem</span>
+            VLSystem
           </Link>
 
-         
-          <div className="flex items-center space-x-8">
-            {/* Navigation Links */}
-             {/* language selector */}
-          <label className="flex items-center cursor-pointer">
+          {/* Hamburger Menu */}
+          <div className="md:hidden">
+            <button
+              className="text-gray-700 focus:outline-none"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {mobileMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-6">
+            {/* Language Switch */}
+            <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 className="sr-only"
-                checked={language === "ceb"}
-                onChange={() => setLanguage(language === "en" ? "ceb" : "en")}
+                checked={language === 'ceb'}
+                onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
               />
-              <div className="relative w-12 h-6 bg-gray-300 rounded-full transition">
+              <div className="relative w-12 h-6 bg-gray-300 rounded-full">
                 <div
                   className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition ${
-                    language === "ceb" ? "translate-x-6" : ""
+                    language === 'ceb' ? 'translate-x-6' : ''
                   }`}
-                ></div>
+                />
               </div>
-              <span className=" text-gray-900 ml-3 text-sm font-medium">
-                {language === "en" ? "English" : "Cebuano"}
+              <span className="ml-3 text-sm text-gray-900 font-medium">
+                {language === 'en' ? 'English' : 'Cebuano'}
               </span>
             </label>
+
+            {/* Nav Items */}
             <nav>
-              <ul className="flex items-center space-x-6">
+              <ul className="flex items-center space-x-4">
                 {navItems.map((item) => {
-                  // const Icon = item.icon;
                   const isActive = pathname === item.href;
                   return (
                     <li key={item.name}>
                       <Link
                         href={item.href}
-                        className={`flex items-center space-x-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                           isActive
                             ? 'text-blue-600 bg-blue-50 shadow-sm'
                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                         }`}
                       >
-                        {/* <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} /> */}
-                        <span>{item.name}</span>
+                        {item.name}
                       </Link>
                     </li>
                   );
@@ -100,92 +130,149 @@ export default function Navbar() {
               </ul>
             </nav>
 
-            <div className="flex items-center space-x-4">
-             
+            {/* Profile */}
+            <div className="relative">
+              <div
+                className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
+                onClick={toggleDropdown}
+              >
+                <Image
+                  src="/idPic.jpg"
+                  alt="Profile"
+                  width={36}
+                  height={36}
+                  className="object-cover w-full h-full"
+                />
+              </div>
 
-            {/* Profile Dropdown */}
-                        <div className="relative">
-                          <div
-                            className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
-                            onClick={toggleDropdown}
-                          >
-                            <Image src="/idPic.jpg" alt="Profile" width={36} height={36} className="object-cover w-full h-full" />
-                          </div>
-            
-                          {isDropdownOpen && (
-                            <div className="absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl z-30 p-5 transition-all">
-                              <h3 className="text-lg font-semibold text-gray-800 mb-4">Account Settings</h3>
-            
-                              <div className="space-y-4">
-                                {isEditing && (
-                                  <>
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                                      <input
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                      />
-                                    </div>
-            
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
-                                      <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                      />
-                                    </div>
-            
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
-                                      <input
-                                        type="password"
-                                        value={newPassword}
-                                        onChange={(e) => setNewPassword(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                      />
-                                    </div>
-            
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
-                                      <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                      />
-                                    </div>
-            
-                                    {passwordError && (
-                                      <p className="text-sm text-red-600">{passwordError}</p>
-                                    )}
-                                  </>
-                                )}
-            
-                                <div className="flex flex-col gap-2 pt-3">
-                                  <button
-                                    onClick={handleEdit}
-                                    className="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all"
-                                  >
-                                    {isEditing ? 'Save Changes' : 'Edit Profile'}
-                                  </button>
-                                  <button
-                                    onClick={handleLogout}
-                                    className="w-full py-2 rounded-lg bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 transition-all"
-                                  >
-                                    Logout
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-2xl shadow-2xl z-30 p-5 transition-all">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Account Settings
+                  </h3>
+
+                  <div className="space-y-4">
+                    {isEditing && (
+                      <>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Username
+                          </label>
+                          <input
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                          />
                         </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Current Password
+                          </label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            New Password
+                          </label>
+                          <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Confirm New Password
+                          </label>
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        {passwordError && (
+                          <p className="text-sm text-red-600">{passwordError}</p>
+                        )}
+                      </>
+                    )}
+
+                    <div className="flex flex-col gap-2 pt-3">
+                      <button
+                        onClick={handleEdit}
+                        className="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700"
+                      >
+                        {isEditing ? 'Save Changes' : 'Edit Profile'}
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full py-2 rounded-lg bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
+
+        {/* Mobile Menu Content */}
+        {mobileMenuOpen && (
+          <div className="mt-4 space-y-4 md:hidden">
+            <nav className="flex flex-col space-y-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                      isActive
+                        ? 'text-blue-600 bg-blue-100'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            <div className="pt-2">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={language === 'ceb'}
+                  onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
+                />
+                <div className="relative w-12 h-6 bg-gray-300 rounded-full">
+                  <div
+                    className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition ${
+                      language === 'ceb' ? 'translate-x-6' : ''
+                    }`}
+                  />
+                </div>
+                <span className="ml-3 text-sm text-gray-900 font-medium">
+                  {language === 'en' ? 'English' : 'Cebuano'}
+                </span>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
