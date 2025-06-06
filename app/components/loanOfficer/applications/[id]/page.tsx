@@ -48,7 +48,6 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   const [comment, setComment] = useState<string>('');
   const [comments, setComments] = useState<Note[]>([]);
 
-  // This would normally come from an API call using the ID
   const applicationDetails: ApplicationDetails = {
     basicInfo: {
       name: "John Doe",
@@ -120,13 +119,13 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-[1200px] mx-auto px-6 py-8">
+      <div className=" mx-auto px-6 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <Link 
               href="/components/loanOfficer/applications"
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
+              className="inline-flex items-center text-black hover:text-gray-600 mb-4 transition-colors"
             >
               <FiArrowLeft className="w-4 h-4 mr-2" />
               Back to Applications
@@ -266,7 +265,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
           </div>
 
           {/* Right Column - Supporting Documents and Notes */}
-          <div className="col-span-1 space-y-6">
+          <div className="col-span-1 space-y-9">
             {/* Supporting Documents section */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center mb-4">
@@ -307,7 +306,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
                   />
                   <button
                     onClick={handleCommentSubmit}
-                    className="mt-2 w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                    className="mt-2 w-30 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Add Note
                   </button>
