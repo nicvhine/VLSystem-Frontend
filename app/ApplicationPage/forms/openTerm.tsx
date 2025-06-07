@@ -106,75 +106,8 @@ const BasicLoanForm = ({
 
   return (
     <>
-       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-                        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                          Personal Information
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block font-medium mb-2 text-gray-700">Marital Status:</label>
-                            <select
-                              value={maritalStatus}
-                              onChange={(e) => setMaritalStatus(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            >
-                              <option value="">Select Status</option>
-                              <option value="Single">Single</option>
-                              <option value="Married">Married</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block font-medium mb-2 text-gray-700">Number of Children:</label>
-                            <input type="number" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter number of children" />
-                          </div>
-                        </div>
-
-                        {maritalStatus === 'Married' && (
-                          <div className="grid grid-cols-2 gap-4 mt-4">
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Spouse Name:</label>
-                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter spouse name" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Spouse Occupation:</label>
-                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter spouse occupation" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Address Section */}
-                      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-                        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                          Address Information
-                        </h4>
-                        <div className="mb-4">
-                          <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
-                          <input
-                            type="text"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
-                            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            placeholder="Click on the map or type here"
-                          />
-                        </div>
-
-                        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                          <MapContainer
-                            center={[12.8797, 121.774]}
-                            zoom={6}
-                            style={{ height: "300px", width: "100%" }}
-                          >
-                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <MapComponent setAddress={setAddress} />
-                          </MapContainer>
-                        </div>
-                      </div>
-
-                      {/* Source of Income */}
-                      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+                    {/* Source of Income */}
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
                         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
                           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
                           Source of Income
@@ -322,6 +255,10 @@ const BasicLoanForm = ({
                           <p className="text-xs text-gray-500 mt-2 text-center">Accepted: PDF, JPG, PNG. You can upload multiple files.</p>
                         </div>
                       </div>
+                      <button onClick={handleSubmit} className="w-full bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 font-semibold text-lg transition-colors shadow-sm">
+                        Submit Application
+                      </button>
+
                     </>
                   )}
 
