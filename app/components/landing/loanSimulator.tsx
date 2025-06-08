@@ -142,14 +142,14 @@ export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps)
     }
 
     const rate = loanOption.interest;
-    const months = 'months' in loanOption ? loanOption.months : (loanType === 'openTerm' ? 12 : 0); // Default to 12 months for open-term
+    const months = 'months' in loanOption ? loanOption.months : 1; // Default to 1 for open-term
 
     const totalInterest = (amt * rate) / 100;
     const totalRepayment = amt + totalInterest;
 
     let calculatedPaymentPerPeriod = 0;
     if (paymentPeriod === 'monthly') {
-      calculatedPaymentPerPeriod = totalRepayment / (loanType === 'openTerm' ? 12 : months);
+      calculatedPaymentPerPeriod = totalRepayment / 12; // Divide by 12 months for yearly payment schedule
     } else if (paymentPeriod === 'fifteenth') {
       calculatedPaymentPerPeriod = totalRepayment / 15;
     }
@@ -157,11 +157,13 @@ export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps)
     setPaymentPerPeriod(calculatedPaymentPerPeriod);
 
     setResult({
-      paymentPeriod: paymentPeriod === 'monthly' ? 'Monthly' : 'Fifteenth',
+      paymentPeriod: paymentPeriod === 'monthly' ? 'Monthly (12 months per year)' : 'Fifteenth',
       principalAmount: `₱${Number(amt).toLocaleString()}`,
       interest: `₱${totalInterest.toLocaleString()}`,
       totalPayment: `₱${totalRepayment.toLocaleString()}`,
-      loanTerm: loanType === 'openTerm' ? '12 months (1 year)' : `${months} month${months > 1 ? 's' : ''}`,
+      loanTerm: loanType === 'openTerm' 
+        ? (paymentPeriod === 'monthly' ? 'Monthly (12 months per year)' : '15th of the Month')
+        : `${months} month${months > 1 ? 's' : ''}`,
       paymentPerPeriod: `₱${calculatedPaymentPerPeriod.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     });
   };
