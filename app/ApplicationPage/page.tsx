@@ -3,8 +3,13 @@
 import { useState } from "react";
 import Navbar from "../components/landing/landingNavbar";
 import WithCollateralLoanForm from "./forms/withCollateral";
+import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import L from "leaflet";
 import WithoutCollateralLoanForm from "./forms/withoutCollateral";
 import OpenTermLoanForm from "./forms/openTerm";
+import axios from "axios";
+
+
 
 export default function ApplicationPage() {
   const [address, setAddress] = useState('');
@@ -18,7 +23,9 @@ export default function ApplicationPage() {
   const [employmentStatus, setEmploymentStatus] = useState('');
   const [selectedLoan, setSelectedLoan] = useState<{ amount: number; interest: number; months: number } | null>(null);
   const [documents, setDocuments] = useState<FileList | null>(null);
-
+  const [numberOfChildren, setNumberOfChildren] = useState<number | "">("");
+  const [spouseName, setSpouseName] = useState("");
+  const [spouseOccupation, setSpouseOccupation] = useState("");
   const handleSubmit = () => setShowSuccessModal(true);
   const closeModal = () => setShowSuccessModal(false);
 
@@ -34,6 +41,7 @@ export default function ApplicationPage() {
     { amount: 20000, interest: 10, months: 8 },
     { amount: 30000, interest: 10, months: 10 },
   ];
+
 
   const loanTypes = [
     'Regular Loan Without Collateral',
@@ -79,6 +87,38 @@ export default function ApplicationPage() {
     'Loan Disbursement'
   ];
 
+  function MapComponent({ setAddress }: { setAddress: (address: string) => void }) {
+  const [marker, setMarker] = useState<L.Marker | null>(null);
+
+  useMapEvents({
+    click(e) {
+      const { lat, lng } = e.latlng;
+      if (marker) marker.remove();
+
+      const newMarker = L.marker([lat, lng]).addTo(e.target);
+      setMarker(newMarker);
+
+      axios.get("https://nominatim.openstreetmap.org/reverse", {
+        params: {
+          lat,
+          lon: lng,
+          format: "json",
+        },
+      })
+        .then((response) => {
+          const address = response.data.display_name;
+          setAddress(address);
+          newMarker.bindPopup(address).openPopup();
+        })
+        .catch((error) => {
+          console.error("Error fetching address:", error);
+        });
+    },
+  });
+
+  return null;
+}
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -112,7 +152,7 @@ export default function ApplicationPage() {
             <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
               <h3 className="font-semibold text-gray-800 text-center">Loan Requirements</h3>
             </div>
-            <div className="p-4 h-48 overflow-y-auto">
+            <div className="p-4 overflow-y-auto">
               {loanType ? (
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm text-red-600 mb-3">{loanType}</h4>
@@ -178,7 +218,7 @@ export default function ApplicationPage() {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
                     <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
                       <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                      Basic Information
+                      BASIC INFORMATION
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -198,7 +238,85 @@ export default function ApplicationPage() {
                         <input type="email" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter email address" />
                       </div>
                     </div>
+                      <h4 className="text-l font-semibold mt-10 mb-4 text-gray-800 flex items-center">
+                        Personal Information
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <label className="block font-medium mb-2 text-gray-700">Marital Status:</label>
+                            <select
+                              value={maritalStatus}
+                              onChange={(e) => setMaritalStatus(e.target.value)}
+                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                            >
+                              <option value="">Select Status</option>
+                              <option value="Single">Single</option>
+                              <option value="Married">Married</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block font-medium mb-2 text-gray-700">Number of Children:</label>
+                            <input
+                              type="number"
+                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                              placeholder="Enter number of children"
+                              value={numberOfChildren}
+                              onChange={(e) => setNumberOfChildren(e.target.value === "" ? "" : Number(e.target.value))}
+                              min={0}
+                            />
+                          </div>
+                        </div>
+                        {maritalStatus === "Married" && (
+                          <div className="grid grid-cols-2 gap-4 mb-8">
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Spouse Name:</label>
+                              <input
+                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                placeholder="Enter spouse name"
+                                value={spouseName}
+                                onChange={(e) => setSpouseName(e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Spouse Occupation:</label>
+                              <input
+                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                placeholder="Enter spouse occupation"
+                                value={spouseOccupation}
+                                onChange={(e) => setSpouseOccupation(e.target.value)}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                         {/* ==== Address Section ==== */}
+                                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                                  <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+                                  Address Information
+                                </h4>
+                                <div className="mb-4">
+                                  <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
+                                  <input
+                                    type="text"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    placeholder="Click on the map or type here"
+                                  />
+                                </div>
+                        
+                                <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200">
+                                  <MapContainer
+                                                              center={[12.8797, 121.774]}
+                                                              zoom={6}
+                                                              style={{ height: "300px", width: "100%" }}
+                                                            >
+                                                              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                                              <MapComponent setAddress={setAddress} />
+                                                            </MapContainer>
+                                </div>
                   </div>
+
               {loanType === "Regular Loan With Collateral" && (
                 <WithCollateralLoanForm
                   maritalStatus={maritalStatus}
