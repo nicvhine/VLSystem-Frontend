@@ -218,7 +218,7 @@ export default function ApplicationPage() {
                   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
                     <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
                       <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                      BASIC INFORMATION
+                      Basic Information
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
@@ -238,10 +238,8 @@ export default function ApplicationPage() {
                         <input type="email" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter email address" />
                       </div>
                     </div>
-                      <h4 className="text-l font-semibold mt-10 mb-4 text-gray-800 flex items-center">
-                        Personal Information
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4 mb-4">
+                
+                        <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
                           <div>
                             <label className="block font-medium mb-2 text-gray-700">Marital Status:</label>
                             <select
@@ -290,10 +288,6 @@ export default function ApplicationPage() {
                         )}
 
                          {/* ==== Address Section ==== */}
-                                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                                  <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                                  Address Information
-                                </h4>
                                 <div className="mb-4">
                                   <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
                                   <input

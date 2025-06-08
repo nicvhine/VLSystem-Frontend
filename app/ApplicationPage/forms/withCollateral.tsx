@@ -4,7 +4,7 @@ import { useState } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import axios from "axios";
-import Navbar from "../components/landing/landingNavbar";
+
 import { Dispatch, SetStateAction } from "react";
 
 
@@ -106,91 +106,88 @@ const BasicLoanForm = ({
 
   return (
     <>
-      {/* ==== Personal Info ==== */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Personal Information
-        </h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-2 text-gray-700">Marital Status:</label>
-            <select
-              value={maritalStatus}
-              onChange={(e) => setMaritalStatus(e.target.value)}
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="">Select Status</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-            </select>
-          </div>
-          <div>
-            <label className="block font-medium mb-2 text-gray-700">Number of Children:</label>
-            <input
-              type="number"
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Enter number of children"
-              value={numberOfChildren}
-              onChange={(e) => setNumberOfChildren(e.target.value === "" ? "" : Number(e.target.value))}
-              min={0}
-            />
-          </div>
-        </div>
 
-        {maritalStatus === "Married" && (
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <label className="block font-medium mb-2 text-gray-700">Spouse Name:</label>
-              <input
-                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Enter spouse name"
-                value={spouseName}
-                onChange={(e) => setSpouseName(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block font-medium mb-2 text-gray-700">Spouse Occupation:</label>
-              <input
-                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Enter spouse occupation"
-                value={spouseOccupation}
-                onChange={(e) => setSpouseOccupation(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-      </div>
+    {/* Source of Income */}
+                      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+                        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+                          Source of Income
+                        </h4>
+                        <div className="flex gap-6 mb-4">
+                          {['business', 'employed'].map((type) => (
+                            <label key={type} className="flex items-center">
+                              <input
+                                type="radio"
+                                name="employmentType"
+                                value={type}
+                                checked={incomeSource === type}
+                                onChange={() => setIncomeSource(type)}
+                                className="mr-2 text-red-600 focus:ring-red-500"
+                              />
+                              <span className="text-gray-700">
+                                {type === 'business' ? 'Business Owner' : 'Employed'}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
 
-      {/* ==== Address Section ==== */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Address Information
-        </h4>
-        <div className="mb-4">
-          <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
-          <input
-            type="text"
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="Click on the map or type here"
-          />
-        </div>
+                        {incomeSource === 'business' && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Type of Business:</label>
+                              <select className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                                <option value="">Select business type</option>
+                                <option value="retail">Retail</option>
+                                <option value="food">Food & Beverage</option>
+                                <option value="services">Services</option>
+                                <option value="others">Others</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Date Started:</label>
+                              <input type="date" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" />
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Business Location:</label>
+                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Business Location" />
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
+                              <input type="number" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Monthly Income" />
+                            </div>
+                          </div>
+                        )}
 
-        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200">
-          <MapContainer
-                                      center={[12.8797, 121.774]}
-                                      zoom={6}
-                                      style={{ height: "300px", width: "100%" }}
-                                    >
-                                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                      <MapComponent setAddress={setAddress} />
-                                    </MapContainer>
-        </div>
-      </div>
-
+                        {incomeSource === 'employed' && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Occupation/Position:</label>
+                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Occupation/Position" />
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Employment Status:</label>
+                              <select
+                                value={employmentStatus}
+                                onChange={(e) => setEmploymentStatus(e.target.value)}
+                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                              >
+                                <option value="">Select employment status</option>
+                                <option value="regular">Regular</option>
+                                <option value="irregular">Irregular</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Company Name:</label>
+                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Company Name" />
+                            </div>
+                            <div>
+                              <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
+                              <input type="number" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Monthly Income" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
        {/* Collateral Information */}
                       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
                         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
