@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import LoginModal from './loginModal';
+import SimulatorModal from './loanSimulator';
 
 export default function LandingNavbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -53,31 +54,33 @@ export default function LandingNavbar() {
             </button>
           </nav>
 
-          {/* Mobile Toggle */}
+          {/* Mobile menu button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="sm:hidden text-gray-700 focus:outline-none"
-            aria-label="Toggle menu"
+            className="sm:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
           >
+            <span className="sr-only">Open menu</span>
             <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+              className="h-6 w-6"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
             >
-              {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
 
-        {/* Mobile Nav */}
-        {isMenuOpen && (
-          <div className="sm:hidden mt-4 space-y-3">
+        {/* Mobile menu */}
+        <div className={`sm:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-4`}>
+          <div className="flex flex-col gap-4">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -87,26 +90,25 @@ export default function LandingNavbar() {
                     e.preventDefault();
                     item.onClick();
                   }
-                  setIsMenuOpen(false);
                 }}
-                className="block text-sm font-medium text-gray-700 hover:bg-gray-100 px-4 py-2 rounded"
+                className="text-base font-medium text-gray-900 hover:text-gray-700"
               >
                 {item.name}
               </Link>
             ))}
             <button
-              onClick={() => {
-                setIsLoginOpen(true);
-                setIsMenuOpen(false);
-              }}
-              className="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+              onClick={() => setIsLoginOpen(true)}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full"
             >
               Login
             </button>
           </div>
-        )}
-         <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+        </div>
       </div>
+
+      {/* Modals */}
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+      <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} />
     </header>
   );
 }
