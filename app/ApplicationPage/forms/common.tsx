@@ -215,108 +215,123 @@ function MapComponent({ setAddress }: { setAddress: (address: string) => void })
           </MapContainer>
         </div>
       </div>
+      
       {/* Source of Income */}
-                      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-                        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                          Source of Income
-                        </h4>
-                        <div className="flex gap-6 mb-4">
-                          {['business', 'employed'].map((type) => (
-                            <label key={type} className="flex items-center">
-                              <input
-                                type="radio"
-                                name="employmentType"
-                                value={type}
-                                checked={sourceOfIncome === type}
-                                onChange={() => setSourceOfIncome(type)}
-                                className="mr-2 text-red-600 focus:ring-red-500"
-                              />
-                              <span className="text-gray-700">
-                                {type === 'business' ? 'Business Owner' : 'Employed'}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
+<div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+  <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+    <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+    Source of Income
+  </h4>
 
-                        {sourceOfIncome === 'business' && (
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Type of Business:</label>
-                              <input 
-                              type="text"
-                              value={appTypeBusiness}
-                              onChange={(e) => setAppTypeBusiness(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Date Started:</label>
-                              <input 
-                              type="date"  
-                              value={appDateStarted}
-                              onChange={(e) => setAppDateStarted(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Business Location:</label>
-                              <input 
-                              type="text"
-                              value={appBusinessLoc}
-                              onChange={(e) => setAppBusinessLoc(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Business Location" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
-                              <input 
-                              type="number" 
-                              value={appMonthlyIncome}
-                              onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Monthly Income" />
-                            </div>
-                          </div>
-                        )}
+  {/* Radio Buttons */}
+  <div className="flex gap-6 mb-4">
+    {[
+      { value: 'business', label: 'Business Owner' },
+      { value: 'employed', label: 'Employed' },
+    ].map(({ value, label }) => (
+      <label key={value} className="flex items-center">
+        <input
+          type="radio"
+          name="employmentType"
+          value={value}
+          checked={sourceOfIncome === value}
+          onChange={(e) => setSourceOfIncome(e.target.value)}
+          className="mr-2 text-red-600 focus:ring-red-500"
+        />
+        <span className="text-gray-700">{label}</span>
+      </label>
+    ))}
+  </div>
 
-                        {sourceOfIncome === 'employed' && (
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Occupation/Position:</label>
-                              <input 
-                              type="text"
-                              value={appOccupation}
-                              onChange={(e) => setAppOccupation(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Occupation/Position" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Employment Status:</label>
-                              <select
-                                value={appEmploymentStatus}
-                                onChange={(e) => setAppEmploymentStatus(e.target.value)}
-                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                              >
-                                <option value="">Select employment status</option>
-                                <option value="regular">Regular</option>
-                                <option value="irregular">Irregular</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Company Name:</label>
-                              <input 
-                              type="text"
-                              value={appCompanyName}
-                              onChange={(e) => setAppCompanyName(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Company Name" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
-                              <input 
-                              type="number" 
-                              value={appMonthlyIncome}
-                              onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Monthly Income" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
+  {/* Conditional Inputs */}
+  {sourceOfIncome === 'business' ? (
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">Type of Business:</label>
+        <input
+          type="text"
+          value={appTypeBusiness}
+          onChange={(e) => setAppTypeBusiness(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">Date Started:</label>
+        <input
+          type="date"
+          value={appDateStarted}
+          onChange={(e) => setAppDateStarted(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+      </div>
+        <div>
+        <label className="block font-medium mb-2 text-gray-700">Business Location:</label>
+        <input
+          type="text"
+          value={appBusinessLoc}
+          onChange={(e) => setAppBusinessLoc(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+      <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
+      <input
+        type="number"
+        min={0}
+        value={appMonthlyIncome}
+        onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
+        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        placeholder="Enter your monthly income"
+      />
+    </div>
+
+    </div>
+  ) : sourceOfIncome === 'employed' ? (
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">Occupation:</label>
+        <input
+          type="text"
+          value={appOccupation}
+          onChange={(e) => setAppOccupation(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">Employment Status:</label>
+        <select
+          value={appEmploymentStatus}
+          onChange={(e) => setAppEmploymentStatus(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        >
+        <option value="">Select Employment status</option>
+        <option value="regular">Regular</option>
+        <option value="irregular">Irregular</option>
+        </select>
+      </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">Company Name:</label>
+        <input
+          type="text"
+          value={appCompanyName}
+          onChange={(e) => setAppCompanyName(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+      </div>
+       <div>
+      <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
+      <input
+        type="number"
+        min={0}
+        value={appMonthlyIncome}
+        onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
+        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        placeholder="Enter your monthly income"
+      />
+    </div>
+    </div>
+  ) : null}
+</div>
     </>
 
   )};
