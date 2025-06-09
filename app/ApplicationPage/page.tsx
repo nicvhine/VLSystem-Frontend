@@ -8,7 +8,7 @@ import L from "leaflet";
 import WithoutCollateralLoanForm from "./forms/withoutCollateral";
 import OpenTermLoanForm from "./forms/openTerm";
 import axios from "axios";
-
+import Common from "./forms/common";
 
 
 export default function ApplicationPage() {
@@ -16,16 +16,9 @@ export default function ApplicationPage() {
   const [loanType, setLoanType] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [mockLoanId] = useState("VL-" + Math.floor(100000 + Math.random() * 900000));
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [maritalStatus, setMaritalStatus] = useState('');
-  const [houseStatus, setHouseStatus] = useState('');
   const [incomeSource, setIncomeSource] = useState('');
   const [employmentStatus, setEmploymentStatus] = useState('');
-  const [selectedLoan, setSelectedLoan] = useState<{ amount: number; interest: number; months: number } | null>(null);
-  const [documents, setDocuments] = useState<FileList | null>(null);
-  const [numberOfChildren, setNumberOfChildren] = useState<number | "">("");
-  const [spouseName, setSpouseName] = useState("");
-  const [spouseOccupation, setSpouseOccupation] = useState("");
   const handleSubmit = () => setShowSuccessModal(true);
   const closeModal = () => setShowSuccessModal(false);
 
@@ -119,32 +112,33 @@ export default function ApplicationPage() {
   return null;
 }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+return (
+<div className="min-h-screen bg-gray-50">
+  <Navbar />
+  <div className="flex min-h-screen">
+       
+{/* Left Sidebar */}
+<div className="w-80 bg-white shadow-sm p-6 space-y-6">
 
-      <div className="flex min-h-screen">
-        {/* Left Sidebar */}
-        <div className="w-80 bg-white shadow-sm p-6 space-y-6">
-          {/* Type of Loan Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-center">Type of Loan</h3>
-            </div>
-            <div className="p-4">
-              <div className="bg-gray-50 rounded-lg p-3">
-                <select 
-                  value={loanType} 
-                  onChange={(e) => setLoanType(e.target.value)}
-                  className="w-full p-3 text-center font-medium bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                >
-                  <option value="">-- TYPE OF LOAN --</option>
-                  {loanTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+{/* Type of Loan Section */}
+<div className="bg-white rounded-lg shadow-sm border border-gray-100">
+  <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
+    <h3 className="font-semibold text-gray-800 text-center">Type of Loan</h3>
+  </div>
+  <div className="p-4">
+    <div className="bg-gray-50 rounded-lg p-3">
+      <select 
+        value={loanType} 
+        onChange={(e) => setLoanType(e.target.value)}
+        className="w-full p-3 text-center font-medium bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        >
+        <option value="">-- TYPE OF LOAN --</option>
+        {loanTypes.map((type) => (
+        <option key={type} value={type}>{type}</option>
+        ))}
+        </select>
+    </div>
+  </div>
           </div>
 
           {/* Type of Loan Requirements Section */}
@@ -213,103 +207,7 @@ export default function ApplicationPage() {
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">{loanType}</h1>
                     <div className="w-16 h-1 bg-red-600 rounded"></div>
                   </div>
-                  
-                  {/* Basic Info Section - Common to all loan types */}
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-                    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                      <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                      Basic Information
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block font-medium mb-2 text-gray-700">Name:</label>
-                        <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter your full name" />
-                      </div>
-                      <div>
-                        <label className="block font-medium mb-2 text-gray-700">Date of Birth:</label>
-                        <input type="date" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" />
-                      </div>
-                      <div>
-                        <label className="block font-medium mb-2 text-gray-700">Contact Number:</label>
-                        <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter contact number" />
-                      </div>
-                      <div>
-                        <label className="block font-medium mb-2 text-gray-700">Email Address:</label>
-                        <input type="email" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter email address" />
-                      </div>
-                    </div>
-                
-                        <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
-                          <div>
-                            <label className="block font-medium mb-2 text-gray-700">Marital Status:</label>
-                            <select
-                              value={maritalStatus}
-                              onChange={(e) => setMaritalStatus(e.target.value)}
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                            >
-                              <option value="">Select Status</option>
-                              <option value="Single">Single</option>
-                              <option value="Married">Married</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block font-medium mb-2 text-gray-700">Number of Children:</label>
-                            <input
-                              type="number"
-                              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                              placeholder="Enter number of children"
-                              value={numberOfChildren}
-                              onChange={(e) => setNumberOfChildren(e.target.value === "" ? "" : Number(e.target.value))}
-                              min={0}
-                            />
-                          </div>
-                        </div>
-                        {maritalStatus === "Married" && (
-                          <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Spouse Name:</label>
-                              <input
-                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                placeholder="Enter spouse name"
-                                value={spouseName}
-                                onChange={(e) => setSpouseName(e.target.value)}
-                              />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Spouse Occupation:</label>
-                              <input
-                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                placeholder="Enter spouse occupation"
-                                value={spouseOccupation}
-                                onChange={(e) => setSpouseOccupation(e.target.value)}
-                              />
-                            </div>
-                          </div>
-                        )}
 
-                         {/* ==== Address Section ==== */}
-                                <div className="mb-4">
-                                  <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
-                                  <input
-                                    type="text"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    placeholder="Click on the map or type here"
-                                  />
-                                </div>
-                        
-                                <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                                  <MapContainer
-                                                              center={[12.8797, 121.774]}
-                                                              zoom={6}
-                                                              style={{ height: "300px", width: "100%" }}
-                                                            >
-                                                              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                                              <MapComponent setAddress={setAddress} />
-                                                            </MapContainer>
-                                </div>
-                  </div>
 
               {loanType === "Regular Loan With Collateral" && (
                 <WithCollateralLoanForm
@@ -326,14 +224,6 @@ export default function ApplicationPage() {
 
                 {loanType === "Regular Loan Without Collateral" && (
                 <WithoutCollateralLoanForm
-                  maritalStatus={maritalStatus}
-                  setMaritalStatus={setMaritalStatus}
-                  incomeSource={incomeSource}
-                  setIncomeSource={setIncomeSource}
-                  address={address}
-                  setAddress={setAddress}
-                  employmentStatus={employmentStatus}
-                  setEmploymentStatus={setEmploymentStatus}
                 />
                 )}
 
