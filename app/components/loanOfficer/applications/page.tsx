@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import Navbar from '../navbar';
 import { FiSearch, FiChevronDown, FiLoader } from 'react-icons/fi';
 import Link from 'next/link';
 
+const API_URL = "http://localhost:3001/loan-applications";
+
 interface Application {
-  id: string;
-  name: string;
-  applicationDate: string;
-  principalAmount: number;
-  interestRate: number;
-  status: 'Pending' | 'Accepted' | 'Denied' | 'Onhold';
+  applicationId: string;
+  appName: string;
+  dateApplied: string;
+  appLoanAmount: number;
+  appInterest: number;
+  loanType: string; 
+  status: string;
 }
 
 function LoadingSpinner() {
@@ -23,44 +26,27 @@ function LoadingSpinner() {
 }
 
 export default function ApplicationsPage() {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [activeFilter, setActiveFilter] = useState('Pending');
 
-  const applications: Application[] = [
-    {
-      id: "APP002",
-      name: "Jane Smith",
-      applicationDate: "2024-03-23",
-      principalAmount: 75000,
-      interestRate: 2.5,
-      status: "Onhold"
-    },
-    {
-      id: "APP003",
-      name: "Robert Johnson",
-      applicationDate: "2024-03-22",
-      principalAmount: 100000,
-      interestRate: 3.0,
-      status: "Accepted"
-    },
-    {
-      id: "APP004",
-      name: "Maria Garcia",
-      applicationDate: "2024-03-21",
-      principalAmount: 25000,
-      interestRate: 2.0,
-      status: "Denied"
-    },
-    {
-      id: "APP005",
-      name: "Nichole Garcia",
-      applicationDate: "2024-03-21",
-      principalAmount: 30000,
-      interestRate: 10.0,
-      status: "Pending"
-    }
-  ];
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const response = await fetch (API_URL);
+        const data = await response.json();
+        setApplications(data);
+      } catch (error) {
+        console.error("Failed to fetch applications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
+  }, []);
 
   const filteredApplications = applications.filter(application => {
     const matchesSearch = Object.values(application).some(value => 
@@ -164,7 +150,7 @@ export default function ApplicationsPage() {
           <table className="min-w-full">
             <thead>
               <tr>
-                {['ID', 'Name', 'Application Date', 'Principal Amount', 'Interest Rate', 'Status'].map((heading) => (
+                {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Status'].map((heading) => (
                   <th
                     key={heading}
                     className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -177,20 +163,23 @@ export default function ApplicationsPage() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {filteredApplications.map((application) => (
                 <tr 
-                  key={application.id}
+                  key={application.applicationId}
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
-                    <Link href={`/components/loanOfficer/applications/${application.id}`} className="text-blue-600 hover:text-blue-700 font-medium">
-                      {application.id}
+                    <Link href={`/components/loanOfficer/applications/${application.applicationId}`} className="text-blue-600 hover:text-blue-700 font-medium">
+                      {application.applicationId}
                     </Link>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">{application.name}</div>
+                    <div className="text-sm font-medium text-gray-900">{application.appName}</div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.applicationDate)}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.principalAmount)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{application.interestRate}%</td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-medium text-gray-900">{application.loanType}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.dateApplied)}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{application.appInterest}%</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                       application.status === 'Accepted' ? 'bg-green-100 text-green-800' :
