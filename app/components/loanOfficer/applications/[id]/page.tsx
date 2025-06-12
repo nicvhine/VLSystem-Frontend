@@ -136,9 +136,12 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{params.id} - {application?.loanType}</h1>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
-              Generate Loan Agreement
-            </button>
+           <Link
+            href={`/LoanAgreementPage/${application?.applicationId}`}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
+          >
+            Generate Loan Agreement
+          </Link>
             <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">
               Deny Application
             </button>
