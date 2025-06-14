@@ -7,38 +7,6 @@ import axios from "axios";
 import Navbar from "../../components/landing/landingNavbar";
 import { Dispatch, SetStateAction } from "react";
 
-
-function MapComponent({ setAddress }: { setAddress: (address: string) => void }) {
-  const [marker, setMarker] = useState<L.Marker | null>(null);
-
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      if (marker) marker.remove();
-
-      const newMarker = L.marker([lat, lng]).addTo(e.target);
-      setMarker(newMarker);
-
-      axios.get("https://nominatim.openstreetmap.org/reverse", {
-        params: {
-          lat,
-          lon: lng,
-          format: "json",
-        },
-      })
-        .then((response) => {
-          const address = response.data.display_name;
-          setAddress(address);
-          newMarker.bindPopup(address).openPopup();
-        })
-        .catch((error) => {
-          console.error("Error fetching address:", error);
-        });
-    },
-  });
-
-  return null;
-}
 type Props = {
   maritalStatus: string;
   setMaritalStatus: Dispatch<SetStateAction<string>>;
@@ -105,87 +73,7 @@ const BasicLoanForm = ({
   };
 
   return (
-    <>
-                    {/* Source of Income */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-                        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-                          Source of Income
-                        </h4>
-                        <div className="flex gap-6 mb-4">
-                          {['business', 'employed'].map((type) => (
-                            <label key={type} className="flex items-center">
-                              <input
-                                type="radio"
-                                name="employmentType"
-                                value={type}
-                                checked={incomeSource === type}
-                                onChange={() => setIncomeSource(type)}
-                                className="mr-2 text-red-600 focus:ring-red-500"
-                              />
-                              <span className="text-gray-700">
-                                {type === 'business' ? 'Business Owner' : 'Employed'}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-
-                        {incomeSource === 'business' && (
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Type of Business:</label>
-                              <select className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                                <option value="">Select business type</option>
-                                <option value="retail">Retail</option>
-                                <option value="food">Food & Beverage</option>
-                                <option value="services">Services</option>
-                                <option value="others">Others</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Date Started:</label>
-                              <input type="date" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Business Location:</label>
-                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Business Location" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
-                              <input type="number" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Monthly Income" />
-                            </div>
-                          </div>
-                        )}
-
-                        {incomeSource === 'employed' && (
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Occupation/Position:</label>
-                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Occupation/Position" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Employment Status:</label>
-                              <select
-                                value={employmentStatus}
-                                onChange={(e) => setEmploymentStatus(e.target.value)}
-                                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                              >
-                                <option value="">Select employment status</option>
-                                <option value="regular">Regular</option>
-                                <option value="irregular">Irregular</option>
-                              </select>
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Company Name:</label>
-                              <input className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Company Name" />
-                            </div>
-                            <div>
-                              <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
-                              <input type="number" className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" placeholder="Enter Monthly Income" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
+    <>   
 
                       {/* Open-Term Loan Specific Details */}
                       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
