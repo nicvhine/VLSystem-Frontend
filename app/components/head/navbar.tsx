@@ -20,7 +20,7 @@ export default function Navbar() {
 
   const navItems = [
     { name: 'Loans', href: '/head/loans' },
-    { name: 'Applications', href: '/head/applications' },
+    { name: 'Applications', href: '/components/head/applications' },
     { name: 'Agents', href: '/head/agents' },
     { name: 'Collections', href: '/head/collections' },
     { name: 'Users', href: '/components/head/userPage' },

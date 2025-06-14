@@ -113,7 +113,7 @@ export default function ApplicationPage() {
 }
 
 return (
-<div className="min-h-screen bg-gray-50">
+<div className="min-h-screen bg-gray-50 text-black">
   <Navbar />
   <div className="flex min-h-screen">
        
@@ -190,7 +190,7 @@ return (
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 bg-white shadow-sm m-6 ml-0 rounded-lg">
+        <div className="flex-1 bg-white shadow-sm ml-0 rounded-lg">
           <div className="h-full flex items-center justify-center">
             {!loanType ? (
               <div className="text-center px-8">

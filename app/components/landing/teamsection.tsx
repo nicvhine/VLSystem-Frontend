@@ -27,7 +27,7 @@ const teamMembers = [
 
 const TeamSection = ({ language }: TeamSectionProps) => {
   return (
-    <section className="py-24 bg-gray-50" id="team">
+    <section className="py-24 bg-gray-50 text-black" id="team">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-4xl font-bold text-center mb-16 text-gray-800">
           {language === 'en' ? 'Meet Our Team' : 'Ilaila ang Among Team'}
