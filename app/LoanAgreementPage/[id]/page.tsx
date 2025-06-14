@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+
 // Icons as Unicode symbols - no external dependencies
 const Icons = {
   Upload: () => <span className="inline-block">📁</span>,
@@ -11,7 +12,10 @@ const Icons = {
   User: () => <span className="inline-block">👤</span>,
   DollarSign: () => <span className="inline-block">💰</span>,
   FileCheck: () => <span className="inline-block">📋</span>,
-  ArrowLeft: () => <span className="inline-block">←</span>
+  ArrowLeft: () => <span className="inline-block">←</span>,
+  Edit: () => <span className="inline-block">✏️</span>,
+  Save: () => <span className="inline-block">💾</span>,
+  X: () => <span className="inline-block">✖️</span>
 };
 
 interface Application {
@@ -27,6 +31,8 @@ interface Application {
   interestRate?: string;
   loanTerms?: number;
   loanAmount?: number;
+  installmentAmount?: number;
+  firstPaymentDate?: string;
 }
 
 interface UploadedFile {
@@ -48,21 +54,25 @@ const formatCurrency = (amount?: number) => {
 
 export default function LoanAgreement() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [comments, setComments] = useState<string[]>([]);
-  const [newComment, setNewComment] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Sample data - replace with actual application data
-  const applicationData = {
+  const [applicationData, setApplicationData] = useState<Application>({
     applicationId: "00001",
     appName: "Juan Dela Cruz",
     address: "123 Barangay Street",
     appLoanAmount: 50000,
     appInterest: 5,
     loanType: "Regular Loan Without Collateral",
+    status: "Pending",
     appLoanTerms: 12,
-    paymentFrequency: "Monthly"
-  };
+    paymentFrequency: "Monthly",
+    installmentAmount: 3300,
+    firstPaymentDate: "May 13, 2025"
+  });
+
+  const [editData, setEditData] = useState<Application>(applicationData);
 
   const handleFileUpload = (files: FileList | null) => {
     if (!files) return;
@@ -102,13 +112,6 @@ export default function LoanAgreement() {
     setUploadedFiles(prev => prev.filter(file => file.id !== id));
   };
 
-  const addComment = () => {
-    if (newComment.trim()) {
-      setComments(prev => [...prev, newComment.trim()]);
-      setNewComment("");
-    }
-  };
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -116,6 +119,30 @@ export default function LoanAgreement() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  const handleEdit = () => {
+    setEditData(applicationData);
+    setIsEditing(true);
+  };
+
+  const handleSave = () => {
+    setApplicationData(editData);
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setEditData(applicationData);
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (field: keyof Application, value: string | number) => {
+    setEditData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const currentData = isEditing ? editData : applicationData;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,17 +155,42 @@ export default function LoanAgreement() {
             </button>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                {applicationData.applicationId} - {applicationData.loanType}
+                {currentData.applicationId} - {currentData.loanType}
               </h1>
             </div>
           </div>
           <div className="flex space-x-3">
-            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-              Generate Loan Agreement
-            </button>
-            <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-              Deny Application
-            </button>
+            {isEditing ? (
+              <>
+                <button 
+                  onClick={handleSave}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+                >
+                  <Icons.Save /> <span className="ml-2">Save Changes</span>
+                </button>
+                <button 
+                  onClick={handleCancel}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+                >
+                  <Icons.X /> <span className="ml-2">Cancel</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={handleEdit}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
+                >
+                  <Icons.Edit /> <span className="ml-2">Edit Agreement</span>
+                </button>
+                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  Generate Loan Agreement
+                </button>
+                <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  Deny Application
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -166,21 +218,97 @@ export default function LoanAgreement() {
                 <p>AND</p>
 
                 <p>
-                  <strong>{applicationData.appName}</strong>, of legal age, Filipino and resident of <strong>{applicationData.address}</strong>,
+                  <strong>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editData.appName}
+                        onChange={(e) => handleInputChange('appName', e.target.value)}
+                        className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
+                      />
+                    ) : currentData.appName}
+                  </strong>, of legal age, Filipino and resident of <strong>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editData.address || ''}
+                        onChange={(e) => handleInputChange('address', e.target.value)}
+                        className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
+                      />
+                    ) : currentData.address}
+                  </strong>,
                   hereinafter the <strong>BORROWER</strong>.
                 </p>
 
                 <p className="font-semibold underline mb-3">WITNESSETH:</p>
                 <ol className="list-decimal list-inside space-y-2">
                   <li>
-                    <strong>Loan Amount.</strong> The LENDER agrees to lend and the BORROWER agrees to borrow <strong>{formatCurrency(applicationData.appLoanAmount)}</strong>.
+                    <strong>Loan Amount.</strong> The LENDER agrees to lend and the BORROWER agrees to borrow <strong>
+                      {isEditing ? (
+                        <span>
+                          ₱<input
+                            type="number"
+                            value={editData.appLoanAmount}
+                            onChange={(e) => handleInputChange('appLoanAmount', parseFloat(e.target.value) || 0)}
+                            className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-24"
+                          />
+                        </span>
+                      ) : formatCurrency(currentData.appLoanAmount)}
+                    </strong>.
                   </li>
                   <li>
-                    <strong>Interest Rate.</strong> {applicationData.appInterest}% interest on the principal amount.
+                    <strong>Interest Rate.</strong> {isEditing ? (
+                      <input
+                        type="number"
+                        value={editData.appInterest}
+                        onChange={(e) => handleInputChange('appInterest', parseFloat(e.target.value) || 0)}
+                        className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-16"
+                      />
+                    ) : currentData.appInterest}% interest on the principal amount.
                   </li>
                   <li>
-                    <strong>Repayment Terms.</strong> Repayment in <strong>{applicationData.appLoanTerms}</strong> installment(s) of ₱3,300.00.
-                    First payment: <strong>May 13, 2025</strong>. Then every <strong>{applicationData.paymentFrequency}</strong>.
+                    <strong>Repayment Terms.</strong> Repayment in <strong>
+                      {isEditing ? (
+                        <input
+                          type="number"
+                          value={editData.appLoanTerms}
+                          onChange={(e) => handleInputChange('appLoanTerms', parseInt(e.target.value) || 0)}
+                          className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-16"
+                        />
+                      ) : currentData.appLoanTerms}
+                    </strong> installment(s) of {isEditing ? (
+                      <span>
+                        ₱<input
+                          type="number"
+                          value={editData.installmentAmount || 3300}
+                          onChange={(e) => handleInputChange('installmentAmount', parseFloat(e.target.value) || 0)}
+                          className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-24"
+                        />
+                      </span>
+                    ) : `₱${(currentData.installmentAmount || 3300).toFixed(2)}`}.
+                    First payment: <strong>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={editData.firstPaymentDate || 'May 13, 2025'}
+                          onChange={(e) => handleInputChange('firstPaymentDate', e.target.value)}
+                          className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
+                        />
+                      ) : (currentData.firstPaymentDate || 'May 13, 2025')}
+                    </strong>. Then every <strong>
+                      {isEditing ? (
+                        <select
+                          value={editData.paymentFrequency || 'Monthly'}
+                          onChange={(e) => handleInputChange('paymentFrequency', e.target.value)}
+                          className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
+                        >
+                          <option value="Weekly">Weekly</option>
+                          <option value="Bi-weekly">Bi-weekly</option>
+                          <option value="Monthly">Monthly</option>
+                          <option value="Quarterly">Quarterly</option>
+                        </select>
+                      ) : currentData.paymentFrequency}
+                    </strong>.
                   </li>
                   <li>
                     Default occurs if:
@@ -207,7 +335,7 @@ export default function LoanAgreement() {
                   </div>
                   <div>
                     <p className="font-semibold">BORROWER</p>
-                    <p>{applicationData.appName}</p>
+                    <p>{currentData.appName}</p>
                     <p className="mt-4">Type of ID: ____________________</p>
                     <p>ID Number: ______________________</p>
                     <p>Valid Until: ______________________</p>
@@ -237,7 +365,7 @@ export default function LoanAgreement() {
         </div>
 
         {/* Sidebar */}
-        <div className="w-80 bg-gray-50 border-l border-gray-200 p-6 space-y-6">
+        <div className="w-80 bg-gray-50 border-l border-gray-200 p-6">
           {/* Upload Documents Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="px-4 py-3 border-b border-gray-200">
@@ -311,41 +439,6 @@ export default function LoanAgreement() {
                   ))}
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Comments Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-4 py-3 border-b border-gray-200">
-              <h3 className="text-sm font-medium text-gray-900">Comments / Notes</h3>
-            </div>
-            <div className="p-4">
-              <div className="space-y-3 mb-4">
-                {comments.map((comment, index) => (
-                  <div key={index} className="text-sm text-gray-700 p-2 bg-gray-50 rounded">
-                    {comment}
-                  </div>
-                ))}
-                {comments.length === 0 && (
-                  <p className="text-sm text-gray-500 italic">No comments yet</p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add a comment..."
-                  className="w-full p-2 text-sm border border-gray-300 rounded-md resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  rows={3}
-                />
-                <button
-                  onClick={addComment}
-                  disabled={!newComment.trim()}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Add Comment
-                </button>
-              </div>
             </div>
           </div>
         </div>
