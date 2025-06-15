@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+
+const API_URL = "http://localhost:3001/loan-applications";
 
 // Icons as Unicode symbols - no external dependencies
 const Icons = {
@@ -21,7 +23,7 @@ const Icons = {
 interface Application {
   applicationId: string;
   appName: string;
-  address?: string;
+  appAddress?: string;
   appLoanAmount: number;
   appInterest: number;
   loanType: string;
@@ -52,27 +54,42 @@ const formatCurrency = (amount?: number) => {
   }).format(amount);
 };
 
-export default function LoanAgreement() {
+
+export default function LoanAgreement({ params }: { params: { id: string } }) {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Sample data - replace with actual application data
-  const [applicationData, setApplicationData] = useState<Application>({
-    applicationId: "00001",
-    appName: "Juan Dela Cruz",
-    address: "123 Barangay Street",
-    appLoanAmount: 50000,
-    appInterest: 5,
-    loanType: "Regular Loan Without Collateral",
-    status: "Pending",
-    appLoanTerms: 12,
-    paymentFrequency: "Monthly",
-    installmentAmount: 3300,
-    firstPaymentDate: "May 13, 2025"
-  });
+   useEffect(() => {
+         const fetchApplications = async () => {
+           try {
+             const response = await fetch (API_URL);
+             const data = await response.json();
+             setApplications(data);
+           } catch (error) {
+             console.error("Failed to fetch applications:", error);
+           } finally {
+             setLoading(false);
+           }
+         };
+     
+         fetchApplications();
+       }, []);
+  
+  
+  const application = applications.find(app => app.applicationId === params.id);
+  
+  const [editData, setEditData] = useState<Application | null>(null);
+  
+  useEffect(() => {
+    const app = applications.find(app => app.applicationId === params.id);
+    if (app) {
+      setEditData(app);
+    }
+  }, [applications, params.id]);
 
-  const [editData, setEditData] = useState<Application>(applicationData);
 
   const handleFileUpload = (files: FileList | null) => {
     if (!files) return;
@@ -120,29 +137,57 @@ export default function LoanAgreement() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleEdit = () => {
-    setEditData(applicationData);
-    setIsEditing(true);
-  };
+ const handleEdit = () => {
+  if (!application) return; 
+  setEditData(application);
+  setIsEditing(true);
+};
 
-  const handleSave = () => {
-    setApplicationData(editData);
-    setIsEditing(false);
-  };
+
+ const handleSave = async () => {
+  try {
+    const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+       body: JSON.stringify(updatedFields),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to update the application");
+    }
+
+    console.log("Application updated successfully!");
+  } catch (error) {
+    console.error("Error saving data to the server:", error);
+  }
+};
+
+
 
   const handleCancel = () => {
-    setEditData(applicationData);
+    if (!application) return; 
+    setEditData(application);
     setIsEditing(false);
   };
 
   const handleInputChange = (field: keyof Application, value: string | number) => {
-    setEditData(prev => ({
+  setEditData(prev => {
+    if (!prev) return prev; 
+    return {
       ...prev,
       [field]: value
-    }));
-  };
+    };
+  });
+};
 
-  const currentData = isEditing ? editData : applicationData;
+
+  const currentData = isEditing ? editData : application;
+
+  const capitalizeWords = (str: string) =>
+    str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -155,7 +200,7 @@ export default function LoanAgreement() {
             </button>
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                {currentData.applicationId} - {currentData.loanType}
+                {currentData?.applicationId} - {currentData?.loanType}
               </h1>
             </div>
           </div>
@@ -219,23 +264,9 @@ export default function LoanAgreement() {
 
                 <p>
                   <strong>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editData.appName}
-                        onChange={(e) => handleInputChange('appName', e.target.value)}
-                        className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
-                      />
-                    ) : currentData.appName}
+                    {currentData?.appName}
                   </strong>, of legal age, Filipino and resident of <strong>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editData.address || ''}
-                        onChange={(e) => handleInputChange('address', e.target.value)}
-                        className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
-                      />
-                    ) : currentData.address}
+                    {currentData?.appAddress}
                   </strong>,
                   hereinafter the <strong>BORROWER</strong>.
                 </p>
@@ -248,57 +279,57 @@ export default function LoanAgreement() {
                         <span>
                           ₱<input
                             type="number"
-                            value={editData.appLoanAmount}
+                            value={editData?.appLoanAmount}
                             onChange={(e) => handleInputChange('appLoanAmount', parseFloat(e.target.value) || 0)}
                             className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-24"
                           />
                         </span>
-                      ) : formatCurrency(currentData.appLoanAmount)}
+                      ) : formatCurrency(currentData?.appLoanAmount)}
                     </strong>.
                   </li>
                   <li>
                     <strong>Interest Rate.</strong> {isEditing ? (
                       <input
                         type="number"
-                        value={editData.appInterest}
+                        value={editData?.appInterest}
                         onChange={(e) => handleInputChange('appInterest', parseFloat(e.target.value) || 0)}
                         className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-16"
                       />
-                    ) : currentData.appInterest}% interest on the principal amount.
+                    ) : currentData?.appInterest}% interest on the principal amount.
                   </li>
                   <li>
                     <strong>Repayment Terms.</strong> Repayment in <strong>
                       {isEditing ? (
                         <input
                           type="number"
-                          value={editData.appLoanTerms}
+                          value={editData?.appLoanTerms}
                           onChange={(e) => handleInputChange('appLoanTerms', parseInt(e.target.value) || 0)}
                           className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-16"
                         />
-                      ) : currentData.appLoanTerms}
-                    </strong> installment(s) of {isEditing ? (
+                      ) : currentData?.appLoanTerms}
+                    </strong> installment(s) of <strong>{isEditing ? (
                       <span>
                         ₱<input
                           type="number"
-                          value={editData.installmentAmount || 3300}
+                          value={editData?.installmentAmount || 3300}
                           onChange={(e) => handleInputChange('installmentAmount', parseFloat(e.target.value) || 0)}
                           className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-24"
                         />
                       </span>
-                    ) : `₱${(currentData.installmentAmount || 3300).toFixed(2)}`}.
-                    First payment: <strong>
+                    ) : `₱${(currentData?.installmentAmount || 3300).toFixed(2)}`}.
+                    </strong> First payment: <strong>
                       {isEditing ? (
                         <input
                           type="text"
-                          value={editData.firstPaymentDate || 'May 13, 2025'}
+                          value={editData?.firstPaymentDate || 'May 13, 2025'}
                           onChange={(e) => handleInputChange('firstPaymentDate', e.target.value)}
                           className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
                         />
-                      ) : (currentData.firstPaymentDate || 'May 13, 2025')}
+                      ) : (currentData?.firstPaymentDate || 'May 13, 2025')}
                     </strong>. Then every <strong>
                       {isEditing ? (
                         <select
-                          value={editData.paymentFrequency || 'Monthly'}
+                          value={editData?.paymentFrequency || 'Monthly'}
                           onChange={(e) => handleInputChange('paymentFrequency', e.target.value)}
                           className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
                         >
@@ -307,7 +338,7 @@ export default function LoanAgreement() {
                           <option value="Monthly">Monthly</option>
                           <option value="Quarterly">Quarterly</option>
                         </select>
-                      ) : currentData.paymentFrequency}
+                      ) : currentData?.paymentFrequency}
                     </strong>.
                   </li>
                   <li>
@@ -332,21 +363,17 @@ export default function LoanAgreement() {
                     <p className="mt-4">Type of ID: ____________________</p>
                     <p>ID Number: ______________________</p>
                     <p>Valid Until: ______________________</p>
+                    <p className="mt-10">Signed in the presence of: _________________________</p>
                   </div>
                   <div>
-                    <p className="font-semibold">BORROWER</p>
-                    <p>{currentData.appName}</p>
-                    <p className="mt-4">Type of ID: ____________________</p>
-                    <p>ID Number: ______________________</p>
-                    <p>Valid Until: ______________________</p>
-                  </div>
+                  <p className="font-semibold">BORROWER</p>
+                  <p>{currentData?.appName ? capitalizeWords(currentData.appName) : ""}</p>
+                  <p className="mt-4">Type of ID: ____________________</p>
+                  <p>ID Number: ______________________</p>
+                  <p>Valid Until: ______________________</p>
+                  <p className="mt-10">Signed in the presence of: _________________________</p>
                 </div>
-
-                <div className="flex justify-between mt-6 text-sm">
-                  <p>Signed in the presence of: _________________________</p>
-                  <p>Signed in the presence of: _________________________</p>
                 </div>
-
                 <p className="font-semibold mt-6 underline">ACKNOWLEDGEMENT</p>
                 <p className="text-sm">
                   Before me, Notary Public in Bogo City, Cebu, this day of ____________, personally appeared the parties and acknowledged this as their free act and deed.
