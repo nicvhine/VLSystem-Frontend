@@ -73,13 +73,15 @@ export default function ApplicationsPage() {
     });
   };
 
-  const collectableAmount = (principal: number, interest: number, months: number) => {
-    const amount = principal * interest * months;
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP'
-    }).format(amount);
-  };
+  const collectableAmount = (principal: number, interestRate: number, termMonths: number) => {
+  const termYears = termMonths / 12; // Convert months to years
+  const total = principal + (principal * (interestRate / 100) * termYears);
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(total);
+};
+
 
 
 
