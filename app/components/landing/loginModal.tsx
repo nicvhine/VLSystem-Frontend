@@ -12,7 +12,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showForgotModal, setShowForgotModal] = useState(false);
-  const [forgotRole, setForgotRole] = useState<'borrower' | 'staff' | null>(null);
+  const [forgotRole, setForgotRole] = useState<'borrower' | 'staff' | ''>('');
   const router = useRouter();
 
   useEffect(() => {
@@ -27,13 +27,18 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!username || !password) {
-      alert('Please enter both username and password');
+    if (!username || !password || !forgotRole) {
+      alert('Please fill in all fields and select a role');
       return;
     }
 
+    const endpoint =
+      forgotRole === 'borrower'
+        ? 'http://localhost:3001/borrowers/login' 
+        : 'http://localhost:3001/users/login';   
+
     try {
-      const res = await fetch('http://localhost:3001/users/login', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -49,15 +54,20 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       if (res.ok) {
         console.log('Login success data:', data);
-        localStorage.setItem('fullName', data.fullName || data.name || data.username); 
-        onClose(); 
-        const role = data.role.toLowerCase();
+        localStorage.setItem('fullName', data.fullName || data.name || data.username);
+        localStorage.setItem('role', forgotRole);
+        onClose();
+
+        const role = data.role?.toLowerCase() || forgotRole;
+
         if (role === 'head') {
           router.push('components/head');
         } else if (role === 'manager') {
           router.push('components/manager');
         } else if (role === 'loan officer') {
           router.push('components/loanOfficer');
+        } else if (role === 'borrower') {
+          router.push('components/borrower');
         } else {
           router.push('/');
         }
@@ -76,7 +86,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           onClick={() => {
             onClose();
             setShowForgotModal(false);
-            setForgotRole(null);
+            setForgotRole('');
           }}
           className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition"
         >
@@ -84,7 +94,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         </button>
 
         {/* Forgot Password Modal */}
-        {showForgotModal && forgotRole === null && (
+        {showForgotModal && forgotRole === '' && (
           <>
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Forgot Password</h2>
             <p className="text-sm text-gray-600 text-center mb-6">Select your role to proceed:</p>
@@ -124,6 +134,19 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               Login to your VLSystem account
             </p>
             <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label className="block mb-1 text-sm text-gray-700">Login as:</label>
+                <select
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                  value={forgotRole}
+                  onChange={(e) => setForgotRole(e.target.value as 'borrower' | 'staff')}
+                  required
+                >
+                  <option value="" disabled>Select role</option>
+                  <option value="staff">Internal Staff</option>
+                  <option value="borrower">Borrower</option>
+                </select>
+              </div>
               <input
                 type="text"
                 placeholder="Username"
@@ -142,7 +165,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 className="text-sm text-blue-600 hover:underline cursor-pointer text-center mb-4"
                 onClick={() => {
                   setShowForgotModal(true);
-                  setForgotRole(null);
+                  setForgotRole('');
                 }}
               >
                 Forgot Password or Username?
