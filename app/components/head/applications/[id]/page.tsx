@@ -208,15 +208,15 @@ const handlePrint = () => {
   window.location.reload(); 
 };
 
-const handleSubmitAgreement = async () => {
+const handleApproveApplication = async () => {
   try {
     const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
-      method: "PUT", // or PATCH, depending on your backend
+      method: "PUT", 
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        status: "Endorsed",
+        status: "Approved",
       }),
     });
 
@@ -224,13 +224,35 @@ const handleSubmitAgreement = async () => {
       throw new Error("Failed to update status");
     }
 
-    alert("Loan status changed to 'Endorsed'.");
+    alert("Loan status changed to 'Approved'.");
   } catch (error) {
     console.error("Submission failed:", error);
     alert("Something went wrong.");
   }
 };
 
+const handleDenyApplication = async () => {
+  try {
+    const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
+      method: "PUT", 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "Denied",
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update status");
+    }
+
+    alert("Loan status changed to 'Denied'.");
+  } catch (error) {
+    console.error("Submission failed:", error);
+    alert("Something went wrong.");
+  }
+};
 
 
 const currentData = isEditing ? editData : application;
@@ -274,23 +296,18 @@ const capitalizeWords = (str: string) =>
               </>
             ) : (
               <>
-                <button 
-                  onClick={handleEdit}
-                  className=" px-4 py-2 rounded-md text-sm font-medium flex items-center"
+
+                <button
+                  onClick={handleApproveApplication}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                 >
-                  <Icons.Edit size={20} />
-                <button 
-                  onClick={handlePrint}
-                  className=" px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <Icons.Print size={20} />   
-              </button>
+                  Approve 
                 </button>
                 <button
-                  onClick={handleSubmitAgreement}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  onClick={handleDenyApplication}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
                 >
-                  Submit Loan Agreement
+                  Deny
                 </button>
 
               </>
@@ -474,85 +491,6 @@ const capitalizeWords = (str: string) =>
               </div>
             </div>
           </div>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="w-80 bg-gray-50 border-l border-gray-200 p-6">
-          {/* Upload Documents Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-4 py-3 border-b border-gray-200">
-              <h3 className="text-sm font-medium text-gray-900 flex items-center">
-                <Icons.FileText /> <span className="ml-2">Uploaded Documents</span>
-              </h3>
-            </div>
-            <div className="p-4">
-              {/* Upload Area */}
-              <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center ${
-                  isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <Icons.Upload />
-                <p className="text-sm text-gray-600 mb-2 mt-2">
-                  Drag and drop images here, or{' '}
-                  <label className="text-blue-600 cursor-pointer underline">
-                    browse
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e.target.files)}
-                    />
-                  </label>
-                </p>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-              </div>
-
-              {/* Uploaded Files List */}
-              {uploadedFiles.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {uploadedFiles.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <div className="flex items-center space-x-2 flex-1 min-w-0">
-                        <img 
-                          src={file.url} 
-                          alt={file.name}
-                          className="h-8 w-8 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
-                          <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <button 
-                          className="p-1 text-gray-400 hover:text-blue-600"
-                          onClick={() => window.open(file.url, '_blank')}
-                        >
-                          <Icons.Eye />
-                        </button>
-                        <button 
-                          className="p-1 text-gray-400 hover:text-green-600"
-                        >
-                          <Icons.Download />
-                        </button>
-                        <button 
-                          className="p-1 text-gray-400 hover:text-red-600"
-                          onClick={() => removeFile(file.id)}
-                        >
-                          <Icons.Trash2 />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

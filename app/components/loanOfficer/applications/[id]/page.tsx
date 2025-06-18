@@ -50,6 +50,7 @@ interface Note {
   date: string;
 }
 
+
 export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [comment, setComment] = useState<string>('');
@@ -119,6 +120,31 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
     }
   };
 
+  const handleDenyApplication = async () => {
+  try {
+    const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
+      method: "PUT", 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "Denied by LO",
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update status");
+    }
+
+    alert("Loan status changed to 'Denied'.");
+  } catch (error) {
+    console.error("Submission failed:", error);
+    alert("Something went wrong.");
+  }
+};
+
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -142,7 +168,9 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
           >
             Generate Loan Agreement
           </Link>
-            <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">
+            <button 
+            onClick={handleDenyApplication}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">
               Deny Application
             </button>
           </div>
