@@ -32,6 +32,15 @@ export default function ApplicationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [activeFilter, setActiveFilter] = useState('Pending');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [generatedUsername, setGeneratedUsername] = useState('');
+
+  const generateUsername = (fullName: string) => {
+    const parts = fullName.trim().toLowerCase().split(' ');
+    if (parts.length < 2) return ''; 
+    return parts[0].slice(0, 3) + parts[parts.length - 1];
+  };
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -97,6 +106,26 @@ export default function ApplicationsPage() {
   }).format(total);
 };
 
+const handleAction = async (id: string, status: 'Accepted' | 'Denied') => {
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+
+    if (response.ok) {
+      const updated = await response.json();
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.applicationId === updated.applicationId ? updated : app
+        )
+      );
+    }
+  } catch (error) {
+    console.error('Failed to update application:', error);
+  }
+};
 
 
 
@@ -178,7 +207,7 @@ export default function ApplicationsPage() {
           <table className="min-w-full">
             <thead>
               <tr>
-                {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Collectable Amount', 'Status'].map((heading) => (
+                {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Collectable Amount', 'Status', 'Action'].map((heading) => (
                   <th
                     key={heading}
                     className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -223,12 +252,109 @@ export default function ApplicationsPage() {
                     </span>
 
                   </td>
+
+                  <td className="px-6 py-4 space-x-2">
+                  <button
+                    className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+                    onClick={() => {
+                      setSelectedApp(application);
+                      setGeneratedUsername(generateUsername(application.appName));
+                      setShowModal(true);
+                    }}
+                  >
+                    Approve
+                  </button>
+
+                  <button
+                    className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700"
+                    onClick={() => handleAction(application.applicationId, 'Denied')}
+                  >
+                    Deny
+                  </button>
+                </td>
+
                 </tr>
               ))}
             </tbody>
           </table>
 
-          
+          {showModal && selectedApp && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Create Account</h2>
+      <p className="mb-2"><strong>Name:</strong> {selectedApp.appName}</p>
+      <p className="mb-4">
+        <strong>Generated Username:</strong> <span className="text-blue-600">{generatedUsername}</span>
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+          onClick={() => setShowModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            onClick={async () => {
+  try {
+    // Step 1: Create Borrower Account
+    const borrowerRes = await fetch("http://localhost:3001/borrowers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: generatedUsername,
+        name: selectedApp.appName,
+        role: "borrower",
+        applicationId: selectedApp.applicationId,
+      }),
+    });
+
+    if (!borrowerRes.ok) throw new Error("Failed to create borrower account");
+
+    // Step 2: Mark as Accepted
+    const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: "Accepted" }),
+    });
+
+    if (!updateRes.ok) throw new Error("Failed to update application status");
+
+    const updated = await updateRes.json();
+
+    // Step 3: Generate Loan
+    const loanRes = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
+      method: "POST"
+    });
+
+    if (!loanRes.ok) {
+      const err = await loanRes.json();
+      throw new Error(err?.error || "Failed to generate loan");
+    }
+
+    // Step 4: UI update
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.applicationId === updated.applicationId ? updated : app
+      )
+    );
+    setShowModal(false);
+    setSelectedApp(null);
+    alert("Account created and loan generated successfully.");
+  } catch (error: any) {
+    console.error("Error during borrower creation or loan generation:", error);
+    alert(`Error: ${error.message || "Something went wrong."}`);
+  }
+}}
+        >
+          Create Account
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
         </div>
       </div>
     </div>
