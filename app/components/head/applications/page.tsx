@@ -49,14 +49,29 @@ export default function ApplicationsPage() {
     fetchApplications();
   }, []);
 
-  const filteredApplications = applications.filter(application => {
-    const matchesSearch = Object.values(application).some(value => 
+  const filteredApplications = applications
+  .filter((application) => !['Pending', 'Denied by LO'].includes(application.status))
+  .map((application) => ({
+    ...application,
+    displayStatus: application.status === 'Endorsed' ? 'Pending' : application.status,
+  }))
+  .filter((application) => {
+    const matchesSearch = Object.values({
+      ...application,
+      status: application.displayStatus,
+    }).some((value) =>
       value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
     );
+
     if (!matchesSearch) return false;
     if (activeFilter === 'All') return true;
-    return application.status === activeFilter;
+
+    return application.displayStatus === activeFilter;
   });
+
+
+
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -115,14 +130,14 @@ export default function ApplicationsPage() {
 
 
         {/* Tabs for desktop */}
-          <div className="hidden w-130 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-            {['All', 'Pending', 'Accepted', 'Denied', 'Denied by LO', 'Onhold'].map((status) => (
+          <div className="hidden w-100 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold'].map((status) => (
               <button
                 key={status}
                 onClick={() => setActiveFilter(status)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                   activeFilter === status
-                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Denied by LO' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-600 shadow-sm`
+                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-600 shadow-sm`
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -180,7 +195,7 @@ export default function ApplicationsPage() {
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
-                    <Link href={`/components/loanOfficer/applications/${application.applicationId}`} className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href={`/components/manager/applications/${application.applicationId}`} className="text-blue-600 hover:text-blue-700 font-medium">
                       {application.applicationId}
                     </Link>
                   </td>
@@ -201,13 +216,14 @@ export default function ApplicationsPage() {
 
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      application.status === 'Accepted' ? 'bg-green-100 text-green-800' :
-                      application.status === 'Denied' ? 'bg-red-100 text-red-800' :
-                      application.status === 'Onhold' ? 'bg-orange-100 text-orange-800' :
+                      application.displayStatus === 'Accepted' ? 'bg-green-100 text-green-800' :
+                      application.displayStatus === 'Denied' ? 'bg-red-100 text-red-800' :
+                      application.displayStatus === 'Onhold' ? 'bg-orange-100 text-orange-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {application.status === 'Onhold' ? 'On Hold' : application.status}
+                      {application.displayStatus === 'Onhold' ? 'On Hold' : application.displayStatus}
                     </span>
+
                   </td>
                 </tr>
               ))}
