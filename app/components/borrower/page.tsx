@@ -6,7 +6,6 @@ import 'react-circular-progressbar/dist/styles.css';
 
 interface LoanDetails {
   loanId: string;
-  interestType: string;
   interestRate: number;
   releaseDate: string;
   startDate: string;
@@ -16,6 +15,8 @@ interface LoanDetails {
   status: string;
   remainingBalance: number;
   totalPayment: number;
+  creditScore: number;
+  paymentHistory: PaymentHistory[];
 }
 
 interface PaymentHistory {
@@ -28,209 +29,89 @@ interface PaymentHistory {
 }
 
 export default function BorrowerDashboard() {
-  const [creditScore] = useState(10);
-  const [loanDetails] = useState<LoanDetails>({
-    loanId: '2283',
-    interestType: 'SIMPLE',
-    interestRate: 4,
-    releaseDate: '03-22-28',
-    startDate: '04-22-28',
-    endDate: '03-22-29',
-    loanPeriod: 'Month',
-    numberOfPeriods: 12,
-    status: 'Active',
-    remainingBalance: 90000,
-    totalPayment: 30000,
-  });
+  const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const [paymentHistory] = useState<PaymentHistory[]>([
-    {
-      reference: 'VL091232434',
-      date: '04-22-2025',
-      balance: 90000,
-      periodAmount: 10000,
-      paidAmount: 10000,
-      mode: 'PayMongo',
-    },
-    {
-      reference: 'VL091232435',
-      date: '03-22-2025',
-      balance: 100000,
-      periodAmount: 10000,
-      paidAmount: 10000,
-      mode: 'Cash',
-    },
-    {
-      reference: 'VL091232436',
-      date: '02-22-2025',
-      balance: 110000,
-      periodAmount: 10000,
-      paidAmount: 10000,
-      mode: 'Paymongo',
-    },
-  ]);
+  useEffect(() => {
+    const borrowersId = localStorage.getItem('borrowersId');
+    if (!borrowersId) {
+      console.warn('No borrower ID found — logged out?');
+      setLoading(false);
+      return;
+    }
+
+    fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch loan');
+        return res.json();
+      })
+      .then(data => setLoanInfo(data))
+      .catch(err => console.error('Loan fetch error:', err))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="p-6 text-center">Loading loan info...</div>;
+  if (!loanInfo) return <div className="p-6 text-center text-red-500">No active loan found.</div>;
+
+  const {
+    loanId, interestRate, releaseDate,
+    startDate, endDate, loanPeriod, numberOfPeriods,
+    status, remainingBalance, totalPayment,
+    creditScore, paymentHistory
+  } = loanInfo;
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-8">
-        Welcome, <span className="text-red-600">Nichole Vine Alburo</span>!
+        Welcome, <span className="text-red-600">{loanId}</span>
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Credit Score Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-lg font-semibold mb-4">Your Credit Score</h2>
-          <p className="text-sm text-gray-600 mb-4">Based on your repayment history</p>
-          <div className="w-32 h-32 mx-auto">
+          <div className="w-32 h-32 mx-auto mb-4">
             <CircularProgressbar
               value={creditScore}
               maxValue={10}
               text={`${creditScore}`}
               styles={buildStyles({
-                pathColor: '#22c55e',
+                pathColor:
+                  creditScore >= 7.5 ? '#22c55e' :
+                  creditScore >= 5 ? '#eab308' :
+                  '#dc2626',
                 textColor: '#111827',
                 trailColor: '#e5e7eb',
               })}
             />
           </div>
-          <p className="text-center mt-4 text-gray-700">Good Standing</p>
+          <p className="text-center mt-2 text-gray-700">
+            {creditScore >= 7.5 ? 'Good Standing' :
+             creditScore >= 5 ? 'Fair Standing' :
+             'Poor Standing'}
+          </p>
         </div>
 
         {/* Current Loan Details */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Current Loan Details</h2>
-            <span className="text-sm text-gray-500">Loan ID: {loanDetails.loanId}</span>
+            <span className="text-sm text-gray-500">ID: {loanId}</span>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Interest Type:</p>
-              <p className="font-medium">{loanDetails.interestType}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Status:</p>
-              <p className="font-medium text-green-600">{loanDetails.status}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Interest Rate:</p>
-              <p className="font-medium">{loanDetails.interestRate}%</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Due Date:</p>
-              <p className="font-medium">{loanDetails.endDate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Release Date:</p>
-              <p className="font-medium">{loanDetails.releaseDate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Remaining Balance:</p>
-              <p className="font-medium">₱{loanDetails.remainingBalance.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Start Date:</p>
-              <p className="font-medium">{loanDetails.startDate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Payment:</p>
-              <p className="font-medium">₱{loanDetails.totalPayment.toLocaleString()}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">End Date:</p>
-              <p className="font-medium">{loanDetails.endDate}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Loan Period:</p>
-              <p className="font-medium">{loanDetails.loanPeriod}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Number of Periods:</p>
-              <p className="font-medium">{loanDetails.numberOfPeriods}</p>
-            </div>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><strong>Status:</strong> <span className="text-green-600">{status}</span></div>
+            <div><strong>Interest Rate:</strong> {interestRate}%</div>
+            <div><strong>Due Date:</strong> {endDate}</div>
+            <div><strong>Release Date:</strong> {releaseDate}</div>
+            <div><strong>Start Date:</strong> {startDate}</div>
+            <div><strong>Loan Period:</strong> {loanPeriod}</div>
+            <div><strong>Number of Payments:</strong> {numberOfPeriods}</div>
           </div>
         </div>
 
-        {/* Payment Progress */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold mb-4">Payment Progress</h2>
-          <div className="w-32 h-32 mx-auto mb-4">
-            <CircularProgressbar
-              value={10}
-              text={`10%`}
-              styles={buildStyles({
-                pathColor: '#22c55e',
-                textColor: '#111827',
-                trailColor: '#e5e7eb',
-              })}
-            />
-          </div>
-          <p className="text-center text-sm text-gray-600 mb-4">Paid</p>
-          <button className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors">
-            Pay Now
-          </button>
-          <p className="text-center text-sm text-gray-600 mt-4">
-            You are not yet eligible for Reloan
-          </p>
-        </div>
       </div>
 
-      {/* Payment History Table */}
-      <div className="mt-8 bg-white rounded-lg shadow-md overflow-x-auto">
-        <table className="min-w-full">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Reference #
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Balance
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Period Amount
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Paid Amount
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Mode
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                E-Receipt
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {paymentHistory.map((payment, index) => (
-              <tr key={index}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {payment.reference}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {payment.date}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ₱{payment.balance.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ₱{payment.periodAmount.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  ₱{payment.paidAmount.toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {payment.mode}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                  <button className="hover:text-blue-800">Download</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    
     </div>
   );
-} 
+}

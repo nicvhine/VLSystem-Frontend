@@ -34,8 +34,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
     const endpoint =
       forgotRole === 'borrower'
-        ? 'http://localhost:3001/borrowers/login' 
-        : 'http://localhost:3001/users/login';   
+        ? 'http://localhost:3001/borrowers/login'
+        : 'http://localhost:3001/users/login';
 
     try {
       const res = await fetch(endpoint, {
@@ -54,8 +54,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       if (res.ok) {
         console.log('Login success data:', data);
+
         localStorage.setItem('fullName', data.fullName || data.name || data.username);
         localStorage.setItem('role', forgotRole);
+
+        if (forgotRole === 'borrower' && data.borrowersId) {
+          localStorage.setItem('borrowersId', data.borrowersId); 
+        }
+
         onClose();
 
         const role = data.role?.toLowerCase() || forgotRole;
