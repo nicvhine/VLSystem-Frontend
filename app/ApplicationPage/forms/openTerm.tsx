@@ -7,14 +7,14 @@ const API_URL = "http://localhost:3001/loan-applications/open-term";
 
 type LoanOption = {
   amount: number;
-  months: number;
   interest: number;
 };
 
 const loanOptions: LoanOption[] = [
-  { amount: 10000, months: 6, interest: 1.5 },
-  { amount: 20000, months: 12, interest: 1.2 },
-  { amount: 50000, months: 24, interest: 1.0 },
+  { amount: 50000, interest: 6 },
+  { amount: 100000, interest: 5 },
+  { amount: 200000, interest: 4 },
+  { amount: 500000, interest: 3 },
 ];
 
 export default function OpenTermForm() {
@@ -77,7 +77,6 @@ export default function OpenTermForm() {
         return;
       }
       loanAmount = selectedLoan.amount;
-      loanTerms = selectedLoan.months;
       interestRate = selectedLoan.interest;
     }
 
@@ -226,22 +225,7 @@ export default function OpenTermForm() {
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block font-medium mb-2 text-gray-700">Loan Terms (months):</label>
-                <input 
-                  className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
-                  value={selectedLoan?.months || ""} 
-                  readOnly 
-                />
-              </div>
-              <div>
-                <label className="block font-medium mb-2 text-gray-700">Monthly Interest Rate (%):</label>
-                <input 
-                  className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
-                  value={selectedLoan?.interest || ""} 
-                  readOnly 
-                />
-              </div>
+
             </>
           ) : (
             <>

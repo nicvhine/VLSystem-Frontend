@@ -12,9 +12,12 @@ type LoanOption = {
 };
 
 const loanOptions: LoanOption[] = [
-  { amount: 10000, months: 6, interest: 1.5 },
-  { amount: 20000, months: 12, interest: 1.2 },
-  { amount: 50000, months: 24, interest: 1.0 },
+  { amount: 20000, months: 8, interest: 7 },
+  { amount: 50000, months: 10, interest: 5 },
+  { amount: 100000, months: 18, interest: 4 },
+  { amount: 200000, months: 24, interest: 3 },
+  { amount: 300000, months: 36, interest: 2 },
+  { amount: 500000, months: 60, interest: 1.5 },
 ];
 
 export default function WithCollateralForm() {

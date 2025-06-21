@@ -27,13 +27,7 @@ export default function ApplicationPage() {
       setDocuments(e.target.files);
     }
   };
-  
-  const loanOptions = [
-    { amount: 10000, interest: 10, months: 5 },
-    { amount: 15000, interest: 10, months: 6 },
-    { amount: 20000, interest: 10, months: 8 },
-    { amount: 30000, interest: 10, months: 10 },
-  ];
+
 
 
   const loanTypes = [
