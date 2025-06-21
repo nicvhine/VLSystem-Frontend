@@ -97,6 +97,14 @@ export default function LoansPage() {
     }).format(amount);
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'active':
@@ -206,13 +214,13 @@ export default function LoansPage() {
                     onClick={() => setSelectedLoan(loan.loanId)}
                   >
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      <Link href={`/head/loans/${loan.loanId}`}>
+                      <Link href={`/components/head/loans/${loan.loanId}`}>
                         {loan.loanId}
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{loan.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{loan.dateReleased}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{loan.dateReleased}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateReleased)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateReleased)}</td> 
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.principal)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.balance)}</td>
                     <td className="px-6 py-4">
