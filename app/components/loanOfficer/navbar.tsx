@@ -48,7 +48,7 @@ export default function Navbar() {
       <div className="w-full px-4 py-3">
         <div className="flex items-center justify-between">
           <Link
-            href="/dashboard"
+            href="dashboard"
             className="text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent"
           >
             VLSystem

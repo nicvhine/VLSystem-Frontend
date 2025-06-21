@@ -6,6 +6,7 @@ import 'react-circular-progressbar/dist/styles.css';
 
 interface LoanDetails {
   loanId: string;
+  name: string;
   interestRate: number;
   releaseDate: string;
   startDate: string;
@@ -54,7 +55,7 @@ export default function BorrowerDashboard() {
   if (!loanInfo) return <div className="p-6 text-center text-red-500">No active loan found.</div>;
 
   const {
-    loanId, interestRate, releaseDate,
+    loanId, name, interestRate, releaseDate,
     startDate, endDate, loanPeriod, numberOfPeriods,
     status, remainingBalance, totalPayment,
     creditScore, paymentHistory
@@ -63,7 +64,7 @@ export default function BorrowerDashboard() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-8">
-        Welcome, <span className="text-red-600">{loanId}</span>
+        Welcome, <span className="text-red-600">{name}</span>
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
