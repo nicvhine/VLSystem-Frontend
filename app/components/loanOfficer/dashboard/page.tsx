@@ -36,72 +36,121 @@ export default function Dashboard() {
     {
       number: stats.approved,
       label: "Approved Applications",
-      bgGradient: "from-green-500 to-green-600",
+      bgGradient: "from-emerald-500 to-emerald-600",
+      iconColor: "text-emerald-100",
+      shadowColor: "shadow-emerald-500/20",
     },
     {
       number: stats.denied,
       label: "Denied Applications",
-      bgGradient: "from-red-500 to-red-600",
+      bgGradient: "from-rose-500 to-rose-600",
+      iconColor: "text-rose-100",
+      shadowColor: "shadow-rose-500/20",
     },
     {
       number: stats.pending,
       label: "Pending Applications",
-      bgGradient: "from-yellow-500 to-yellow-600",
+      bgGradient: "from-amber-500 to-amber-600",
+      iconColor: "text-amber-100",
+      shadowColor: "shadow-amber-500/20",
     },
     {
       number: stats.onHold,
       label: "On Hold Applications",
       bgGradient: "from-orange-500 to-orange-600",
+      iconColor: "text-orange-100",
+      shadowColor: "shadow-orange-500/20",
     }
   ];
 
+  const totalApplications = stats.approved + stats.denied + stats.pending + stats.onHold;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col overflow-hidden">
       <Navbar />
-      <main className="mx-auto px-4 py-6">
-
-        {/* Status Stats Grid */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          {statConfig.map((stat, index) => (
-            <div
-              key={index}
-              className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${stat.bgGradient} p-6 text-white shadow-lg transition-transform hover:scale-[1.02]`}
-            >
-              <div className="relative z-10">
-                <div className="text-2xl font-bold mb-1">{stat.number}</div>
-                <div className="text-sm text-white/90">{stat.label}</div>
-              </div>
-              <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-white/10 rounded-full blur-2xl transform rotate-45" />
-            </div>
-          ))}
-        </div>
-
-        {/* Loan Type Stats Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          {typeStats.map((type, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl p-5 border shadow-sm hover:shadow-md transition"
-            >
-              <div className="text-xl font-bold text-gray-700">{type.count}</div>
-              <div className="text-sm text-gray-500 mt-1">{type.loanType}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Loan Chart */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <div className="text-lg font-semibold mb-4 text-gray-800">Loan Application Statistics</div>
-          <div className="h-80">
-            <LoanStatsChart
-              approved={stats.approved}
-              denied={stats.denied}
-              pending={stats.pending}
-              onHold={stats.onHold}
-            />
+      <main className="flex-1 px-6 py-4 overflow-auto">
+        <div className="w-full h-full flex flex-col">
+          
+          {/* Header Section - More compact */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-800 mb-2">Dashboard Overview</h1>
+            <p className="text-slate-600">Monitor your loan applications and track performance metrics</p>
           </div>
-        </div>
 
+          {/* Status Stats Grid - Smaller size */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            {statConfig.map((stat, index) => (
+              <div
+                key={index}
+                className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${stat.bgGradient} p-4 text-white shadow-lg ${stat.shadowColor} transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer`}
+              >
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-2xl font-bold tracking-tight">{stat.number}</div>
+                    <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                      {totalApplications > 0 ? Math.round((stat.number / totalApplications) * 100) : 0}%
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-white/90 leading-relaxed">{stat.label}</div>
+                </div>
+                <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl transition-all duration-300 group-hover:scale-150" />
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/5 rounded-full blur-lg" />
+              </div>
+            ))}
+          </div>
+
+          {/* Main Content Grid - Smaller gaps */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-0">
+            
+            {/* Loan Type Stats - Wider */}
+            <div className="lg:col-span-2">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-white/20 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-slate-800">Loan Types</h2>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
+                <div className="space-y-3 flex-1">
+                  {typeStats.map((type, index) => (
+                    <div
+                      key={index}
+                      className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200/50 hover:border-slate-300 transition-all duration-200 hover:shadow-md"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                        <div>
+                          <div className="text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
+                            {type.loanType}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-xl font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                        {type.count}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Chart Section - Much wider */}
+            <div className="lg:col-span-3">
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-white/20 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-slate-800">Monthly Statistics</h2>
+                  <div className="flex items-center space-x-2 text-sm text-slate-500">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Live Data</span>
+                  </div>
+                </div>
+                <div className="flex-1 relative min-h-0">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-50/50 to-transparent rounded-xl"></div>
+                  <LoanStatsChart />
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </main>
     </div>
   );
