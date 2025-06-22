@@ -150,9 +150,6 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                 <h2 className="text-xl font-semibold mb-4">Address Information</h2>
                 <div className="space-y-3">
                   <div><span className="text-sm text-gray-500">Home Address</span><div className="font-medium">{client.address}</div></div>
-                  <div><span className="text-sm text-gray-500">Barangay</span><div className="font-medium">{client.barangay}</div></div>
-                  <div><span className="text-sm text-gray-500">Municipality</span><div className="font-medium">{client.municipality}</div></div>
-                  <div><span className="text-sm text-gray-500">Province</span><div className="font-medium">{client.province}</div></div>
                 </div>
               </div>
               <div>
