@@ -20,6 +20,8 @@ interface CurrentLoan {
   startDate: string;
   maturityDate: string;
   remainingBalance: number;
+  totalPayable: number;
+  dateDisbursed: string;
 }
 
 interface LoanDetails {
@@ -54,6 +56,14 @@ interface LoanDetails {
   currentLoan?: CurrentLoan;
   imageUrl?: string;
 }
+
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
 
 export default function LoansDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("loan");
@@ -194,15 +204,15 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                   <h2 className="text-xl font-semibold mb-4">Current Loan Details</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-3">
-                      <div><span className="text-sm text-gray-500">Loan Purpose</span><div className="font-medium">{client.currentLoan.purpose}</div></div>
                       <div><span className="text-sm text-gray-500">Loan Type</span><div className="font-medium">{client.currentLoan.type}</div></div>
-                      <div><span className="text-sm text-gray-500">Loan Amount</span><div className="font-medium">{client.currentLoan.amount}</div></div>
-                      <div><span className="text-sm text-gray-500">Terms</span><div className="font-medium">{client.currentLoan.terms} months</div></div>
+                      <div><span className="text-sm text-gray-500">Principal Amount</span><div className="font-medium">{client.currentLoan.amount}</div></div> 
+                      <div><span className="text-sm text-gray-500">Interest Rate</span><div className="font-medium">{client.currentLoan.interestRate}% monthly</div></div>
+                               <div><span className="text-sm text-gray-500">Loan Term</span><div className="font-medium">{client.currentLoan.terms} months</div></div>
+                      <div><span className="text-sm text-gray-500">Total Payable Amount</span><div className="font-medium">{client.currentLoan.totalPayable}</div></div>
                     </div>
                     <div className="space-y-3">
-                      <div><span className="text-sm text-gray-500">Interest Rate</span><div className="font-medium">{client.currentLoan.interestRate}% monthly</div></div>
+                      <div><span className="text-sm text-gray-500">Disbursed Date</span><div className="font-medium">{formatDate(client.currentLoan.dateDisbursed)}</div></div>
                       <div><span className="text-sm text-gray-500">Payment Schedule</span><div className="font-medium">{client.currentLoan.paymentSchedule}</div></div>
-                      <div><span className="text-sm text-gray-500">Start Date</span><div className="font-medium">{client.currentLoan.startDate}</div></div>
                       <div><span className="text-sm text-gray-500">Maturity Date</span><div className="font-medium">{client.currentLoan.maturityDate}</div></div>
                     </div>
                   </div>

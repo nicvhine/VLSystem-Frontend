@@ -82,7 +82,26 @@ export default function ApplicationsPage() {
   }).format(total);
 };
 
+const handleAction = async (id: string, status: 'Disbursed') => {
+  try {
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
 
+    if (response.ok) {
+      const updated = await response.json();
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.applicationId === updated.applicationId ? updated : app
+        )
+      );
+    }
+  } catch (error) {
+    console.error('Failed to update application:', error);
+  }
+};
 
 
   return (
@@ -104,7 +123,7 @@ export default function ApplicationsPage() {
             onChange={(e) => setActiveFilter(e.target.value)}
             className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
           >
-            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold'].map((status) => (
+            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold', 'Ready for Disbursement'].map((status) => (
               <option key={status} value={status}>
                 {status === 'Onhold' ? 'On Hold' : status}
               </option>
@@ -115,14 +134,14 @@ export default function ApplicationsPage() {
 
 
         {/* Tabs for desktop */}
-          <div className="hidden w-130 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-            {['All', 'Pending', 'Accepted', 'Denied', 'Denied by LO', 'Onhold'].map((status) => (
+          <div className="hidden w-180 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+            {['All', 'Pending', 'Accepted', 'Denied', 'Denied by LO', 'Onhold', 'Ready for Disbursement'].map((status) => (
               <button
                 key={status}
                 onClick={() => setActiveFilter(status)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                   activeFilter === status
-                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Denied by LO' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-600 shadow-sm`
+                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Denied by LO' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : status === 'Ready for Disbursement' ? 'black' : 'blue '}-600 shadow-sm`
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -209,6 +228,15 @@ export default function ApplicationsPage() {
                       {application.status === 'Onhold' ? 'On Hold' : application.status}
                     </span>
                   </td>
+
+                  <td className="px-6 py-4 space-x-2">
+                  <button
+                    className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+                    onClick={() => handleAction(application.applicationId, 'Disbursed')}
+                  >
+                    Disbursed
+                  </button>
+                </td>
                 </tr>
               ))}
             </tbody>
