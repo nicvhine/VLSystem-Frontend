@@ -65,93 +65,146 @@ export default function Dashboard() {
 
   const totalApplications = stats.approved + stats.denied + stats.pending + stats.onHold;
 
+  const handleViewApplications = () => {
+    // Navigate to applications page
+    console.log('Navigate to applications');
+  };
+
+  const handleNewApplication = () => {
+    // Navigate to new application form
+    console.log('Create new application');
+  };
+
+  const handleGenerateReport = () => {
+    // Generate report
+    console.log('Generate report');
+  };
+
   return (
     <div className="h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex flex-col overflow-hidden">
       <Navbar />
       <main className="flex-1 px-6 py-4 overflow-auto">
-        <div className="w-full h-full flex flex-col">
-          
-          {/* Header Section - More compact */}
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-slate-800 mb-2">Dashboard Overview</h1>
-            <p className="text-slate-600">Monitor your loan applications and track performance metrics</p>
-          </div>
+          <div className="w-full h-full flex flex-col">
+            
+            {/* Header Section */}
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-slate-800 mb-2">Dashboard Overview</h1>
+              <p className="text-slate-600">Monitor your loan applications and track performance metrics</p>
+            </div>
 
-          {/* Status Stats Grid - Smaller size */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-            {statConfig.map((stat, index) => (
+            {/* Status Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {statConfig.map((stat, index) => (
+                <div
+            key={index}
+            className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${stat.bgGradient} p-4 text-white shadow-lg ${stat.shadowColor} transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer`}
+                >
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-2xl font-bold tracking-tight">{stat.number}</div>
+                <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
+                  {totalApplications > 0 ? Math.round((stat.number / totalApplications) * 100) : 0}%
+                </div>
+              </div>
+              <div className="text-sm font-medium text-white/90 leading-relaxed">{stat.label}</div>
+            </div>
+            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl transition-all duration-300 group-hover:scale-150" />
+            <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/5 rounded-full blur-lg" />
+                </div>
+              ))}
+            </div>
+
+            {/* Main Content - Responsive Flex Layout */}
+            <div className="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-y-4 lg:gap-y-0 lg:gap-x-6 w-full">
+              
+              {/* Quick Actions */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/20 h-[340px] w-full max-w-[370px]">
+                <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-slate-800">Quick Actions</h2>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                </div>
+                <div className="space-y-3">
+            <button 
+              onClick={handleViewApplications}
+              className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200/50 hover:border-blue-300 transition-all duration-200 hover:shadow-md"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
+              View Applications
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-blue-600 font-semibold">
+                →
+              </div>
+            </button>
+            
+            
+            <button 
+              onClick={handleGenerateReport}
+              className="group w-full flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200/50 hover:border-slate-300 transition-all duration-200 hover:shadow-md"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full"></div>
+                <div>
+                  <div className="text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
+              Generate Report
+                  </div>
+                </div>
+              </div>
+              <div className="text-sm text-purple-600 font-semibold">
+                📊
+              </div>
+            </button>
+                </div>
+              </div>
+
+              {/* Loan Type Stats */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/20 h-[340px] w-full max-w-[370px]">
+                <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-slate-800">Loan Types</h2>
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
+                <div className="space-y-3">
+            {typeStats.map((type, index) => (
               <div
                 key={index}
-                className={`group relative overflow-hidden rounded-xl bg-gradient-to-br ${stat.bgGradient} p-4 text-white shadow-lg ${stat.shadowColor} transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer`}
+                className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200/50 hover:border-slate-300 transition-all duration-200 hover:shadow-md"
               >
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="text-2xl font-bold tracking-tight">{stat.number}</div>
-                    <div className="text-xs bg-white/20 px-2 py-1 rounded-full backdrop-blur-sm">
-                      {totalApplications > 0 ? Math.round((stat.number / totalApplications) * 100) : 0}%
-                    </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                  <div>
+              <div className="text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
+                {type.loanType}
+              </div>
                   </div>
-                  <div className="text-sm font-medium text-white/90 leading-relaxed">{stat.label}</div>
                 </div>
-                <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/10 rounded-full blur-xl transition-all duration-300 group-hover:scale-150" />
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-white/5 rounded-full blur-lg" />
+                <div className="text-xl font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
+                  {type.count}
+                </div>
               </div>
             ))}
-          </div>
-
-          {/* Main Content Grid - Smaller gaps */}
-          <div className="flex-1 grid grid-cols-1 lg:grid-cols-5 gap-6 min-h-0">
-            
-            {/* Loan Type Stats - Wider */}
-            <div className="lg:col-span-2">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-white/20 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-slate-800">Loan Types</h2>
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                </div>
-                <div className="space-y-3 flex-1">
-                  {typeStats.map((type, index) => (
-                    <div
-                      key={index}
-                      className="group flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-white rounded-lg border border-slate-200/50 hover:border-slate-300 transition-all duration-200 hover:shadow-md"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                        <div>
-                          <div className="text-sm font-semibold text-slate-800 group-hover:text-slate-900 transition-colors">
-                            {type.loanType}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-xl font-bold text-slate-700 group-hover:text-slate-900 transition-colors">
-                        {type.count}
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
-            </div>
 
-            {/* Chart Section - Much wider */}
-            <div className="lg:col-span-3">
-              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-white/20 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-slate-800">Monthly Statistics</h2>
-                  <div className="flex items-center space-x-2 text-sm text-slate-500">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>Live Data</span>
-                  </div>
-                </div>
-                <div className="flex-1 relative min-h-0">
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-50/50 to-transparent rounded-xl"></div>
-                  <LoanStatsChart />
-                </div>
-              </div>
+              {/* Chart Section */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-white/20 h-[340px] w-full max-w-[600px] flex flex-col">
+  <div className="flex items-center justify-between mb-6">
+    <h2 className="text-lg font-bold text-slate-800">Monthly Statistics</h2>
+    <div className="flex items-center space-x-2 text-sm text-slate-500">
+      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+      <span>Live Data</span>
+    </div>
+  </div>
+  <div className="flex-1 relative min-h-0 h-[220px]">
+    <LoanStatsChart />
+  </div>
+</div>
             </div>
           </div>
-
-        </div>
-      </main>
+              </main>
     </div>
   );
 }
