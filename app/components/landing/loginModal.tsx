@@ -25,65 +25,78 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   if (!isOpen && !showForgotModal) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!username || !password || !forgotRole) {
-      alert('Please fill in all fields and select a role');
+  if (!username || !password) {
+    alert('Please enter both username and password.');
+    return;
+  }
+
+  try {
+    const borrowerRes = await fetch('http://localhost:3001/borrowers/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (borrowerRes.ok) {
+    const data = await borrowerRes.json();
+    console.log('Logged in as borrower:', data);
+
+    localStorage.setItem('fullName', data.fullName || data.name || data.username);
+    localStorage.setItem('role', 'borrower');
+    if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
+
+    if (data.isFirstLogin) {
+      localStorage.setItem('forcePasswordChange', 'true');
+    } else {
+      localStorage.removeItem('forcePasswordChange');
+    }
+
+    onClose();
+    router.push('components/borrower');
+    return;
+  }
+
+
+    const staffRes = await fetch('http://localhost:3001/users/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (staffRes.ok) {
+      const data = await staffRes.json();
+      console.log('Logged in as staff:', data);
+
+      localStorage.setItem('fullName', data.fullName || data.name || data.username);
+      localStorage.setItem('role', data.role?.toLowerCase() || 'staff');
+
+      onClose();
+
+      switch (data.role?.toLowerCase()) {
+        case 'head':
+          router.push('components/head');
+          break;
+        case 'manager':
+          router.push('components/manager');
+          break;
+        case 'loan officer':
+          router.push('components/loanOfficer');
+          break;
+        default:
+          router.push('/');
+      }
       return;
     }
 
-    const endpoint =
-      forgotRole === 'borrower'
-        ? 'http://localhost:3001/borrowers/login'
-        : 'http://localhost:3001/users/login';
+    alert('Invalid credentials or user not found.');
+  } catch (error) {
+    console.error('Login error:', error);
+    alert('Error connecting to the server.');
+  }
+};
 
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        alert('Invalid server response');
-        return;
-      }
-
-      if (res.ok) {
-        console.log('Login success data:', data);
-
-        localStorage.setItem('fullName', data.fullName || data.name || data.username);
-        localStorage.setItem('role', forgotRole);
-
-        if (forgotRole === 'borrower' && data.borrowersId) {
-          localStorage.setItem('borrowersId', data.borrowersId); 
-        }
-
-        onClose();
-
-        const role = data.role?.toLowerCase() || forgotRole;
-
-        if (role === 'head') {
-          router.push('components/head');
-        } else if (role === 'manager') {
-          router.push('components/manager');
-        } else if (role === 'loan officer') {
-          router.push('components/loanOfficer');
-        } else if (role === 'borrower') {
-          router.push('components/borrower');
-        } else {
-          router.push('/');
-        }
-      } else {
-        alert(data.message || 'Login failed');
-      }
-    } catch (error) {
-      alert('Error connecting to server');
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
@@ -140,19 +153,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               Login to your VLSystem account
             </p>
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label className="block mb-1 text-sm text-gray-700">Login as:</label>
-                <select
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
-                  value={forgotRole}
-                  onChange={(e) => setForgotRole(e.target.value as 'borrower' | 'staff')}
-                  required
-                >
-                  <option value="" disabled>Select role</option>
-                  <option value="staff">Internal Staff</option>
-                  <option value="borrower">Borrower</option>
-                </select>
-              </div>
+
               <input
                 type="text"
                 placeholder="Username"

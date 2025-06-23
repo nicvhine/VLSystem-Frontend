@@ -78,10 +78,6 @@ export default function ApplicationsPage() {
     return application.displayStatus === activeFilter;
   });
 
-
-
-
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
@@ -98,7 +94,7 @@ export default function ApplicationsPage() {
   };
 
   const collectableAmount = (principal: number, interestRate: number, termMonths: number) => {
-  const termYears = termMonths / 12; // Convert months to years
+  const termYears = termMonths / 12;
   const total = principal + (principal * (interestRate / 100) * termYears);
   return new Intl.NumberFormat('en-PH', {
     style: 'currency',
@@ -106,7 +102,7 @@ export default function ApplicationsPage() {
   }).format(total);
 };
 
-const handleAction = async (id: string, status: 'Accepted' | 'Denied') => {
+const handleAction = async (id: string, status: 'Disbursed') => {
   try {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
@@ -159,14 +155,14 @@ const handleAction = async (id: string, status: 'Accepted' | 'Denied') => {
 
 
         {/* Tabs for desktop */}
-          <div className="hidden w-100 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold'].map((status) => (
+          <div className="hidden w-130 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold', 'Disbursed'].map((status) => (
               <button
                 key={status}
                 onClick={() => setActiveFilter(status)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                   activeFilter === status
-                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-600 shadow-sm`
+                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : status === 'Disbursed' ? 'yellow' : 'blue'}-600 shadow-sm`
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -254,24 +250,50 @@ const handleAction = async (id: string, status: 'Accepted' | 'Denied') => {
                   </td>
 
                   <td className="px-6 py-4 space-x-2">
-                  <button
-                    className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
-                    onClick={() => {
-                      setSelectedApp(application);
-                      setGeneratedUsername(generateUsername(application.appName));
-                      setShowModal(true);
-                    }}
-                  >
-                    Approve
-                  </button>
+                    
+                  {application.displayStatus === 'Pending' && (
+                    <button
+                      className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`${API_URL}/${application.applicationId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ status: 'Ready for Disbursement' }),
+                          });
 
-                  <button
-                    className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700"
-                    onClick={() => handleAction(application.applicationId, 'Denied')}
-                  >
-                    Deny
-                  </button>
+                          if (!response.ok) throw new Error("Failed to endorse application");
+
+                          const updated = await response.json();
+                          setApplications((prev) =>
+                            prev.map((app) =>
+                              app.applicationId === updated.applicationId ? updated : app
+                            )
+                          );
+                        } catch (err) {
+                          console.error(err);
+                          alert("Failed to endorse for disbursement.");
+                        }
+                      }}
+                    >
+                      Endorse for Disbursement
+                    </button>
+                  )}
+
+                  {application.displayStatus === 'Disbursed' && (
+                    <button
+                      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+                      onClick={() => {
+                        setSelectedApp(application);
+                        setGeneratedUsername(generateUsername(application.appName));
+                        setShowModal(true);
+                      }}
+                    >
+                      Create Account
+                    </button>
+                  )}
                 </td>
+
 
                 </tr>
               ))}
