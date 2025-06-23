@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import ChangePasswordModal from './components/forceChange';
 
 interface LoanDetails {
   loanId: string;
@@ -32,6 +33,15 @@ interface PaymentHistory {
 export default function BorrowerDashboard() {
   const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+
+
+  useEffect(() => {
+  const mustChange = localStorage.getItem('forcePasswordChange');
+  if (mustChange === 'true') {
+    setShowChangePasswordModal(true);
+  }
+}, []);
 
   useEffect(() => {
     const borrowersId = localStorage.getItem('borrowersId');
@@ -112,7 +122,10 @@ export default function BorrowerDashboard() {
 
       </div>
 
-    
+    {showChangePasswordModal && (
+  <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+)}
+
     </div>
   );
 }
