@@ -6,8 +6,11 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation, Autoplay } from 'swiper/modules';
+import TrackModal from './trackModal';
 
 export default function HeroSection() {
+  const [isTrackOpen, setIsTrackOpen] = useState(false);
+
   const slides = [
     { img: './image1.jpg', alt: 'Slide 1' },
     { img: '/image2.jpg', alt: 'Slide 2' },
@@ -36,7 +39,7 @@ export default function HeroSection() {
             </Link>
 
             <button
-              //onClick={() => setIsTrackOpen(true)}
+              onClick={() => setIsTrackOpen(true)}
               className="bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition"
             >
               Track Application
@@ -71,6 +74,9 @@ export default function HeroSection() {
           <div className="custom-prev swiper-button-prev"></div>
           <div className="custom-next swiper-button-next"></div>
         </div>
+
+      <TrackModal isOpen={isTrackOpen} onClose={() => setIsTrackOpen(false)} />
+
       </div>
     </section>
   );
