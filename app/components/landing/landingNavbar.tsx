@@ -5,21 +5,26 @@ import { useState } from 'react';
 import LoginModal from './loginModal';
 import SimulatorModal from './loanSimulator';
 
-export default function LandingNavbar() {
+interface LandingNavbarProps {
+  language: 'en' | 'ceb';
+  setLanguage: (lang: 'en' | 'ceb') => void;
+}
+
+export default function LandingNavbar({ language, setLanguage }: LandingNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const navItems = [
-    { name: 'Loan Simulator', href: '#', onClick: () => setIsCalculationOpen(true) },
+    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => setIsCalculationOpen(true) },
     { name: 'Team', href: '#team' },
-    { name: 'About Us', href: '#about' },
-    { name: 'Contact Us', href: '#footer' },
+    { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: '#about' },
+    { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer' },
   ];
 
   return (
     <header className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-md sticky top-0 z-50">
-     <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link
@@ -31,7 +36,35 @@ export default function LandingNavbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden sm:flex items-center gap-9">
-            {navItems.map((item) => (
+            {/* Language Toggle - left of Loan Simulator */}
+            <label className="flex items-center cursor-pointer mr-2">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={language === 'ceb'}
+                onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
+              />
+              <div className="relative w-12 h-6 bg-gray-300 rounded-full transition-all">
+                <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
+              </div>
+              <span className="ml-3 text-sm font-medium text-gray-900">
+                {language === 'en' ? 'English' : 'Cebuano'}
+              </span>
+            </label>
+            {/* Loan Simulator (first nav item) */}
+            <Link
+              key={navItems[0].name}
+              href={navItems[0].href}
+              onClick={(e) => {
+                e.preventDefault();
+                if (navItems[0].onClick) navItems[0].onClick();
+              }}
+              className="text-sm font-medium text-black hover:text-gray-900 transition"
+            >
+              {navItems[0].name}
+            </Link>
+            {/* Other nav items */}
+            {navItems.slice(1).map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
@@ -50,7 +83,7 @@ export default function LandingNavbar() {
               onClick={() => setIsLoginOpen(true)}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
             >
-              Login
+              {language === 'en' ? 'Login' : 'Sulod'}
             </button>
           </nav>
 
@@ -81,9 +114,37 @@ export default function LandingNavbar() {
         {/* Mobile menu */}
         <div className={`sm:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-4`}>
           <div className="flex flex-col gap-4">
-            {navItems.map((item) => (
+            {/* Language Toggle - left of Loan Simulator */}
+            <label className="flex items-center cursor-pointer mb-2">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={language === 'ceb'}
+                onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
+              />
+              <div className="relative w-12 h-6 bg-gray-300 rounded-full transition-all">
+                <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
+              </div>
+              <span className="ml-3 text-sm font-medium text-gray-900">
+                {language === 'en' ? 'English' : 'Cebuano'}
+              </span>
+            </label>
+            {/* Loan Simulator (first nav item) */}
+            <Link
+              key={navItems[0].name + '-mobile'}
+              href={navItems[0].href}
+              onClick={(e) => {
+                e.preventDefault();
+                if (navItems[0].onClick) navItems[0].onClick();
+              }}
+              className="text-base font-medium text-gray-900 hover:text-gray-700"
+            >
+              {navItems[0].name}
+            </Link>
+            {/* Other nav items */}
+            {navItems.slice(1).map((item) => (
               <Link
-                key={item.name}
+                key={item.name + '-mobile'}
                 href={item.href}
                 onClick={(e) => {
                   if (item.onClick) {
@@ -100,15 +161,17 @@ export default function LandingNavbar() {
               onClick={() => setIsLoginOpen(true)}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full"
             >
-              Login
+              {language === 'en' ? 'Login' : 'Sulod'}
             </button>
           </div>
         </div>
       </div>
 
       {/* Modals */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
-      <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} />
+      {/* @ts-expect-error: language prop is supported in our LoginModal and SimulatorModal */}
+      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
+      {/* @ts-expect-error: language prop is supported in our LoginModal and SimulatorModal */}
+      <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} language={language} />
     </header>
   );
 }

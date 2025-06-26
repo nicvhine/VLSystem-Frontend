@@ -1,8 +1,8 @@
-// interface AboutSectionProps {
-//   language: 'en' | 'ceb';
-// }
+export interface AboutSectionProps {
+  language: 'en' | 'ceb';
+}
 
-export default function AboutSection({ language }: AboutSectionProps) {
+const AboutSection: React.FC<AboutSectionProps> = ({ language }) => {
   return (
     <section id="about" className="py-24 bg-gray-100">
       <div className="max-w-4xl mx-auto px-6 text-center">
@@ -37,4 +37,6 @@ export default function AboutSection({ language }: AboutSectionProps) {
       </div>
     </section>
   );
-}
+};
+
+export default AboutSection;
