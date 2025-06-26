@@ -24,11 +24,12 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
 
       if (res.ok) {
         alert("Password changed successfully.");
-        localStorage.removeItem('forcePasswordChange');
-        onClose();
+        localStorage.removeItem('forcePasswordChange'); 
+        onClose(); 
       } else {
         alert(result.message || "Failed to change password");
       }
+
     } catch (error) {
       console.error("Password change error:", error);
       alert("Something went wrong");

@@ -14,10 +14,9 @@ useEffect(() => {
   if (mustChange === 'true') {
     setShowChangePasswordModal(true);
   }
-  
-  
 }, []);
-    return(
+
+return(
         <div className="min-h-screen bg-white">
             < Navbar/>
 
