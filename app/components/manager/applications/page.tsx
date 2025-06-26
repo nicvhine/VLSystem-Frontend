@@ -45,12 +45,7 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(API_URL, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
+        const response = await fetch (API_URL);
         const data = await response.json();
         setApplications(data);
       } catch (error) {
@@ -109,13 +104,9 @@ export default function ApplicationsPage() {
 
 const handleAction = async (id: string, status: 'Disbursed') => {
   try {
-    const token = localStorage.getItem('token');
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
 
@@ -329,14 +320,10 @@ const handleAction = async (id: string, status: 'Disbursed') => {
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
             onClick={async () => {
   try {
-    const token = localStorage.getItem('token');
     // Step 1: Create Borrower Account
     const borrowerRes = await fetch("http://localhost:3001/borrowers", {
       method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         username: generatedUsername,
         name: selectedApp.appName,
@@ -350,10 +337,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
     // Step 2: Mark as Accepted
     const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: "Accepted" }),
     });
 
@@ -363,10 +347,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
 
     // Step 3: Generate Loan
     const loanRes = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
-      method: "POST",
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+      method: "POST"
     });
 
     if (!loanRes.ok) {

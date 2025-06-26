@@ -23,7 +23,7 @@ export default function Navbar() {
     { name: 'Loans', href: '/loanOfficer/loans' },
     { name: 'Applications', href: '/components/loanOfficer/applications' },
     { name: 'Agents', href: '/loanOfficer/agents' },
-    { name: 'Collections', href: '/loanOfficer/collections' },
+    { name: 'Collections', href: '/components/loanOfficer/collections' },
   ];
 
   const toggleDropdown = () => {
