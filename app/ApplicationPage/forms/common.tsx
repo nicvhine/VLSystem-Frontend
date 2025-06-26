@@ -1,9 +1,20 @@
 "use client";
 
+import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import React, { useState } from "react";
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import axios from "axios";
+
+const customIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+  shadowSize: [41, 41],
+});
+
 
 
 interface CommonProps {
@@ -43,36 +54,39 @@ interface CommonProps {
   setSourceOfIncome: React.Dispatch<React.SetStateAction<string>>;
 };
 
-function MapComponent({ setAddress }: { setAddress: (address: string) => void }) {
-  const [marker, setMarker] = useState<L.Marker | null>(null);
-
+function MapComponent({
+  address,
+  setAddress,
+  markerPosition,
+  setMarkerPosition,
+}: {
+  address: string;
+  setAddress: (address: string) => void;
+  markerPosition: [number, number] | null;
+  setMarkerPosition: (pos: [number, number]) => void;
+}) {
   useMapEvents({
-    click(e) {
+    click: async (e) => {
       const { lat, lng } = e.latlng;
-      if (marker) marker.remove();
-
-      const newMarker = L.marker([lat, lng]).addTo(e.target);
-      setMarker(newMarker);
-
-      axios.get("https://nominatim.openstreetmap.org/reverse", {
-        params: {
-          lat,
-          lon: lng,
-          format: "json",
-        },
-      })
-        .then((response) => {
-          const address = response.data.display_name;
-          setAddress(address);
-          newMarker.bindPopup(address).openPopup();
-        })
-        .catch((error) => {
-          console.error("Error fetching address:", error);
+      setMarkerPosition([lat, lng]);
+      try {
+        const response = await axios.get("https://nominatim.openstreetmap.org/reverse", {
+          params: { lat, lon: lng, format: "json" },
         });
+        const foundAddress = response.data.display_name;
+        setAddress(foundAddress);
+      } catch {
+        setAddress(`${lat}, ${lng}`);
+      }
     },
   });
 
-  return null;
+  return markerPosition ? (
+  <Marker position={markerPosition} icon={customIcon}>
+    <Popup>{address}</Popup>
+  </Marker>
+
+  ) : null;
 }
 
   export default function Common(props: CommonProps) {
@@ -96,7 +110,23 @@ function MapComponent({ setAddress }: { setAddress: (address: string) => void })
     sourceOfIncome, setSourceOfIncome
   } = props;
 
+  const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
 
+  const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    props.setAppAddress(e.target.value);
+    // Geocode the address to update the marker
+    try {
+      const response = await axios.get("https://nominatim.openstreetmap.org/search", {
+        params: { q: e.target.value, format: "json", limit: 1 },
+      });
+      if (response.data && response.data.length > 0) {
+        const { lat, lon } = response.data[0];
+        setMarkerPosition([parseFloat(lat), parseFloat(lon)]);
+      }
+    } catch {
+      // Ignore geocode errors
+    }
+  };
 
   return (
     <>
@@ -201,17 +231,26 @@ function MapComponent({ setAddress }: { setAddress: (address: string) => void })
           <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
           <input
             type="text"
-            value={appAddress}
-            onChange={(e) => setAppAddress(e.target.value)}
+            value={props.appAddress}
+            onChange={handleAddressChange}
             className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder="Click on the map or type here"
           />
         </div>
 
-        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200">
-          <MapContainer center={[12.8797, 121.774]} zoom={6} style={{ height: "300px", width: "100%" }}>
+        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200" style={{ height: 300 }}>
+          <MapContainer
+            center={markerPosition || [12.8797, 121.774]}
+            zoom={6}
+            style={{ height: "100%", width: "100%" }}
+          >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <MapComponent setAddress={setAppAddress} />
+            <MapComponent
+              address={props.appAddress}
+              setAddress={props.setAppAddress}
+              markerPosition={markerPosition}
+              setMarkerPosition={setMarkerPosition}
+            />
           </MapContainer>
         </div>
       </div>
