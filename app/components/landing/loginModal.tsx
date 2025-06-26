@@ -81,7 +81,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       localStorage.setItem('fullName', data.fullName || data.name || data.username);
       localStorage.setItem('role', data.role?.toLowerCase() || 'staff');
+      if (data.userId) localStorage.setItem('userId',data.userId);
 
+      if(data.isFirstLogin){
+        localStorage.setItem('forcePasswordChange', 'true');
+      } else{
+        localStorage.removeItem('forcePasswordChange');
+      }
       onClose();
 
       switch (data.role?.toLowerCase()) {
