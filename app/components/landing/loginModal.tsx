@@ -25,9 +25,90 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
   if (!isOpen && !showForgotModal) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
+<<<<<<< vine
+  e.preventDefault();
+
+  if (!username || !password) {
+    alert('Please enter both username and password.');
+    return;
+  }
+
+  try {
+    const borrowerRes = await fetch('http://localhost:3001/borrowers/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (borrowerRes.ok) {
+  const data = await borrowerRes.json();
+  console.log('Logged in as borrower:', data);
+
+  // Store JWT token
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+  }
+
+  localStorage.setItem('fullName', data.fullName || data.name || data.username);
+  localStorage.setItem('role', 'borrower');
+  if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
+
+  if (data.isFirstLogin) {
+    localStorage.setItem('forcePasswordChange', 'true');
+  } else {
+    localStorage.removeItem('forcePasswordChange');
+  }
+
+  onClose();
+  router.push('components/borrower');
+  return;
+}
+
+
+    const staffRes = await fetch('http://localhost:3001/users/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (staffRes.ok) {
+      const data = await staffRes.json();
+      console.log('Logged in as staff:', data);
+
+      // Store JWT token
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+
+      localStorage.setItem('fullName', data.fullName || data.name || data.username);
+      localStorage.setItem('role', data.role?.toLowerCase() || 'staff');
+      if (data.userId) localStorage.setItem('userId',data.userId);
+
+      if(data.isFirstLogin){
+        localStorage.setItem('forcePasswordChange', 'true');
+      } else{
+        localStorage.removeItem('forcePasswordChange');
+      }
+      onClose();
+
+      switch (data.role?.toLowerCase()) {
+        case 'head':
+          router.push('components/head');
+          break;
+        case 'manager':
+          router.push('components/manager');
+          break;
+        case 'loan officer':
+          router.push('components/loanOfficer');
+          break;
+        default:
+          router.push('/');
+      }
+=======
     e.preventDefault();
     if (!username || !password) {
       alert(language === 'en' ? 'Please fill in all fields' : 'Palihug pun-a ang tanang field');
+>>>>>>> main
       return;
     }
     // Example login logic (replace with your own)

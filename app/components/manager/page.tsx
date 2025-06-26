@@ -1,12 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "./navbar";
+import { useRouter } from 'next/navigation';
+import ChangePasswordModal from "../changePasswordInternal/forceChange";
 
-export default function Head(){
+
+export default function Manager(){
+const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+
+useEffect(() => {
+  const mustChange = localStorage.getItem('forcePasswordChange');
+  if (mustChange === 'true') {
+    setShowChangePasswordModal(true);
+  }
+  
+  
+}, []);
     return(
         <div className="min-h-screen bg-white">
             < Navbar/>
+
+             {showChangePasswordModal && (
+                      <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+                    )}
         </div>
     )
 }
