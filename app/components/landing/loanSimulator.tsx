@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface SimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
+  language?: 'en' | 'ceb';
 }
 
 interface LoanOptionWithCollateral {
@@ -24,7 +25,7 @@ interface OpenTermLoanOption {
 
 type LoanOption = LoanOptionWithCollateral | LoanOptionWithoutCollateral | OpenTermLoanOption;
 
-export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps) {
+export default function SimulatorModal({ isOpen, onClose, language = 'en' }: SimulatorModalProps) {
   const [loanType, setLoanType] = useState('');
   const [loanOptions, setLoanOptions] = useState<number[]>([]);
   const [selectedLoanAmount, setSelectedLoanAmount] = useState('');
@@ -136,6 +137,19 @@ export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps)
 
   if (!isOpen) return null;
 
+  // Cebuano translations for result fields
+  const resultLabels = {
+    principalAmount: language === 'en' ? 'Principal Amount:' : 'Pangunang Kantidad:',
+    interest: language === 'en' ? 'Interest:' : 'Interes:',
+    totalPayment: language === 'en' ? 'Total Payment:' : 'Kinatibuk-ang Bayad:',
+    loanTerm: language === 'en' ? 'Loan Term:' : 'Gidugayon sa Pahulam:',
+    paymentPerPeriod: language === 'en' ? 'Payment Per Period:' : 'Bayad Matag Panahon:',
+    paymentPeriod: language === 'en' ? 'Payment Period:' : 'Panahon sa Pagbayad:',
+    monthly: language === 'en' ? 'Monthly (12 months per year)' : 'Matag Bulan (12 ka bulan sa tuig)',
+    fifteenth: language === 'en' ? '15th of the Month' : 'Ika-15 sa Bulan',
+    summary: language === 'en' ? 'Loan Summary' : 'Sumada sa Pahulam',
+  };
+
   return (
     <div className="fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6">
@@ -147,33 +161,33 @@ export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps)
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Loan Simulation</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">{language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}</h2>
 
         <form onSubmit={calculateLoan} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Loan Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Loan Type' : 'Klase sa Pahulam'}</label>
               <select
                 value={loanType}
                 onChange={(e) => setLoanType(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
               >
-                <option value="">Select loan type</option>
-                <option value="regularWithout">Regular (Without Collateral)</option>
-                <option value="regularWith">Regular (With Collateral)</option>
-                <option value="openTerm">Open-Term</option>
+                <option value="">{language === 'en' ? 'Select loan type' : 'Pilia ang klase sa pahulam'}</option>
+                <option value="regularWithout">{language === 'en' ? 'Regular (Without Collateral)' : 'Regular (Walay Kolateral)'}</option>
+                <option value="regularWith">{language === 'en' ? 'Regular (With Collateral)' : 'Regular (Naay Kolateral)'}</option>
+                <option value="openTerm">{language === 'en' ? 'Open-Term' : 'Open-Term'}</option>
               </select>
             </div>
 
             {loanType && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Loan Amount</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Loan Amount' : 'Kantidad sa Pahulam'}</label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
                   value={selectedLoanAmount}
                   onChange={(e) => setSelectedLoanAmount(e.target.value)}
                 >
-                  <option value="">Select amount</option>
+                  <option value="">{language === 'en' ? 'Select amount' : 'Pilia ang kantidad'}</option>
                   {loanOptions.map((amt) => (
                     <option key={amt} value={amt}>
                       ₱{amt.toLocaleString()}
@@ -184,54 +198,40 @@ export default function SimulatorModal({ isOpen, onClose }: SimulatorModalProps)
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Period</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Payment Period' : 'Panahon sa Pagbayad'}</label>
               <select
                 value={paymentPeriod}
                 onChange={(e) => setPaymentPeriod(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
               >
-                <option value="">Select payment period</option>
-                <option value="monthly">Monthly</option>
-                <option value="fifteenth">15th of the Month</option>
+                <option value="">{language === 'en' ? 'Select payment period' : 'Pilia ang panahon sa pagbayad'}</option>
+                <option value="monthly">{resultLabels.monthly}</option>
+                <option value="fifteenth">{resultLabels.fifteenth}</option>
               </select>
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-red-600 text-white py-3 rounded-lg font-medium hover:bg-red-700 focus:ring-4 focus:ring-red-500/20 transition-all"
+            className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
           >
-            Calculate
+            {language === 'en' ? 'Calculate' : 'Kalkulaha'}
           </button>
         </form>
 
         {result && (
-          <div className="mt-6 p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="font-semibold text-gray-800 mb-4">Loan Details</h3>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-gray-600">Payment Period:</div>
-                <div className="font-medium text-gray-900">{result.paymentPeriod}</div>
+          <div className="mt-8 bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">{resultLabels.summary}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="mb-2"><strong>{resultLabels.principalAmount}</strong> {result.principalAmount}</div>
+                <div className="mb-2"><strong>{resultLabels.interest}</strong> {result.interest}</div>
+                <div className="mb-2"><strong>{resultLabels.totalPayment}</strong> {result.totalPayment}</div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-gray-600">Principal Amount:</div>
-                <div className="font-medium text-gray-900">{result.principalAmount}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-gray-600">Interest:</div>
-                <div className="font-medium text-gray-900">{result.interest}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-gray-600">Total Payment:</div>
-                <div className="font-medium text-gray-900">{result.totalPayment}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-gray-600">Loan Term:</div>
-                <div className="font-medium text-gray-900">{result.loanTerm}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-gray-600">Payment per {result.paymentPeriod}:</div>
-                <div className="font-medium text-gray-900">{result.paymentPerPeriod}</div>
+              <div>
+                <div className="mb-2"><strong>{resultLabels.loanTerm}</strong> {result.loanTerm}</div>
+                <div className="mb-2"><strong>{resultLabels.paymentPerPeriod}</strong> {result.paymentPerPeriod}</div>
+                <div className="mb-2"><strong>{resultLabels.paymentPeriod}</strong> {result.paymentPeriod === 'Monthly (12 months per year)' ? resultLabels.monthly : resultLabels.fifteenth}</div>
               </div>
             </div>
           </div>
