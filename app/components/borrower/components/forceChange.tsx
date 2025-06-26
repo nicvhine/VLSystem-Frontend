@@ -5,6 +5,8 @@ import { useState } from 'react';
 export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const borrowersId = localStorage.getItem('borrowersId');
 
   const handleChange = async () => {
@@ -40,20 +42,43 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
         <p className="text-sm text-gray-600 mb-4">
           For your security, please set a new password before continuing.
         </p>
-        <input
-          type="password"
-          placeholder="New Password"
-          className="w-full border px-4 py-2 rounded mb-3"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          className="w-full border px-4 py-2 rounded mb-4"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-        />
+        
+         {/* New Password Field */}
+        <div className="relative mb-3">
+          <input
+            type={showNew ? 'text' : 'password'}
+            placeholder="New Password"
+            className="w-full border px-4 py-2 rounded pr-16"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-2 text-sm text-gray-600"
+            onClick={() => setShowNew(!showNew)}
+          >
+            {showNew ? 'Hide' : 'Show'}
+          </button>
+        </div>
+
+        {/* Confirm Password Field */}
+        <div className="relative mb-4">
+          <input
+            type={showConfirm ? 'text' : 'password'}
+            placeholder="Confirm Password"
+            className="w-full border px-4 py-2 rounded pr-16"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+          />
+          <button
+            type="button"
+            className="absolute right-3 top-2 text-sm text-gray-600"
+            onClick={() => setShowConfirm(!showConfirm)}
+          >
+            {showConfirm ? 'Hide' : 'Show'}
+          </button>
+        </div>
+        
         <button
           onClick={handleChange}
           className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700"

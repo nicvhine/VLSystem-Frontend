@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
+import { jwtDecode } from 'jwt-decode';
 import 'react-circular-progressbar/dist/styles.css';
 import ChangePasswordModal from './components/forceChange';
+import { useRouter } from 'next/navigation';
 
 interface LoanDetails {
   loanId: string;
@@ -30,41 +32,73 @@ interface PaymentHistory {
   mode: string;
 }
 
+
 export default function BorrowerDashboard() {
   const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-
+  const [authenticated, setAuthenticated] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-  const mustChange = localStorage.getItem('forcePasswordChange');
-  if (mustChange === 'true') {
-    setShowChangePasswordModal(true);
+  const token = localStorage.getItem('token');
+
+  if (!token) {
+    router.push('/');
+    return;
   }
-}, []);
 
-  useEffect(() => {
-    const borrowersId = localStorage.getItem('borrowersId');
-    if (!borrowersId) {
-      console.warn('No borrower ID found — logged out?');
-      setLoading(false);
+  try {
+    const decoded: any = jwtDecode(token);
+    const now = Date.now() / 1000;
+
+    if (decoded.exp && decoded.exp < now) {
+      localStorage.clear();
+      router.push('/');
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const mustChange = localStorage.getItem('forcePasswordChange');
+    if (mustChange === 'true') {
+      setShowChangePasswordModal(true);
+    }
+
+    const borrowersId = localStorage.getItem('borrowersId');
+    if (!borrowersId) {
+      router.push('/');
+      return;
+    }
+
     fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch loan');
         return res.json();
       })
-      .then(data => setLoanInfo(data))
-      .catch(err => console.error('Loan fetch error:', err))
+      .then(data => {
+        setLoanInfo(data);
+        setAuthenticated(true); 
+      })
+      .catch(err => {
+        console.error('Loan fetch error:', err);
+        router.push('/');
+      })
       .finally(() => setLoading(false));
-  }, []);
+
+  } catch (error) {
+    localStorage.clear();
+    router.push('/');
+  }
+}, [router]);
+
+const handleLogout = () => {
+  localStorage.clear();
+  router.push('/');
+};
+
 
   if (loading) return <div className="p-6 text-center">Loading loan info...</div>;
   if (!loanInfo) return <div className="p-6 text-center text-red-500">No active loan found.</div>;
@@ -81,6 +115,14 @@ export default function BorrowerDashboard() {
       <h1 className="text-2xl font-semibold mb-8">
         Welcome, <span className="text-red-600">{name}</span>
       </h1>
+
+    <button
+      onClick={handleLogout}
+      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+    >
+      Logout
+    </button>
+
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Credit Score Section */}
