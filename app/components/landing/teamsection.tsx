@@ -2,30 +2,30 @@
 
 import Image from 'next/image';
 
-interface TeamSectionProps {
+export interface TeamSectionProps {
   language: 'en' | 'ceb';
 }
 
 const teamMembers = [
-  { name: 'Divina Alburo', role: 'Chief Executive Officer', img: '/idPic.jpg' },
-  { name: 'Ronelyn Pelayo', role: 'Loan Manager', img: '/idPic.jpg' },
-  { name: 'Aiza Valiente', role: 'Loan Officer', img: '/idPic.jpg' },
-  { name: 'Rosielle Marie Navares', role: 'Loan Officer', img: '/idPic.jpg' },
-  { name: 'Chris Damayo', role: 'Accountant', img: '/idPic.jpg' },
-  { name: 'Bernie Gomez', role: 'Accountant', img: '/idPic.jpg' },
-  { name: 'Voltair Bracero', role: 'Field Lead', img: '/idPic.jpg' },
-  { name: 'Rodelo Lepiten', role: 'Head Collector', img: '/idPic.jpg' },
-  { name: 'Shiela May Lepon', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Morgan Thomas', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Ryan Martinez', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Olivia Hernandez', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Kevin Lee', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Amy Gonzalez', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Jason Scott', role: 'Collector', img: '/idPic.jpg' },
-  { name: 'Emma Lopez', role: 'Collector', img: '/idPic.jpg' },
+  { name: 'Divina Alburo', role: { en: 'Chief Executive Officer', ceb: 'Punong Ehekutibo' }, img: '/idPic.jpg' },
+  { name: 'Ronelyn Pelayo', role: { en: 'Loan Manager', ceb: 'Tagdumala sa Pahulam' }, img: '/idPic.jpg' },
+  { name: 'Aiza Valiente', role: { en: 'Loan Officer', ceb: 'Opisyal sa Pahulam' }, img: '/idPic.jpg' },
+  { name: 'Rosielle Marie Navares', role: { en: 'Loan Officer', ceb: 'Opisyal sa Pahulam' }, img: '/idPic.jpg' },
+  { name: 'Chris Damayo', role: { en: 'Accountant', ceb: 'Tigpamaba' }, img: '/idPic.jpg' },
+  { name: 'Bernie Gomez', role: { en: 'Accountant', ceb: 'Tigpamaba' }, img: '/idPic.jpg' },
+  { name: 'Voltair Bracero', role: { en: 'Field Lead', ceb: 'Pangulo sa Field' }, img: '/idPic.jpg' },
+  { name: 'Rodelo Lepiten', role: { en: 'Head Collector', ceb: 'Pangulo sa Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Shiela May Lepon', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Morgan Thomas', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Ryan Martinez', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Olivia Hernandez', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Kevin Lee', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Amy Gonzalez', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Jason Scott', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
+  { name: 'Emma Lopez', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
 ];
 
-const TeamSection = ({ language }: TeamSectionProps) => {
+const TeamSection: React.FC<TeamSectionProps> = ({ language }) => {
   return (
     <section className="py-24 bg-gray-50 text-black" id="team">
       <div className="max-w-7xl mx-auto px-6">
@@ -48,7 +48,7 @@ const TeamSection = ({ language }: TeamSectionProps) => {
                 />
               </div>
               <h3 className="text-lg font-semibold text-gray-800">{member.name}</h3>
-              <p className="text-sm text-gray-500">{member.role}</p>
+              <p className="text-sm text-gray-500">{member.role[language]}</p>
             </div>
           ))}
         </div>
