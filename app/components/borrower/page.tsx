@@ -51,7 +51,12 @@ export default function BorrowerDashboard() {
       return;
     }
 
-    fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`)
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch loan');
         return res.json();

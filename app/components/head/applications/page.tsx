@@ -36,7 +36,12 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await fetch (API_URL);
+        const token = localStorage.getItem('token');
+        const response = await fetch(API_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
         setApplications(data);
       } catch (error) {

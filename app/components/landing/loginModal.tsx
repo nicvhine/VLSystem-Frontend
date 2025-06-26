@@ -40,23 +40,28 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     });
 
     if (borrowerRes.ok) {
-    const data = await borrowerRes.json();
-    console.log('Logged in as borrower:', data);
+  const data = await borrowerRes.json();
+  console.log('Logged in as borrower:', data);
 
-    localStorage.setItem('fullName', data.fullName || data.name || data.username);
-    localStorage.setItem('role', 'borrower');
-    if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
-
-    if (data.isFirstLogin) {
-      localStorage.setItem('forcePasswordChange', 'true');
-    } else {
-      localStorage.removeItem('forcePasswordChange');
-    }
-
-    onClose();
-    router.push('components/borrower');
-    return;
+  // Store JWT token
+  if (data.token) {
+    localStorage.setItem('token', data.token);
   }
+
+  localStorage.setItem('fullName', data.fullName || data.name || data.username);
+  localStorage.setItem('role', 'borrower');
+  if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
+
+  if (data.isFirstLogin) {
+    localStorage.setItem('forcePasswordChange', 'true');
+  } else {
+    localStorage.removeItem('forcePasswordChange');
+  }
+
+  onClose();
+  router.push('components/borrower');
+  return;
+}
 
 
     const staffRes = await fetch('http://localhost:3001/users/login', {
@@ -68,6 +73,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     if (staffRes.ok) {
       const data = await staffRes.json();
       console.log('Logged in as staff:', data);
+
+      // Store JWT token
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
 
       localStorage.setItem('fullName', data.fullName || data.name || data.username);
       localStorage.setItem('role', data.role?.toLowerCase() || 'staff');

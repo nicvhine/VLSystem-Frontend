@@ -19,17 +19,30 @@ export default function Dashboard() {
   const [typeStats, setTypeStats] = useState<LoanTypeStat[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/loan-applications/loan-stats")
+    const token = localStorage.getItem('token');
+    fetch("http://localhost:3001/loan-applications/loan-stats", {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(err => console.error("Failed to load stats:", err));
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:3001/loan-applications/loan-type-stats")
+    const token = localStorage.getItem('token');
+    fetch("http://localhost:3001/loan-applications/loan-type-stats", {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    })
       .then(res => res.json())
-      .then(data => setTypeStats(data))
-      .catch(err => console.error("Failed to load loan type stats:", err));
+      .then(data => setTypeStats(Array.isArray(data) ? data : []))
+      .catch(err => {
+        console.error("Failed to load loan type stats:", err);
+        setTypeStats([]); // fallback to empty array on error
+      });
   }, []);
 
   const statConfig = [

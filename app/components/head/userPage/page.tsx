@@ -153,7 +153,12 @@ export default function UsersPage() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch(API_URL);
+        const token = localStorage.getItem('token');
+        const res = await fetch(API_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         if (!res.ok) throw new Error("Failed to fetch users");
         const data = await res.json();
         setUsers(data);
@@ -203,8 +208,12 @@ export default function UsersPage() {
   if (!confirm("Are you sure you want to delete this user?")) return;
 
   try {
+    const token = localStorage.getItem('token');
     const res = await fetch(`${API_URL}/${userId}`, {
       method: "DELETE",
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
     });
 
     if (!res.ok) {
@@ -229,10 +238,12 @@ export default function UsersPage() {
       role: input.role,
     };
 
+    const token = localStorage.getItem('token');
     const res = await fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
     });

@@ -37,11 +37,13 @@ export default function LoanStatsChart() {
     fetch('http://localhost:3001/loan-applications/monthly-loan-stats')
       .then(res => res.json())
       .then(data => {
-        setMonthlyData(data);
+        // Ensure data is an array, otherwise set to []
+        setMonthlyData(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch(err => {
         console.error("Failed to load monthly stats:", err);
+        setMonthlyData([]); // fallback to empty array on error
         setLoading(false);
       });
   }, []);

@@ -42,7 +42,12 @@ export default function LoansPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await fetch (API_URL);
+        const token = localStorage.getItem('token');
+        const response = await fetch(API_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         const data = await response.json();
         setLoans(data);
       } catch (error) {
@@ -252,4 +257,4 @@ export default function LoansPage() {
       </div>
     </div>
   );
-} 
+}
