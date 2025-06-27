@@ -2,6 +2,9 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import Navbar from '../navbar';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
 import {
   FiSearch,
   FiChevronDown,
@@ -12,12 +15,14 @@ import {
 } from 'react-icons/fi';
 
 interface Collection {
-  id: string;
+  loanId: string;
+  borrowersId: string;
   name: string;
-  balance: number;
-  pastDue: number;
+  collectionNumber: number;
+  dueDate: string;
   periodAmount: number;
   paidAmount: number;
+  balance: number;
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   collector: string;
   note?: string;
@@ -35,25 +40,37 @@ export default function CollectionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [activeCollector, setActiveCollector] = useState('All');
-  const [selectedDate, setSelectedDate] = useState('March 25, 2025');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/collections');
-        const data = await response.json();
-        setCollections(data);
-      } catch (error) {
-        console.error('Failed to fetch collections:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchCollections = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/loans/collections');
+      const data = await response.json();
+      console.log('Fetched collections:', data);
 
-    fetchCollections();
-  }, []);
+      // ✅ FIX: Ensure you're setting an array
+      if (Array.isArray(data)) {
+        setCollections(data);
+      } else if (Array.isArray(data.collections)) {
+        setCollections(data.collections);
+      } else {
+        console.error('Unexpected response format:', data);
+        setCollections([]);
+      }
+    } catch (error) {
+      console.error('Failed to fetch collections:', error);
+      setCollections([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCollections();
+}, []);
+
 
   const collectors = ['All', 'Rodelo', 'Earl', 'Shiela', 'Voltair', 'Morgan', 'Stephen'];
 
@@ -94,27 +111,34 @@ export default function CollectionsPage() {
               <FiCalendar className="w-5 h-5 text-blue-500" />
               <h2 className="text-lg font-semibold text-gray-800">Collection Calendar</h2>
             </div>
-            <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
-              <span className="text-gray-500">Calendar Component Here</span>
-            </div>
-            <div className="mt-4 text-center text-blue-600 font-medium">{selectedDate}</div>
-          </div>
-
-          <div className="col-span-8 grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-              <div className="flex items-center gap-3 mb-4">
-                <FiCheckCircle className="w-6 h-6 opacity-90" />
-                <h3 className="text-lg font-medium">Collection Progress</h3>
+            <div className="flex flex-col items-center gap-4">
+              <DatePicker
+                selected={selectedDate}
+                onChange={(date: Date | null) => date && setSelectedDate(date)}
+                inline
+                className="rounded-md"
+              />
+              <div className="text-blue-600 font-medium">
+                {selectedDate.toDateString()}
               </div>
-              <div className="text-3xl font-bold">Coming Soon</div>
-            </div>
 
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-              <div className="flex items-center gap-3 mb-4">
-                <FiDollarSign className="w-6 h-6 opacity-90" />
-                <h3 className="text-lg font-medium">Amount Collected</h3>
+              <div className="col-span-8 grid grid-cols-2 gap-4 w-full">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+                  <div className="flex items-center gap-3 mb-4">
+                    <FiCheckCircle className="w-6 h-6 opacity-90" />
+                    <h3 className="text-lg font-medium">Collection Progress</h3>
+                  </div>
+                  <div className="text-3xl font-bold">Coming Soon</div>
+                </div>
+
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+                  <div className="flex items-center gap-3 mb-4">
+                    <FiDollarSign className="w-6 h-6 opacity-90" />
+                    <h3 className="text-lg font-medium">Amount Collected</h3>
+                  </div>
+                  <div className="text-3xl font-bold">Coming Soon</div>
+                </div>
               </div>
-              <div className="text-3xl font-bold">Coming Soon</div>
             </div>
           </div>
         </div>
@@ -155,26 +179,18 @@ export default function CollectionsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  {[
-                    'ID',
-                    'Name',
-                    'Balance',
-                    'Past Due',
-                    'Period Amount',
-                    'Paid Amount',
-                    'Status',
-                    'Collector',
-                    'Note',
-                  ].map((heading) => (
-                    <th
-                      key={heading}
-                      className="px-6 py-3.5 text-left text-sm font-medium text-gray-600"
-                    >
-                      {heading}
-                    </th>
-                  ))}
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Due Date</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Collector</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
                   <tr>
@@ -190,22 +206,37 @@ export default function CollectionsPage() {
                   </tr>
                 ) : (
                   collections
-                    .filter(
-                      (col) =>
-                        (activeCollector === 'All' || col.collector === activeCollector) &&
-                        col.name.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
+                    .filter((col) => {
+                      const due = new Date(col.dueDate);
+                      const selected = selectedDate;
+                      const sameDate =
+                        due.getFullYear() === selected.getFullYear() &&
+                        due.getMonth() === selected.getMonth() &&
+                        due.getDate() === selected.getDate();
+
+                      const matchesCollector =
+                        activeCollector === 'All' || col.collector === activeCollector;
+                      const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+                      return matchesCollector && matchesSearch && sameDate;
+                    })
                     .map((col) => (
                       <tr
-                        key={col.id}
+                        key={col.collectionNumber}
                         className="hover:bg-blue-50/60 cursor-pointer transition-colors"
                       >
-                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.id}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
-                        <td className="px-6 py-4 text-sm text-red-600">{formatCurrency(col.pastDue)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {new Date(col.dueDate).toLocaleDateString('en-PH', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
                         <td className="px-6 py-4">
                           <span
                             className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
