@@ -45,32 +45,31 @@ export default function CollectionsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchCollections = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/loans/collections');
-      const data = await response.json();
-      console.log('Fetched collections:', data);
+    const fetchCollections = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/loans/collections');
+        const data = await response.json();
+        console.log('Fetched collections:', data);
 
-      // ✅ FIX: Ensure you're setting an array
-      if (Array.isArray(data)) {
-        setCollections(data);
-      } else if (Array.isArray(data.collections)) {
-        setCollections(data.collections);
-      } else {
-        console.error('Unexpected response format:', data);
+        // ✅ FIX: Ensure you're setting an array
+        if (Array.isArray(data)) {
+          setCollections(data);
+        } else if (Array.isArray(data.collections)) {
+          setCollections(data.collections);
+        } else {
+          console.error('Unexpected response format:', data);
+          setCollections([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch collections:', error);
         setCollections([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch collections:', error);
-      setCollections([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchCollections();
-}, []);
-
+    fetchCollections();
+  }, []);
 
   const collectors = ['All', 'Rodelo', 'Earl', 'Shiela', 'Voltair', 'Morgan', 'Stephen'];
 
@@ -80,6 +79,30 @@ export default function CollectionsPage() {
       currency: 'PHP',
     }).format(amount);
   };
+
+  // Calculate statistics
+  const filteredCollections = collections.filter((col) => {
+    const due = new Date(col.dueDate);
+    const selected = selectedDate;
+    const sameDate =
+      due.getFullYear() === selected.getFullYear() &&
+      due.getMonth() === selected.getMonth() &&
+      due.getDate() === selected.getDate();
+
+    const matchesCollector =
+      activeCollector === 'All' || col.collector === activeCollector;
+    const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesCollector && matchesSearch && sameDate;
+  });
+
+  const totalPayments = filteredCollections.length;
+  const completedPayments = filteredCollections.filter(col => col.status === 'Paid').length;
+  const collectionRate = totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0;
+
+  const totalCollected = filteredCollections.reduce((sum, col) => sum + col.paidAmount, 0);
+  const totalTarget = filteredCollections.reduce((sum, col) => sum + col.periodAmount, 0);
+  const targetAchieved = totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -106,6 +129,7 @@ export default function CollectionsPage() {
 
         {/* Calendar and Stats Section */}
         <div className="grid grid-cols-12 gap-6 mb-6">
+          {/* Calendar Section */}
           <div className="col-span-4 bg-white rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <FiCalendar className="w-5 h-5 text-blue-500" />
@@ -121,24 +145,35 @@ export default function CollectionsPage() {
               <div className="text-blue-600 font-medium">
                 {selectedDate.toDateString()}
               </div>
+            </div>
+          </div>
 
-              <div className="col-span-8 grid grid-cols-2 gap-4 w-full">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center gap-3 mb-4">
-                    <FiCheckCircle className="w-6 h-6 opacity-90" />
-                    <h3 className="text-lg font-medium">Collection Progress</h3>
-                  </div>
-                  <div className="text-3xl font-bold">Coming Soon</div>
+          {/* Stats Cards Section */}
+          <div className="col-span-8 grid grid-cols-2 gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <FiCheckCircle className="w-6 h-6 opacity-90" />
+                  <h3 className="text-lg font-medium">Collection Progress</h3>
                 </div>
-
-                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-                  <div className="flex items-center gap-3 mb-4">
-                    <FiDollarSign className="w-6 h-6 opacity-90" />
-                    <h3 className="text-lg font-medium">Amount Collected</h3>
-                  </div>
-                  <div className="text-3xl font-bold">Coming Soon</div>
-                </div>
+                <div className="text-2xl font-bold">{collectionRate}%</div>
               </div>
+              <div className="text-3xl font-bold mb-2">{completedPayments}</div>
+              <div className="text-sm opacity-90">of {totalPayments} Payments</div>
+              <div className="text-sm opacity-75 mt-1">Collection Rate</div>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <FiDollarSign className="w-6 h-6 opacity-90" />
+                  <h3 className="text-lg font-medium">Amount Collected</h3>
+                </div>
+                <div className="text-2xl font-bold">{targetAchieved}%</div>
+              </div>
+              <div className="text-3xl font-bold mb-2">{formatCurrency(totalCollected)}</div>
+              <div className="text-sm opacity-90">of {formatCurrency(totalTarget)}</div>
+              <div className="text-sm opacity-75 mt-1">Target Achieved</div>
             </div>
           </div>
         </div>
@@ -166,6 +201,8 @@ export default function CollectionsPage() {
             >
               <option value="">Sort by</option>
               <option value="amount">Amount</option>
+              <option value="balance">Balance</option>
+              <option value="status">Status</option>
             </select>
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
               <FiChevronDown className="text-gray-400 w-4 h-4" />
@@ -179,12 +216,11 @@ export default function CollectionsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">ID</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Due Date</th>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Collector</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
@@ -194,68 +230,46 @@ export default function CollectionsPage() {
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
                   <tr>
-                    <td colSpan={9}>
+                    <td colSpan={8}>
                       <LoadingSpinner />
                     </td>
                   </tr>
-                ) : collections.length === 0 ? (
+                ) : filteredCollections.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-6 text-gray-500">
+                    <td colSpan={8} className="text-center py-6 text-gray-500">
                       No collections found.
                     </td>
                   </tr>
                 ) : (
-                  collections
-                    .filter((col) => {
-                      const due = new Date(col.dueDate);
-                      const selected = selectedDate;
-                      const sameDate =
-                        due.getFullYear() === selected.getFullYear() &&
-                        due.getMonth() === selected.getMonth() &&
-                        due.getDate() === selected.getDate();
-
-                      const matchesCollector =
-                        activeCollector === 'All' || col.collector === activeCollector;
-                      const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
-
-                      return matchesCollector && matchesSearch && sameDate;
-                    })
-                    .map((col) => (
-                      <tr
-                        key={col.collectionNumber}
-                        className="hover:bg-blue-50/60 cursor-pointer transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
-                          {new Date(col.dueDate).toLocaleDateString('en-PH', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                              col.status === 'Paid'
-                                ? 'bg-green-100 text-green-800'
-                                : col.status === 'Partial'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : col.status === 'Overdue'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-600'
-                            }`}
-                          >
-                            {col.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{col.collector}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{col.note || '-'}</td>
-                      </tr>
-                    ))
+                  filteredCollections.map((col) => (
+                    <tr
+                      key={col.collectionNumber}
+                      className="hover:bg-blue-50/60 cursor-pointer transition-colors"
+                    >
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            col.status === 'Paid'
+                              ? 'bg-green-100 text-green-800'
+                              : col.status === 'Partial'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : col.status === 'Overdue'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {col.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.collector}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500">{col.note || '-'}</td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
