@@ -222,16 +222,34 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
         {result && (
           <div className="mt-8 bg-gray-50 rounded-lg p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800">{resultLabels.summary}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2">
               <div>
-                <div className="mb-2"><strong>{resultLabels.principalAmount}</strong> {result.principalAmount}</div>
-                <div className="mb-2"><strong>{resultLabels.interest}</strong> {result.interest}</div>
-                <div className="mb-2"><strong>{resultLabels.totalPayment}</strong> {result.totalPayment}</div>
+                <div className="mb-4">
+                  <div className="font-semibold">{resultLabels.principalAmount}</div>
+                  <div>{result.principalAmount}</div>
+                </div>
+                <div className="mb-4">
+                  <div className="font-semibold">{resultLabels.interest}</div>
+                  <div>{result.interest}</div>
+                </div>
+                <div className="mb-4">
+                  <div className="font-semibold">{resultLabels.totalPayment}</div>
+                  <div>{result.totalPayment}</div>
+                </div>
               </div>
               <div>
-                <div className="mb-2"><strong>{resultLabels.loanTerm}</strong> {result.loanTerm}</div>
-                <div className="mb-2"><strong>{resultLabels.paymentPerPeriod}</strong> {result.paymentPerPeriod}</div>
-                <div className="mb-2"><strong>{resultLabels.paymentPeriod}</strong> {result.paymentPeriod === 'Monthly (12 months per year)' ? resultLabels.monthly : resultLabels.fifteenth}</div>
+                <div className="mb-4">
+                  <div className="font-semibold">{resultLabels.loanTerm}</div>
+                  <div>{result.loanTerm}</div>
+                </div>
+                <div className="mb-4">
+                  <div className="font-semibold">{resultLabels.paymentPerPeriod}</div>
+                  <div>{result.paymentPerPeriod}</div>
+                </div>
+                <div className="mb-4">
+                  <div className="font-semibold">{resultLabels.paymentPeriod}</div>
+                  <div>{result.paymentPeriod === 'Monthly (12 months per year)' ? resultLabels.monthly : resultLabels.fifteenth}</div>
+                </div>
               </div>
             </div>
           </div>
