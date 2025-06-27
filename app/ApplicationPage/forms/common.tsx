@@ -52,6 +52,7 @@ interface CommonProps {
   setAppCompanyName: React.Dispatch<React.SetStateAction<string>>;
   sourceOfIncome: string;
   setSourceOfIncome: React.Dispatch<React.SetStateAction<string>>;
+  language: 'en' | 'ceb';
 };
 
 function MapComponent({
@@ -107,7 +108,8 @@ function MapComponent({
     appOccupation, setAppOccupation,
     appEmploymentStatus, setAppEmploymentStatus,
     appCompanyName, setAppCompanyName,
-    sourceOfIncome, setSourceOfIncome
+    sourceOfIncome, setSourceOfIncome,
+    language
   } = props;
 
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
@@ -133,21 +135,21 @@ function MapComponent({
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Basic Information
+          {language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon'}
         </h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Name:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Name:' : 'Ngalan:'}</label>
             <input
               type="text"
               value={appName} 
               onChange={(e) => setAppName(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Enter your full name"
+              placeholder={language === 'en' ? 'Enter your full name' : 'Isulod ang imong tibuok ngalan'}
             />
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Date of Birth:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Date of Birth:' : 'Petsa sa Pagkatawo:'}</label>
             <input
               type="date"
               value={appDob}        
@@ -156,46 +158,46 @@ function MapComponent({
             />
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Contact Number:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Contact Number:' : 'Numero sa Kontak:'}</label>
             <input
               type="text"
               value={appContact}
               onChange={(e) => setAppContact(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Enter contact number"
+              placeholder={language === 'en' ? 'Enter contact number' : 'Isulod ang numero sa kontak'}
             />
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Email Address:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Email Address:' : 'Email Address:'}</label>
             <input
               type="email"        
               value={appEmail}
               onChange={(e) => setAppEmail(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Enter email address"
+              placeholder={language === 'en' ? 'Enter email address' : 'Isulod ang email address'}
             />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Marital Status:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Marital Status:' : 'Sibil nga Kahimtang:'}</label>
             <select
               value={appMarital}
               onChange={(e) => setAppMarital(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             >
-              <option value="">Select Status</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
+              <option value="">{language === 'en' ? 'Select Status' : 'Pilia ang Kahimtang'}</option>
+              <option value="Single">{language === 'en' ? 'Single' : 'Walay Bana/Asawa'}</option>
+              <option value="Married">{language === 'en' ? 'Married' : 'Minyo'}</option>
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Number of Children:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Number of Children:' : 'Ilang Anak:'}</label>
             <input
               type="number"
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Enter number of children"
+              placeholder={language === 'en' ? 'Enter number of children' : 'Isulod ang ihap sa anak'}
               value={appChildren}
               onChange={(e) => setAppChildren(parseInt(e.target.value))}
               min={0}
@@ -206,19 +208,19 @@ function MapComponent({
         {appMarital === "Married" && (
           <div className="grid grid-cols-2 gap-4 mb-8">
             <div>
-              <label className="block font-medium mb-2 text-gray-700">Spouse Name:</label>
+              <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Spouse Name:' : 'Ngalan sa Bana/Asawa:'}</label>
               <input
                 className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Enter spouse name"
+                placeholder={language === 'en' ? 'Enter spouse name' : 'Isulod ang ngalan sa bana/asawa'}
                 value={appSpouseName}
                 onChange={(e) => setAppSpouseName(e.target.value)}
               />
             </div>
             <div>
-              <label className="block font-medium mb-2 text-gray-700">Spouse Occupation:</label>
+              <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Spouse Occupation:' : 'Trabaho sa Bana/Asawa:'}</label>
               <input
                 className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder="Enter spouse occupation"
+                placeholder={language === 'en' ? 'Enter spouse occupation' : 'Isulod ang trabaho sa bana/asawa'}
                 value={appSpouseOccupation}
                 onChange={(e) => setAppSpouseOccupation(e.target.value)}
               />
@@ -228,13 +230,13 @@ function MapComponent({
 
         {/* ==== Address Section ==== */}
         <div className="mb-4">
-          <label className="block font-medium mb-2 text-gray-700">Home Address:</label>
+          <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Home Address:' : 'Address sa Panimalay:'}</label>
           <input
             type="text"
             value={props.appAddress}
             onChange={handleAddressChange}
             className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            placeholder="Click on the map or type here"
+            placeholder={language === 'en' ? 'Click on the map or type here' : 'I-klik ang mapa o isulat dinhi'}
           />
         </div>
 
@@ -259,7 +261,7 @@ function MapComponent({
 <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
   <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
     <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-    Source of Income
+    {language === 'en' ? 'Source of Income' : 'Mga Source ng Kita'}
   </h4>
 
   {/* Radio Buttons */}
@@ -286,7 +288,7 @@ function MapComponent({
   {sourceOfIncome === 'business' ? (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="block font-medium mb-2 text-gray-700">Type of Business:</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Business:' : 'Uri ng Trabaho:'}</label>
         <input
           type="text"
           value={appTypeBusiness}
@@ -295,7 +297,7 @@ function MapComponent({
         />
       </div>
       <div>
-        <label className="block font-medium mb-2 text-gray-700">Date Started:</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Date Started:' : 'Petsa sa Pagsimula:'}</label>
         <input
           type="date"
           value={appDateStarted}
@@ -304,7 +306,7 @@ function MapComponent({
         />
       </div>
         <div>
-        <label className="block font-medium mb-2 text-gray-700">Business Location:</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Business Location:' : 'Lokasyon ng Trabaho:'}</label>
         <input
           type="text"
           value={appBusinessLoc}
@@ -313,14 +315,14 @@ function MapComponent({
         />
       </div>
       <div>
-      <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
+      <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Income:' : 'Buwanang Kita:'}</label>
       <input
         type="number"
         min={0}
         value={appMonthlyIncome}
         onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
         className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-        placeholder="Enter your monthly income"
+        placeholder={language === 'en' ? 'Enter your monthly income' : 'Isulod ang buwanang kita'}
       />
     </div>
 
@@ -328,7 +330,7 @@ function MapComponent({
   ) : sourceOfIncome === 'employed' ? (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="block font-medium mb-2 text-gray-700">Occupation:</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Occupation:' : 'Trabaho:'}</label>
         <input
           type="text"
           value={appOccupation}
@@ -337,19 +339,19 @@ function MapComponent({
         />
       </div>
       <div>
-        <label className="block font-medium mb-2 text-gray-700">Employment Status:</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Employment Status:' : 'Status ng Trabaho:'}</label>
         <select
           value={appEmploymentStatus}
           onChange={(e) => setAppEmploymentStatus(e.target.value)}
           className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         >
-        <option value="">Select Employment status</option>
-        <option value="regular">Regular</option>
-        <option value="irregular">Irregular</option>
+        <option value="">{language === 'en' ? 'Select Employment status' : 'Pili ang status ng trabaho'}</option>
+        <option value="regular">{language === 'en' ? 'Regular' : 'Regular'}</option>
+        <option value="irregular">{language === 'en' ? 'Irregular' : 'Iregular'}</option>
         </select>
       </div>
       <div>
-        <label className="block font-medium mb-2 text-gray-700">Company Name:</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Company Name:' : 'Ngalan ng Trabaho:'}</label>
         <input
           type="text"
           value={appCompanyName}
@@ -358,14 +360,14 @@ function MapComponent({
         />
       </div>
        <div>
-      <label className="block font-medium mb-2 text-gray-700">Monthly Income:</label>
+      <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Income:' : 'Buwanang Kita:'}</label>
       <input
         type="number"
         min={0}
         value={appMonthlyIncome}
         onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
         className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-        placeholder="Enter your monthly income"
+        placeholder={language === 'en' ? 'Enter your monthly income' : 'Isulod ang buwanang kita'}
       />
     </div>
     </div>

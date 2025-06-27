@@ -18,7 +18,11 @@ const loanOptions: LoanOption[] = [
   { amount: 30000, months: 10, interest: 10 },
 ];
 
-export default function WithoutCollateralForm() {
+interface WithoutCollateralFormProps {
+  language: 'en' | 'ceb';
+}
+
+export default function WithoutCollateralForm({ language }: WithoutCollateralFormProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
@@ -40,9 +44,12 @@ export default function WithoutCollateralForm() {
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
 
+  // Translations for select options
+  const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
+
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan) {
-      alert("Please fill in all required fields.");
+      alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
       return;
     }
 
@@ -78,17 +85,15 @@ export default function WithoutCollateralForm() {
       });
 
       if (res.ok) {
-        alert("Loan application submitted successfully!");
+        alert(language === 'en' ? "Loan application submitted successfully!" : "Malampusong napasa ang aplikasyon!");
         setAppLoanPurpose("");
         setSelectedLoan(null);
       } else {
         const errorText = await res.text();
-        console.error("Error from server:", errorText);
-        alert("Failed to submit application. Server says: " + errorText);
+        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
       }
     } catch (error) {
-      console.error("Submission error:", error);
-      alert("An error occurred. Please try again.");
+      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
     }
   };
 
@@ -129,28 +134,29 @@ export default function WithoutCollateralForm() {
         setAppCompanyName={setAppCompanyName}
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
+        language={language}
       />
 
       {/* Loan Details */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Loan Details
+          {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Loan Purpose:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Purpose:' : 'Katuyoan sa Pahulam:'}</label>
             <input
               value={appLoanPurpose}
               onChange={(e) => setAppLoanPurpose(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder="Enter Loan Purpose"
+              placeholder={language === 'en' ? 'Enter Loan Purpose' : 'Isulod ang Katuyoan sa Pahulam'}
             />
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Loan Amount:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
             <select
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               onChange={(e) => {
@@ -159,7 +165,7 @@ export default function WithoutCollateralForm() {
               }}
               value={selectedLoan?.amount || ""}
             >
-              <option value="">Select amount</option>
+              <option value="">{loanAmountPlaceholder}</option>
               {loanOptions.map((opt) => (
                 <option key={opt.amount} value={opt.amount}>
                   ₱{opt.amount.toLocaleString()}
@@ -169,7 +175,7 @@ export default function WithoutCollateralForm() {
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Loan Terms (months):</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Terms (months):' : 'Panahon sa Pahulam (buwan):'}</label>
             <input
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
               value={selectedLoan?.months || ""}
@@ -178,7 +184,7 @@ export default function WithoutCollateralForm() {
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Monthly Interest Rate (%):</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Interest Rate (%):' : 'Bulan nga Interest Rate (%):'}</label>
             <input
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
               value={selectedLoan?.interest || ""}
@@ -192,7 +198,7 @@ export default function WithoutCollateralForm() {
         onClick={handleSubmit}
         className="w-full bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 font-semibold text-lg transition-colors shadow-sm"
       >
-        Submit Application
+        {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
     </>
   );

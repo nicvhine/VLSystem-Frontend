@@ -20,7 +20,20 @@ const loanOptions: LoanOption[] = [
   { amount: 500000, months: 60, interest: 1.5 },
 ];
 
-export default function WithCollateralForm() {
+interface WithCollateralFormProps {
+  language: 'en' | 'ceb';
+  maritalStatus?: string;
+  setMaritalStatus?: any;
+  incomeSource?: string;
+  setIncomeSource?: any;
+  address?: string;
+  setAddress?: any;
+  employmentStatus?: string;
+  setEmploymentStatus?: any;
+}
+
+export default function WithCollateralForm(props: WithCollateralFormProps) {
+  const { language = 'en', ...rest } = props;
   // Common form states
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
@@ -59,7 +72,7 @@ export default function WithCollateralForm() {
 
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
-      alert("Please fill in all required fields including collateral information.");
+      alert(language === 'en' ? "Please fill in all required fields including collateral information." : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral.");
       return;
     }
 
@@ -100,7 +113,7 @@ export default function WithCollateralForm() {
       });
 
       if (res.ok) {
-        alert("Loan application with collateral submitted successfully!");
+        alert(language === 'en' ? "Loan application with collateral submitted successfully!" : "Malampusong napasa ang aplikasyon nga adunay kolateral!");
         // Reset form
         setAppLoanPurpose("");
         setSelectedLoan(null);
@@ -110,18 +123,25 @@ export default function WithCollateralForm() {
         setOwnershipStatus("");
       } else {
         const errorText = await res.text();
-        console.error("Error from server:", errorText);
-        alert("Failed to submit application. Server says: " + errorText);
+        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
       }
     } catch (error) {
-      console.error("Submission error:", error);
-      alert("An error occurred. Please try again.");
+      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
     }
   };
 
+  // Translations for select options
+  const collateralTypeOptions = [
+    { value: '', label: language === 'en' ? 'Select collateral type' : 'Pilia ang klase sa kolateral' },
+    { value: 'real-estate', label: language === 'en' ? 'Real Estate' : 'Yuta/Balay' },
+    { value: 'vehicle', label: language === 'en' ? 'Vehicle' : 'Sakyanan' },
+    { value: 'equipment', label: language === 'en' ? 'Equipment' : 'Kagamitan' },
+    { value: 'others', label: language === 'en' ? 'Others' : 'Uban pa' },
+  ];
+
   return (
     <>
-      <Common
+      <Common {...rest} language={language}
         appName={appName}
         setAppName={setAppName}
         appDob={appDob}
@@ -162,54 +182,49 @@ export default function WithCollateralForm() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Collateral Information
+          {language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral'}
         </h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Collateral Type:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Collateral Type:' : 'Klase sa Kolateral:'}</label>
             <select 
               value={collateralType}
               onChange={(e) => setCollateralType(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             >
-              <option value="">Select collateral type</option>
-              <option value="real-estate">Real Estate</option>
-              <option value="vehicle">Vehicle</option>
-              <option value="equipment">Equipment</option>
-              <option value="others">Others</option>
+              {collateralTypeOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Estimated Value:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Estimated Value:' : 'Gibanabanang Kantidad:'}</label>
             <input 
               type="number" 
               value={collateralValue}
               onChange={(e) => setCollateralValue(parseFloat(e.target.value))}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-              placeholder="Enter estimated value" 
+              placeholder={language === 'en' ? 'Enter estimated value' : 'Isulod ang gibanabanang kantidad'} 
             />
           </div>
           <div className="col-span-2">
-            <label className="block font-medium mb-2 text-gray-700">Collateral Description:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Collateral Description:' : 'Deskripsyon sa Kolateral:'}</label>
             <textarea 
               value={collateralDescription}
               onChange={(e) => setCollateralDescription(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-              placeholder="Provide detailed description of your collateral"
+              placeholder={language === 'en' ? 'Provide detailed description of your collateral' : 'Isulat ang detalyadong deskripsyon sa imong kolateral'}
             ></textarea>
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Ownership Status:</label>
-            <select 
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Ownership Status:' : 'Kahimtang sa Pagpanag-iya:'}</label>
+            <input
+              type="text"
               value={ownershipStatus}
               onChange={(e) => setOwnershipStatus(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="">Select ownership status</option>
-              <option value="sole-owner">Sole Owner</option>
-              <option value="joint-owner">Joint Owner</option>
-              <option value="others">Others</option>
-            </select>
+              placeholder={language === 'en' ? 'Enter ownership status' : 'Isulod ang kahimtang sa pagpanag-iya'}
+            />
           </div>
         </div>
       </div>
@@ -218,20 +233,20 @@ export default function WithCollateralForm() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Loan Details
+          {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Loan Purpose:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Purpose:' : 'Katuyoan sa Pahulam:'}</label>
             <input 
               value={appLoanPurpose}
               onChange={(e) => setAppLoanPurpose(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-              placeholder="Enter Loan Purpose" 
+              placeholder={language === 'en' ? 'Enter Loan Purpose' : 'Isulod ang Katuyoan sa Pahulam'} 
             />
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Loan Amount:</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
             <select
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               onChange={(e) => {
@@ -240,7 +255,7 @@ export default function WithCollateralForm() {
               }}
               value={selectedLoan?.amount || ""}
             >
-              <option value="">Select amount</option>
+              <option value="">{language === 'en' ? 'Select amount' : 'Pilia ang kantidad'}</option>
               {loanOptions.map((opt) => (
                 <option key={opt.amount} value={opt.amount}>
                   ₱{opt.amount.toLocaleString()}
@@ -249,7 +264,7 @@ export default function WithCollateralForm() {
             </select>
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Loan Terms (months):</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Terms (months):' : 'Panahon sa Pahulam (buwan):'}</label>
             <input 
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
               value={selectedLoan?.months || ""} 
@@ -257,7 +272,7 @@ export default function WithCollateralForm() {
             />
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">Monthly Interest Rate (%):</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Interest Rate (%):' : 'Bulan nga Interest Rate (%):'}</label>
             <input 
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
               value={selectedLoan?.interest || ""} 
@@ -271,10 +286,10 @@ export default function WithCollateralForm() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          Document Upload
+          {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
         </h4>
         <div>
-          <label className="block font-medium mb-3 text-gray-700">Upload Required Documents:</label>
+          <label className="block font-medium mb-3 text-gray-700">{language === 'en' ? 'Upload Required Documents:' : 'Iupload ang mga Kinahanglanon nga Dokumento:'}</label>
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
             <input
               type="file"
@@ -284,9 +299,10 @@ export default function WithCollateralForm() {
               className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
                         file:rounded-lg file:border-0 file:text-sm file:font-medium
                         file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+              title={language === 'en' ? 'Choose files' : 'Pilia ang mga file'}
             />
           </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">Accepted: PDF, JPG, PNG. You can upload multiple files.</p>
+          <p className="text-xs text-gray-500 mt-2 text-center">{language === 'en' ? 'Accepted: PDF, JPG, PNG. You can upload multiple files.' : 'Dawaton: PDF, JPG, PNG. Pwede ka mag-upload og daghang files.'}</p>
         </div>
       </div>
 
@@ -294,7 +310,7 @@ export default function WithCollateralForm() {
         onClick={handleSubmit}
         className="w-full bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 font-semibold text-lg transition-colors shadow-sm"
       >
-        Submit Application
+        {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
     </>
   );
