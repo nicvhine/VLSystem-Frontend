@@ -20,12 +20,16 @@ interface Collection {
   dueDate: string;
   periodAmount: number;
   paidAmount: number;
+  totalPayment: number,
   loanBalance: number;
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   collector: string;
   note?: string;
   collectionNumber: number;
 }
+
+
+
 
 function LoadingSpinner() {
   return (
@@ -75,6 +79,8 @@ export default function CollectionsPage() {
 
     fetchCollections();
   }, []);
+
+ 
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -242,7 +248,8 @@ export default function CollectionsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">ID</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Total Payment</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
@@ -263,9 +270,10 @@ export default function CollectionsPage() {
                 ) : (
                   filteredCollections.map((col) => (
                     <tr key={col.referenceNumber} className="hover:bg-blue-50/60">
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.totalPayment)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
