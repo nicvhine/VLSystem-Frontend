@@ -2,41 +2,49 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import ChangePasswordModal from './components/forceChange';
 import { useRouter } from 'next/navigation';
 import Navbar from '../../components/borrower/navbar';
 import Link from 'next/link';
+import ReceiptModal from './components/receipt';
+import ChangePasswordModal from './components/forceChange';
 
 interface LoanDetails {
   loanId: string;
   name: string;
   interestRate: number;
   dateDisbursed: string;
+  principal: number;
   startDate: string;
   endDate: string;
+  monthlyDue: number;
+  totalPayable: number;
   termsInMonths: string;
   numberOfPeriods: number;
   status: string;
   balance: number;
   paidAmount: number;
   creditScore: number;
-  paymentHistory: PaymentHistory[];
+  paymentHistory: Payment[];
+  paymentProgress: number;
 }
 
-interface PaymentHistory {
-  reference: string;
-  date: string;
-  balance: number;
-  periodAmount: number;
-  paidAmount: number;
-  mode: string;
+interface Payment {
+  loanId: string;
+  referenceNumber: string;
+  borrowersId: string;
+  collector: string;
+  amount: number;
+  datePaid: string;
 }
 
 export default function BorrowerDashboard() {
   const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false); 
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -79,7 +87,6 @@ export default function BorrowerDashboard() {
         })
         .then(data => {
           setLoanInfo(data);
-          setAuthenticated(true); 
         })
         .catch(err => {
           console.error('Loan fetch error:', err);
@@ -92,6 +99,21 @@ export default function BorrowerDashboard() {
       router.push('/');
     }
   }, [router]);
+
+   useEffect(() => {
+  const fetchPayments = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/payments`);
+      const data = await response.json();
+      setPayments(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch payments:", error);
+      setPayments([]);
+    }
+  };
+
+  fetchPayments();
+}, []);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -127,13 +149,14 @@ export default function BorrowerDashboard() {
   if (!loanInfo) return <div className="p-6 text-center text-red-500">No active loan found.</div>;
 
   const {
-    loanId, name, interestRate, dateDisbursed,
-    startDate, endDate, termsInMonths, numberOfPeriods,
+    loanId, name, interestRate, dateDisbursed, principal,
+    startDate, endDate, termsInMonths, numberOfPeriods, monthlyDue, totalPayable,
     status, balance, paidAmount,
     creditScore, paymentHistory
   } = loanInfo;
 
-  const paymentProgress = calculatePaymentProgress();
+  const paymentProgress = loanInfo.paymentProgress ?? 0;
+
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
@@ -199,11 +222,13 @@ export default function BorrowerDashboard() {
 
             <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
               <div className="space-y-2">
-                <p><span className="font-medium">Interest Rate:</span> {interestRate}%</p>
                 <p><span className="font-medium">Release Date:</span> {formatDate(dateDisbursed)}</p>
+                <p><span className="font-medium">Principal Amount:</span> {formatCurrency(principal)}</p>
                 <p><span className="font-medium">Loan Period:</span> {termsInMonths} Months</p>
-                <p><span className="font-medium">Remaining Balance:</span> {formatCurrency(balance)}</p>
+                <p><span className="font-medium">Interest Rate:</span> {interestRate}%</p>
+                <p><span className="font-medium">Total Payable:</span> {formatCurrency(totalPayable)}</p>
                 <p><span className="font-medium">Total Payments:</span> {formatCurrency(paidAmount)}</p>
+                <p><span className="font-medium">Remaining Balance:</span> {formatCurrency(balance)}</p>
               </div>
             </div>
           </div>
@@ -253,7 +278,6 @@ export default function BorrowerDashboard() {
                   <tr>
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Reference #</th>
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Date</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">Balance</th>
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Period Amount</th>
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Paid Amount</th>
                     <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">Mode</th>
@@ -261,23 +285,36 @@ export default function BorrowerDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {paymentHistory && paymentHistory.length > 0 ? (
-                    paymentHistory.map((payment, idx) => (
+                  {payments && payments.length > 0 ? (
+                    Object.values(
+                    payments
+                      .filter(payment => payment.loanId === loanId)
+                      .reduce((acc, payment) => {
+                        if (!acc[payment.referenceNumber]) {
+                          acc[payment.referenceNumber] = { ...payment };
+                        } else {
+                          acc[payment.referenceNumber].amount += payment.amount;
+                        }
+                        return acc;
+                      }, {} as Record<string, Payment>)
+                    ).map((payment, idx) => (
                       <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{payment.reference}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-700">{payment.date}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600 hidden sm:table-cell">{formatCurrency(payment.balance)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600">{formatCurrency(payment.periodAmount)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{formatCurrency(payment.paidAmount)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 hidden sm:table-cell">{payment.mode}</td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{payment.referenceNumber}</td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-700">{formatDate(payment.datePaid)}</td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600">{formatCurrency(monthlyDue)}</td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{formatCurrency(payment.amount)}</td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 hidden sm:table-cell"></td>
                         <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
-                          <a
-                            href="#"
+                          <button
+                            onClick={() => {
+                              setSelectedReceipt(payment);
+                              setShowReceipt(true);
+                            }}
                             className="text-blue-600 underline hover:text-blue-800"
-                            download
                           >
                             Download
-                          </a>
+                          </button>
+
                         </td>
                       </tr>
                     ))
@@ -297,8 +334,8 @@ export default function BorrowerDashboard() {
               {paymentHistory && paymentHistory.length > 0 && paymentHistory.map((payment, idx) => (
                 <div key={`mobile-${idx}`} className="px-4 py-3 border-t border-gray-200 bg-gray-50">
                   <div className="text-xs text-gray-600 space-y-1">
-                    <p><span className="font-medium">Balance:</span> {formatCurrency(payment.balance)}</p>
-                    <p><span className="font-medium">Mode:</span> {payment.mode}</p>
+                    <p><span className="font-medium">Balance:</span></p>
+                    <p><span className="font-medium">Mode:</span> </p>
                     <a href="#" className="text-blue-600 underline hover:text-blue-800" download>
                       Download E-Receipt
                     </a>
@@ -308,24 +345,22 @@ export default function BorrowerDashboard() {
             </div>
           </Suspense>
         </div>
+
+        {showReceipt && (
+  <ReceiptModal
+    isOpen={showReceipt}
+    onClose={() => setShowReceipt(false)}
+    payment={selectedReceipt}
+  />
+)}
+
       </main>
 
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}
+      
     </div>
   );
 }
 
-// const handleLogout = () => {
-//   localStorage.clear();
-//   router.push('/');
-// };
-
-
-//  <button
-//       onClick={handleLogout}
-//       className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-//     >
-//       Logout
-// </button>
