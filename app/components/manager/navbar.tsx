@@ -25,10 +25,10 @@ export default function Navbar() {
   const closeModal = () => setIsModalOpen(false);
 
   const navItems = [
-    { name: 'Loans', href: '/head/loans' },
+    { name: 'Loans', href: '/components/manager/loans' },
     { name: 'Applications', href: '/components/manager/applications' },
     { name: 'Agents', href: '/head/agents' },
-    { name: 'Collections', href: '/head/collections' },
+    { name: 'Collections', href: '/components/manager/collections' },
   ];
 
   useEffect(() => {

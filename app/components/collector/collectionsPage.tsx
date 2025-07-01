@@ -17,7 +17,7 @@ interface Collection {
   loanId: string;
   borrowersId: string;
   name: string;
-  collectionNumber: number;
+  referenceNumber: string; 
   dueDate: string;
   periodAmount: number;
   paidAmount: number;
@@ -25,7 +25,10 @@ interface Collection {
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   collector: string;
   note?: string;
+  collectionNumber: number;
+  totalPayment: number;
 }
+
 
 function LoadingSpinner() {
   return (
@@ -63,7 +66,7 @@ export default function CollectionsPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/loans/collections?collector=${encodeURIComponent(storedCollector)}`);
+      const response = await fetch(`http://localhost:3001/collections?collector=${encodeURIComponent(storedCollector)}`);
       const data = await response.json();
 
       setCollections(Array.isArray(data) ? data : []);
@@ -120,32 +123,45 @@ const handleConfirmPayment = async () => {
   if (!selectedCollection) return;
 
   try {
-    // Optional: send to backend
-    await fetch(`http://localhost:3001/loans/collections/${selectedCollection.collectionNumber}/pay`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        amount: paymentAmount,
-      }),
-    });
+    const response = await fetch(`http://localhost:3001/collections/${selectedCollection.referenceNumber}/pay`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ amount: paymentAmount }),
+});
 
-    // Update the local state
-    setCollections(prev =>
-      prev.map(col =>
-        col.collectionNumber === selectedCollection.collectionNumber
-          ? {
-              ...col,
-              paidAmount: col.paidAmount + paymentAmount,
-              status:
-                col.paidAmount + paymentAmount >= col.periodAmount
-                  ? 'Paid'
-                  : 'Partial',
-              note: '', 
-            }
-          : col
-      )
+    if (!response.ok) throw new Error('Failed to post payment');
+
+    const updatedPaidAmount = selectedCollection.paidAmount + paymentAmount;
+    const isPaid = updatedPaidAmount >= selectedCollection.periodAmount;
+
+    setCollections((prev) =>
+      prev.map((col) => {
+        // Update the collection being paid
+        if (col.referenceNumber === selectedCollection.referenceNumber) {
+          return {
+            ...col,
+            paidAmount: updatedPaidAmount,
+            status: isPaid ? 'Paid' : 'Partial',
+            note: isPaid ? '' : col.note || '',
+          };
+        }
+
+        // Update the NEXT collection's balance if payment is complete
+        if (
+          isPaid &&
+          col.loanId === selectedCollection.loanId &&
+          col.referenceNumber === selectedCollection.referenceNumber + 1
+        ) {
+          return {
+            ...col,
+            balance: col.balance - selectedCollection.periodAmount,
+          };
+        }
+
+        return col;
+      })
     );
   } catch (err) {
     console.error('Payment failed:', err);
@@ -156,6 +172,7 @@ const handleConfirmPayment = async () => {
     setPaymentAmount(0);
   }
 };
+
 
 
 
@@ -253,6 +270,7 @@ const handleConfirmPayment = async () => {
                 <tr>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">ID</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Total Payment</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
@@ -279,12 +297,16 @@ const handleConfirmPayment = async () => {
                 ) : (
                   filteredCollections.map((col) => (
                     <tr
-                      key={col.collectionNumber}
+                      key={col.referenceNumber}
                       className="hover:bg-blue-50/60 cursor-pointer transition-colors"
                     >
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.totalPayment)}</td>
+                     <td className="px-6 py-4 text-sm text-gray-900">
+                      {formatCurrency(col.periodAmount - col.paidAmount)}
+                    </td>
+
 
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
@@ -305,30 +327,17 @@ const handleConfirmPayment = async () => {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">{col.note || '-'}</td>
                       <td className="px-6 py-4">
-                        {(() => {
-                          const dueDate = new Date(col.dueDate);
-                          const today = new Date();
-                          const isToday =
-                            dueDate.getFullYear() === today.getFullYear() &&
-                            dueDate.getMonth() === today.getMonth() &&
-                            dueDate.getDate() === today.getDate();
+                        {col.status !== 'Paid' ? (
+                      <button
+                        onClick={() => handleMakePayment(col)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium"
+                      >
+                        Make Payment
+                      </button>
+                    ) : (
+                      <span className="text-green-600 text-xs">Paid</span>
+                    )}
 
-                          return isToday ? (
-                        col.status !== 'Paid' ? (
-                          <button
-                            onClick={() => handleMakePayment(col)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium"
-                          >
-                            Make Payment
-                          </button>
-                        ) : (
-                          <span className="text-green-600 text-xs">Paid</span>
-                        )
-                      ) : (
-                        <span className="text-gray-400 text-xs">Not due</span>
-                      );
-
-                        })()}
                       </td>
 
                     </tr>
