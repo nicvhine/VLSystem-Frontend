@@ -11,14 +11,14 @@ interface LoanDetails {
   loanId: string;
   name: string;
   interestRate: number;
-  releaseDate: string;
+  dateDisbursed: string;
   startDate: string;
   endDate: string;
-  loanPeriod: string;
+  termsInMonths: string;
   numberOfPeriods: number;
   status: string;
-  remainingBalance: number;
-  totalPayment: number;
+  balance: number;
+  paidAmount: number;
   creditScore: number;
   paymentHistory: PaymentHistory[];
 }
@@ -105,11 +105,20 @@ export default function BorrowerDashboard() {
       minimumFractionDigits: 0,
     });
 
+    const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-PH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+
   // Calculate payment progress percentage
   const calculatePaymentProgress = () => {
     if (!loanInfo) return 0;
-    const totalLoan = loanInfo.totalPayment;
-    const remaining = loanInfo.remainingBalance;
+    const totalLoan = loanInfo.paidAmount;
+    const remaining = loanInfo.balance;
     const paid = totalLoan - remaining;
     return Math.round((paid / totalLoan) * 100);
   };
@@ -118,9 +127,9 @@ export default function BorrowerDashboard() {
   if (!loanInfo) return <div className="p-6 text-center text-red-500">No active loan found.</div>;
 
   const {
-    loanId, name, interestRate, releaseDate,
-    startDate, endDate, loanPeriod, numberOfPeriods,
-    status, remainingBalance, totalPayment,
+    loanId, name, interestRate, dateDisbursed,
+    startDate, endDate, termsInMonths, numberOfPeriods,
+    status, balance, paidAmount,
     creditScore, paymentHistory
   } = loanInfo;
 
@@ -191,14 +200,10 @@ export default function BorrowerDashboard() {
             <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
               <div className="space-y-2">
                 <p><span className="font-medium">Interest Rate:</span> {interestRate}%</p>
-                <p><span className="font-medium">Release Date:</span> {releaseDate}</p>
-                <p><span className="font-medium">Start Date:</span> {startDate}</p>
-                <p><span className="font-medium">End Date:</span> {endDate}</p>
-                <p><span className="font-medium">Loan Period:</span> {loanPeriod}</p>
-                <p><span className="font-medium">Number of Periods:</span> {numberOfPeriods}</p>
-                <p><span className="font-medium">Status:</span> <span className="text-green-600 font-semibold">{status}</span></p>
-                <p><span className="font-medium">Remaining Balance:</span> {formatCurrency(remainingBalance)}</p>
-                <p><span className="font-medium">Total Payments:</span> {formatCurrency(totalPayment)}</p>
+                <p><span className="font-medium">Release Date:</span> {formatDate(dateDisbursed)}</p>
+                <p><span className="font-medium">Loan Period:</span> {termsInMonths} Months</p>
+                <p><span className="font-medium">Remaining Balance:</span> {formatCurrency(balance)}</p>
+                <p><span className="font-medium">Total Payments:</span> {formatCurrency(paidAmount)}</p>
               </div>
             </div>
           </div>
