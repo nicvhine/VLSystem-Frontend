@@ -16,6 +16,7 @@ interface Application {
   loanType: string; 
   status: string;
   appLoanTerms: number;
+  totalPayable: number;
 }
 
 function LoadingSpinner() {
@@ -217,11 +218,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                   <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.dateApplied)}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{application.appInterest}%</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                  {(application.loanType === 'Regular Loan With Collateral' || application.loanType === 'Regular Loan Without Collateral') 
-                    ? collectableAmount(application.appLoanAmount, application.appInterest, application.appLoanTerms)
-                    : '-'}
-                </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{application.totalPayable}</td>
 
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
