@@ -12,6 +12,7 @@ import Common from "./forms/common";
 
 
 export default function ApplicationPage() {
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [address, setAddress] = useState('');
   const [loanType, setLoanType] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -31,35 +32,35 @@ export default function ApplicationPage() {
 
 
   const loanTypes = [
-    'Regular Loan Without Collateral',
-    'Regular Loan With Collateral', 
-    'Open-Term Loan'
+    language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)',
+    language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)',
+    language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam',
   ];
 
   const getRequirements = (type: string) => {
     switch(type) {
-      case 'Regular Loan Without Collateral':
+      case (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)'):
         return [
-          'Valid Government-issued ID',
-          'Proof of Income',
-          'Certificate of Employment / Business Permit',
-          'Proof of Billing'
+          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
+          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
+          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
+          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
         ];
-      case 'Regular Loan With Collateral':
+      case (language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)'):
         return [
-          'Valid Government-issued ID',
-          'Proof of Income',
-          'Certificate of Employment / Business Permit',
-          'Proof of Billing',
-          'Collateral Document',
-          'Appraisal Report of Collateral'
+          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
+          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
+          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
+          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
+          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
+          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
         ];
-      case 'Open-Term Loan':
+      case (language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam'):
         return [
-          'Valid Government-issued ID',
-          'Proof of Income',
-          'Certificate of Employment / Business Permit',
-          'Proof of Billing'
+          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
+          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
+          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
+          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
         ];
       default:
         return [];
@@ -67,11 +68,11 @@ export default function ApplicationPage() {
   };
 
   const loanProcessSteps = [
-    'Application Submission',
-    'Document Verification', 
-    'Credit Assessment',
-    'Approval Process',
-    'Loan Disbursement'
+    language === 'en' ? 'Application Submission' : 'Pagsumite sa Aplikasyon',
+    language === 'en' ? 'Document Verification' : 'Pag-verify sa Dokumento',
+    language === 'en' ? 'Credit Assessment' : 'Pagsusi sa Kredito',
+    language === 'en' ? 'Approval Process' : 'Proseso sa Pag-apruba',
+    language === 'en' ? 'Loan Disbursement' : 'Pagpagawas sa Pahulam',
   ];
 
   function MapComponent({ setAddress }: { setAddress: (address: string) => void }) {
@@ -108,7 +109,7 @@ export default function ApplicationPage() {
 
 return (
 <div className="min-h-screen bg-gray-50 text-black">
-  <Navbar />
+  <Navbar language={language} setLanguage={setLanguage} />
   <div className="flex min-h-screen">
        
 {/* Left Sidebar */}
@@ -117,7 +118,7 @@ return (
 {/* Type of Loan Section */}
 <div className="bg-white rounded-lg shadow-sm border border-gray-100">
   <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-    <h3 className="font-semibold text-gray-800 text-center">Type of Loan</h3>
+    <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Type of Loan' : 'Klase sa Pahulam'}</h3>
   </div>
   <div className="p-4">
     <div className="bg-gray-50 rounded-lg p-3">
@@ -126,7 +127,7 @@ return (
         onChange={(e) => setLoanType(e.target.value)}
         className="w-full p-3 text-center font-medium bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         >
-        <option value="">-- TYPE OF LOAN --</option>
+        <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
         {loanTypes.map((type) => (
         <option key={type} value={type}>{type}</option>
         ))}
@@ -138,7 +139,7 @@ return (
           {/* Type of Loan Requirements Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-100">
             <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-center">Loan Requirements</h3>
+              <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}</h3>
             </div>
             <div className="p-4 overflow-y-auto">
               {loanType ? (
@@ -155,7 +156,7 @@ return (
                 </div>
               ) : (
                 <div className="text-gray-400 text-sm text-center flex items-center justify-center h-full">
-                  Select a loan type to view requirements
+                  {language === 'en' ? 'Select a loan type to view requirements' : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
                 </div>
               )}
             </div>
@@ -164,7 +165,7 @@ return (
           {/* Loan Process Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-100">
             <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-center">Application Process</h3>
+              <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}</h3>
             </div>
             <div className="p-4 h-48 overflow-y-auto">
               <div className="space-y-3">
@@ -188,10 +189,12 @@ return (
           <div className="h-full flex items-center justify-center">
             {!loanType ? (
               <div className="text-center px-8">
-                <h1 className="text-5xl font-bold text-gray-800 mb-2">Application</h1>
-                <h2 className="text-5xl font-bold text-gray-800 mb-6">Form</h2>
+                <h1 className="text-5xl font-bold text-gray-800 mb-2">{language === 'en' ? 'Application' : 'Aplikasyon'}</h1>
+                <h2 className="text-5xl font-bold text-gray-800 mb-6">{language === 'en' ? 'Form' : 'Porma'}</h2>
                 <p className="text-lg text-gray-500 max-w-md mx-auto">
-                  Please select a loan type from the sidebar to begin your application
+                  {language === 'en'
+                    ? 'Please select a loan type from the sidebar to begin your application'
+                    : 'Pilia ang klase sa pahulam sa sidebar aron magsugod sa imong aplikasyon'}
                 </p>
               </div>
             ) : (
@@ -203,7 +206,7 @@ return (
                   </div>
 
 
-              {loanType === "Regular Loan With Collateral" && (
+              {loanType === (language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)') && (
                 <WithCollateralLoanForm
                   maritalStatus={maritalStatus}
                   setMaritalStatus={setMaritalStatus}
@@ -213,15 +216,15 @@ return (
                   setAddress={setAddress}
                   employmentStatus={employmentStatus}
                   setEmploymentStatus={setEmploymentStatus}
+                  language={language}
                 />
               )}
 
-                {loanType === "Regular Loan Without Collateral" && (
-                <WithoutCollateralLoanForm
-                />
+                {loanType === (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)') && (
+                <WithoutCollateralLoanForm language={language} />
                 )}
 
-                  {loanType === "Open-Term Loan" && (
+                  {loanType === (language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam') && (
                 <OpenTermLoanForm
                   maritalStatus={maritalStatus}
                   setMaritalStatus={setMaritalStatus}
@@ -231,6 +234,7 @@ return (
                   setAddress={setAddress}
                   employmentStatus={employmentStatus}
                   setEmploymentStatus={setEmploymentStatus}
+                  language={language}
                 />
                 )}
                 </div>
@@ -250,18 +254,17 @@ return (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">Application Submitted Successfully!</h3>
-              <p className="text-gray-600 mb-4">Your loan application has been received and is being processed.</p>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">{language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}</h3>
+              <p className="text-gray-600 mb-4">{language === 'en' ? 'Your loan application has been received and is being processed.' : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}</p>
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-600 mb-1">Your Application ID:</p>
+                <p className="text-sm text-gray-600 mb-1">{language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}</p>
                 <p className="text-lg font-semibold text-red-600">{mockLoanId}</p>
               </div>
               <button
                 onClick={closeModal}
                 className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
               >
-                Close
-              </button>
+                {language === 'en' ? 'Close' : 'Sirado'}</button>
             </div>
           </div>
         </div>
