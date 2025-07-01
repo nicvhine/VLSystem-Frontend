@@ -2,10 +2,11 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { jwtDecode } from 'jwt-decode';
-import ChangePasswordModal from './components/forceChange';
 import { useRouter } from 'next/navigation';
 import Navbar from '../../components/borrower/navbar';
 import Link from 'next/link';
+import ReceiptModal from './components/receipt';
+import ChangePasswordModal from './components/forceChange';
 
 interface LoanDetails {
   loanId: string;
@@ -24,6 +25,7 @@ interface LoanDetails {
   paidAmount: number;
   creditScore: number;
   paymentHistory: Payment[];
+  paymentProgress: number;
 }
 
 interface Payment {
@@ -39,8 +41,9 @@ export default function BorrowerDashboard() {
   const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false); 
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
 
   const router = useRouter();
 
@@ -84,7 +87,6 @@ export default function BorrowerDashboard() {
         })
         .then(data => {
           setLoanInfo(data);
-          setAuthenticated(true); 
         })
         .catch(err => {
           console.error('Loan fetch error:', err);
@@ -153,7 +155,8 @@ export default function BorrowerDashboard() {
     creditScore, paymentHistory
   } = loanInfo;
 
-  const paymentProgress = calculatePaymentProgress();
+  const paymentProgress = loanInfo.paymentProgress ?? 0;
+
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
@@ -302,13 +305,16 @@ export default function BorrowerDashboard() {
                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{formatCurrency(payment.amount)}</td>
                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 hidden sm:table-cell"></td>
                         <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
-                          <a
-                            href="#"
+                          <button
+                            onClick={() => {
+                              setSelectedReceipt(payment);
+                              setShowReceipt(true);
+                            }}
                             className="text-blue-600 underline hover:text-blue-800"
-                            download
                           >
                             Download
-                          </a>
+                          </button>
+
                         </td>
                       </tr>
                     ))
@@ -339,24 +345,22 @@ export default function BorrowerDashboard() {
             </div>
           </Suspense>
         </div>
+
+        {showReceipt && (
+  <ReceiptModal
+    isOpen={showReceipt}
+    onClose={() => setShowReceipt(false)}
+    payment={selectedReceipt}
+  />
+)}
+
       </main>
 
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}
+      
     </div>
   );
 }
 
-// const handleLogout = () => {
-//   localStorage.clear();
-//   router.push('/');
-// };
-
-
-//  <button
-//       onClick={handleLogout}
-//       className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-//     >
-//       Logout
-// </button>
