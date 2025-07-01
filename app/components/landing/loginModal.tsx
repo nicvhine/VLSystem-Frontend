@@ -81,6 +81,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
       localStorage.setItem('fullName', data.fullName || data.name || data.username);
       localStorage.setItem('role', data.role?.toLowerCase() || 'staff');
+
+      if (data.role?.toLowerCase() === 'collector') {
+        localStorage.setItem('collectorName', data.name); 
+      }
+
       if (data.userId) localStorage.setItem('userId',data.userId);
 
       if(data.isFirstLogin){
@@ -99,6 +104,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           break;
         case 'loan officer':
           router.push('components/loanOfficer');
+          break;
+         case 'collector':
+          router.push('components/collector');
           break;
         default:
           router.push('/');

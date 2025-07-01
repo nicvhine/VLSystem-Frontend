@@ -16,6 +16,7 @@ interface Application {
   loanType: string; 
   status: string;
   appLoanTerms: number;
+  totalPayable: number;
 }
 
 function LoadingSpinner() {
@@ -35,6 +36,8 @@ export default function ApplicationsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [generatedUsername, setGeneratedUsername] = useState('');
+  const [collectors, setCollectors] = useState<string[]>([]);
+  const [selectedCollector, setSelectedCollector] = useState<string>('');
 
   const generateUsername = (fullName: string) => {
     const parts = fullName.trim().toLowerCase().split(' ');
@@ -57,6 +60,29 @@ export default function ApplicationsPage() {
 
     fetchApplications();
   }, []);
+
+  useEffect(() => {
+  const fetchCollectors = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/users/collectors");
+      if (!res.ok) throw new Error("Network response was not ok");
+
+      const data = await res.json();
+
+      if (!Array.isArray(data)) {
+        throw new Error("Expected array but got: " + JSON.stringify(data));
+      }
+
+      setCollectors(data);
+    } catch (error) {
+      console.error("Error fetching collectors:", error);
+    }
+  };
+
+  fetchCollectors();
+}, []);
+
+
 
   const filteredApplications = applications
   .filter((application) => !['Pending', 'Denied by LO'].includes(application.status))
@@ -231,11 +257,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                   <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.dateApplied)}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{application.appInterest}%</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                  {(application.loanType === 'Regular Loan With Collateral' || application.loanType === 'Regular Loan Without Collateral') 
-                    ? collectableAmount(application.appLoanAmount, application.appInterest, application.appLoanTerms)
-                    : '-'}
-                </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{application.totalPayable}</td>
 
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
@@ -309,6 +331,18 @@ const handleAction = async (id: string, status: 'Disbursed') => {
         <strong>Generated Username:</strong> <span className="text-blue-600">{generatedUsername}</span>
       </p>
 
+        <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
+  <select
+    value={selectedCollector}
+    onChange={(e) => setSelectedCollector(e.target.value)}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+  >
+    <option value="">Select a collector</option>
+    {collectors.map((name) => (
+      <option key={name} value={name}>{name}</option>
+    ))}
+  </select>
+
       <div className="flex justify-end gap-3">
         <button
           className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
@@ -322,15 +356,17 @@ const handleAction = async (id: string, status: 'Disbursed') => {
   try {
     // Step 1: Create Borrower Account
     const borrowerRes = await fetch("http://localhost:3001/borrowers", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: generatedUsername,
-        name: selectedApp.appName,
-        role: "borrower",
-        applicationId: selectedApp.applicationId,
-      }),
-    });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    username: generatedUsername,
+    name: selectedApp.appName,
+    role: "borrower",
+    applicationId: selectedApp.applicationId,
+    assignedCollector: selectedCollector,
+  }),
+});
+
 
     if (!borrowerRes.ok) throw new Error("Failed to create borrower account");
 

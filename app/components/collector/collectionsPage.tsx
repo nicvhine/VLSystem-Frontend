@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import Navbar from '../navbar';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -18,7 +17,7 @@ interface Collection {
   loanId: string;
   borrowersId: string;
   name: string;
-  collectionNumber: number;
+  referenceNumber: string; 
   dueDate: string;
   periodAmount: number;
   paidAmount: number;
@@ -26,8 +25,10 @@ interface Collection {
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   collector: string;
   note?: string;
-  referenceNumer: string;
+  collectionNumber: number;
+  totalPayment: number;
 }
+
 
 function LoadingSpinner() {
   return (
@@ -40,39 +41,46 @@ function LoadingSpinner() {
 export default function CollectionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
-  const [activeCollector, setActiveCollector] = useState('All');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentCollector, setCurrentCollector] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<number>(0);
+
+
+    useEffect(() => {
+    const storedCollector = localStorage.getItem("collectorName");
+    setCurrentCollector(storedCollector);
+    }, []);
 
   useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/collections');
-        const data = await response.json();
-        console.log('Fetched collections:', data);
+  const fetchCollections = async () => {
+    const storedCollector = localStorage.getItem("collectorName");
 
-        // ✅ FIX: Ensure you're setting an array
-        if (Array.isArray(data)) {
-          setCollections(data);
-        } else if (Array.isArray(data.collections)) {
-          setCollections(data.collections);
-        } else {
-          console.error('Unexpected response format:', data);
-          setCollections([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch collections:', error);
-        setCollections([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (!storedCollector) {
+      setCollections([]);
+      setLoading(false);
+      return;
+    }
 
-    fetchCollections();
-  }, []);
+    try {
+      const response = await fetch(`http://localhost:3001/collections?collector=${encodeURIComponent(storedCollector)}`);
+      const data = await response.json();
 
-  const collectors = ['All', 'Rodelo', 'Earl', 'Shiela', 'Voltair', 'Morgan', 'Stephen'];
+      setCollections(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to fetch collections:", error);
+      setCollections([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCollections();
+}, []);
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
@@ -81,21 +89,20 @@ export default function CollectionsPage() {
     }).format(amount);
   };
 
-  // Calculate statistics
   const filteredCollections = collections.filter((col) => {
-    const due = new Date(col.dueDate);
-    const selected = selectedDate;
-    const sameDate =
-      due.getFullYear() === selected.getFullYear() &&
-      due.getMonth() === selected.getMonth() &&
-      due.getDate() === selected.getDate();
+  const due = new Date(col.dueDate);
+  const selected = selectedDate;
+  const sameDate =
+    due.getFullYear() === selected.getFullYear() &&
+    due.getMonth() === selected.getMonth() &&
+    due.getDate() === selected.getDate();
 
-    const matchesCollector =
-      activeCollector === 'All' || col.collector === activeCollector;
-    const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
+  const matchesCollector = col.collector === currentCollector;
+  const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesCollector && matchesSearch && sameDate;
-  });
+  return matchesCollector && matchesSearch && sameDate;
+});
+
 
   const totalPayments = filteredCollections.length;
   const completedPayments = filteredCollections.filter(col => col.status === 'Paid').length;
@@ -105,29 +112,73 @@ export default function CollectionsPage() {
   const totalTarget = filteredCollections.reduce((sum, col) => sum + col.periodAmount, 0);
   const targetAchieved = totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
 
+
+  const handleMakePayment = (collection: Collection) => {
+  setSelectedCollection(collection);
+  setPaymentAmount(collection.periodAmount - collection.paidAmount);
+  setShowModal(true);
+};
+
+const handleConfirmPayment = async () => {
+  if (!selectedCollection) return;
+
+  try {
+    const response = await fetch(`http://localhost:3001/collections/${selectedCollection.referenceNumber}/pay`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ amount: paymentAmount }),
+});
+
+    if (!response.ok) throw new Error('Failed to post payment');
+
+    const updatedPaidAmount = selectedCollection.paidAmount + paymentAmount;
+    const isPaid = updatedPaidAmount >= selectedCollection.periodAmount;
+
+    setCollections((prev) =>
+      prev.map((col) => {
+        // Update the collection being paid
+        if (col.referenceNumber === selectedCollection.referenceNumber) {
+          return {
+            ...col,
+            paidAmount: updatedPaidAmount,
+            status: isPaid ? 'Paid' : 'Partial',
+            note: isPaid ? '' : col.note || '',
+          };
+        }
+
+        // Update the NEXT collection's balance if payment is complete
+        if (
+          isPaid &&
+          col.loanId === selectedCollection.loanId &&
+          col.referenceNumber === selectedCollection.referenceNumber + 1
+        ) {
+          return {
+            ...col,
+            balance: col.balance - selectedCollection.periodAmount,
+          };
+        }
+
+        return col;
+      })
+    );
+  } catch (err) {
+    console.error('Payment failed:', err);
+    alert('Payment failed.');
+  } finally {
+    setShowModal(false);
+    setSelectedCollection(null);
+    setPaymentAmount(0);
+  }
+};
+
+
+
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="mx-auto px-6 py-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-8">Collections</h1>
-
-        {/* Collector Filters */}
-        <div className="flex items-center gap-2 mb-6">
-          {collectors.map((collector) => (
-            <button
-              key={collector}
-              onClick={() => setActiveCollector(collector)}
-              className={`px-4 py-1.5 rounded-md text-sm ${
-                activeCollector === collector
-                  ? 'bg-red-200 text-red-600'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {collector}
-            </button>
-          ))}
-        </div>
-
         {/* Calendar and Stats Section */}
         <div className="grid grid-cols-12 gap-6 mb-6">
           {/* Calendar Section */}
@@ -217,15 +268,16 @@ export default function CollectionsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference Number</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">ID</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Total Payment</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Collector</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Action</th>
+
                 </tr>
               </thead>
 
@@ -245,13 +297,17 @@ export default function CollectionsPage() {
                 ) : (
                   filteredCollections.map((col) => (
                     <tr
+                      key={col.referenceNumber}
                       className="hover:bg-blue-50/60 cursor-pointer transition-colors"
                     >
-                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
-
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.totalPayment)}</td>
+                     <td className="px-6 py-4 text-sm text-gray-900">
+                      {formatCurrency(col.periodAmount - col.paidAmount)}
+                    </td>
+
+
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
                       <td className="px-6 py-4">
@@ -269,8 +325,21 @@ export default function CollectionsPage() {
                           {col.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{col.collector}</td>
                       <td className="px-6 py-4 text-sm text-gray-500">{col.note || '-'}</td>
+                      <td className="px-6 py-4">
+                        {col.status !== 'Paid' ? (
+                      <button
+                        onClick={() => handleMakePayment(col)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium"
+                      >
+                        Make Payment
+                      </button>
+                    ) : (
+                      <span className="text-green-600 text-xs">Paid</span>
+                    )}
+
+                      </td>
+
                     </tr>
                   ))
                 )}
@@ -279,6 +348,46 @@ export default function CollectionsPage() {
           </Suspense>
         </div>
       </div>
+
+      {showModal && selectedCollection && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
+      <h2 className="text-lg font-semibold mb-4">Make Payment for {selectedCollection.name}</h2>
+
+      <p className="text-sm text-gray-600 mb-2">
+        Due Date: {new Date(selectedCollection.dueDate).toDateString()}
+      </p>
+      <p className="text-sm text-gray-600 mb-4">
+        Period Amount: {formatCurrency(selectedCollection.periodAmount)}
+      </p>
+
+      <label className="block text-sm text-gray-700 mb-1">Enter Amount</label>
+      <input
+        type="number"
+        className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
+        value={paymentAmount}
+        onChange={(e) => setPaymentAmount(parseFloat(e.target.value))}
+        min={0}
+        max={selectedCollection.periodAmount}
+      />
+
+      <div className="flex justify-end gap-3">
+        <button
+          className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+          onClick={() => setShowModal(false)}
+        >
+          Cancel
+        </button>
+        <button
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+          onClick={() => handleConfirmPayment()}
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
