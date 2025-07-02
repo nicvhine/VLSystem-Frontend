@@ -160,7 +160,7 @@ export default function BorrowerDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      <Navbar/>
+      <Navbar key={typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : ''} />
 
       <main className="max-w-10xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
