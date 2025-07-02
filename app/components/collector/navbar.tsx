@@ -16,7 +16,8 @@ export default function Navbar() {
   const [isEditing, setIsEditing] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const [notifications, setNotifications] = useState<{ id: number; message: string; date: string; referenceNumber: string; viewed: boolean }[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
 
 

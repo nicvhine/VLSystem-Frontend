@@ -247,7 +247,7 @@ export default function CollectionsPage() {
                     <tr
                       className="hover:bg-blue-50/60 cursor-pointer transition-colors"
                     >
-                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumer}</td>
 
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
