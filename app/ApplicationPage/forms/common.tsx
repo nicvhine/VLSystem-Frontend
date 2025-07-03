@@ -46,6 +46,8 @@ interface CommonProps {
   setAppMonthlyIncome: React.Dispatch<React.SetStateAction<number>>;
   appOccupation: string;
   setAppOccupation: React.Dispatch<React.SetStateAction<string>>;
+  appReferences: { name: string; contact: string; relation: string }[];
+  setAppReferences: React.Dispatch<React.SetStateAction<{ name: string; contact: string; relation: string }[]>>;
   appEmploymentStatus: string;
   setAppEmploymentStatus: React.Dispatch<React.SetStateAction<string>>;
   appCompanyName: string;
@@ -109,10 +111,19 @@ function MapComponent({
     appEmploymentStatus, setAppEmploymentStatus,
     appCompanyName, setAppCompanyName,
     sourceOfIncome, setSourceOfIncome,
+    appReferences, setAppReferences,
     language
   } = props;
 
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
+ 
+
+  const handleReferenceChange = (index: number, field: 'name' | 'contact' | 'relation', value: string) => {
+  const updated = [...props.appReferences];
+  updated[index][field] = value;
+  props.setAppReferences(updated);
+  };
+
 
   const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     props.setAppAddress(e.target.value);
@@ -132,7 +143,7 @@ function MapComponent({
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6" >
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon'}
@@ -373,7 +384,59 @@ function MapComponent({
     </div>
   ) : null}
 </div>
+
+{/* References Section */}
+<div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+  <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+    <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+    {language === 'en' ? 'Character References' : 'Mga Sanggunian'}
+  </h4>
+
+  {[1, 2, 3].map((i) => (
+    <div key={i} className="grid grid-cols-3 gap-4 mb-4">
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === 'en' ? `Reference ${i} Name:` : `Pangalan ng Sanggunian ${i}:`}
+        </label>
+        <input
+          type="text"
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          placeholder={language === 'en' ? 'Full name' : 'Buong pangalan'}
+          value={props.appReferences[i - 1]?.name || ""}
+          onChange={(e) => handleReferenceChange(i - 1, 'name', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === 'en' ? 'Contact Number:' : 'Numero ng Telepono:'}
+        </label>
+        <input
+          type="text"
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          placeholder="09XXXXXXXXX"
+          value={props.appReferences[i - 1]?.contact || ""}
+          onChange={(e) => handleReferenceChange(i - 1, 'contact', e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === 'en' ? 'Relationship:' : 'Relasyon:'}
+        </label>
+        <input
+          type="text"
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          placeholder={language === 'en' ? 'e.g., Friend, Sibling' : 'hal. Higala, Igsoon'}
+          value={props.appReferences[i - 1]?.relation || ""}
+          onChange={(e) => handleReferenceChange(i - 1, 'relation', e.target.value)}
+        />
+      </div>
+    </div>
+  ))}
+</div>
+
     </>
+
+    
 
   )};
 

@@ -52,7 +52,11 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
   const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
-
+  const [appReferences, setAppReferences] = useState([
+    { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" }
+  ]);
   // Loan specific states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
@@ -98,6 +102,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       appLoanTerms: selectedLoan.months,
       appInterest: selectedLoan.interest,
       appLoanPurpose,
+      appReferences,
       // Collateral information
       collateralType,
       collateralValue,
@@ -164,6 +169,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         setAppTypeBusiness={setAppTypeBusiness}
         appDateStarted={appDateStarted}
         setAppDateStarted={setAppDateStarted}
+        appReferences={appReferences}
+        setAppReferences={setAppReferences}
         appBusinessLoc={appBusinessLoc}
         setAppBusinessLoc={setAppBusinessLoc}
         appMonthlyIncome={appMonthlyIncome}

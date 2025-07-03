@@ -4,12 +4,14 @@ import { useState, useEffect} from 'react';
 import Navbar from '../navbar';
 import { FiSearch, FiChevronDown, FiLoader } from 'react-icons/fi';
 import Link from 'next/link';
+import emailjs from 'emailjs-com';
 
 const API_URL = "http://localhost:3001/loan-applications";
 
 interface Application {
   applicationId: string;
   appName: string;
+  appEmail: string;
   dateApplied: string;
   appLoanAmount: number;
   appInterest: number;
@@ -27,6 +29,36 @@ function LoadingSpinner() {
   );
 }
 
+const sendEmail = async ({
+  to_name,
+  email,
+  borrower_username,
+  borrower_password,
+}: {
+  to_name: string;
+  email: string;
+  borrower_username: string;
+  borrower_password: string;
+}) => {
+  try {
+    const result = await emailjs.send(
+      "service_37inqad",
+      "template_pa3ilzi",
+      {
+        to_name,
+        email,
+        borrower_username,
+        borrower_password,
+      },
+      "gVN8M0DfvDrD5_W2M"
+    );
+    console.log("Email sent:", result?.text || result);
+  } catch (error: any) {
+    console.error("EmailJS error:", error);
+    alert("Email failed: " + (error?.text || error.message || "Unknown error"));
+  }
+};
+
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +70,7 @@ export default function ApplicationsPage() {
   const [generatedUsername, setGeneratedUsername] = useState('');
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>('');
+  const [tempPassword, setTempPassword] = useState('');
 
   const generateUsername = (fullName: string) => {
     const parts = fullName.trim().toLowerCase().split(' ');
@@ -82,6 +115,66 @@ export default function ApplicationsPage() {
   fetchCollectors();
 }, []);
 
+const handleCreateAccount = async () => {
+    try {
+      if (!selectedApp) return;
+
+      const borrowerRes = await fetch("http://localhost:3001/borrowers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: generatedUsername,
+          name: selectedApp.appName,
+          role: "borrower",
+          applicationId: selectedApp.applicationId,
+          assignedCollector: selectedCollector,
+        }),
+      });
+
+      const borrowerData = await borrowerRes.json();
+      if (!borrowerRes.ok)
+        throw new Error(borrowerData?.error || "Failed to create borrower account");
+
+      setTempPassword(borrowerData.tempPassword);
+
+      const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Accepted" }),
+      });
+
+      if (!updateRes.ok) throw new Error("Failed to update application status");
+      const updated = await updateRes.json();
+
+      const loanRes = await fetch(
+        `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
+        { method: "POST" }
+      );
+      if (!loanRes.ok) {
+        const err = await loanRes.json();
+        throw new Error(err?.error || "Failed to generate loan");
+      }
+
+      await sendEmail({
+        to_name: selectedApp.appName,
+        email: selectedApp.appEmail,
+        borrower_username: generatedUsername,
+        borrower_password: borrowerData.tempPassword,
+      });
+
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.applicationId === updated.applicationId ? updated : app
+        )
+      );
+      setShowModal(false);
+      setSelectedApp(null);
+      alert("Account created and loan generated successfully.");
+    } catch (error: any) {
+      console.error("Error during borrower creation or loan generation:", error);
+      alert(`Error: ${error.message || "Something went wrong."}`);
+    }
+  };
 
 
   const filteredApplications = applications
@@ -322,99 +415,53 @@ const handleAction = async (id: string, status: 'Disbursed') => {
             </tbody>
           </table>
 
-          {showModal && selectedApp && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Create Account</h2>
-      <p className="mb-2"><strong>Name:</strong> {selectedApp.appName}</p>
-      <p className="mb-4">
-        <strong>Generated Username:</strong> <span className="text-blue-600">{generatedUsername}</span>
-      </p>
+                  {/* Modal */}
+        {showModal && selectedApp && (
+          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
+              <h2 className="text-xl font-semibold mb-4">Create Account</h2>
+              <p className="mb-2"><strong>Name:</strong> {selectedApp.appName}</p>
+              <p className="mb-4">
+                <strong>Generated Username:</strong>{" "}
+                <span className="text-blue-600">{generatedUsername}</span>
+              </p>
+              {tempPassword && (
+                <p className="mb-4">
+                  <strong>Temporary Password:</strong>{" "}
+                  <span className="text-red-600 font-mono">{tempPassword}</span>
+                </p>
+              )}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
+              <select
+                value={selectedCollector}
+                onChange={(e) => setSelectedCollector(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Select a collector</option>
+                {collectors.map((name) => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
 
-        <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
-  <select
-    value={selectedCollector}
-    onChange={(e) => setSelectedCollector(e.target.value)}
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-  >
-    <option value="">Select a collector</option>
-    {collectors.map((name) => (
-      <option key={name} value={name}>{name}</option>
-    ))}
-  </select>
-
-      <div className="flex justify-end gap-3">
-        <button
-          className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
-          onClick={() => setShowModal(false)}
-        >
-          Cancel
-        </button>
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            onClick={async () => {
-  try {
-    // Step 1: Create Borrower Account
-    const borrowerRes = await fetch("http://localhost:3001/borrowers", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    username: generatedUsername,
-    name: selectedApp.appName,
-    role: "borrower",
-    applicationId: selectedApp.applicationId,
-    assignedCollector: selectedCollector,
-  }),
-});
-
-
-    if (!borrowerRes.ok) throw new Error("Failed to create borrower account");
-
-    // Step 2: Mark as Accepted
-    const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: "Accepted" }),
-    });
-
-    if (!updateRes.ok) throw new Error("Failed to update application status");
-
-    const updated = await updateRes.json();
-
-    // Step 3: Generate Loan
-    const loanRes = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
-      method: "POST"
-    });
-
-    if (!loanRes.ok) {
-      const err = await loanRes.json();
-      throw new Error(err?.error || "Failed to generate loan");
-    }
-
-    // Step 4: UI update
-    setApplications((prev) =>
-      prev.map((app) =>
-        app.applicationId === updated.applicationId ? updated : app
-      )
-    );
-    setShowModal(false);
-    setSelectedApp(null);
-    alert("Account created and loan generated successfully.");
-  } catch (error: any) {
-    console.error("Error during borrower creation or loan generation:", error);
-    alert(`Error: ${error.message || "Something went wrong."}`);
-  }
-}}
-        >
-          Create Account
-        </button>
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  onClick={handleCreateAccount}
+                >
+                  Create Account
+                </button>
+              </div>
+            </div>
+            </div>
+)}
       </div>
     </div>
-  </div>
-)}
-
-        </div>
-      </div>
     </div>
   );
 }
