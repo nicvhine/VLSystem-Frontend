@@ -51,6 +51,12 @@ export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
   const [repaymentSchedule, setRepaymentSchedule] = useState("");
   const [specialConditions, setSpecialConditions] = useState("");
 
+  const [appReferences, setAppReferences] = useState([
+   { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" }
+  ]); 
+
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
 
@@ -118,6 +124,7 @@ export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
       appLoanPurpose,
       repaymentSchedule,
       specialConditions,
+      appReferences,
       isCustomTerms: useCustomTerms,
     };
 
@@ -173,6 +180,8 @@ export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
         setAppTypeBusiness={setAppTypeBusiness}
         appDateStarted={appDateStarted}
         setAppDateStarted={setAppDateStarted}
+          appReferences={appReferences}
+        setAppReferences={setAppReferences}
         appBusinessLoc={appBusinessLoc}
         setAppBusinessLoc={setAppBusinessLoc}
         appMonthlyIncome={appMonthlyIncome}

@@ -43,6 +43,11 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
   const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
+  const [appReferences, setAppReferences] = useState([
+   { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" }
+  ]); 
 
   // Translations for select options
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
@@ -75,6 +80,7 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
       appLoanTerms: selectedLoan.months,
       appInterest: selectedLoan.interest,
       appLoanPurpose,
+      appReferences,
     };
 
     try {
@@ -121,6 +127,8 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
         appTypeBusiness={appTypeBusiness}
         setAppTypeBusiness={setAppTypeBusiness}
         appDateStarted={appDateStarted}
+        appReferences={appReferences}
+        setAppReferences={setAppReferences}
         setAppDateStarted={setAppDateStarted}
         appBusinessLoc={appBusinessLoc}
         setAppBusinessLoc={setAppBusinessLoc}
