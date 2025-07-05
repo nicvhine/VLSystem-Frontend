@@ -24,6 +24,7 @@ export default function Navbar() {
   const [isEditing, setIsEditing] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [name, setName] = useState('');
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
@@ -36,13 +37,11 @@ export default function Navbar() {
   ];
 
   useEffect(() => {
-    const storedFullName = localStorage.getItem('fullName');
-    if (storedFullName) {
-      setUser({ fullName: storedFullName });
-    } else {
-      router.push('/');
-    }
-  }, [router]);
+  const storedName = localStorage.getItem('fullName'); 
+  if (storedName) {
+    setName(storedName);
+  }
+}, []);
 
   if (!user) return null;
 
@@ -55,8 +54,7 @@ export default function Navbar() {
 
   const handleEdit = () => {
     if (isEditing) {
-      // Save changes
-      // You can add your save logic here
+
       setIsEditing(false);
     } else {
       setIsEditing(true);
