@@ -42,15 +42,15 @@ const sendEmail = async ({
 }) => {
   try {
     const result = await emailjs.send(
-      "service_37inqad",
-      "template_pa3ilzi",
+      "service_eph6uoe",
+      "template_tjkad0u",
       {
         to_name,
         email,
         borrower_username,
         borrower_password,
       },
-      "gVN8M0DfvDrD5_W2M"
+      "-PgL14MSf1VScXI94"
     );
     console.log("Email sent:", result?.text || result);
   } catch (error: any) {
@@ -116,65 +116,71 @@ export default function ApplicationsPage() {
 }, []);
 
 const handleCreateAccount = async () => {
-    try {
-      if (!selectedApp) return;
+  try {
+    if (!selectedApp) return;
 
-      const borrowerRes = await fetch("http://localhost:3001/borrowers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: generatedUsername,
-          name: selectedApp.appName,
-          role: "borrower",
-          applicationId: selectedApp.applicationId,
-          assignedCollector: selectedCollector,
-        }),
-      });
-
-      const borrowerData = await borrowerRes.json();
-      if (!borrowerRes.ok)
-        throw new Error(borrowerData?.error || "Failed to create borrower account");
-
-      setTempPassword(borrowerData.tempPassword);
-
-      const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Accepted" }),
-      });
-
-      if (!updateRes.ok) throw new Error("Failed to update application status");
-      const updated = await updateRes.json();
-
-      const loanRes = await fetch(
-        `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
-        { method: "POST" }
-      );
-      if (!loanRes.ok) {
-        const err = await loanRes.json();
-        throw new Error(err?.error || "Failed to generate loan");
-      }
-
-      await sendEmail({
-        to_name: selectedApp.appName,
-        email: selectedApp.appEmail,
-        borrower_username: generatedUsername,
-        borrower_password: borrowerData.tempPassword,
-      });
-
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.applicationId === updated.applicationId ? updated : app
-        )
-      );
-      setShowModal(false);
-      setSelectedApp(null);
-      alert("Account created and loan generated successfully.");
-    } catch (error: any) {
-      console.error("Error during borrower creation or loan generation:", error);
-      alert(`Error: ${error.message || "Something went wrong."}`);
+    if (!selectedCollector) {
+      alert("Please select a collector before proceeding.");
+      return;
     }
-  };
+
+    const borrowerRes = await fetch("http://localhost:3001/borrowers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: generatedUsername,
+        name: selectedApp.appName,
+        role: "borrower",
+        applicationId: selectedApp.applicationId,
+        assignedCollector: selectedCollector,
+      }),
+    });
+
+    const borrowerData = await borrowerRes.json();
+    if (!borrowerRes.ok)
+      throw new Error(borrowerData?.error || "Failed to create borrower account");
+
+    setTempPassword(borrowerData.tempPassword);
+
+    const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "Accepted" }),
+    });
+
+    if (!updateRes.ok) throw new Error("Failed to update application status");
+    const updated = await updateRes.json();
+
+    const loanRes = await fetch(
+      `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
+      { method: "POST" }
+    );
+    if (!loanRes.ok) {
+      const err = await loanRes.json();
+      throw new Error(err?.error || "Failed to generate loan");
+    }
+
+    await sendEmail({
+      to_name: selectedApp.appName,
+      email: selectedApp.appEmail,
+      borrower_username: generatedUsername,
+      borrower_password: borrowerData.tempPassword,
+    });
+
+    setApplications((prev) =>
+      prev.map((app) =>
+        app.applicationId === updated.applicationId ? updated : app
+      )
+    );
+    setShowModal(false);
+    setSelectedApp(null);
+    setSelectedCollector('');
+    alert("Account created and loan generated successfully.");
+  } catch (error: any) {
+    console.error("Error during borrower creation or loan generation:", error);
+    alert(`Error: ${error.message || "Something went wrong."}`);
+  }
+};
 
 
   const filteredApplications = applications
@@ -425,12 +431,6 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                 <strong>Generated Username:</strong>{" "}
                 <span className="text-blue-600">{generatedUsername}</span>
               </p>
-              {tempPassword && (
-                <p className="mb-4">
-                  <strong>Temporary Password:</strong>{" "}
-                  <span className="text-red-600 font-mono">{tempPassword}</span>
-                </p>
-              )}
               <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
               <select
                 value={selectedCollector}
