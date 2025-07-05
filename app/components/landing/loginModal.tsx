@@ -11,6 +11,7 @@ interface LoginModalProps {
 export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotRole, setForgotRole] = useState<'borrower' | 'staff' | ''>('');
   const router = useRouter();
@@ -178,7 +179,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               Login to your VLSystem account
             </p>
             <form onSubmit={handleSubmit}>
-
               <input
                 type="text"
                 placeholder="Username"
@@ -186,13 +186,22 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 focus:outline-none text-black focus:ring-2 focus:ring-red-500"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-2.5 text-sm text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
               <p
                 className="text-sm text-blue-600 hover:underline cursor-pointer text-center mb-4"
                 onClick={() => {

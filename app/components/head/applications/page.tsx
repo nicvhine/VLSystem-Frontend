@@ -32,6 +32,7 @@ export default function ApplicationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [activeFilter, setActiveFilter] = useState('Pending');
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -53,6 +54,9 @@ export default function ApplicationsPage() {
 
     fetchApplications();
   }, []);
+
+ 
+
 
   const filteredApplications = applications
   .filter((application) => !['Pending', 'Denied by LO'].includes(application.status))
@@ -106,7 +110,7 @@ export default function ApplicationsPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
       <div className="mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
