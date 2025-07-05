@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "../navbar";
+import emailjs from 'emailjs-com';
+import ErrorModal from "./errorModal";
 import {
   FiSearch,
   FiChevronDown,
@@ -17,6 +19,7 @@ const API_URL = "http://localhost:3001/users";
 interface User {
   userId: string;
   name: string;
+  email: string;
   role: "head" | "manager" | "loan officer" | "collector";
   status: "Active" | "Inactive";
   lastActive: string;
@@ -68,12 +71,12 @@ function CreateUserModal({
   onClose: () => void;
   onCreate: (user: Omit<User, "id" | "lastActive" | "status"> & { status?: User["status"] }) => void;
 }) {
-    const [newUser, setNewUser] = useState<Omit<User, "userId" | "lastActive">>({
+  const [newUser, setNewUser] = useState<Omit<User, "userId" | "lastActive">>({
     name: "",
+    email: "",
     role: "head",
     status: "Active",
   });
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -85,14 +88,13 @@ function CreateUserModal({
     }));
   };
 
-    const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newUser.name) return;
     onCreate(newUser);
     onClose();
-    setNewUser({ name: "", role: "head", status: "Active" });
+    setNewUser({ name: "", email: "", role: "head", status: "Active" });
   };
-
 
   if (!isOpen) return null;
 
@@ -107,6 +109,15 @@ function CreateUserModal({
             placeholder="Enter Name"
             className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
             value={newUser.name}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="text"
+            name="email"
+            placeholder="Enter Email"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
+            value={newUser.email}
             onChange={handleChange}
             required
           />
@@ -142,6 +153,39 @@ function CreateUserModal({
   );
 }
 
+const sendEmail = async (
+  {
+    to_name,
+    email,
+    user_username,
+    user_password,
+  }: {
+    to_name: string;
+    email: string;
+    user_username: string;
+    user_password: string;
+  },
+  onError: (msg: string) => void
+) => {
+  try {
+    const result = await emailjs.send(
+      "service_eph6uoe",
+      "template_knwr0fa",
+      {
+        to_name,
+        email,
+        user_username,
+        user_password,
+      },
+      "-PgL14MSf1VScXI94"
+    );
+    console.log("Email sent:", result?.text || result);
+  } catch (error: any) {
+    console.error("EmailJS error:", error);
+    onError("Failed to send email: " + (error?.text || error.message || "Unknown error"));
+  }
+};
+
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"" | "name" | "role">("");
@@ -149,21 +193,26 @@ export default function UsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [roleFilter, setRoleFilter] = useState<"" | User["role"]>("");
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const res = await fetch(API_URL, {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
-        if (!res.ok) throw new Error("Failed to fetch users");
+        if (!res.ok) throw new Error("Failed to fetch users.");
         const data = await res.json();
         setUsers(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching users:", error);
+        setErrorMessage(error.message || "Failed to load users.");
+        setErrorModalOpen(true);
       } finally {
         setLoading(false);
       }
@@ -171,19 +220,20 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter((user) =>
-    Object.values(user).some((value) =>
-      value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredUsers = users
+    .filter((user) =>
+      Object.values(user).some((value) =>
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      )
     )
-  );
+    .filter((user) => !roleFilter || user.role === roleFilter);
 
-
- const sortedUsers = sortBy
+  const sortedUsers = sortBy
     ? [...filteredUsers].sort((a, b) =>
         a[sortBy].localeCompare(b[sortBy])
       )
     : filteredUsers;
-    
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "head":
@@ -200,72 +250,115 @@ export default function UsersPage() {
   };
 
   const handleEditUser = (userId: string) => {
-    alert(`Edit user with ID: ${userId}`);
+    setErrorMessage(`Edit user with ID: ${userId}`);
+    setErrorModalOpen(true);
     setShowActions(null);
   };
 
   const handleDeleteUser = async (userId: string) => {
-  if (!confirm("Are you sure you want to delete this user?")) return;
+    if (!confirm("Are you sure you want to delete this user?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_URL}/${userId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  try {
-    const token = localStorage.getItem('token');
-    const res = await fetch(`${API_URL}/${userId}`, {
-      method: "DELETE",
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to delete user");
+      if (!res.ok) throw new Error("Failed to delete user.");
+      setUsers((prev) => prev.filter((user) => user.userId !== userId));
+      setShowActions(null);
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      setErrorMessage(error.message || "Failed to delete user.");
+      setErrorModalOpen(true);
     }
+  };
 
-    setUsers((prevUsers) => prevUsers.filter((user) => user.userId !== userId));
-    setShowActions(null);
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    alert("Failed to delete user. Please try again.");
-  }
-};
-
-
- const handleCreateUser = async (
-  input: Omit<User, "id" | "lastActive" | "status"> & { status?: User["status"] }
-) => {
-  try {
-    const payload = {
-      name: input.name,
-      role: input.role,
-    };
-
-    const token = localStorage.getItem('token');
-    const res = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        'Authorization': `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to create user");
+  const handleCreateUser = async (
+    input: Omit<User, "id" | "lastActive" | "status"> & {
+      status?: User["status"];
     }
+  ) => {
+    try {
+      const payload = {
+        name: input.name,
+        email: input.email,
+        role: input.role,
+      };
 
-    const { user: createdUser } = await res.json();
-    setUsers((prev) => [...prev, createdUser]);
+      const token = localStorage.getItem("token");
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-  } catch (error) {
-    console.error("Error creating user:", error);
-  }
-};
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to create user");
+      }
 
+      const { user: createdUser, credentials } = await res.json();
+      setUsers((prev) => [...prev, createdUser]);
+
+      if (!credentials?.password) {
+        setErrorMessage("User created, but login credentials were not returned.");
+        setErrorModalOpen(true);
+        return;
+      }
+
+      await sendEmail(
+        {
+          to_name: createdUser.name,
+          email: createdUser.email,
+          user_username: createdUser.username,
+          user_password: credentials.password,
+        },
+        (msg) => {
+          setErrorMessage(msg);
+          setErrorModalOpen(true);
+        }
+      );
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      setErrorMessage(error.message || "Failed to create user.");
+      setErrorModalOpen(true);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {["All", "head", "manager", "loan officer", "collector"].map(
+            (roleOption) => (
+              <button
+                key={roleOption}
+                className={`px-4 py-1.5 text-sm rounded-md border ${
+                  sortBy === roleOption
+                    ? "bg-red-600 text-white border-red-600"
+                    : "bg-white text-gray-600 border-gray-300"
+                }`}
+                onClick={() =>
+                  setRoleFilter(roleOption === "All" ? "" : (roleOption as User["role"]))
+                }
+              >
+                {roleOption === "All"
+                  ? "All Roles"
+                  : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+              </button>
+            )
+          )}
+        </div>
 
+        {/* Search & Sort */}
         <div className="flex gap-4 mb-6">
           <div className="relative flex-grow">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -280,16 +373,6 @@ export default function UsersPage() {
             />
           </div>
 
-          <select
-            className="px-3 py-2 rounded-lg bg-white border border-gray-200"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "name" | "role" | "")}
-          >
-            <option value="">Sort by</option>
-            <option value="name">Name</option>
-            <option value="role">Role</option>
-          </select>
-
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
@@ -299,24 +382,18 @@ export default function UsersPage() {
           </button>
         </div>
 
+        {/* User Table */}
         {loading ? (
           <LoadingSpinner />
         ) : (
           <table className="min-w-full bg-white rounded-lg overflow-hidden shadow">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 relative">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -324,21 +401,13 @@ export default function UsersPage() {
             </thead>
             <tbody>
               {sortedUsers.map((user) => (
-              <tr
-                key={user.userId}
-                className="border-b border-gray-200 hover:bg-gray-100 relative"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
-                  {user.userId}
-                </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                    {user.name}
+                <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                    {user.userId}
                   </td>
-                  <td
-                    className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(
-                      user.role
-                    )}`}
-                  >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>
                     {user.role}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -352,7 +421,6 @@ export default function UsersPage() {
                       {user.status}
                     </span>
                   </td>
-
                   <td className="px-6 py-4 whitespace-nowrap text-right relative">
                     <button
                       onClick={() =>
@@ -372,13 +440,9 @@ export default function UsersPage() {
                   </td>
                 </tr>
               ))}
-
               {sortedUsers.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={7}
-                    className="text-center py-10 text-gray-500 font-semibold"
-                  >
+                  <td colSpan={7} className="text-center py-10 text-gray-500 font-semibold">
                     No users found.
                   </td>
                 </tr>
@@ -392,6 +456,13 @@ export default function UsersPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreate={handleCreateUser}
+      />
+
+      {/* Error Modal */}
+      <ErrorModal
+        isOpen={errorModalOpen}
+        message={errorMessage}
+        onClose={() => setErrorModalOpen(false)}
       />
     </div>
   );

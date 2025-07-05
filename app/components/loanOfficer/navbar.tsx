@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [language, setLanguage] = useState('English');
   const pathname = usePathname();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [username, setUsername] = useState('john_doe');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('password123');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,6 +43,13 @@ export default function Navbar() {
   const handleLogout = () => {
     router.push('/');
   };
+
+  useEffect(() => {
+    const storedName = localStorage.getItem('fullName'); 
+    if (storedName) {
+      setName(storedName);
+    }
+  }, []);
 
   return (
     <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
@@ -161,11 +168,8 @@ export default function Navbar() {
                       height={64}
                       className="w-16 h-16 rounded-full object-cover mb-2"
                     />
-                    <div className="font-semibold text-lg">{username}</div>
-                    <div className="text-gray-400 text-sm">
-                      {/* Show email here */}
-                      john_doe@email.com
-                    </div>
+                    <div className="font-semibold text-lg">{name}</div>
+                    <div className="text-gray-400 text-sm">{email}</div>
                   </div>
 
                   {/* Menu */}
@@ -192,8 +196,8 @@ export default function Navbar() {
                         <input
                           type="email"
                           placeholder="Change Email"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
                           className="w-full px-3 py-2 rounded border"
                         />
                         <input
