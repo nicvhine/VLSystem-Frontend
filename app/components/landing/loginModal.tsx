@@ -79,7 +79,8 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         localStorage.setItem('token', data.token);
       }
 
-      localStorage.setItem('fullName', data.fullName || data.name || data.username);
+      localStorage.setItem('fullName', data.fullName || data.name || data.username || data.email);
+      localStorage.setItem('email', data.email);
       localStorage.setItem('role', data.role?.toLowerCase() || 'staff');
 
       if (data.role?.toLowerCase() === 'collector') {

@@ -2,13 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [username, setUsername] = useState('john_doe');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
@@ -17,6 +16,28 @@ export default function Navbar() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const pathname = usePathname();
   const router = useRouter();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [previewPic, setPreviewPic] = useState<string | null>(null);
+  const [originalPic, setOriginalPic] = useState<string | null>(null);
+  const [isUploadingPic, setIsUploadingPic] = useState(false);
+const [username, setUsername] = useState('');
+
+
+  useEffect(() => {
+  const storedName = localStorage.getItem('fullName');
+  const storedEmail = localStorage.getItem('email');
+  const storedPic = localStorage.getItem('profilePic');
+
+  if (storedName) setName(storedName);
+  if (storedEmail) setEmail(storedEmail);
+  if (storedPic) {
+    setProfilePic(storedPic);
+    setOriginalPic(storedPic);
+  }
+}, []);
+
 
   const navItems = [
     { name: 'Loans', href: '/components/head/loans' },
@@ -34,14 +55,92 @@ export default function Navbar() {
     } else {
       setPasswordError('');
       setIsEditing(false);
-      // Save logic here
     }
   };
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    router.push('/');
-  };
+  const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const previewURL = URL.createObjectURL(file);
+  setProfilePic(previewURL);
+
+  const formData = new FormData();
+  formData.append('profilePic', file);
+
+  const userId = localStorage.getItem('userId');
+  try {
+    const res = await fetch(`http://localhost:3001/users/${userId}/upload-profile`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Upload failed:', errorText);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.profilePic) {
+      const fullUrl = `http://localhost:3001${data.profilePic}`;
+      setProfilePic(fullUrl);
+      localStorage.setItem('profilePic', fullUrl);
+    }
+  } catch (err) {
+    console.error('Upload failed:', err);
+  }
+};
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const previewURL = URL.createObjectURL(file);
+  setPreviewPic(previewURL);
+  setIsUploadingPic(true);
+};
+
+
+const handleSaveProfilePic = async () => {
+  if (!previewPic) return;
+
+  const fileInput = document.getElementById('profileUpload') as HTMLInputElement;
+  const file = fileInput?.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('profilePic', file);
+
+  const userId = localStorage.getItem('userId');
+  try {
+    const res = await fetch(`http://localhost:3001/users/${userId}/upload-profile`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (data.profilePic) {
+      const fullUrl = `http://localhost:3001${data.profilePic}`;
+      setProfilePic(fullUrl);
+      setOriginalPic(fullUrl);
+      localStorage.setItem('profilePic', fullUrl);
+      setIsUploadingPic(false);
+      setPreviewPic(null);
+    }
+  } catch (err) {
+    console.error('Upload failed:', err);
+  }
+};
+
+const handleCancelUpload = () => {
+  setPreviewPic(null);
+  setIsUploadingPic(false);
+};
+
+const handleLogout = () => {
+  router.push('/');
+};
 
   return (
     <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
@@ -53,6 +152,7 @@ export default function Navbar() {
           >
             <span>VLSystem</span>
           </Link>
+
           {/* Mobile menu button */}
           <button
             className="md:hidden flex items-center px-3 py-2 border rounded text-gray-600 border-gray-400 hover:text-gray-900 hover:border-gray-600"
@@ -89,7 +189,24 @@ export default function Navbar() {
                 className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
                 onClick={toggleDropdown}
               >
-                <Image src="/idPic.jpg" alt="Profile" width={36} height={36} className="object-cover w-full h-full" />
+                <Image
+                  src={profilePic || '/idPic.jpg'}
+                  alt="Profile"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover rounded-full"
+                  onClick={() => document.getElementById('profileUpload')?.click()}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-40 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                  Change
+                </div>
+                <input
+                  type="file"
+                  id="profileUpload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleProfileUpload}
+                />
               </div>
 
               {isDropdownOpen && (
@@ -99,18 +216,49 @@ export default function Navbar() {
                   } border border-gray-200`}
                 >
                   {/* Profile Header */}
-                  <div className="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-800">
-                    <Image
-                      src="/idPic.jpg"
-                      alt="Profile"
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 rounded-full object-cover mb-2"
-                    />
-                    <div className="font-semibold text-lg">{username}</div>
-                    <div className="text-gray-400 text-sm">
-                      john_doe@email.com
-                    </div>
+                 <div className="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-800">
+  <div
+    className="relative group w-16 h-16 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer"
+    onClick={() => document.getElementById('profileUpload')?.click()}
+  >
+    <Image
+      src={previewPic || profilePic || '/idPic.jpg'}
+      alt="Profile"
+      width={64}
+      height={64}
+      className="w-full h-full object-cover rounded-full"
+    />
+    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
+      Change
+    </div>
+    <input
+      type="file"
+      id="profileUpload"
+      accept="image/*"
+      className="hidden"
+      onChange={handleFileChange}
+    />
+  </div>
+
+  <div className="font-semibold text-lg mt-2">{name}</div>
+  <div className="text-gray-400 text-sm">{email}</div>
+
+  {isUploadingPic && (
+    <div className="flex gap-2 mt-3">
+      <button
+        onClick={handleSaveProfilePic}
+        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
+      >
+        Save
+      </button>
+      <button
+        onClick={handleCancelUpload}
+        className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded hover:bg-gray-300 transition"
+      >
+        Cancel
+      </button>
+    </div>
+  )}
                   </div>
 
                   {/* Menu */}
