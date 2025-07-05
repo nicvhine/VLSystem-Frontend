@@ -26,7 +26,7 @@ interface Collection {
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
   collector: string;
   note?: string;
-  referenceNumer: string;
+  referenceNumber: string;
 }
 
 function LoadingSpinner() {
@@ -44,33 +44,38 @@ export default function CollectionsPage() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentCollector, setCurrentCollector] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/collections');
-        const data = await response.json();
-        console.log('Fetched collections:', data);
+useEffect(() => {
+  const fetchCollections = async () => {
+    try {
+      setLoading(true);
+      const url = 'http://localhost:3001/collections'; // No ?collector
+      const response = await fetch(url);
+      const data = await response.json();
 
-        // ✅ FIX: Ensure you're setting an array
-        if (Array.isArray(data)) {
-          setCollections(data);
-        } else if (Array.isArray(data.collections)) {
-          setCollections(data.collections);
-        } else {
-          console.error('Unexpected response format:', data);
-          setCollections([]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch collections:', error);
+      console.log('Fetched collections:', data);
+
+      if (Array.isArray(data)) {
+        setCollections(data);
+      } else if (Array.isArray(data.collections)) {
+        setCollections(data.collections);
+      } else {
+        console.error('Unexpected response format:', data);
         setCollections([]);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch collections:', error);
+      setCollections([]);
+    } finally {
+      setLoading(false);
+      setCurrentCollector(activeCollector === 'All' ? null : activeCollector);
+    }
+  };
 
-    fetchCollections();
-  }, []);
+  fetchCollections();
+}, [activeCollector]);
+
 
   const collectors = ['All', 'Rodelo', 'Earl', 'Shiela', 'Voltair', 'Morgan', 'Stephen'];
 
@@ -91,11 +96,31 @@ export default function CollectionsPage() {
       due.getDate() === selected.getDate();
 
     const matchesCollector =
-      activeCollector === 'All' || col.collector === activeCollector;
+    activeCollector === 'All' ||
+    col.collector?.split(' ')[0].toLowerCase() === activeCollector.toLowerCase();
+
     const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
 
     return matchesCollector && matchesSearch && sameDate;
   });
+
+const overallCollections = collections.filter(col =>
+  currentCollector === null
+    ? true
+    : col.collector?.split(' ')[0].toLowerCase() === currentCollector.toLowerCase()
+);
+
+const overallTotalPayments = overallCollections.length;
+const overallCompletedPayments = overallCollections.filter(col => col.status === 'Paid').length;
+const overallCollectionRate = overallTotalPayments > 0
+  ? Math.round((overallCompletedPayments / overallTotalPayments) * 100)
+  : 0;
+
+const overallTotalCollected = overallCollections.reduce((sum, col) => sum + col.paidAmount, 0);
+const overallTotalTarget = overallCollections.reduce((sum, col) => sum + col.periodAmount, 0);
+const overallTargetAchieved = overallTotalTarget > 0
+  ? Math.round((overallTotalCollected / overallTotalTarget) * 100)
+  : 0;
 
   const totalPayments = filteredCollections.length;
   const completedPayments = filteredCollections.filter(col => col.status === 'Paid').length;
@@ -150,33 +175,55 @@ export default function CollectionsPage() {
           </div>
 
           {/* Stats Cards Section */}
-          <div className="col-span-8 grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <FiCheckCircle className="w-6 h-6 opacity-90" />
-                  <h3 className="text-lg font-medium">Collection Progress</h3>
-                </div>
-                <div className="text-2xl font-bold">{collectionRate}%</div>
-              </div>
-              <div className="text-3xl font-bold mb-2">{completedPayments}</div>
-              <div className="text-sm opacity-90">of {totalPayments} Payments</div>
-              <div className="text-sm opacity-75 mt-1">Collection Rate</div>
-            </div>
+          <div className="col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+  {/* Daily Collection Progress */}
+  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+    <div className="bg-blue-100 p-4 rounded-full shadow-sm">
+      <FiCheckCircle className="text-blue-600 w-6 h-6" />
+    </div>
+    <div>
+      <p className="text-gray-500 text-sm">Daily Progress</p>
+      <h3 className="text-3xl font-bold text-gray-800">{collectionRate}%</h3>
+      <p className="text-sm text-gray-400">{completedPayments} of {totalPayments} payments</p>
+    </div>
+  </div>
 
-            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <FiDollarSign className="w-6 h-6 opacity-90" />
-                  <h3 className="text-lg font-medium">Amount Collected</h3>
-                </div>
-                <div className="text-2xl font-bold">{targetAchieved}%</div>
-              </div>
-              <div className="text-3xl font-bold mb-2">{formatCurrency(totalCollected)}</div>
-              <div className="text-sm opacity-90">of {formatCurrency(totalTarget)}</div>
-              <div className="text-sm opacity-75 mt-1">Target Achieved</div>
-            </div>
-          </div>
+  {/* Daily Amount Collected */}
+  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+    <div className="bg-green-100 p-4 rounded-full shadow-sm">
+      <FiDollarSign className="text-green-600 w-6 h-6" />
+    </div>
+    <div>
+      <p className="text-gray-500 text-sm">Daily Collection</p>
+      <h3 className="text-3xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
+      <p className="text-sm text-gray-400">of {formatCurrency(totalTarget)} ({targetAchieved}%)</p>
+    </div>
+  </div>
+
+  {/* Overall Progress */}
+  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+    <div className="bg-purple-100 p-4 rounded-full shadow-sm">
+      <FiCheckCircle className="text-purple-600 w-6 h-6" />
+    </div>
+    <div>
+      <p className="text-gray-500 text-sm">Overall Progress</p>
+      <h3 className="text-3xl font-bold text-gray-800">{overallCollectionRate}%</h3>
+      <p className="text-sm text-gray-400">{overallCompletedPayments} of {overallTotalPayments} payments</p>
+    </div>
+  </div>
+
+  {/* Overall Amount Collected */}
+  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+    <div className="bg-indigo-100 p-4 rounded-full shadow-sm">
+      <FiDollarSign className="text-indigo-600 w-6 h-6" />
+    </div>
+    <div>
+      <p className="text-gray-500 text-sm">Overall Collection</p>
+      <h3 className="text-3xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
+      <p className="text-sm text-gray-400">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
+    </div>
+  </div>
+</div>
         </div>
 
         {/* Search and Sort Controls */}
@@ -247,7 +294,7 @@ export default function CollectionsPage() {
                     <tr
                       className="hover:bg-blue-50/60 cursor-pointer transition-colors"
                     >
-                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumer}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
 
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>

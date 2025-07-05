@@ -12,9 +12,9 @@ export default function HeroSection() {
   const [isTrackOpen, setIsTrackOpen] = useState(false);
 
   const slides = [
-    { img: './image1.jpg', alt: 'Slide 1' },
-    { img: '/image2.jpg', alt: 'Slide 2' },
-    { img: '/image3.jpg', alt: 'Slide 3' },
+    { img: '../image1.jpg', alt: 'Slide 1' },
+    { img: '../image2.jpg', alt: 'Slide 2' },
+    { img: '../image3.jpg', alt: 'Slide 3' },
   ];
 
   return (

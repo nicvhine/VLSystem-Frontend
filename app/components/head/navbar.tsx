@@ -22,7 +22,7 @@ export default function Navbar() {
   const [previewPic, setPreviewPic] = useState<string | null>(null);
   const [originalPic, setOriginalPic] = useState<string | null>(null);
   const [isUploadingPic, setIsUploadingPic] = useState(false);
-const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('');
 
 
   useEffect(() => {
@@ -142,6 +142,10 @@ const handleLogout = () => {
   router.push('/');
 };
 
+ const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((prev) => !prev);
+  };
+
   return (
     <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
       <div className="w-full px-6 py-3">
@@ -155,12 +159,33 @@ const handleLogout = () => {
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden flex items-center px-3 py-2 border rounded text-gray-600 border-gray-400 hover:text-gray-900 hover:border-gray-600"
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            aria-label="Toggle mobile menu"
+            className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
+            onClick={toggleMobileMenu}
+            aria-label="Toggle menu"
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="h-6 w-6 text-gray-700"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              {isMobileMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
             </svg>
           </button>
 
@@ -185,29 +210,18 @@ const handleLogout = () => {
 
             {/* Profile Dropdown */}
             <div className="relative">
-              <div
-                className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
-                onClick={toggleDropdown}
-              >
-                <Image
-                  src={profilePic || '/idPic.jpg'}
-                  alt="Profile"
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-cover rounded-full"
-                  onClick={() => document.getElementById('profileUpload')?.click()}
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-                  Change
-                </div>
-                <input
-                  type="file"
-                  id="profileUpload"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleProfileUpload}
-                />
-              </div>
+                         <div
+                           className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
+                           onClick={toggleDropdown}
+                         >
+                           <Image
+                             src={previewPic || profilePic || '/idPic.jpg'}
+                             alt="Profile"
+                             width={36}
+                             height={36}
+                             className="object-cover w-full h-full"
+                           />
+                         </div>
 
               {isDropdownOpen && (
                 <div

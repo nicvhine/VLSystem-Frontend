@@ -32,13 +32,14 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const [result, setResult] = useState<{
     paymentPeriod: string;
     principalAmount: string;
+    interestRate: string;
     interest: string;
     totalPayment: string;
     loanTerm: string;
     paymentPerPeriod: string;
   } | null>(null);
-  const [paymentPeriod, setPaymentPeriod] = useState('');
-  const [paymentPerPeriod, setPaymentPerPeriod] = useState<number>(0);
+
+  const paymentPeriod = 'monthly';
 
   const withCollateralTable: LoanOptionWithCollateral[] = [
     { amount: 20000, months: 8, interest: 7 },
@@ -69,7 +70,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
     } else if (loanType === 'regularWithout') {
       setLoanOptions(withoutCollateralTable.map(opt => opt.amount));
     } else if (loanType === 'openTerm') {
-       setLoanOptions(openTermTable.map(opt => opt.amount));
+      setLoanOptions(openTermTable.map(opt => opt.amount));
     } else {
       setLoanOptions([]);
     }
@@ -81,7 +82,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const calculateLoan = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!loanType || !selectedLoanAmount || !paymentPeriod) {
+    if (!loanType || !selectedLoanAmount) {
       setResult(null);
       return;
     }
@@ -103,32 +104,20 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
     }
 
     const rate = loanOption.interest;
-    const months = 'months' in loanOption ? loanOption.months : 1;
+    const months = 'months' in loanOption ? loanOption.months : 12;
 
     const totalInterest = (amt * rate) / 100;
     const totalRepayment = amt + totalInterest;
-
-    let calculatedPaymentPerPeriod = 0;
-    if (paymentPeriod === 'monthly') {
-      calculatedPaymentPerPeriod = totalRepayment / 12;
-    } else if (paymentPeriod === 'fifteenth') {
-      calculatedPaymentPerPeriod = totalRepayment / 15;
-    }
-
-    setPaymentPerPeriod(calculatedPaymentPerPeriod);
+    const paymentPerPeriod = totalRepayment / months;
 
     setResult({
       paymentPeriod: paymentPeriod === 'monthly' ? 'Monthly (12 months per year)' : '15th of the Month',
       principalAmount: `₱${amt.toLocaleString()}`,
+      interestRate: `${rate}%`,
       interest: `₱${totalInterest.toLocaleString()}`,
       totalPayment: `₱${totalRepayment.toLocaleString()}`,
-      loanTerm:
-        loanType === 'openTerm'
-          ? paymentPeriod === 'monthly'
-            ? 'Monthly (12 months per year)'
-            : '15th of the Month'
-          : `${months} month${months > 1 ? 's' : ''}`,
-      paymentPerPeriod: `₱${calculatedPaymentPerPeriod.toLocaleString(undefined, {
+      loanTerm: `${months} ${language === 'en' ? 'months' : 'ka bulan'}`,
+      paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}`,
@@ -137,9 +126,9 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   if (!isOpen) return null;
 
-  // Cebuano translations for result fields
   const resultLabels = {
     principalAmount: language === 'en' ? 'Principal Amount:' : 'Pangunang Kantidad:',
+    interestRate: language === 'en' ? 'Interest Rate:' : 'Porsyento sa Interes:',
     interest: language === 'en' ? 'Interest:' : 'Interes:',
     totalPayment: language === 'en' ? 'Total Payment:' : 'Kinatibuk-ang Bayad:',
     loanTerm: language === 'en' ? 'Loan Term:' : 'Gidugayon sa Pahulam:',
@@ -148,6 +137,9 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
     monthly: language === 'en' ? 'Monthly (12 months per year)' : 'Matag Bulan (12 ka bulan sa tuig)',
     fifteenth: language === 'en' ? '15th of the Month' : 'Ika-15 sa Bulan',
     summary: language === 'en' ? 'Loan Summary' : 'Sumada sa Pahulam',
+    explanation: language === 'en' 
+      ? 'Computed as: Total Payment ÷ Loan Term'
+      : 'Gikalkula isip: Kinatibuk-ang Bayad ÷ Gidugayon sa Pahulam'
   };
 
   return (
@@ -161,7 +153,10 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">{language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}</h2>
+
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
+          {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
+        </h2>
 
         <form onSubmit={calculateLoan} className="space-y-6">
           <div className="space-y-4">
@@ -196,19 +191,6 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 </select>
               </div>
             )}
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Payment Period' : 'Panahon sa Pagbayad'}</label>
-              <select
-                value={paymentPeriod}
-                onChange={(e) => setPaymentPeriod(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
-              >
-                <option value="">{language === 'en' ? 'Select payment period' : 'Pilia ang panahon sa pagbayad'}</option>
-                <option value="monthly">{resultLabels.monthly}</option>
-                <option value="fifteenth">{resultLabels.fifteenth}</option>
-              </select>
-            </div>
           </div>
 
           <button
@@ -229,6 +211,10 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                   <div>{result.principalAmount}</div>
                 </div>
                 <div className="mb-4">
+                <div className="font-semibold">{resultLabels.interestRate}</div>
+                <div>{result.interestRate}</div>
+              </div>
+                <div className="mb-4">
                   <div className="font-semibold">{resultLabels.interest}</div>
                   <div>{result.interest}</div>
                 </div>
@@ -237,6 +223,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                   <div>{result.totalPayment}</div>
                 </div>
               </div>
+
               <div>
                 <div className="mb-4">
                   <div className="font-semibold">{resultLabels.loanTerm}</div>
@@ -244,13 +231,21 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 </div>
                 <div className="mb-4">
                   <div className="font-semibold">{resultLabels.paymentPerPeriod}</div>
-                  <div>{result.paymentPerPeriod}</div>
+                  <div>{result.paymentPerPeriod}
+                    <span className="text-sm text-gray-500 block">
+                      ({language === 'en' ? 'Divided over' : 'Gibahin ngadto sa'} {result.loanTerm})
+                    </span>
+                  </div>
                 </div>
                 <div className="mb-4">
                   <div className="font-semibold">{resultLabels.paymentPeriod}</div>
-                  <div>{result.paymentPeriod === 'Monthly (12 months per year)' ? resultLabels.monthly : resultLabels.fifteenth}</div>
+                  <div>{result.paymentPeriod}</div>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-4 text-sm text-gray-600 italic">
+              {resultLabels.explanation}
             </div>
           </div>
         )}

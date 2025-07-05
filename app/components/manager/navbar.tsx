@@ -20,30 +20,38 @@ export default function Navbar() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [username, setUsername] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [name, setName] = useState('');
-
+  const [email, setEmail] = useState('');
+  const [profilePic, setProfilePic] = useState<string | null>(null);
+  const [previewPic, setPreviewPic] = useState<string | null>(null);
+  const [originalPic, setOriginalPic] = useState<string | null>(null);
+  const [isUploadingPic, setIsUploadingPic] = useState(false);
+  const [username, setUsername] = useState('');
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const navItems = [
+  useEffect(() => {
+    const storedName = localStorage.getItem('fullName');  
+    const storedEmail = localStorage.getItem('email');
+    const storedPic = localStorage.getItem('profilePic');
+
+  if (storedName) setName(storedName);
+  if (storedEmail) setEmail(storedEmail);
+  if (storedPic) {
+    setProfilePic(storedPic);
+    setOriginalPic(storedPic);
+  }
+  }, []);
+
+    const navItems = [
     { name: 'Loans', href: '/components/manager/loans' },
     { name: 'Applications', href: '/components/manager/applications' },
     { name: 'Agents', href: '/head/agents' },
     { name: 'Collections', href: '/components/manager/collections' },
   ];
-
-  useEffect(() => {
-  const storedName = localStorage.getItem('fullName'); 
-  if (storedName) {
-    setName(storedName);
-  }
-}, []);
-
-  if (!user) return null;
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
@@ -51,15 +59,94 @@ export default function Navbar() {
     localStorage.removeItem('username');
     router.push('/');
   };
-
+ 
   const handleEdit = () => {
-    if (isEditing) {
-
-      setIsEditing(false);
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New Password and Confirm Password do not match.');
     } else {
-      setIsEditing(true);
+      setPasswordError('');
+      setIsEditing(false);
     }
   };
+
+  const handleProfileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const previewURL = URL.createObjectURL(file);
+  setProfilePic(previewURL);
+
+  const formData = new FormData();
+  formData.append('profilePic', file);
+
+  const userId = localStorage.getItem('userId');
+  try {
+    const res = await fetch(`http://localhost:3001/users/${userId}/upload-profile`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Upload failed:', errorText);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.profilePic) {
+      const fullUrl = `http://localhost:3001${data.profilePic}`;
+      setProfilePic(fullUrl);
+      localStorage.setItem('profilePic', fullUrl);
+    }
+  } catch (err) {
+    console.error('Upload failed:', err);
+  }
+};
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const previewURL = URL.createObjectURL(file);
+  setPreviewPic(previewURL);
+  setIsUploadingPic(true);
+};
+
+const handleSaveProfilePic = async () => {
+  if (!previewPic) return;
+
+  const fileInput = document.getElementById('profileUpload') as HTMLInputElement;
+  const file = fileInput?.files?.[0];
+  if (!file) return;
+
+  const formData = new FormData();
+  formData.append('profilePic', file);
+
+  const userId = localStorage.getItem('userId');
+  try {
+    const res = await fetch(`http://localhost:3001/users/${userId}/upload-profile`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+    if (data.profilePic) {
+      const fullUrl = `http://localhost:3001${data.profilePic}`;
+      setProfilePic(fullUrl);
+      setOriginalPic(fullUrl);
+      localStorage.setItem('profilePic', fullUrl);
+      setIsUploadingPic(false);
+      setPreviewPic(null);
+    }
+  } catch (err) {
+    console.error('Upload failed:', err);
+  }
+};
+
+const handleCancelUpload = () => {
+  setPreviewPic(null);
+  setIsUploadingPic(false);
+};
 
   const handleChangePassword = async (
     currentPassword: string,
@@ -189,7 +276,7 @@ export default function Navbar() {
                 onClick={toggleDropdown}
               >
                 <Image
-                  src="/idPic.jpg"
+                  src={previewPic || profilePic || '/idPic.jpg'}
                   alt="Profile"
                   width={36}
                   height={36}
@@ -197,142 +284,173 @@ export default function Navbar() {
                 />
               </div>
 
-              {isDropdownOpen && (
-                <div
-                  className={`absolute right-0 mt-3 w-80 rounded-2xl shadow-2xl z-30 p-0 transition-all ${
-                    darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
-                  } border border-gray-200`}
-                >
-                  {/* Profile Header */}
-                  <div className="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-800">
-                    <Image
-                      src="/idPic.jpg"
-                      alt="Profile"
-                      width={64}
-                      height={64}
-                      className="w-16 h-16 rounded-full object-cover mb-2"
-                    />
-                    <div className="font-semibold text-lg">{username}</div>
-                    <div className="text-gray-400 text-sm">
-                      john_doe@email.com
-                    </div>
-                  </div>
-
-                  {/* Menu */}
-                  <div className="flex flex-col py-2">
-                    <button
-                      className="flex items-center px-6 py-3 hover:bg-gray-50 transition"
-                      onClick={() => setIsEditing((s) => !s)}
-                    >
-                      <svg
-                        className="mr-3 w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M12 20h9" />
-                        <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19.5 3 21l1.5-4L16.5 3.5z" />
-                      </svg>
-                      Settings
-                    </button>
-                    {/* Settings Form */}
-                    {isEditing && (
-                      <div className="px-6 py-3 space-y-2">
-                        <input
-                          type="email"
-                          placeholder="Change Email"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          className="w-full px-3 py-2 rounded border"
-                        />
-                        <input
-                          type="password"
-                          placeholder="New Password"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                          className="w-full px-3 py-2 rounded border"
-                        />
-                        <input
-                          type="password"
-                          placeholder="Confirm Password"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="w-full px-3 py-2 rounded border"
-                        />
-                        {passwordError && (
-                          <p className="text-sm text-red-600">{passwordError}</p>
-                        )}
-                        <button
-                          onClick={handleEdit}
-                          className="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all"
-                        >
-                          Save Changes
-                        </button>
-                        <button
-                          onClick={handleLogout}
-                          className="w-full py-2 rounded-lg bg-gray-100 text-gray-800 font-medium hover:bg-gray-50 transition-all"
-                        >
-                          Logout
-                        </button>
-                      </div>
-                    )}
-                    <div className="flex items-center px-6 py-3 justify-between hover:bg-gray-50 transition">
-                      <span className="flex items-center">
-                        <svg
-                          className="mr-3 w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M21 12.79A9 9 0 1111.21 3h.01" />
-                          <path d="M21 12.79V21h-8.21" />
-                        </svg>
-                        Switch to Dark
-                      </span>
-                      <label className="inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={darkMode}
-                          onChange={() => setDarkMode((d) => !d)}
-                          className="sr-only"
-                        />
-                        <span
-                          className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
-                            darkMode ? 'bg-orange-500' : ''
-                          }`}
-                        >
-                          <span
-                            className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                              darkMode ? 'translate-x-5' : ''
-                            }`}
-                          ></span>
-                        </span>
-                      </label>
-                    </div>
-                    <button
-                      className="flex items-center px-6 py-3 hover:bg-gray-50 transition text-red-600"
-                      onClick={handleLogout}
-                    >
-                      <svg
-                        className="mr-3 w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M17 16l4-4m0 0l-4-4m4 4H7" />
-                        <path d="M3 12a9 9 0 0118 0 9 9 0 01-18 0z" />
-                      </svg>
-                      Log Out
-                    </button>
-                  </div>
-                  <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-200 dark:border-gray-800">
-                    Privacy Policy · Terms of Service
-                  </div>
+             {isDropdownOpen && (
+                            <div
+                              className={`absolute right-0 mt-3 w-80 rounded-2xl shadow-2xl z-30 p-0 transition-all ${
+                                darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'
+                              } border border-gray-200`}
+                            >
+                              {/* Profile Header */}
+                             <div className="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-800">
+              <div
+                className="relative group w-16 h-16 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer"
+                onClick={() => document.getElementById('profileUpload')?.click()}
+              >
+                <Image
+                  src={previewPic || profilePic || '/idPic.jpg'}
+                  alt="Profile"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-cover rounded-full"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
+                  Change
+                </div>
+                <input
+                  type="file"
+                  id="profileUpload"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </div>
+            
+              <div className="font-semibold text-lg mt-2">{name}</div>
+              <div className="text-gray-400 text-sm">{email}</div>
+            
+              {isUploadingPic && (
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={handleSaveProfilePic}
+                    className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelUpload}
+                    className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded hover:bg-gray-300 transition"
+                  >
+                    Cancel
+                  </button>
                 </div>
               )}
+                              </div>
+            
+                              {/* Menu */}
+                              <div className="flex flex-col py-2">
+                                <button
+                                  className="flex items-center px-6 py-3 hover:bg-gray-50 transition"
+                                  onClick={() => setIsEditing((s) => !s)}
+                                >
+                                  <svg
+                                    className="mr-3 w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19.5 3 21l1.5-4L16.5 3.5z" />
+                                  </svg>
+                                  Settings
+                                </button>
+                                {/* Settings Form */}
+                                {isEditing && (
+                                  <div className="px-6 py-3 space-y-2">
+                                    <input
+                                      type="email"
+                                      placeholder="Change Email"
+                                      value={username}
+                                      onChange={(e) => setUsername(e.target.value)}
+                                      className="w-full px-3 py-2 rounded border"
+                                    />
+                                    <input
+                                      type="password"
+                                      placeholder="New Password"
+                                      value={newPassword}
+                                      onChange={(e) => setNewPassword(e.target.value)}
+                                      className="w-full px-3 py-2 rounded border"
+                                    />
+                                    <input
+                                      type="password"
+                                      placeholder="Confirm Password"
+                                      value={confirmPassword}
+                                      onChange={(e) => setConfirmPassword(e.target.value)}
+                                      className="w-full px-3 py-2 rounded border"
+                                    />
+                                    {passwordError && (
+                                      <p className="text-sm text-red-600">{passwordError}</p>
+                                    )}
+                                    <button
+                                      onClick={handleEdit}
+                                      className="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-all"
+                                    >
+                                      Save Changes
+                                    </button>
+                                    <button
+                                      onClick={handleLogout}
+                                      className="w-full py-2 rounded-lg bg-gray-100 text-gray-800 font-medium hover:bg-gray-50 transition-all"
+                                    >
+                                      Logout
+                                    </button>
+                                  </div>
+                                )}
+                                <div className="flex items-center px-6 py-3 justify-between hover:bg-gray-50 transition">
+                                  <span className="flex items-center">
+                                    <svg
+                                      className="mr-3 w-5 h-5"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path d="M21 12.79A9 9 0 1111.21 3h.01" />
+                                      <path d="M21 12.79V21h-8.21" />
+                                    </svg>
+                                    Switch to Dark
+                                  </span>
+                                  <label className="inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={darkMode}
+                                      onChange={() => setDarkMode((d) => !d)}
+                                      className="sr-only"
+                                    />
+                                    <span
+                                      className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
+                                        darkMode ? 'bg-orange-500' : ''
+                                      }`}
+                                    >
+                                      <span
+                                        className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                                          darkMode ? 'translate-x-5' : ''
+                                        }`}
+                                      ></span>
+                                    </span>
+                                  </label>
+                                </div>
+                                <button
+                                  className="flex items-center px-6 py-3 hover:bg-gray-50 transition text-red-600"
+                                  onClick={handleLogout}
+                                >
+                                  <svg
+                                    className="mr-3 w-5 h-5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M17 16l4-4m0 0l-4-4m4 4H7" />
+                                    <path d="M3 12a9 9 0 0118 0 9 9 0 01-18 0z" />
+                                  </svg>
+                                  Log Out
+                                </button>
+                              </div>
+                              <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-200 dark:border-gray-800">
+                                Privacy Policy · Terms of Service
+                              </div>
+                            </div>
+                          )}
             </div>
           </div>
         </div>
