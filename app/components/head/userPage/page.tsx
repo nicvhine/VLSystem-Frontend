@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Navbar from "../navbar";
 import emailjs from 'emailjs-com';
 import ErrorModal from "./errorModal";
@@ -13,6 +13,7 @@ import {
   FiTrash2,
   FiMoreVertical,
 } from "react-icons/fi";
+import { createPortal } from "react-dom";
 
 const API_URL = "http://localhost:3001/users";
 
@@ -36,29 +37,60 @@ function LoadingSpinner() {
 function UserActions({
   onEdit,
   onDelete,
+  onClose,
+  anchorRef,
 }: {
   onEdit: () => void;
   onDelete: () => void;
+  onClose: () => void;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
 }) {
-  return (
-    <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
+  const ref = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node) && anchorRef.current && !anchorRef.current.contains(event.target as Node)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose, anchorRef]);
+  useEffect(() => {
+    if (anchorRef.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.right + window.scrollX - 192, // 192px = menu width
+      });
+    }
+  }, [anchorRef]);
+  return createPortal(
+    <div
+      ref={ref}
+      className="fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+      style={{ top: position.top, left: position.left }}
+    >
       <div className="py-1" role="menu" aria-orientation="vertical">
         <button
-          onClick={onEdit}
+          onClick={() => { onEdit(); onClose(); }}
           className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
         >
           <FiEdit2 className="mr-3 h-4 w-4" />
           Edit User
         </button>
         <button
-          onClick={onDelete}
+          onClick={() => { onDelete(); onClose(); }}
           className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
         >
           <FiTrash2 className="mr-3 h-4 w-4" />
           Delete User
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -200,7 +232,7 @@ const sendEmail = async (
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"" | "name" | "role">("");
-  const [showActions, setShowActions] = useState<string | null>(null);
+  const [showActions, setShowActions] = useState<{ userId: string; anchorEl: HTMLButtonElement | null } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -375,20 +407,19 @@ export default function UsersPage() {
         </div>
 
         {/* Search & Sort */}
-        <div className="flex gap-4 mb-6">
-          <div className="relative flex-grow">
+        <div className="flex gap-4 mb-6 items-center justify-between">
+          <div className="relative w-72">
             <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
               <FiSearch className="text-gray-400 w-5 h-5" />
             </div>
             <input
               type="text"
               placeholder="Search here..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-200 text-gray-600"
+              className="w-full pl-10 pr-3 py-2 bg-white rounded-lg border border-gray-200 text-gray-600 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
@@ -439,18 +470,18 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right relative">
                     <button
-                      onClick={() =>
-                        setShowActions(showActions === user.userId ? null : user.userId)
-                      }
+                      onClick={e => setShowActions(showActions && showActions.userId === user.userId ? null : { userId: user.userId, anchorEl: e.currentTarget })}
                       className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600"
                       aria-label="User actions"
                     >
                       <FiMoreVertical />
                     </button>
-                    {showActions === user.userId && (
+                    {showActions && showActions.userId === user.userId && showActions.anchorEl && (
                       <UserActions
                         onEdit={() => handleEditUser(user.userId)}
                         onDelete={() => handleDeleteUser(user.userId)}
+                        onClose={() => setShowActions(null)}
+                        anchorRef={{ current: showActions.anchorEl }}
                       />
                     )}
                   </td>
