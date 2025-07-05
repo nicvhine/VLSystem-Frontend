@@ -69,9 +69,9 @@ function CreateUserModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (user: Omit<User, "id" | "lastActive" | "status"> & { status?: User["status"] }) => void;
+  onCreate: (user: Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }) => void;
 }) {
-  const [newUser, setNewUser] = useState<Omit<User, "userId" | "lastActive">>({
+  const [newUser, setNewUser] = useState<Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }>({
     name: "",
     email: "",
     role: "head",
@@ -90,7 +90,18 @@ function CreateUserModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUser.name) return;
+    if (!newUser.name.trim()) {
+      alert("Please enter a name.");
+      return;
+    }
+    if (!newUser.email.trim()) {
+      alert("Please enter an email address.");
+      return;
+    }
+    if (!newUser.name.trim().includes(" ")) {
+      alert("Please enter a full name with first and last name.");
+      return;
+    }
     onCreate(newUser);
     onClose();
     setNewUser({ name: "", email: "", role: "head", status: "Active" });
@@ -277,7 +288,7 @@ export default function UsersPage() {
   };
 
   const handleCreateUser = async (
-    input: Omit<User, "id" | "lastActive" | "status"> & {
+    input: Omit<User, "userId" | "lastActive" | "status"> & {
       status?: User["status"];
     }
   ) => {
@@ -336,25 +347,30 @@ export default function UsersPage() {
       <Navbar />
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-6">
           {["All", "head", "manager", "loan officer", "collector"].map(
-            (roleOption) => (
-              <button
-                key={roleOption}
-                className={`px-4 py-1.5 text-sm rounded-md border ${
-                  sortBy === roleOption
-                    ? "bg-red-600 text-white border-red-600"
-                    : "bg-white text-gray-600 border-gray-300"
-                }`}
-                onClick={() =>
-                  setRoleFilter(roleOption === "All" ? "" : (roleOption as User["role"]))
-                }
-              >
-                {roleOption === "All"
-                  ? "All Roles"
-                  : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
-              </button>
-            )
+            (roleOption) => {
+              const isActive =
+                (roleOption === "All" && !roleFilter) ||
+                roleFilter === roleOption;
+              return (
+                <button
+                  key={roleOption}
+                  className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400
+                    ${isActive
+                      ? "bg-red-600 text-white border-red-600 shadow-md scale-105"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:shadow"}
+                  `}
+                  onClick={() =>
+                    setRoleFilter(roleOption === "All" ? "" : (roleOption as User["role"]))
+                  }
+                >
+                  {roleOption === "All"
+                    ? "All Roles"
+                    : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                </button>
+              );
+            }
           )}
         </div>
 

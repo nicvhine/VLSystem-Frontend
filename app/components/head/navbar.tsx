@@ -22,7 +22,7 @@ export default function Navbar() {
   const [previewPic, setPreviewPic] = useState<string | null>(null);
   const [originalPic, setOriginalPic] = useState<string | null>(null);
   const [isUploadingPic, setIsUploadingPic] = useState(false);
-const [username, setUsername] = useState('');
+  const [username, setUsername] = useState('');
 
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const [username, setUsername] = useState('');
     { name: 'Loans', href: '/components/head/loans' },
     { name: 'Applications', href: '/components/head/applications' },
     { name: 'Agents', href: '/head/agents' },
-    { name: 'Collections', href: '/head/collections' },
+    { name: 'Collections', href: '/components/head/collections' },
     { name: 'Users', href: '/components/head/userPage' },
   ];
 
@@ -147,7 +147,7 @@ const handleLogout = () => {
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link
-            href="/dashboard"
+            href="/components/head"
             className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
           >
             <span>VLSystem</span>
