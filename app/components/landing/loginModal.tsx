@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  language?: 'en' | 'ceb';
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginModalProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -29,7 +30,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   e.preventDefault();
 
   if (!username || !password) {
-    alert('Please enter both username and password.');
+    alert(language === 'en' ? 'Please enter both username and password.' : 'Palihog isulod ang username ug password.');
     return;
   }
 
@@ -116,10 +117,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
       return;
     }
 
-    alert('Invalid credentials or user not found.');
+    alert(language === 'en' ? 'Invalid credentials or user not found.' : 'Sayop nga credentials o wala makit-an ang user.');
   } catch (error) {
     console.error('Login error:', error);
-    alert('Error connecting to the server.');
+    alert(language === 'en' ? 'Error connecting to the server.' : 'Sayop sa pagkonekta sa server.');
   }
 };
 
@@ -141,8 +142,12 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         {/* Forgot Password Modal */}
         {showForgotModal && forgotRole === '' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Forgot Password</h2>
-            <p className="text-sm text-gray-600 text-center mb-6">Select your role to proceed:</p>
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
+              {language === 'en' ? 'Forgot Password' : 'Nakalimot sa Password'}
+            </h2>
+            <p className="text-sm text-gray-600 text-center mb-6">
+              {language === 'en' ? 'Select your role to proceed:' : 'Pilia ang imong role aron magpadayon:'}
+            </p>
             <div className="flex justify-around">
               <button
                 onClick={() => {
@@ -150,13 +155,13 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 }}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
               >
-                Borrower
+                {language === 'en' ? 'Borrower' : 'Nagpahulam'}
               </button>
               <button
                 onClick={() => setForgotRole('staff')}
                 className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition"
               >
-                Staff
+                {language === 'en' ? 'Staff' : 'Staff'}
               </button>
             </div>
           </>
@@ -164,9 +169,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
         {showForgotModal && forgotRole === 'staff' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">Staff Assistance</h2>
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
+              {language === 'en' ? 'Staff Assistance' : 'Tabang sa Staff'}
+            </h2>
             <p className="text-sm text-gray-600 text-center">
-              Please contact your system administrator to retrieve your username or reset your password.
+              {language === 'en' 
+                ? 'Please contact your system administrator to retrieve your username or reset your password.'
+                : 'Palihog kontaka ang imong system administrator aron makuha ang imong username o i-reset ang imong password.'
+              }
             </p>
           </>
         )}
@@ -174,14 +184,16 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         {/* Login Form */}
         {!showForgotModal && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">Welcome Back</h2>
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
+              {language === 'en' ? 'Welcome Back' : 'Maayong Pagbalik'}
+            </h2>
             <p className="text-sm text-gray-600 text-center mb-4">
-              Login to your VLSystem account
+              {language === 'en' ? 'Login to your VLSystem account' : 'Sulod sa imong VLSystem account'}
             </p>
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="Username"
+                placeholder={language === 'en' ? 'Username' : 'Username'}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md mb-3 focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -189,7 +201,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
               <div className="relative mb-4">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
+                  placeholder={language === 'en' ? 'Password' : 'Password'}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -199,7 +211,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   className="absolute right-3 top-2.5 text-sm text-gray-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  {showPassword ? (language === 'en' ? 'Hide' : 'Tagoa') : (language === 'en' ? 'Show' : 'Ipakita')}
                 </button>
               </div>
               <p
@@ -209,14 +221,14 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   setForgotRole('');
                 }}
               >
-                Forgot Password or Username?
+                {language === 'en' ? 'Forgot Password or Username?' : 'Nakalimot sa Password o Username?'}
               </p>
               <div className="flex justify-center">
                 <button
                   type="submit"
                   className="w-20 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
                 >
-                  Login
+                  {language === 'en' ? 'Login' : 'Sulod'}
                 </button>
               </div>
             </form>
