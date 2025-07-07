@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FiSave, FiPrinter, FiEdit } from 'react-icons/fi';
-
+import Head from "../../page";
 const API_URL = "http://localhost:3001/loan-applications";
 
 // Icons as Unicode symbols - no external dependencies
@@ -263,6 +263,7 @@ const capitalizeWords = (str: string) =>
     .replace(/\b\w/g, char => char.toUpperCase());
 
   return (
+    <Head>
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -495,5 +496,6 @@ const capitalizeWords = (str: string) =>
         </div>
       </div>
     </div>
+    </Head>
   );
 }

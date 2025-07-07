@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import Navbar from '../../navbar';
+import HeadNavbar from '../../headNavbar/page';
+import Head from '../../page';
 
 const API_URL = "http://localhost:3001/loans";
 
@@ -95,9 +96,8 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
   }
 
   return (
+    <Head>
     <div className="min-h-screen bg-gray-50 text-black">
-      <Navbar />
-
       {/* Client Header */}
       <div className="w-full bg-white shadow-sm py-6 mb-6">
         <div className="max-w-6xl mx-auto px-4 flex items-center">
@@ -249,5 +249,6 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
         </div>
       </div>
     </div>
+    </Head>
   );
 }

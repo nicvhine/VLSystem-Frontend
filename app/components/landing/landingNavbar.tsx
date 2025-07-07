@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import LoginModal from './loginModal';
+import LoginModal from './LoginModal/page';
 import SimulatorModal from './loanSimulator';
 
 interface LandingNavbarProps {
@@ -170,7 +170,6 @@ export default function LandingNavbar({ language, setLanguage }: LandingNavbarPr
       {/* Modals */}
       {/* @ts-expect-error: language prop is supported in our LoginModal and SimulatorModal */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
-      {/* @ts-expect-error: language prop is supported in our LoginModal and SimulatorModal */}
       <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} language={language} />
     </header>
   );

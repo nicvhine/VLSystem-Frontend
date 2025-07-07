@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import Navbar from "../navbar";
+import HeadNavbar from "../headNavbar/page";
 import emailjs from 'emailjs-com';
 import ErrorModal from "./errorModal";
 import {
@@ -14,6 +14,7 @@ import {
   FiMoreVertical,
 } from "react-icons/fi";
 import { createPortal } from "react-dom";
+import Head from "../page";
 
 const API_URL = "http://localhost:3001/users";
 
@@ -63,10 +64,11 @@ function UserActions({
       const rect = anchorRef.current.getBoundingClientRect();
       setPosition({
         top: rect.bottom + window.scrollY + 4,
-        left: rect.right + window.scrollX - 192, // 192px = menu width
+        left: rect.right + window.scrollX - 192, 
       });
     }
   }, [anchorRef]);
+
   return createPortal(
     <div
       ref={ref}
@@ -119,6 +121,8 @@ function CreateUserModal({
       [name]: value,
     }));
   };
+
+  const [token, setToken] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,8 +379,8 @@ export default function UsersPage() {
   };
 
   return (
+    <Head>
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
         {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-6">
@@ -512,5 +516,6 @@ export default function UsersPage() {
         onClose={() => setErrorModalOpen(false)}
       />
     </div>
+    </Head>
   );
 }

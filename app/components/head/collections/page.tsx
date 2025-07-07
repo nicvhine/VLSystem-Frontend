@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from 'react';
-import Navbar from '../navbar';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
 import {
   FiSearch,
   FiChevronDown,
@@ -13,6 +11,7 @@ import {
   FiDollarSign,
   FiCheckCircle,
 } from 'react-icons/fi';
+import HeadNavbar from '../headNavbar/page';
 
 interface Collection {
   loanId: string;
@@ -132,7 +131,7 @@ const overallTargetAchieved = overallTotalTarget > 0
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <HeadNavbar />
       <div className="mx-auto px-6 py-8">
         <h1 className="text-2xl font-semibold text-gray-800 mb-8">Collections</h1>
 

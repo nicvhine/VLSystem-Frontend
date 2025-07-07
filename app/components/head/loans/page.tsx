@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, Suspense, useEffect } from 'react';
-import Navbar from '../navbar';
 import { FiSearch, FiChevronDown, FiFilter, FiLoader, FiMoreVertical, FiPlus } from 'react-icons/fi';
 import Link from 'next/link';
-
+import Head from '../page';
 const API_URL = "http://localhost:3001/loans";
 
 interface LoanDetails {
@@ -126,8 +125,8 @@ export default function LoansPage() {
   };
 
   return (
+    <Head>
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className=" mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -256,5 +255,6 @@ export default function LoansPage() {
         </div>
       </div>
     </div>
+    </Head>
   );
 }

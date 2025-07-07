@@ -12,7 +12,6 @@ interface ProfileDropdownProps {
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  handleLogout: () => void;
   isDropdownOpen: boolean;
   setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   profilePic: string;
@@ -32,7 +31,6 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     setDarkMode,
     isEditing,
     setIsEditing,
-    handleLogout,
     isDropdownOpen,
     setIsDropdownOpen,
     profilePic,
@@ -69,6 +67,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     toggleEdit,
     handleNotificationToggle,
     handleAccountSettingsUpdate,
+    handleLogout,
   } = useProfileDropdownLogic(setIsEditing);
 
   return (

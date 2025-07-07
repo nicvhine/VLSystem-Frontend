@@ -24,6 +24,7 @@ export default function HeadNavbar() {
   const [isEditing, setIsEditing] = useState(false);
 
 
+
   const {
   profilePic,
   setProfilePic,
@@ -246,7 +247,6 @@ const {
               handleLogout={handleLogout}
               isDropdownOpen={isDropdownOpen}
               setIsDropdownOpen={setIsDropdownOpen}
-              
               profilePic={profilePic || ''}
               previewPic={previewPic || ''}
               isUploadingPic={isUploadingPic}

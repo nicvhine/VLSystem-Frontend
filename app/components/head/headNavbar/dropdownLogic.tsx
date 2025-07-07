@@ -41,6 +41,22 @@ export function useProfileDropdownLogic(
     setIsEditingPasswordField(false);
   };
 
+  const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  localStorage.removeItem('userId');
+  localStorage.removeItem('username');
+  localStorage.removeItem('email');
+  localStorage.removeItem('fullName');
+  localStorage.removeItem('borrowersId');
+  localStorage.removeItem('collectorName');
+  localStorage.removeItem('forcePasswordChange');
+  localStorage.removeItem('profilePic');
+
+  window.location.href = '/';
+};
+
+
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const updatedPrefs = {
       ...notificationPreferences,
@@ -73,6 +89,8 @@ export function useProfileDropdownLogic(
     setTimeout(() => setSettingsSuccess(''), 3000);
   };
 
+  
+
   return {
     currentPassword,
     setCurrentPassword,
@@ -101,5 +119,6 @@ export function useProfileDropdownLogic(
     toggleEdit,
     handleNotificationToggle,
     handleAccountSettingsUpdate,
+    handleLogout,
   };
 }

@@ -39,30 +39,46 @@ export async function loginHandler({ username, password, onClose, router }: Logi
     });
 
     if (staffRes.ok) {
-      const data = await staffRes.json();
-      localStorage.setItem('token', data.token || '');
-      localStorage.setItem('fullName', data.fullName || data.name || data.username || data.email);
-      localStorage.setItem('email', data.email);
-      localStorage.setItem('username', data.username);
-      localStorage.setItem('role', data.role?.toLowerCase() || 'staff');
-      if (data.role?.toLowerCase() === 'collector') {
-        localStorage.setItem('collectorName', data.name);
-      }
-      if (data.userId) localStorage.setItem('userId', data.userId);
-      data.isFirstLogin
-        ? localStorage.setItem('forcePasswordChange', 'true')
-        : localStorage.removeItem('forcePasswordChange');
-      onClose();
+  const data = await staffRes.json();
+  const user = data.user; 
 
-      const redirectMap: Record<string, string> = {
-        head: '/components/head',
-        manager: '/components/manager',
-        'loan officer': '/components/loanOfficer',
-        collector: '/components/collector',
-      };
-      router.push(redirectMap[data.role?.toLowerCase()] || '/');
-      return;
-    }
+  localStorage.setItem('token', data.token || '');
+  localStorage.setItem('fullName', user.name || user.username || user.email);
+  localStorage.setItem('email', user.email);
+  localStorage.setItem('username', user.username);
+  localStorage.setItem('role', user.role?.toLowerCase() || 'staff');
+
+  if (user.profilePic) {
+  const fullPicUrl = `http://localhost:3001${user.profilePic}`;
+  localStorage.setItem('profilePic', fullPicUrl);
+}
+
+
+  if (user.role?.toLowerCase() === 'collector') {
+    localStorage.setItem('collectorName', user.name);
+  }
+
+  if (user.userId) {
+    localStorage.setItem('userId', user.userId);
+  }
+
+  user.isFirstLogin
+    ? localStorage.setItem('forcePasswordChange', 'true')
+    : localStorage.removeItem('forcePasswordChange');
+
+  onClose();
+
+  const redirectMap: Record<string, string> = {
+    head: '/components/head',
+    manager: '/components/manager',
+    'loan officer': '/components/loanOfficer',
+    collector: '/components/collector',
+  };
+
+  router.push(redirectMap[user.role?.toLowerCase()] || '/');
+  return;
+}
+
 
     alert('Invalid credentials or user not found.');
   } catch (error) {
