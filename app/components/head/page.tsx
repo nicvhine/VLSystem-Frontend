@@ -4,11 +4,16 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "../changePasswordInternal/forceChange";
 import HeadNavbar from "./headNavbar/page";
+import useInactivityLogout from '../inactivity/logic';
+import AreYouStillThereModal from '../inactivity/modal';
 
 export default function Head({ children }: { children?: React.ReactNode }) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
+
+  // Destructure countdown from the hook
+  const { showModal, countdown, stayLoggedIn, logout } = useInactivityLogout();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -39,6 +44,14 @@ export default function Head({ children }: { children?: React.ReactNode }) {
       )}
 
       {children}
+      
+      {showModal && (
+        <AreYouStillThereModal
+          countdown={countdown}
+          onStay={stayLoggedIn}
+          onLogout={logout}
+        />
+      )}
     </div>
   );
 }
