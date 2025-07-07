@@ -52,7 +52,6 @@ export default function CollectionsPage() {
         const data = await response.json();
         console.log('Fetched collections:', data);
 
-        // ✅ FIX: Ensure you're setting an array
         if (Array.isArray(data)) {
           setCollections(data);
         } else if (Array.isArray(data.collections)) {
