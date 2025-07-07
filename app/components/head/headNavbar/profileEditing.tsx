@@ -1,0 +1,293 @@
+'use client';
+
+import React from 'react';
+
+interface Props {
+  username: string;
+  email: string;
+  editingEmail: string;
+  setEditingEmail: (v: string) => void;
+  isEditingEmailField: boolean;
+  setIsEditingEmailField: (v: boolean) => void;
+
+  editingPhone: string;
+  setEditingPhone: (v: string) => void;
+  isEditingPhoneField: boolean;
+  setIsEditingPhoneField: (v: boolean) => void;
+
+  isEditingPasswordField: boolean;
+  setIsEditingPasswordField: (v: boolean) => void;
+  currentPassword: string;
+  setCurrentPassword: (v: string) => void;
+  newPassword: string;
+  setNewPassword: (v: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (v: string) => void;
+
+  activeSettingsTab: string;
+  setActiveSettingsTab: (v: 'account' | 'notifications') => void;
+
+  passwordError: string;
+  settingsSuccess: string;
+
+  notificationPreferences: {
+    email: boolean;
+    sms: boolean;
+  };
+  handleNotificationToggle: (type: 'sms' | 'email') => void;
+
+  handleAccountSettingsUpdate: () => void;
+}
+
+export default function ProfileSettingsPanel({
+  username,
+  email,
+  editingEmail,
+  setEditingEmail,
+  isEditingEmailField,
+  setIsEditingEmailField,
+  editingPhone,
+  setEditingPhone,
+  isEditingPhoneField,
+  setIsEditingPhoneField,
+  isEditingPasswordField,
+  setIsEditingPasswordField,
+  currentPassword,
+  setCurrentPassword,
+  newPassword,
+  setNewPassword,
+  confirmPassword,
+  setConfirmPassword,
+  activeSettingsTab,
+  setActiveSettingsTab,
+  passwordError,
+  settingsSuccess,
+  notificationPreferences,
+  handleNotificationToggle,
+  handleAccountSettingsUpdate,
+}: Props) {
+  return (
+    <div className="px-6 py-4 bg-gray-50 rounded-lg mx-4 mb-4">
+      {/* Tab switch buttons */}
+      <div className="flex mb-4 bg-white rounded-lg p-1 relative">
+        <div
+          className={`absolute top-1 h-8 bg-red-600 rounded-md transition-all duration-300 ease-in-out ${
+            activeSettingsTab === 'account'
+              ? 'left-1 w-[calc(50%-4px)]'
+              : 'left-[calc(50%+2px)] w-[calc(50%-4px)]'
+          }`}
+        />
+        <button
+          onClick={() => setActiveSettingsTab('account')}
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 ${
+            activeSettingsTab === 'account' ? 'text-white' : 'text-gray-600'
+          }`}
+        >
+          Account
+        </button>
+        <button
+          onClick={() => setActiveSettingsTab('notifications')}
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 ${
+            activeSettingsTab === 'notifications' ? 'text-white' : 'text-gray-600'
+          }`}
+        >
+          Notifications
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="relative overflow-hidden">
+        {/* Account tab */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            activeSettingsTab === 'account'
+              ? 'opacity-100 translate-x-0'
+              : 'opacity-0 translate-x-full absolute top-0 left-0 w-full'
+          }`}
+        >
+          <div className="space-y-4">
+            <div>
+              <span className="text-sm text-gray-700">Username</span>
+              <div className="text-base text-gray-900">{username}</div>
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="text-sm text-gray-700">Email Address</span>
+                <button
+                  onClick={() => setIsEditingEmailField(!isEditingEmailField)}
+                  className="text-xs text-red-600 font-medium"
+                >
+                  {isEditingEmailField ? 'Cancel' : 'Edit'}
+                </button>
+              </div>
+              {!isEditingEmailField ? (
+                <span className="block text-base text-gray-900">{email || 'No email set'}</span>
+              ) : (
+                <input
+                  type="email"
+                  value={editingEmail}
+                  onChange={(e) => setEditingEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Enter your email"
+                />
+              )}
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="text-sm text-gray-700">Phone Number</span>
+                <button
+                  onClick={() => setIsEditingPhoneField(!isEditingPhoneField)}
+                  className="text-xs text-red-600 font-medium"
+                >
+                  {isEditingPhoneField ? 'Cancel' : 'Edit'}
+                </button>
+              </div>
+              {!isEditingPhoneField ? (
+                <span className="block text-base text-gray-900">
+                  {editingPhone || 'No phone set'}
+                </span>
+              ) : (
+                <input
+                  type="tel"
+                  value={editingPhone}
+                  onChange={(e) => setEditingPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  placeholder="Enter your phone number"
+                />
+              )}
+            </div>
+
+            <div>
+              <div className="flex justify-between mb-1">
+                <span className="text-sm text-gray-700">Password</span>
+                <button
+                  onClick={() => setIsEditingPasswordField(!isEditingPasswordField)}
+                  className="text-xs text-red-600 font-medium"
+                >
+                  {isEditingPasswordField ? 'Cancel' : 'Edit'}
+                </button>
+              </div>
+              {isEditingPasswordField && (
+                <div className="space-y-2">
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="Current password"
+                  />
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="New password"
+                  />
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="Confirm password"
+                  />
+                </div>
+              )}
+            </div>
+
+            {passwordError && (
+              <p className="text-sm text-red-600 bg-red-100 p-2 rounded">{passwordError}</p>
+            )}
+            {settingsSuccess && (
+              <p className="text-sm text-green-600 bg-green-100 p-2 rounded">{settingsSuccess}</p>
+            )}
+
+            {(isEditingEmailField || isEditingPasswordField) && (
+              <button
+                onClick={handleAccountSettingsUpdate}
+                className="w-full bg-red-600 text-white py-2 rounded-lg"
+              >
+                Update Account
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Notification tab */}
+        <div
+          className={`transition-all duration-300 ease-in-out ${
+            activeSettingsTab === 'notifications'
+              ? 'opacity-100 translate-x-0'
+              : 'opacity-0 -translate-x-full absolute top-0 left-0 w-full'
+          }`}
+        >
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 mb-3">
+                Notification Preferences
+              </h4>
+              <div className="space-y-4">
+                {/* Email Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Email Notifications</span>
+                      <p className="text-xs text-gray-500">Receive notifications via email</p>
+                    </div>
+                  </div>
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notificationPreferences.email}
+                      onChange={() => handleNotificationToggle('email')}
+                      className="sr-only"
+                    />
+                    <span className={`w-11 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
+                      notificationPreferences.email ? 'bg-red-600' : ''
+                    }`}>
+                      <span className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                        notificationPreferences.email ? 'translate-x-5' : ''
+                      }`}></span>
+                    </span>
+                  </label>
+                </div>
+
+                {/* SMS Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">SMS Notifications</span>
+                      <p className="text-xs text-gray-500">Receive notifications via text message</p>
+                    </div>
+                  </div>
+                  <label className="inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={notificationPreferences.sms}
+                      onChange={() => handleNotificationToggle('sms')}
+                      className="sr-only"
+                    />
+                    <span className={`w-11 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
+                      notificationPreferences.sms ? 'bg-red-600' : ''
+                    }`}>
+                      <span className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
+                        notificationPreferences.sms ? 'translate-x-5' : ''
+                      }`}></span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
