@@ -163,7 +163,7 @@ const {
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link
-            href="/dashboard"
+            href="/components/head/dashboard"
             className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
           >
             <span>VLSystem</span>

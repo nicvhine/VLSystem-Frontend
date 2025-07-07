@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function useInactivityLogout(timeout = 60000, modalTimeout = 10000) {
+export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10000) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const [countdown, setCountdown] = useState(modalTimeout / 1000);
