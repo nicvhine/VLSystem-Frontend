@@ -52,11 +52,14 @@ export function useProfileDropdownLogic(
   localStorage.removeItem('userId');
   localStorage.removeItem('username');
   localStorage.removeItem('email');
+  localStorage.removeItem('phoneNumber');
   localStorage.removeItem('fullName');
   localStorage.removeItem('borrowersId');
   localStorage.removeItem('collectorName');
   localStorage.removeItem('forcePasswordChange');
   localStorage.removeItem('profilePic');
+  localStorage.removeItem('darkMode');
+  localStorage.removeItem('notificationPreferences');
 
   window.location.href = '/';
 };
@@ -82,8 +85,6 @@ useEffect(() => {
   const [smsVerificationCode, setSmsVerificationCode] = useState('');
   const [smsVerified, setSmsVerified] = useState(false);
   const [smsVerificationSent, setSmsVerificationSent] = useState(false);
-
-
 
 //EMAIL VERIFICATION
 const sendVerificationCode = async () => {
@@ -174,6 +175,7 @@ const sendSmsVerificationCode = async () => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setSmsVerificationCode(code);
     setSmsVerified(false);
+    
 
     const message = `Your verification code is: ${code}`;
 
@@ -197,6 +199,7 @@ const sendSmsVerificationCode = async () => {
       return;
     }
 
+    setSmsVerificationSent(true); 
     setSettingsSuccess('Verification code sent to your phone number.');
   } catch (error) {
     console.error('SMS Error:', error);
@@ -285,11 +288,32 @@ const handleAccountSettingsUpdate = async () => {
       localStorage.setItem('phoneNumber', editingPhone);
     }
 
+    //PASSWORD
     if (isEditingPasswordField && newPassword) {
       if (newPassword !== confirmPassword) {
         setPasswordError('New Password and Confirm Password do not match.');
         return;
       }
+
+       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!passwordRegex.test(newPassword)) {
+    setPasswordError(
+      'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
+    );
+    return;
+  }
+     const passwordRes = await fetch(`http://localhost:3001/users/${userId}/change-password`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ newPassword }),
+  });
+
+  if (!passwordRes.ok) {
+    const data = await passwordRes.json();
+    setPasswordError(data.message || 'Failed to update password.');
+    return;
+  
+  }
 
     }
 

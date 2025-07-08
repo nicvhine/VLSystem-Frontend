@@ -13,6 +13,8 @@ import {
   FiDollarSign,
   FiCheckCircle,
 } from 'react-icons/fi';
+import ManagerNavbar from '../managerNavbar/page';
+import Manager from '../page';
 
 interface Collection {
   loanId: string;
@@ -131,8 +133,8 @@ const overallTargetAchieved = overallTotalTarget > 0
   const targetAchieved = totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
 
   return (
+    <Manager>
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="mx-auto px-6 py-8">
         <h1 className="text-2xl font-semibold text-gray-800 mb-8">Collections</h1>
 
@@ -327,5 +329,6 @@ const overallTargetAchieved = overallTotalTarget > 0
         </div>
       </div>
     </div>
+    </Manager>
   );
 }

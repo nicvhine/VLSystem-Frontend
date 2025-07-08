@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect} from 'react';
-import Navbar from '../navbar';
 import { FiSearch, FiChevronDown, FiLoader } from 'react-icons/fi';
 import Link from 'next/link';
 import emailjs from 'emailjs-com';
+import ManagerNavbar from '../managerNavbar/page';
+import Manager from '../page';
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -251,8 +252,8 @@ const handleAction = async (id: string, status: 'Disbursed') => {
 
 
   return (
+    <Manager>
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div>
@@ -463,5 +464,6 @@ const handleAction = async (id: string, status: 'Disbursed') => {
       </div>
     </div>
     </div>
+    </Manager>
   );
 }

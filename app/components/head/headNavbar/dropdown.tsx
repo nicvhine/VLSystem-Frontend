@@ -3,13 +3,13 @@
 import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
+import { useState, useEffect } from 'react';
 
 interface ProfileDropdownProps {
   name: string;
   email: string;
+  phoneNumber: string;
   username: string;
-  darkMode: boolean;
-  setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   isDropdownOpen: boolean;
@@ -26,9 +26,8 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   const {
     name,
     email,
+    phoneNumber,
     username,
-    darkMode,
-    setDarkMode,
     isEditing,
     setIsEditing,
     isDropdownOpen,
@@ -78,10 +77,22 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     sendVerificationCode,
     verifyEmailCode,
     smsVerificationSent,
-    setSmsVerificationSent,
     sendSmsVerificationCode,
     verifySmsCode,
   } = useProfileDropdownLogic(setIsEditing);
+
+const [darkMode, setDarkMode] = useState(() => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('darkMode') === 'true';
+  }
+  return false;
+});
+
+const handleSetDarkMode = (value: boolean) => {
+  setDarkMode(value); 
+  localStorage.setItem('darkMode', value.toString());
+};
+
 
   return (
     <div className="relative">
@@ -141,7 +152,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
             {/* Settings Toggle */}
             <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              className="flex items-center px-6 py-3 hover:bg-gray-100 hover:text-black dark:hover:text-black transition"
               onClick={toggleEdit}
             >
               Account Settings
@@ -151,6 +162,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
               <ProfileSettingsPanel
                 username={username}
                 email={email}
+                phoneNumber={phoneNumber}
                 editingEmail={editingEmail}
                 setEditingEmail={setEditingEmail}
                 isEditingEmailField={isEditingEmailField}
@@ -186,11 +198,13 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 smsVerificationSent={smsVerificationSent}
                 sendSmsVerificationCode={sendSmsVerificationCode}
                 verifySmsCode={verifySmsCode}
+                darkMode={darkMode}
+                setDarkMode={handleSetDarkMode}
               />
             )}
 
             {/* Dark Mode Toggle */}
-            <div className="flex items-center px-6 py-3 justify-between hover:bg-gray-100 dark:hover:bg-gray-800 transition">
+            <div  className="flex items-center px-6 py-3 justify-between hover:bg-gray-100 hover:text-black dark:hover:text-black transition">
               <span className="flex items-center">
                 Dark Mode
               </span>
@@ -198,7 +212,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 <input
                   type="checkbox"
                   checked={darkMode}
-                  onChange={() => setDarkMode((prev) => !prev)}
+                  onChange={() => handleSetDarkMode(!darkMode)}
                   className="sr-only"
                 />
                 <span

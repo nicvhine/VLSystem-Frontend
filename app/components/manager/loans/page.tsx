@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, Suspense, useEffect } from 'react';
-import Navbar from '../navbar';
 import { FiSearch, FiChevronDown, FiFilter, FiLoader, FiMoreVertical, FiPlus } from 'react-icons/fi';
 import Link from 'next/link';
+import Manager from '../page';
 
 const API_URL = "http://localhost:3001/loans";
 
@@ -40,25 +40,37 @@ export default function LoansPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(API_URL, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-        const data = await response.json();
-        setLoans(data);
-      } catch (error) {
-        console.error("Failed to fetch loans:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchApplications = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(API_URL, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
-    fetchApplications();
-  }, []);
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        setLoans(data);
+      } else if (Array.isArray(data.loans)) {
+        setLoans(data.loans);
+      } else {
+        console.error("Unexpected response format:", data);
+        setLoans([]); 
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch loans:", error);
+      setLoans([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchApplications();
+}, []);
+
 
   const filterTabs = [
     { id: 'all', label: 'All' },
@@ -126,8 +138,8 @@ export default function LoansPage() {
   };
 
   return (
+    <Manager>
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className=" mx-auto px-6 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -256,5 +268,6 @@ export default function LoansPage() {
         </div>
       </div>
     </div>
+    </Manager>
   );
 }

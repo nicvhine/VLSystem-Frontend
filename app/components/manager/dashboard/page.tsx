@@ -2,10 +2,10 @@
 
 import AuditLog from "./auditLog";
 import LoanStatsDashboard from "./loanStats";
-import Head from "../page";
 import { useEffect, useState } from 'react';
+import Manager from "../page";
 
-export default function HeadDashboard() {
+export default function ManagerDashboard() {
   const [darkMode, setDarkMode] = useState(() => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('darkMode') === 'true';
@@ -14,7 +14,7 @@ export default function HeadDashboard() {
 });
   
   return (
-    <Head>
+    <Manager>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
         {/* Header */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
@@ -37,6 +37,6 @@ export default function HeadDashboard() {
         </div>
       </div>
       </div>
-    </Head>
+    </Manager>
   );
 }

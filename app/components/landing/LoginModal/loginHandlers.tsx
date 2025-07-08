@@ -38,15 +38,17 @@ export async function loginHandler({ username, password, onClose, router }: Logi
       body: JSON.stringify({ username, password }),
     });
 
-    if (staffRes.ok) {
+  if (staffRes.ok) {
   const data = await staffRes.json();
   const user = data.user; 
 
   localStorage.setItem('token', data.token || '');
   localStorage.setItem('fullName', user.name || user.username || user.email);
   localStorage.setItem('email', user.email);
+  localStorage.setItem('phoneNumber', user.phoneNumber);
   localStorage.setItem('username', user.username);
   localStorage.setItem('role', user.role?.toLowerCase() || 'staff');
+  localStorage.setItem('darkMode', user.darkMode?.toString() || 'false'); 
 
   if (user.profilePic) {
   const fullPicUrl = `http://localhost:3001${user.profilePic}`;
@@ -70,8 +72,8 @@ export async function loginHandler({ username, password, onClose, router }: Logi
 
   const redirectMap: Record<string, string> = {
     head: '/components/head/dashboard',
-    manager: '/components/manager',
-    'loan officer': '/components/loanOfficer',
+    manager: '/components/manager/dashboard',
+    loanOfficer: '/components/loanOfficer',
     collector: '/components/collector',
   };
 

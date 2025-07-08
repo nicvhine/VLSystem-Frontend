@@ -8,6 +8,8 @@ import CreateUserModal from "./createUserModal";
 import ErrorModal from "./errorModal";
 import Head from "../page";
 import { useUsersLogic } from "./logic"; 
+import type { User } from "./logic";
+
 
 function LoadingSpinner() {
   return (
@@ -31,7 +33,6 @@ function UserActions({
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
-  // handle outside click
   useState(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -47,7 +48,6 @@ function UserActions({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   });
 
-  // position dropdown
   useState(() => {
     if (anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
@@ -67,7 +67,7 @@ function UserActions({
       <div className="py-1" role="menu" aria-orientation="vertical">
         <button onClick={onEdit} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
           <FiEdit2 className="mr-3 h-4 w-4" />
-          Edit User
+          Save
         </button>
         <button onClick={onDelete} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
           <FiTrash2 className="mr-3 h-4 w-4" />
@@ -78,8 +78,6 @@ function UserActions({
     document.body
   );
 }
-
-
 
 export default function UsersPage() {
   const {
@@ -98,16 +96,63 @@ export default function UsersPage() {
     sortedUsers,
     handleDeleteUser,
     handleCreateUser,
+    fetchUsers,
   } = useUsersLogic();
 
   const [showActions, setShowActions] = useState<{ userId: string; anchorEl: HTMLButtonElement | null } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<any>({});
 
   const handleEditUser = (userId: string) => {
-    setErrorMessage(`Edit user with ID: ${userId}`);
-    setErrorModalOpen(true);
+    const user = users.find(u => u.userId === userId);
+    if (user) {
+      setEditingUserId(userId);
+      setEditFormData({ ...user });
+    }
     setShowActions(null);
   };
+
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
+    setEditFormData({});
+  };
+
+  const handleSaveEdit = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`http://localhost:3001/users/${editingUserId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(editFormData),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.message || "Failed to update user.");
+    }
+
+    const updated = await res.json();
+
+    await fetchUsers(); 
+    setEditingUserId(null);
+    setEditFormData({});
+  } catch (error: any) {
+    setErrorMessage(error.message || "Update failed");
+    setErrorModalOpen(true);
+  }
+};
+
+
+  const handleEditChange = (field: keyof User, value: string) => {
+  setEditFormData((prev: Partial<User>) => ({
+    ...prev,
+    [field]: value,
+  }));
+};
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -123,26 +168,14 @@ export default function UsersPage() {
     <Head>
       <div className="min-h-screen bg-gray-50">
         <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
-          {/* Filters */}
           <div className="flex flex-wrap gap-2 mb-6">
             {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => {
               const isActive = (roleOption === "All" && !roleFilter) || roleFilter === roleOption;
               return (
                 <button
                   key={roleOption}
-                  className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 cursor-pointer
-                  ${
-                    isActive
-                      ? "bg-red-600 text-white border-red-600 shadow-md scale-105"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:shadow"
-                  }`}
-                  onClick={() =>
-                    setRoleFilter(
-                      roleOption === "All"
-                        ? ""
-                        : roleOption as "" | "head" | "manager" | "loan officer" | "collector"
-                    )
-                  }
+                  className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 cursor-pointer ${isActive ? "bg-red-600 text-white border-red-600 shadow-md scale-105" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:shadow"}`}
+                  onClick={() => setRoleFilter(roleOption === "All" ? "" : roleOption as any)}
                 >
                   {roleOption === "All" ? "All Roles" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
                 </button>
@@ -150,7 +183,6 @@ export default function UsersPage() {
             })}
           </div>
 
-          {/* Search & Create */}
           <div className="flex gap-4 mb-6 items-center justify-between">
             <div className="relative w-72">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
@@ -173,7 +205,6 @@ export default function UsersPage() {
             </button>
           </div>
 
-          {/* User Table */}
           {loading ? (
             <LoadingSpinner />
           ) : (
@@ -192,33 +223,71 @@ export default function UsersPage() {
                 {sortedUsers.map((user) => (
                   <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>{user.role}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right relative">
-                      <button
-                        onClick={(e) =>
-                          setShowActions(
-                            showActions && showActions.userId === user.userId
-                              ? null
-                              : { userId: user.userId, anchorEl: e.currentTarget }
-                          )
-                        }
-                        className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-150"
-                        aria-label="User actions"
-                      >
-                        <FiMoreVertical />
-                      </button>
-                      {showActions && showActions.userId === user.userId && showActions.anchorEl && (
-                        <UserActions
-                          onEdit={() => handleEditUser(user.userId)}
-                          onDelete={() => handleDeleteUser(user.userId)}
-                          onClose={() => setShowActions(null)}
-                          anchorRef={{ current: showActions.anchorEl }}
-                        />
-                      )}
-                    </td>
+                    {editingUserId === user.userId ? (
+                      <>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.name || ''} onChange={(e) => handleEditChange("name", e.target.value)}/>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.email || ''} onChange={(e) => handleEditChange("email", e.target.value)}/>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.phoneNumber || ''} onChange={(e) => handleEditChange("phoneNumber", e.target.value)}/>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.role || ''} onChange={(e) => handleEditChange("role", e.target.value)}>
+                            <option value="head">Head</option>
+                            <option value="manager">Manager</option>
+                            <option value="loan officer">Loan Officer</option>
+                            <option value="collector">Collector</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                          <button
+                            onClick={() => handleSaveEdit()}
+                            className="text-green-600 font-medium hover:underline mr-4"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelEdit}
+                            className="text-gray-600 font-medium hover:underline"
+                          >
+                            Cancel
+                          </button>
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>{user.role}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                          <button
+                            onClick={(e) =>
+                              setShowActions(
+                                showActions && showActions.userId === user.userId
+                                  ? null
+                                  : { userId: user.userId, anchorEl: e.currentTarget }
+                              )
+                            }
+                            className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-150"
+                            aria-label="User actions"
+                          >
+                            <FiMoreVertical />
+                          </button>
+                          {showActions && showActions.userId === user.userId && showActions.anchorEl && (
+                            <UserActions
+                              onEdit={() => handleEditUser(user.userId)}
+                              onDelete={() => handleDeleteUser(user.userId)}
+                              onClose={() => setShowActions(null)}
+                              anchorRef={{ current: showActions.anchorEl }}
+                            />
+                          )}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
                 {sortedUsers.length === 0 && (
@@ -233,7 +302,6 @@ export default function UsersPage() {
           )}
         </div>
 
-        {/* Modals */}
         <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
         <ErrorModal isOpen={errorModalOpen} message={errorMessage} onClose={() => setErrorModalOpen(false)} />
       </div>
