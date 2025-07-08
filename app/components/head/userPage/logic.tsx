@@ -23,25 +23,28 @@ export function useUsersLogic() {
   const [errorMessage, setErrorMessage] = useState("");
   const [errorModalOpen, setErrorModalOpen] = useState(false);
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await fetch(API_URL, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch users.");
+      const data = await res.json();
+      setUsers(data);
+    } catch (error: any) {
+      setErrorMessage(error.message || "Failed to load users.");
+      setErrorModalOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(API_URL, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch users.");
-        const data = await res.json();
-        setUsers(data);
-      } catch (error: any) {
-        setErrorMessage(error.message || "Failed to load users.");
-        setErrorModalOpen(true);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchUsers();
   }, []);
+
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
@@ -167,5 +170,6 @@ export function useUsersLogic() {
     sortedUsers,
     handleDeleteUser,
     handleCreateUser,
+    fetchUsers,
   };
 }

@@ -19,6 +19,7 @@ export default function HeadNavbar() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -68,6 +69,7 @@ const {
   useEffect(() => {
     const storedName = localStorage.getItem('fullName');
     const storedEmail = localStorage.getItem('email');
+    const storedPhoneNumber = localStorage.getItem('phoneNumber');
     const storedUsername = localStorage.getItem('username');
     const storedPic = localStorage.getItem('profilePic');
     const storedNotifications = localStorage.getItem('notificationPreferences');
@@ -76,6 +78,11 @@ const {
     if (storedEmail) {
       setEmail(storedEmail);
       setEditingEmail(storedEmail);
+    }
+
+    if (storedPhoneNumber) {
+      setPhoneNumber(storedPhoneNumber);
+      setEditingPhone(storedPhoneNumber);
     }
 
     if(storedUsername) setUsername(storedUsername);
@@ -240,7 +247,8 @@ const {
               {isDropdownOpen && (
               <ProfileDropdown
               name={name}
-              email={email}              
+              email={email}       
+              phoneNumber={phoneNumber}       
               username={username}
               darkMode={darkMode}
               setDarkMode={setDarkMode}

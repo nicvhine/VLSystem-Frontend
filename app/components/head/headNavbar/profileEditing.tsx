@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
+import { useState, useEffect } from 'react';
 
 interface Props {
   username: string;
   email: string;
+  phoneNumber: string;
   editingEmail: string;
   setEditingEmail: (v: string) => void;
   isEditingEmailField: boolean;
@@ -51,11 +53,16 @@ interface Props {
   sendSmsVerificationCode: () => void;
   verifySmsCode: () => void;
   smsVerificationSent: boolean;
+
+  darkMode: boolean;
+  setDarkMode: (value: boolean) => void;
+
 }
 
 export default function ProfileSettingsPanel({
   username,
   email,
+  phoneNumber,
   editingEmail,
   setEditingEmail,
   isEditingEmailField,
@@ -91,13 +98,18 @@ export default function ProfileSettingsPanel({
   sendSmsVerificationCode,
   verifySmsCode,
   smsVerificationSent,
+  darkMode,
+  setDarkMode,
 }: Props) {
+  
   return (
-    <div className="px-6 py-4 bg-gray-50 rounded-lg mx-4 mb-4">
-      {/* Tab switch buttons */}
-      <div className="flex mb-4 bg-white rounded-lg p-1 relative">
+     <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300 ${
+      darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-white-900'
+    }`}>
+    {/* Tab switch buttons */}
+      <div className="flex mb-4 bg-white dark:bg-gray-800 rounded-lg p-1 relative">
         <div
-          className={`absolute top-1 h-8 bg-red-600 rounded-md transition-all duration-300 ease-in-out ${
+          className={`absolute top-1 h-8 bg-red-600 rounded-md transition-all duration-300 ease-in-out ${ 
             activeSettingsTab === 'account'
               ? 'left-1 w-[calc(50%-4px)]'
               : 'left-[calc(50%+2px)] w-[calc(50%-4px)]'
@@ -226,7 +238,7 @@ export default function ProfileSettingsPanel({
 
               {!isEditingPhoneField ? (
                 <span className="block text-base text-gray-900">
-                  {editingPhone || 'No phone set'}
+                  {phoneNumber}
                 </span>
               ) : (
                 <>
@@ -235,7 +247,7 @@ export default function ProfileSettingsPanel({
                   value={editingPhone}
                   onChange={(e) => setEditingPhone(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="Enter your phone number"
+                  placeholder={phoneNumber}
                 />
                    <button
                     onClick={sendSmsVerificationCode}
