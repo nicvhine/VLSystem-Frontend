@@ -15,6 +15,7 @@ export default function useAccountSettings() {
   const [editingPhone, setEditingPhone] = useState('');
   const [activeSettingsTab, setActiveSettingsTab] = useState<'account' | 'notifications'>('account');
   const [notificationPreferences, setNotificationPreferences] = useState({ sms: false, email: true });
+  const [phoneError, setPhoneError] = useState('');
 
   return {
     isEditing, setIsEditing,
@@ -30,5 +31,6 @@ export default function useAccountSettings() {
     editingPhone, setEditingPhone,
     activeSettingsTab, setActiveSettingsTab,
     notificationPreferences, setNotificationPreferences,
+    phoneError, setPhoneError,
   };
 }

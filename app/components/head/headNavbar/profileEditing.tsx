@@ -27,9 +27,14 @@ interface Props {
   activeSettingsTab: string;
   setActiveSettingsTab: (v: 'account' | 'notifications') => void;
 
-  passwordError: string;
-  settingsSuccess: string;
 
+  
+  passwordError: string;
+  setPasswordError: (v: string) => void; 
+  phoneError: string;
+  setPhoneError: (v: string) => void;
+  settingsSuccess: string;
+  setSettingsSuccess: (v: string) => void;
   notificationPreferences: {
     email: boolean;
     sms: boolean;
@@ -43,6 +48,9 @@ interface Props {
   setUserEnteredCode: (v: string) => void;
   sendVerificationCode: () => void;
   verifyEmailCode: () => void;
+  sendSmsVerificationCode: () => void;
+  verifySmsCode: () => void;
+  smsVerificationSent: boolean;
 }
 
 export default function ProfileSettingsPanel({
@@ -67,7 +75,11 @@ export default function ProfileSettingsPanel({
   activeSettingsTab,
   setActiveSettingsTab,
   passwordError,
+  setPasswordError,
+  phoneError,
+  setPhoneError,
   settingsSuccess,
+  setSettingsSuccess,
   notificationPreferences,
   handleNotificationToggle,
   handleAccountSettingsUpdate,
@@ -76,6 +88,9 @@ export default function ProfileSettingsPanel({
   setUserEnteredCode,
   sendVerificationCode,
   verifyEmailCode,
+  sendSmsVerificationCode,
+  verifySmsCode,
+  smsVerificationSent,
 }: Props) {
   return (
     <div className="px-6 py-4 bg-gray-50 rounded-lg mx-4 mb-4">
@@ -126,7 +141,15 @@ export default function ProfileSettingsPanel({
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Email Address</span>
                 <button
-                  onClick={() => setIsEditingEmailField(!isEditingEmailField)}
+                  onClick={() => {
+                    setIsEditingEmailField(!isEditingEmailField);
+                    if (isEditingEmailField) {
+                      setEditingEmail(email); 
+                      setUserEnteredCode(""); 
+                      setPasswordError('');
+                        setSettingsSuccess('');
+                    }
+                  }}
                   className="text-xs text-red-600 font-medium"
                 >
                   {isEditingEmailField ? 'Cancel' : 'Edit'}
@@ -137,6 +160,7 @@ export default function ProfileSettingsPanel({
               {passwordError && (
                 <p className="text-sm text-red-600 mb-2 text-right">{passwordError}</p>
               )}
+      
 
               {!isEditingEmailField ? (
                 <span className="block text-base text-gray-900">{email || 'No email set'}</span>
@@ -147,7 +171,7 @@ export default function ProfileSettingsPanel({
                     value={editingEmail}
                     onChange={(e) => setEditingEmail(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder="Enter your new email"
+                    placeholder={email}
                   />
 
                   <button
@@ -182,17 +206,30 @@ export default function ProfileSettingsPanel({
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Phone Number</span>
                 <button
-                  onClick={() => setIsEditingPhoneField(!isEditingPhoneField)}
+                 onClick={() => {
+                  if (isEditingPhoneField) {
+                    setPhoneError('');
+                    setEditingPhone('');
+                  }
+                  setIsEditingPhoneField(!isEditingPhoneField);
+                  }}
+
                   className="text-xs text-red-600 font-medium"
                 >
                   {isEditingPhoneField ? 'Cancel' : 'Edit'}
                 </button>
               </div>
+
+                {phoneError && (
+                  <p className="text-sm text-red-600 mb-2 text-right">{phoneError}</p>
+                )}
+
               {!isEditingPhoneField ? (
                 <span className="block text-base text-gray-900">
                   {editingPhone || 'No phone set'}
                 </span>
               ) : (
+                <>
                 <input
                   type="tel"
                   value={editingPhone}
@@ -200,6 +237,31 @@ export default function ProfileSettingsPanel({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                   placeholder="Enter your phone number"
                 />
+                   <button
+                    onClick={sendSmsVerificationCode}
+                    className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Send Verification Code
+                  </button>
+
+                   {smsVerificationSent && (
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={userEnteredCode}
+                        onChange={(e) => setUserEnteredCode(e.target.value)}
+                        placeholder="Enter verification code"
+                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded"
+                      />
+                      <button
+                        onClick={verifySmsCode}
+                        className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                      >
+                        Verify Code
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -240,12 +302,7 @@ export default function ProfileSettingsPanel({
               )}
             </div>
 
-            {/* Success message remains at the bottom */}
-            {settingsSuccess && (
-              <p className="text-sm text-green-600 bg-green-100 p-2 rounded">{settingsSuccess}</p>
-            )}
-
-            {(isEditingEmailField || isEditingPasswordField) && (
+            {(isEditingEmailField || isEditingPhoneField || isEditingPasswordField) && (
               <button
                 onClick={handleAccountSettingsUpdate}
                 className="w-full bg-red-600 text-white py-2 rounded-lg"

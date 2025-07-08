@@ -28,6 +28,8 @@ export function useProfileDropdownLogic(
     setNotificationPreferences,
     passwordError,
     setPasswordError,
+    phoneError,
+    setPhoneError,
     settingsSuccess,
     setSettingsSuccess,
     activeSettingsTab,
@@ -38,6 +40,7 @@ export function useProfileDropdownLogic(
     setIsEditing((prev) => !prev); 
     setActiveSettingsTab('account');
     setPasswordError('');
+    setPhoneError('');
     setSettingsSuccess('');
     setIsEditingEmailField(false);
     setIsEditingPasswordField(false);
@@ -76,7 +79,13 @@ useEffect(() => {
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
 
-  
+  const [smsVerificationCode, setSmsVerificationCode] = useState('');
+  const [smsVerified, setSmsVerified] = useState(false);
+  const [smsVerificationSent, setSmsVerificationSent] = useState(false);
+
+
+
+//EMAIL VERIFICATION
 const sendVerificationCode = async () => {
   if (!editingEmail || !editingEmail.trim()) {
     setPasswordError('Please enter a valid email address.');
@@ -106,7 +115,6 @@ const sendVerificationCode = async () => {
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setEmailVerificationCode(code);
-    setEmailVerificationSent(true);
     setEmailVerified(false);
 
     const time = new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString();
@@ -117,19 +125,32 @@ const sendVerificationCode = async () => {
       time,
     };
 
-    await emailjs.send(
+    const emailResponse = await emailjs.send(
       'service_37inqad',
       'template_ew6anbw',
       templateParams,
       'gVN8M0DfvDrD5_W2M'
     );
 
+    if (emailResponse.status !== 200) {
+      console.error('EmailJS send failed:', emailResponse);
+      setPasswordError('Email not found or could not be sent.');
+      return;
+    }
+
+    setEmailVerificationSent(true);
     setSettingsSuccess('Verification code sent to your new email.');
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to send email:', error);
-    setPasswordError('Failed to send verification code.');
+
+    if (error?.status === 400 || error?.text?.includes('not found')) {
+      setPasswordError('Email address not found.');
+    } else {
+      setPasswordError('Failed to send verification code.');
+    }
   }
 };
+
 
 
 const verifyEmailCode = () => {
@@ -142,6 +163,58 @@ const verifyEmailCode = () => {
   }
 };
 
+//SMS VERIFICATION
+const sendSmsVerificationCode = async () => {
+  if (!editingPhone || !editingPhone.trim()) {
+    setPhoneError('Please enter a valid phone number.');
+    return;
+  }
+
+  try {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setSmsVerificationCode(code);
+    setSmsVerified(false);
+
+    const message = `Your verification code is: ${code}`;
+
+    const response = await fetch('http://localhost:3001/api/send-sms', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        phoneNumber: editingPhone,
+        code
+      })
+    });
+
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Failed to send SMS:', data);
+      setPhoneError('Failed to send verification code via SMS.');
+      return;
+    }
+
+    setSettingsSuccess('Verification code sent to your phone number.');
+  } catch (error) {
+    console.error('SMS Error:', error);
+    setPhoneError('Could not send SMS verification.');
+  }
+};
+
+const verifySmsCode = () => {
+  if (userEnteredCode === smsVerificationCode) {
+    setSmsVerified(true);
+    setPhoneError('');
+    setSettingsSuccess('✔ Phone number verified.');
+  } else {
+    setPhoneError('Incorrect verification code.');
+  }
+};
+
+
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const updatedPrefs = {
       ...notificationPreferences,
@@ -151,46 +224,78 @@ const verifyEmailCode = () => {
     localStorage.setItem('notificationPreferences', JSON.stringify(updatedPrefs));
   };
 
- const handleAccountSettingsUpdate = async () => {
+const handleAccountSettingsUpdate = async () => {
   setPasswordError('');
+  setPhoneError('');
   setSettingsSuccess('');
 
-  if (newPassword && newPassword !== confirmPassword) {
-    setPasswordError('New Password and Confirm Password do not match.');
-    return;
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(editingEmail)) {
-    setPasswordError('Please enter a valid email address.');
-    return;
-  }
-
-  if (!emailVerified) {
-    setPasswordError('Please verify your new email before saving.');
-    return;
-  }
+  const userId = localStorage.getItem('userId');
 
   try {
-    const userId = localStorage.getItem('userId');
-    const res = await fetch(`http://localhost:3001/users/${userId}/update-email`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: editingEmail }),
-    });
+    //EMAIL
+    if (isEditingEmailField) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(editingEmail)) {
+        setPasswordError('Please enter a valid email address.');
+        return;
+      }
 
-    if (res.status === 409) {
-      const data = await res.json();
-      setPasswordError(data.error || 'Email already in use.');
-      return;
+      if (!emailVerified) {
+        setPasswordError('Please verify your new email before saving.');
+        return;
+      }
+
+      const emailRes = await fetch(`http://localhost:3001/users/${userId}/update-email`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: editingEmail }),
+      });
+
+      if (emailRes.status === 409) {
+        const data = await emailRes.json();
+        setPasswordError(data.error || 'Email already in use.');
+        return;
+      }
+
+      if (!emailRes.ok) {
+        throw new Error('Failed to update email.');
+      }
+
+      localStorage.setItem('email', editingEmail);
     }
 
-    if (!res.ok) {
-      throw new Error('Failed to update email.');
+    //PHONE NUMBR
+    if (isEditingPhoneField) {
+      const phoneRes = await fetch(`http://localhost:3001/users/${userId}/update-phoneNumber`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: editingPhone }),
+      });
+
+      if (phoneRes.status === 409) {
+        const data = await phoneRes.json();
+        setPhoneError(data.error || 'Phone number already in use.');
+        return;
+      }
+
+      if (!phoneRes.ok) {
+        throw new Error('Failed to update phone number.');
+      }
+
+      localStorage.setItem('phoneNumber', editingPhone);
     }
 
-    localStorage.setItem('email', editingEmail);
-    setIsEditing(false);
+    if (isEditingPasswordField && newPassword) {
+      if (newPassword !== confirmPassword) {
+        setPasswordError('New Password and Confirm Password do not match.');
+        return;
+      }
+
+    }
+
+    setIsEditingEmailField(false);
+    setIsEditingPhoneField(false);
+    setIsEditingPasswordField(false);
     setNewPassword('');
     setConfirmPassword('');
     setSettingsSuccess('Settings updated successfully!');
@@ -200,6 +305,8 @@ const verifyEmailCode = () => {
     setPasswordError('Failed to update account settings.');
   }
 };
+
+
 
 
   
@@ -225,6 +332,8 @@ const verifyEmailCode = () => {
     setNotificationPreferences,
     passwordError,
     setPasswordError,
+    phoneError,
+    setPhoneError,
     settingsSuccess,
     setSettingsSuccess,
     activeSettingsTab,
@@ -238,5 +347,8 @@ const verifyEmailCode = () => {
     emailVerificationSent,
     userEnteredCode,
     setUserEnteredCode,
+    sendSmsVerificationCode,
+    verifySmsCode,
+    smsVerificationSent,
   };
 }
