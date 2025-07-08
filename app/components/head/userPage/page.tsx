@@ -1,32 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useRef, useState } from "react";
 import HeadNavbar from "../headNavbar/page";
-import emailjs from 'emailjs-com';
-import ErrorModal from "./errorModal";
-import {
-  FiSearch,
-  FiChevronDown,
-  FiLoader,
-  FiUserPlus,
-  FiEdit2,
-  FiTrash2,
-  FiMoreVertical,
-} from "react-icons/fi";
+import { FiSearch, FiUserPlus, FiEdit2, FiTrash2, FiMoreVertical, FiLoader } from "react-icons/fi";
 import { createPortal } from "react-dom";
+import CreateUserModal from "./createUserModal";
+import ErrorModal from "./errorModal";
 import Head from "../page";
-
-const API_URL = "http://localhost:3001/users";
-
-interface User {
-  userId: string;
-  name: string;
-  email: string;
-  phoneNumber: string;
-  role: "head" | "manager" | "loan officer" | "collector";
-  status: "Active" | "Inactive";
-  lastActive: string;
-}
+import { useUsersLogic } from "./logic"; 
 
 function LoadingSpinner() {
   return (
@@ -49,26 +30,33 @@ function UserActions({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node) && anchorRef.current && !anchorRef.current.contains(event.target as Node)) {
+
+  // handle outside click
+  useState(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        ref.current &&
+        !ref.current.contains(event.target as Node) &&
+        anchorRef.current &&
+        !anchorRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [onClose, anchorRef]);
-  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  });
+
+  // position dropdown
+  useState(() => {
     if (anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
       setPosition({
         top: rect.bottom + window.scrollY + 4,
-        left: rect.right + window.scrollX - 192, 
+        left: rect.right + window.scrollX - 192,
       });
     }
-  }, [anchorRef]);
+  });
 
   return createPortal(
     <div
@@ -77,17 +65,11 @@ function UserActions({
       style={{ top: position.top, left: position.left }}
     >
       <div className="py-1" role="menu" aria-orientation="vertical">
-        <button
-          onClick={() => { onEdit(); onClose(); }}
-          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-        >
+        <button onClick={onEdit} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
           <FiEdit2 className="mr-3 h-4 w-4" />
           Edit User
         </button>
-        <button
-          onClick={() => { onDelete(); onClose(); }}
-          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-        >
+        <button onClick={onDelete} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
           <FiTrash2 className="mr-3 h-4 w-4" />
           Delete User
         </button>
@@ -97,215 +79,27 @@ function UserActions({
   );
 }
 
-function CreateUserModal({
-  isOpen,
-  onClose,
-  onCreate,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onCreate: (user: Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }) => void;
-}) {
-  const [newUser, setNewUser] = useState<Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }>({
-    name: "",
-    email: "",
-    phoneNumber: "",
-    role: "head",
-    status: "Active",
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNewUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const [token, setToken] = useState<string | null>(null);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newUser.name.trim()) {
-      alert("Please enter a name.");
-      return;
-    }
-    if (!newUser.email.trim()) {
-      alert("Please enter an email address.");
-      return;
-    }
-    if (!newUser.name.trim().includes(" ")) {
-      alert("Please enter a full name with first and last name.");
-      return;
-    }
-    onCreate(newUser);
-    onClose();
-    setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="bg-white p-6 text-black rounded-lg shadow-lg w-96 max-w-full">
-        <h2 className="text-xl font-semibold mb-4">Create New User</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Enter Name"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="email"
-            placeholder="Enter Email"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="contact"
-            name="phoneNumber"
-            placeholder="Enter Phone Number"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.phoneNumber}
-            onChange={handleChange}
-            required
-          />
-          <select
-            name="role"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.role}
-            onChange={handleChange}
-          >
-            <option value="head">Head</option>
-            <option value="manager">Manager</option>
-            <option value="loan officer">Loan Officer</option>
-            <option value="collector">Collector</option>
-          </select>
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-red-600 text-white rounded-md"
-            >
-              Create User
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-const sendEmail = async (
-  {
-    to_name,
-    email,
-    user_username,
-    user_password,
-  }: {
-    to_name: string;
-    email: string;
-    user_username: string;
-    user_password: string;
-  },
-  onError: (msg: string) => void
-) => {
-  try {
-    const result = await emailjs.send(
-      "service_eph6uoe",
-      "template_knwr0fa",
-      {
-        to_name,
-        email,
-        user_username,
-        user_password,
-      },
-      "-PgL14MSf1VScXI94"
-    );
-    console.log("Email sent:", result?.text || result);
-  } catch (error: any) {
-    console.error("EmailJS error:", error);
-    onError("Failed to send email: " + (error?.text || error.message || "Unknown error"));
-  }
-};
-
 export default function UsersPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"" | "name" | "role">("");
+  const {
+    users,
+    loading,
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    setSortBy,
+    roleFilter,
+    setRoleFilter,
+    errorMessage,
+    errorModalOpen,
+    setErrorModalOpen,
+    setErrorMessage,
+    sortedUsers,
+    handleDeleteUser,
+    handleCreateUser,
+  } = useUsersLogic();
+
   const [showActions, setShowActions] = useState<{ userId: string; anchorEl: HTMLButtonElement | null } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState<"" | User["role"]>("");
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(API_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch users.");
-        const data = await res.json();
-        setUsers(data);
-      } catch (error: any) {
-        console.error("Error fetching users:", error);
-        setErrorMessage(error.message || "Failed to load users.");
-        setErrorModalOpen(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
-
-  const filteredUsers = users
-    .filter((user) =>
-      Object.values(user).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    )
-    .filter((user) => !roleFilter || user.role === roleFilter);
-
-  const sortedUsers = sortBy
-    ? [...filteredUsers].sort((a, b) =>
-        a[sortBy].localeCompare(b[sortBy])
-      )
-    : filteredUsers;
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "head":
-        return "text-blue-700";
-      case "manager":
-        return "text-green-700";
-      case "loan officer":
-        return "text-yellow-700";
-      case "collector":
-        return "text-yellow-700";
-      default:
-        return "text-gray-700";
-    }
-  };
 
   const handleEditUser = (userId: string) => {
     setErrorMessage(`Edit user with ID: ${userId}`);
@@ -313,211 +107,134 @@ export default function UsersPage() {
     setShowActions(null);
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/${userId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error("Failed to delete user.");
-      setUsers((prev) => prev.filter((user) => user.userId !== userId));
-      setShowActions(null);
-    } catch (error: any) {
-      console.error("Error deleting user:", error);
-      setErrorMessage(error.message || "Failed to delete user.");
-      setErrorModalOpen(true);
-    }
-  };
-
-  const handleCreateUser = async (
-    input: Omit<User, "userId" | "lastActive" | "status"> & {
-      status?: User["status"];
-    }
-  ) => {
-    try {
-      const payload = {
-        name: input.name,
-        email: input.email,
-        phoneNumber: input.phoneNumber,
-        role: input.role,
-      };
-
-      const token = localStorage.getItem("token");
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(errorText || "Failed to create user");
-      }
-
-      const { user: createdUser, credentials } = await res.json();
-      setUsers((prev) => [...prev, createdUser]);
-
-      if (!credentials?.password) {
-        setErrorMessage("User created, but login credentials were not returned.");
-        setErrorModalOpen(true);
-        return;
-      }
-
-      await sendEmail(
-        {
-          to_name: createdUser.name,
-          email: createdUser.email,
-          user_username: createdUser.username,
-          user_password: credentials.password,
-        },
-        (msg) => {
-          setErrorMessage(msg);
-          setErrorModalOpen(true);
-        }
-      );
-    } catch (error: any) {
-      console.error("Error creating user:", error);
-      setErrorMessage(error.message || "Failed to create user.");
-      setErrorModalOpen(true);
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case "head": return "text-blue-700";
+      case "manager": return "text-green-700";
+      case "loan officer":
+      case "collector": return "text-yellow-700";
+      default: return "text-gray-700";
     }
   };
 
   return (
     <Head>
-    <div className="min-h-screen bg-gray-50">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
-        {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {["All", "head", "manager", "loan officer", "collector"].map(
-            (roleOption) => {
-              const isActive =
-                (roleOption === "All" && !roleFilter) ||
-                roleFilter === roleOption;
+      <div className="min-h-screen bg-gray-50">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => {
+              const isActive = (roleOption === "All" && !roleFilter) || roleFilter === roleOption;
               return (
                 <button
                   key={roleOption}
                   className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400
-                    ${isActive
+                  ${
+                    isActive
                       ? "bg-red-600 text-white border-red-600 shadow-md scale-105"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:shadow"}
-                  `}
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:shadow"
+                  }`}
                   onClick={() =>
-                    setRoleFilter(roleOption === "All" ? "" : (roleOption as User["role"]))
+                    setRoleFilter(
+                      roleOption === "All"
+                        ? ""
+                        : roleOption as "" | "head" | "manager" | "loan officer" | "collector"
+                    )
                   }
                 >
-                  {roleOption === "All"
-                    ? "All Roles"
-                    : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                  {roleOption === "All" ? "All Roles" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
                 </button>
               );
-            }
+            })}
+          </div>
+
+          {/* Search & Create */}
+          <div className="flex gap-4 mb-6 items-center justify-between">
+            <div className="relative w-72">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400 w-5 h-5" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search here..."
+                className="w-full pl-10 pr-3 py-2 bg-white rounded-lg border border-gray-200 text-gray-600 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
+            >
+              <FiUserPlus />
+              Create User
+            </button>
+          </div>
+
+          {/* User Table */}
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <table className="min-w-full bg-white rounded-lg overflow-hidden shadow">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                  <th className="px-6 py-3 relative"><span className="sr-only">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedUsers.map((user) => (
+                  <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>{user.role}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                      <button
+                        onClick={(e) =>
+                          setShowActions(
+                            showActions && showActions.userId === user.userId
+                              ? null
+                              : { userId: user.userId, anchorEl: e.currentTarget }
+                          )
+                        }
+                        className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600"
+                        aria-label="User actions"
+                      >
+                        <FiMoreVertical />
+                      </button>
+                      {showActions && showActions.userId === user.userId && showActions.anchorEl && (
+                        <UserActions
+                          onEdit={() => handleEditUser(user.userId)}
+                          onDelete={() => handleDeleteUser(user.userId)}
+                          onClose={() => setShowActions(null)}
+                          anchorRef={{ current: showActions.anchorEl }}
+                        />
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {sortedUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-10 text-gray-500 font-semibold">
+                      No users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           )}
         </div>
 
-        {/* Search & Sort */}
-        <div className="flex gap-4 mb-6 items-center justify-between">
-          <div className="relative w-72">
-            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-              <FiSearch className="text-gray-400 w-5 h-5" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search here..."
-              className="w-full pl-10 pr-3 py-2 bg-white rounded-lg border border-gray-200 text-gray-600 text-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
-          >
-            <FiUserPlus />
-            Create User
-          </button>
-        </div>
-
-        {/* User Table */}
-        {loading ? (
-          <LoadingSpinner />
-        ) : (
-          <table className="min-w-full bg-white rounded-lg overflow-hidden shadow">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 relative">
-                  <span className="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedUsers.map((user) => (
-                <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
-                    {user.userId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
-                  <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>
-                    {user.role}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right relative">
-                    <button
-                      onClick={e => setShowActions(showActions && showActions.userId === user.userId ? null : { userId: user.userId, anchorEl: e.currentTarget })}
-                      className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600"
-                      aria-label="User actions"
-                    >
-                      <FiMoreVertical />
-                    </button>
-                    {showActions && showActions.userId === user.userId && showActions.anchorEl && (
-                      <UserActions
-                        onEdit={() => handleEditUser(user.userId)}
-                        onDelete={() => handleDeleteUser(user.userId)}
-                        onClose={() => setShowActions(null)}
-                        anchorRef={{ current: showActions.anchorEl }}
-                      />
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {sortedUsers.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="text-center py-10 text-gray-500 font-semibold">
-                    No users found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
+        {/* Modals */}
+        <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
+        <ErrorModal isOpen={errorModalOpen} message={errorMessage} onClose={() => setErrorModalOpen(false)} />
       </div>
-
-      <CreateUserModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreateUser}
-      />
-
-      {/* Error Modal */}
-      <ErrorModal
-        isOpen={errorModalOpen}
-        message={errorMessage}
-        onClose={() => setErrorModalOpen(false)}
-      />
-    </div>
     </Head>
   );
 }
