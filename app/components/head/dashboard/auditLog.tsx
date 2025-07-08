@@ -21,22 +21,28 @@ export default function AuditLog() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch('http://localhost:3001/logs', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => {
+  const token = localStorage.getItem('token');
+  fetch('http://localhost:3001/logs', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("Fetched logs:", data); 
+      if (Array.isArray(data)) {
         setLogs(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error('Failed to fetch logs:', err);
-        setLoading(false);
-      });
-  }, []);
+      } else {
+        setLogs([]); 
+      }
+      setLoading(false);
+    })
+    .catch(err => {
+      console.error('Failed to fetch logs:', err);
+      setLoading(false);
+    });
+}, []);
+
 
   const getIcon = (action: string) => {
     const base = "p-2 rounded-full";

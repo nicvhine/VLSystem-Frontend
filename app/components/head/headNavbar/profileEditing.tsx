@@ -37,6 +37,12 @@ interface Props {
   handleNotificationToggle: (type: 'sms' | 'email') => void;
 
   handleAccountSettingsUpdate: () => void;
+
+  emailVerificationSent: boolean;
+  userEnteredCode: string;
+  setUserEnteredCode: (v: string) => void;
+  sendVerificationCode: () => void;
+  verifyEmailCode: () => void;
 }
 
 export default function ProfileSettingsPanel({
@@ -65,6 +71,11 @@ export default function ProfileSettingsPanel({
   notificationPreferences,
   handleNotificationToggle,
   handleAccountSettingsUpdate,
+  emailVerificationSent,
+  userEnteredCode,
+  setUserEnteredCode,
+  sendVerificationCode,
+  verifyEmailCode,
 }: Props) {
   return (
     <div className="px-6 py-4 bg-gray-50 rounded-lg mx-4 mb-4">
@@ -112,27 +123,56 @@ export default function ProfileSettingsPanel({
             </div>
 
             <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-700">Email Address</span>
-                <button
-                  onClick={() => setIsEditingEmailField(!isEditingEmailField)}
-                  className="text-xs text-red-600 font-medium"
-                >
-                  {isEditingEmailField ? 'Cancel' : 'Edit'}
-                </button>
-              </div>
-              {!isEditingEmailField ? (
-                <span className="block text-base text-gray-900">{email || 'No email set'}</span>
-              ) : (
-                <input
-                  type="email"
-                  value={editingEmail}
-                  onChange={(e) => setEditingEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder="Enter your email"
-                />
-              )}
+            <div className="flex justify-between mb-1">
+              <span className="text-sm text-gray-700">Email Address</span>
+              <button
+                onClick={() => setIsEditingEmailField(!isEditingEmailField)}
+                className="text-xs text-red-600 font-medium"
+              >
+                {isEditingEmailField ? 'Cancel' : 'Edit'}
+              </button>
             </div>
+
+          {!isEditingEmailField ? (
+            <span className="block text-base text-gray-900">{email || 'No email set'}</span>
+          ) : (
+            <>
+              <input
+                type="email"
+                value={editingEmail}
+                onChange={(e) => setEditingEmail(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                placeholder="Enter your email"
+              />
+
+              <button
+                onClick={sendVerificationCode}
+                className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
+              >
+                Send Verification Code
+              </button>
+
+              {emailVerificationSent && (
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    value={userEnteredCode}
+                    onChange={(e) => setUserEnteredCode(e.target.value)}
+                    placeholder="Enter verification code"
+                    className="mt-2 w-full px-3 py-2 border border-gray-300 rounded"
+                  />
+                  <button
+                    onClick={verifyEmailCode}
+                    className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                  >
+                    Verify Code
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+</div>
+
 
             <div>
               <div className="flex justify-between mb-1">
@@ -208,7 +248,7 @@ export default function ProfileSettingsPanel({
                 onClick={handleAccountSettingsUpdate}
                 className="w-full bg-red-600 text-white py-2 rounded-lg"
               >
-                Update Account
+                Save Changes
               </button>
             )}
           </div>

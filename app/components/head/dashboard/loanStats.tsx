@@ -90,13 +90,6 @@ export default function LoanStatsDashboard() {
             icon={FiTrendingUp}
             isAmount={true}
           />
-          <StatCard 
-            label="Total Collectables" 
-            value={loanStats.totalCollectables ?? 0} 
-            color="text-blue-600" 
-            icon={FiPieChart}
-            isAmount={true}
-          />
         </div>
       </section>
 
@@ -108,7 +101,14 @@ export default function LoanStatsDashboard() {
           </div>
           <h2 className="text-xl font-semibold text-gray-800">Collection Status</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+           <StatCard 
+            label="Total Collectables" 
+            value={loanStats.totalCollectables ?? 0} 
+            color="text-blue-600" 
+            icon={FiPieChart}
+            isAmount={true}
+          />
           <StatCard 
             label="Total Collected" 
             value={loanStats.totalCollected ?? 0} 

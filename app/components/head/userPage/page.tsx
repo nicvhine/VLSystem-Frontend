@@ -22,6 +22,7 @@ interface User {
   userId: string;
   name: string;
   email: string;
+  phoneNumber: string;
   role: "head" | "manager" | "loan officer" | "collector";
   status: "Active" | "Inactive";
   lastActive: string;
@@ -108,6 +109,7 @@ function CreateUserModal({
   const [newUser, setNewUser] = useState<Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }>({
     name: "",
     email: "",
+    phoneNumber: "",
     role: "head",
     status: "Active",
   });
@@ -140,7 +142,7 @@ function CreateUserModal({
     }
     onCreate(newUser);
     onClose();
-    setNewUser({ name: "", email: "", role: "head", status: "Active" });
+    setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
   };
 
   if (!isOpen) return null;
@@ -165,6 +167,15 @@ function CreateUserModal({
             placeholder="Enter Email"
             className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
             value={newUser.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="contact"
+            name="phoneNumber"
+            placeholder="Enter Phone Number"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
+            value={newUser.phoneNumber}
             onChange={handleChange}
             required
           />
@@ -332,6 +343,7 @@ export default function UsersPage() {
       const payload = {
         name: input.name,
         email: input.email,
+        phoneNumber: input.phoneNumber,
         role: input.role,
       };
 
@@ -443,8 +455,8 @@ export default function UsersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 relative">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -458,19 +470,9 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>
                     {user.role}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span
-                      className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                        user.status === "Active"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right relative">
                     <button
