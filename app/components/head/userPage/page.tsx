@@ -61,15 +61,15 @@ function UserActions({
   return createPortal(
     <div
       ref={ref}
-      className="fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+      className="fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in-0 zoom-in-95 duration-200"
       style={{ top: position.top, left: position.left }}
     >
       <div className="py-1" role="menu" aria-orientation="vertical">
-        <button onClick={onEdit} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+        <button onClick={onEdit} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
           <FiEdit2 className="mr-3 h-4 w-4" />
           Edit User
         </button>
-        <button onClick={onDelete} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+        <button onClick={onDelete} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
           <FiTrash2 className="mr-3 h-4 w-4" />
           Delete User
         </button>
@@ -78,6 +78,8 @@ function UserActions({
     document.body
   );
 }
+
+
 
 export default function UsersPage() {
   const {
@@ -128,7 +130,7 @@ export default function UsersPage() {
               return (
                 <button
                   key={roleOption}
-                  className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400
+                  className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 cursor-pointer
                   ${
                     isActive
                       ? "bg-red-600 text-white border-red-600 shadow-md scale-105"
@@ -157,14 +159,14 @@ export default function UsersPage() {
               <input
                 type="text"
                 placeholder="Search here..."
-                className="w-full pl-10 pr-3 py-2 bg-white rounded-lg border border-gray-200 text-gray-600 text-sm"
+                className="w-full pl-10 pr-3 py-2 bg-white rounded-lg border border-gray-200 text-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2"
+              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105"
             >
               <FiUserPlus />
               Create User
@@ -188,7 +190,7 @@ export default function UsersPage() {
               </thead>
               <tbody>
                 {sortedUsers.map((user) => (
-                  <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative">
+                  <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
@@ -203,7 +205,7 @@ export default function UsersPage() {
                               : { userId: user.userId, anchorEl: e.currentTarget }
                           )
                         }
-                        className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600"
+                        className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-150"
                         aria-label="User actions"
                       >
                         <FiMoreVertical />

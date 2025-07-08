@@ -123,56 +123,60 @@ export default function ProfileSettingsPanel({
             </div>
 
             <div>
-            <div className="flex justify-between mb-1">
-              <span className="text-sm text-gray-700">Email Address</span>
-              <button
-                onClick={() => setIsEditingEmailField(!isEditingEmailField)}
-                className="text-xs text-red-600 font-medium"
-              >
-                {isEditingEmailField ? 'Cancel' : 'Edit'}
-              </button>
-            </div>
+              <div className="flex justify-between mb-1">
+                <span className="text-sm text-gray-700">Email Address</span>
+                <button
+                  onClick={() => setIsEditingEmailField(!isEditingEmailField)}
+                  className="text-xs text-red-600 font-medium"
+                >
+                  {isEditingEmailField ? 'Cancel' : 'Edit'}
+                </button>
+              </div>
 
-          {!isEditingEmailField ? (
-            <span className="block text-base text-gray-900">{email || 'No email set'}</span>
-          ) : (
-            <>
-              <input
-                type="email"
-                value={editingEmail}
-                onChange={(e) => setEditingEmail(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="Enter your email"
-              />
-
-              <button
-                onClick={sendVerificationCode}
-                className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
-              >
-                Send Verification Code
-              </button>
-
-              {emailVerificationSent && (
-                <div className="mt-2">
-                  <input
-                    type="text"
-                    value={userEnteredCode}
-                    onChange={(e) => setUserEnteredCode(e.target.value)}
-                    placeholder="Enter verification code"
-                    className="mt-2 w-full px-3 py-2 border border-gray-300 rounded"
-                  />
-                  <button
-                    onClick={verifyEmailCode}
-                    className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
-                  >
-                    Verify Code
-                  </button>
-                </div>
+              {/* Error message moved here - right after Email Address label */}
+              {passwordError && (
+                <p className="text-sm text-red-600 mb-2 text-right">{passwordError}</p>
               )}
-            </>
-          )}
-</div>
 
+              {!isEditingEmailField ? (
+                <span className="block text-base text-gray-900">{email || 'No email set'}</span>
+              ) : (
+                <>
+                  <input
+                    type="email"
+                    value={editingEmail}
+                    onChange={(e) => setEditingEmail(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder="Enter your new email"
+                  />
+
+                  <button
+                    onClick={sendVerificationCode}
+                    className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Send Verification Code
+                  </button>
+
+                  {emailVerificationSent && (
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={userEnteredCode}
+                        onChange={(e) => setUserEnteredCode(e.target.value)}
+                        placeholder="Enter verification code"
+                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded"
+                      />
+                      <button
+                        onClick={verifyEmailCode}
+                        className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+                      >
+                        Verify Code
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             <div>
               <div className="flex justify-between mb-1">
@@ -236,9 +240,7 @@ export default function ProfileSettingsPanel({
               )}
             </div>
 
-            {passwordError && (
-              <p className="text-sm text-red-600 bg-red-100 p-2 rounded">{passwordError}</p>
-            )}
+            {/* Success message remains at the bottom */}
             {settingsSuccess && (
               <p className="text-sm text-green-600 bg-green-100 p-2 rounded">{settingsSuccess}</p>
             )}
