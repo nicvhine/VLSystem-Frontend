@@ -150,9 +150,11 @@ const {
   };
 
 
-  const handleLogout = () => {
-    router.push('/');
-  };
+ const handleLogout = () => {
+  localStorage.clear();
+  router.push('/');
+};
+
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -238,7 +240,7 @@ const {
               {isDropdownOpen && (
               <ProfileDropdown
               name={name}
-              email={email}
+              email={email}              
               username={username}
               darkMode={darkMode}
               setDarkMode={setDarkMode}

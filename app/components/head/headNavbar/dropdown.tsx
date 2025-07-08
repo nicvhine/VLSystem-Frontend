@@ -68,6 +68,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     handleNotificationToggle,
     handleAccountSettingsUpdate,
     handleLogout,
+    emailVerificationSent,
+    userEnteredCode,
+    setUserEnteredCode,
+    sendVerificationCode,
+    verifyEmailCode,
   } = useProfileDropdownLogic(setIsEditing);
 
   return (
@@ -161,6 +166,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 notificationPreferences={notificationPreferences}
                 handleNotificationToggle={handleNotificationToggle}
                 handleAccountSettingsUpdate={handleAccountSettingsUpdate}
+                emailVerificationSent={emailVerificationSent}
+                userEnteredCode={userEnteredCode}
+                setUserEnteredCode={setUserEnteredCode}
+                sendVerificationCode={sendVerificationCode}
+                verifyEmailCode={verifyEmailCode}
               />
             )}
 
