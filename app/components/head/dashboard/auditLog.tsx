@@ -67,7 +67,7 @@ export default function AuditLog() {
   };
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm h-full flex flex-col">
+    <div className="bg-white border border-gray-100 rounded-2xl shadow-sm h-200 w-200 flex flex-col">
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-red-50 rounded-lg">
