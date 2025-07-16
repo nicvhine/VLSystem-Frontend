@@ -67,7 +67,7 @@ function UserActions({
       <div className="py-1" role="menu" aria-orientation="vertical">
         <button onClick={onEdit} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
           <FiEdit2 className="mr-3 h-4 w-4" />
-          Save
+          Edit User
         </button>
         <button onClick={onDelete} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
           <FiTrash2 className="mr-3 h-4 w-4" />
@@ -121,13 +121,15 @@ export default function UsersPage() {
   const handleSaveEdit = async () => {
   try {
     const token = localStorage.getItem("token");
+    const { name, email, phoneNumber, role } = editFormData;
+
     const res = await fetch(`http://localhost:3001/users/${editingUserId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(editFormData),
+      body: JSON.stringify({ name, email, phoneNumber, role }),
     });
 
     if (!res.ok) {
@@ -135,16 +137,16 @@ export default function UsersPage() {
       throw new Error(errData.message || "Failed to update user.");
     }
 
-    const updated = await res.json();
-
-    await fetchUsers(); 
+    await fetchUsers();
     setEditingUserId(null);
     setEditFormData({});
   } catch (error: any) {
+    console.error("Edit failed:", error);
     setErrorMessage(error.message || "Update failed");
     setErrorModalOpen(true);
   }
 };
+
 
 
   const handleEditChange = (field: keyof User, value: string) => {
