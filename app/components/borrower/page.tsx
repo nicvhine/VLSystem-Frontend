@@ -147,25 +147,77 @@ export default function BorrowerDashboard() {
       const token = localStorage.getItem('token');
       const borrowersId = localStorage.getItem('borrowersId');
       try {
-        const response = await fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const borrowerData = await response.json();
+        // Fetch borrower data
+        const [borrowerResponse, applicationsResponse] = await Promise.all([
+          fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          fetch('http://localhost:3001/loan-applications', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+        ]);
+
+        if (!borrowerResponse.ok) throw new Error('Failed to fetch borrower data');
+        if (!applicationsResponse.ok) throw new Error('Failed to fetch loan applications');
+
+        const borrowerData = await borrowerResponse.json();
+        const allApplications = await applicationsResponse.json();
+        
+        // Find the most recent approved loan application for this borrower
+        const previousApplications = allApplications
+          .filter((app: any) => app.borrowersId === borrowersId && app.status === 'Accepted')
+          .sort((a: any, b: any) => 
+            new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()
+          );
+
+        const previousApplication = previousApplications[0];
+
+        // Prepare reloan info with previous application data if available
         const reloanInfo = {
           personalInfo: {
             ...borrowerData,
+            // Override with previous application data if available
+            ...(previousApplication && {
+              appName: previousApplication.appName,
+              appDob: previousApplication.appDob,
+              appContact: previousApplication.appContact,
+              appEmail: previousApplication.appEmail,
+              appMarital: previousApplication.appMarital,
+              appChildren: previousApplication.appChildren,
+              appSpouseName: previousApplication.appSpouseName,
+              appSpouseOccupation: previousApplication.appSpouseOccupation,
+              appAddress: previousApplication.appAddress,
+              sourceOfIncome: previousApplication.sourceOfIncome,
+              // Business fields
+              appTypeBusiness: previousApplication.appTypeBusiness,
+              appDateStarted: previousApplication.appDateStarted,
+              appBusinessLoc: previousApplication.appBusinessLoc,
+              // Employment fields
+              appOccupation: previousApplication.appOccupation,
+              appEmploymentStatus: previousApplication.appEmploymentStatus,
+              appCompanyName: previousApplication.appCompanyName,
+              // Income
+              appMonthlyIncome: previousApplication.appMonthlyIncome,
+            })
           },
           loanDetails: {
             amount: loanInfo.principal,
             term: parseInt(loanInfo.termsInMonths),
-          }
+          },
+          // Include character references from previous application if available
+          ...(previousApplication && {
+            characterReferences: previousApplication.appReferences || []
+          })
         };
+
         localStorage.setItem('reloanInfo', JSON.stringify(reloanInfo));
         router.push('/ApplicationPage');
       } catch (error) {
-        console.error("Failed to fetch borrower data:", error);
+        console.error("Failed to fetch data for reloan:", error);
       }
     }
   };
