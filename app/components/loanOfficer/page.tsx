@@ -1,26 +1,54 @@
 "use client";
 
 import { useState, useEffect} from "react";
-import Navbar from "./navbar";
-import Dashboard from "./dashboard/page";
+import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "../changePasswordInternal/forceChange";
+import LoanOfficerNavbar from "./loNavbar/page";
+import useInactivityLogout from '../inactivity/logic';
+import AreYouStillThereModal from '../inactivity/modal';
 
-export default function LoanOfficer(){
-    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-    
+export default function LoanOfficer({ children }: { children?: React.ReactNode }){
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const router = useRouter();
+  
+  const { showModal, countdown, stayLoggedIn, logout } = useInactivityLogout();
+  
     useEffect(() => {
+      const token = localStorage.getItem('token');
       const mustChange = localStorage.getItem('forcePasswordChange');
+
+      if (!token){
+        router.push('/');
+        return;
+      }
+
       if (mustChange === 'true') {
         setShowChangePasswordModal(true);
       }
-    }, []);
+
+    setIsCheckingAuth(false); 
+    }, [router]);
+
+  if (isCheckingAuth) {
+    return <div className="min-h-screen bg-white"></div>; 
+  }
     return(
         <div className="min-h-screen bg-white">
-            < Dashboard />
+          <LoanOfficerNavbar />
+            {showChangePasswordModal && (
+              <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+            )}
 
-              {showChangePasswordModal && (
-                                  <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
-                                )}
+            {children}
+
+            {showModal && (
+              <AreYouStillThereModal
+                countdown={countdown}
+                onStay={stayLoggedIn}
+                onLogout={logout}
+              />
+            )}
         </div>
-    )
+    );
 }
