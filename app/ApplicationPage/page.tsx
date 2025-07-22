@@ -131,7 +131,7 @@ return (
   <div className="bg-white border-b border-gray-200 px-6 py-3">
     <button
       onClick={handleGoBack}
-      className="flex items-center text-gray-700 hover:text-red-600 transition-colors"
+      className="flex items-center bg-blue-600 text-white hover:bg-blue-700 transition-colors px-4 py-2 rounded-md"
     >
       <svg 
         className="w-5 h-5 mr-2 text-red-600" 
