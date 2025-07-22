@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from "react";
-import Navbar from "../components/landing/landingNavbar";
+import { useState, useEffect } from "react";
+import Navbar from "../components/borrower/navbar";
 import WithCollateralLoanForm from "./forms/withCollateral";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
@@ -20,6 +20,16 @@ export default function ApplicationPage() {
   const [maritalStatus, setMaritalStatus] = useState('');
   const [incomeSource, setIncomeSource] = useState('');
   const [employmentStatus, setEmploymentStatus] = useState('');
+  const [reloanData, setReloanData] = useState<any>(null);
+
+  useEffect(() => {
+    const reloanInfo = localStorage.getItem('reloanInfo');
+    if (reloanInfo) {
+      setReloanData(JSON.parse(reloanInfo));
+      localStorage.removeItem('reloanInfo');
+    }
+  }, []);
+
   const handleSubmit = () => setShowSuccessModal(true);
   const closeModal = () => setShowSuccessModal(false);
 

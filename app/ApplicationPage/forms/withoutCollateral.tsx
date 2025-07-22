@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Common from "./common";
 
 const API_URL = "http://localhost:3001/loan-applications/without";
@@ -20,9 +20,10 @@ const loanOptions: LoanOption[] = [
 
 interface WithoutCollateralFormProps {
   language: 'en' | 'ceb';
+  reloanData?: any;
 }
 
-export default function WithoutCollateralForm({ language }: WithoutCollateralFormProps) {
+export default function WithoutCollateralForm({ language, reloanData }: WithoutCollateralFormProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
@@ -48,6 +49,14 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" }
   ]); 
+
+  useEffect(() => {
+    if (reloanData) {
+      setAppName(reloanData.personalInfo.name);
+      const option = loanOptions.find(o => o.amount === reloanData.loanDetails.amount && o.months === reloanData.loanDetails.term);
+      setSelectedLoan(option || null);
+    }
+  }, [reloanData]);
 
   // Translations for select options
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
@@ -143,6 +152,7 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
         language={language}
+        reloanData={reloanData}
       />
 
       {/* Loan Details */}

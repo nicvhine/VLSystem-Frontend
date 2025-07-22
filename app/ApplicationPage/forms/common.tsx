@@ -2,7 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Added useEffect
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import axios from "axios";
 
@@ -55,6 +55,7 @@ interface CommonProps {
   sourceOfIncome: string;
   setSourceOfIncome: React.Dispatch<React.SetStateAction<string>>;
   language: 'en' | 'ceb';
+  reloanData?: any; // Added reloanData prop
 };
 
 function MapComponent({
@@ -117,6 +118,28 @@ function MapComponent({
 
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
  
+  useEffect(() => {
+    if (props.reloanData) {
+      const { personalInfo } = props.reloanData;
+      props.setAppName(personalInfo.name);
+      props.setAppDob(personalInfo.dateOfBirth);
+      props.setAppContact(personalInfo.contactNumber);
+      props.setAppEmail(personalInfo.emailAddress);
+      props.setAppMarital(personalInfo.maritalStatus);
+      props.setAppChildren(personalInfo.numberOfChildren);
+      props.setAppAddress(personalInfo.address);
+      props.setSourceOfIncome(personalInfo.sourceOfIncome);
+      props.setAppOccupation(personalInfo.occupation);
+      props.setAppMonthlyIncome(personalInfo.monthlyIncome);
+      props.setAppReferences(personalInfo.characterReferences);
+      props.setAppTypeBusiness(personalInfo.appTypeBusiness || "");
+      props.setAppDateStarted(personalInfo.appDateStarted || "");
+      props.setAppBusinessLoc(personalInfo.appBusinessLoc || "");
+      props.setAppEmploymentStatus(personalInfo.appEmploymentStatus || "");
+      props.setAppCompanyName(personalInfo.appCompanyName || "");
+    }
+  }, [props.reloanData]);
+
 
   const handleReferenceChange = (index: number, field: 'name' | 'contact' | 'relation', value: string) => {
   const updated = [...props.appReferences];
@@ -439,4 +462,3 @@ function MapComponent({
     
 
   )};
-

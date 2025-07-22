@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Common from "./common";
 
 const API_URL = "http://localhost:3001/loan-applications/open-term";
@@ -19,9 +19,10 @@ const loanOptions: LoanOption[] = [
 
 interface OpenTermLoanFormProps {
   language: 'en' | 'ceb';
+  reloanData?: any;
 }
 
-export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
+export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormProps) {
   // Common form states
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
@@ -59,6 +60,14 @@ export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
 
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
+
+  useEffect(() => {
+    if (reloanData) {
+      setAppName(reloanData.personalInfo.name);
+      const option = loanOptions.find(o => o.amount === reloanData.loanDetails.amount);
+      setSelectedLoan(option || null);
+    }
+  }, [reloanData]);
 
   // Translations for select options
   const repaymentOptions = [
@@ -183,18 +192,19 @@ export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
           appReferences={appReferences}
         setAppReferences={setAppReferences}
         appBusinessLoc={appBusinessLoc}
-        setAppBusinessLoc={setAppBusinessLoc}
+        setAppBusinessLoc={appBusinessLoc}
         appMonthlyIncome={appMonthlyIncome}
         setAppMonthlyIncome={setAppMonthlyIncome}
         appOccupation={appOccupation}
         setAppOccupation={setAppOccupation}
         appEmploymentStatus={appEmploymentStatus}
-        setAppEmploymentStatus={setAppEmploymentStatus}
+        setAppEmploymentStatus={appEmploymentStatus}
         appCompanyName={appCompanyName}
         setAppCompanyName={setAppCompanyName}
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
         language={language}
+        reloanData={reloanData}
       />
 
       {/* Open-Term Loan Specific Details */}

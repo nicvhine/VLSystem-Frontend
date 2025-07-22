@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Common from "./common";
 
 const API_URL = "http://localhost:3001/loan-applications/with";
@@ -30,10 +30,11 @@ interface WithCollateralFormProps {
   setAddress?: any;
   employmentStatus?: string;
   setEmploymentStatus?: any;
+  reloanData?: any;
 }
 
 export default function WithCollateralForm(props: WithCollateralFormProps) {
-  const { language = 'en', ...rest } = props;
+  const { language = 'en', reloanData, ...rest } = props;
   // Common form states
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
@@ -69,6 +70,14 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
 
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
+
+  useEffect(() => {
+    if (reloanData) {
+      setAppName(reloanData.personalInfo.name);
+      const option = loanOptions.find(o => o.amount === reloanData.loanDetails.amount && o.months === reloanData.loanDetails.term);
+      setSelectedLoan(option || null);
+    }
+  }, [reloanData]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadedFiles(e.target.files);
@@ -172,7 +181,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         appReferences={appReferences}
         setAppReferences={setAppReferences}
         appBusinessLoc={appBusinessLoc}
-        setAppBusinessLoc={setAppBusinessLoc}
+        setAppBusinessLoc={appBusinessLoc}
         appMonthlyIncome={appMonthlyIncome}
         setAppMonthlyIncome={setAppMonthlyIncome}
         appOccupation={appOccupation}
@@ -183,6 +192,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         setAppCompanyName={setAppCompanyName}
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
+        reloanData={reloanData}
       />
 
       {/* Collateral Information */}
