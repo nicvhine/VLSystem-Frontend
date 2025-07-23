@@ -26,7 +26,12 @@ export default function ApplicationPage() {
   useEffect(() => {
     const reloanInfo = localStorage.getItem('reloanInfo');
     if (reloanInfo) {
-      setReloanData(JSON.parse(reloanInfo));
+      const parsedReloanInfo = JSON.parse(reloanInfo);
+      setReloanData(parsedReloanInfo);
+      // Set language from reloan info if available
+      if (parsedReloanInfo.language) {
+        setLanguage(parsedReloanInfo.language);
+      }
       localStorage.removeItem('reloanInfo');
     }
   }, []);
@@ -265,6 +270,7 @@ return (
                 <WithoutCollateralForm 
                   language={language} 
                   reloanData={reloanData}
+                  onLanguageChange={setLanguage}
                 />
                 )}
 

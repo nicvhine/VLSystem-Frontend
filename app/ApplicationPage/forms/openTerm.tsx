@@ -19,9 +19,27 @@ const loanOptions: LoanOption[] = [
 
 interface OpenTermLoanFormProps {
   language: 'en' | 'ceb';
+  maritalStatus: string;
+  setMaritalStatus: (status: string) => void;
+  incomeSource: string;
+  setIncomeSource: (source: string) => void;
+  address: string;
+  setAddress: (address: string) => void;
+  employmentStatus: string;
+  setEmploymentStatus: (status: string) => void;
 }
 
-export default function OpenTermForm({ language }: OpenTermLoanFormProps) {
+export default function OpenTermForm({ 
+  language, 
+  maritalStatus, 
+  setMaritalStatus, 
+  incomeSource, 
+  setIncomeSource, 
+  address, 
+  setAddress, 
+  employmentStatus, 
+  setEmploymentStatus 
+}: OpenTermLoanFormProps) {
   // Common form states
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");

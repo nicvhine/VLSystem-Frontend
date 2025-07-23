@@ -45,6 +45,7 @@ const translations = {
     downloadEReceipt: 'Download E-Receipt',
     loading: 'Loading...',
     of: 'of',
+    noActiveLoanFound: 'No active loan found',
     english: 'English',
     cebuano: 'Cebuano'
   },
@@ -84,6 +85,7 @@ const translations = {
     downloadEReceipt: 'I-download ang E-Receipt',
     loading: 'Nag-load...',
     of: 'sa',
+    noActiveLoanFound: 'Wala pay utang nga nakit-an',
     english: 'English',
     cebuano: 'Cebuano'
   }
@@ -227,6 +229,7 @@ export default function BorrowerDashboard() {
     if (loanInfo) {
       const token = localStorage.getItem('token');
       const borrowersId = localStorage.getItem('borrowersId');
+      const currentLanguage = language; // Get current language
       try {
         const [borrowerResponse, applicationsResponse] = await Promise.all([
           fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
@@ -257,6 +260,7 @@ export default function BorrowerDashboard() {
 
         const reloanInfo = {
           isReloan: true,
+          language: currentLanguage, // Include current language in reloan info
           personalInfo: {
             ...borrowerData,
             ...(previousApplication && {
@@ -434,9 +438,9 @@ export default function BorrowerDashboard() {
           </div>
 
           {/* Payment Progress */}
-          <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-between text-gray-800 hover:shadow-lg transition">
+          <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 flex flex-col items-center text-gray-800 hover:shadow-lg transition w-full">
             <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{translations[language].paymentProgress}</h2>
-            <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-3 sm:mb-4">
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-3 sm:mb-6">
               <svg className="w-full h-full" viewBox="0 0 36 36">
                 <path
                   className="text-gray-300"
@@ -459,19 +463,25 @@ export default function BorrowerDashboard() {
                 <span className="text-gray-500">{translations[language].paid}</span>
               </div>
             </div>
-            <button className="bg-green-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-green-700 transition text-sm sm:text-base w-full sm:w-auto">
-              <Link href="/borrower/upcoming-bills">{translations[language].payNow}</Link>
-            </button>
-            {paymentProgress >= 0 ? (
-              <button 
-                onClick={handleReloan}
-                className="bg-blue-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-blue-700 transition text-sm sm:text-base w-full sm:w-auto mt-3 sm:mt-5"
-              >
-                {translations[language].reloan}
-              </button>
-            ) : (
-              <p className='mt-3 sm:mt-5 text-xs sm:text-sm text-center text-gray-600'>{translations[language].notEligibleReloan}</p>
-            )}
+            
+            {/* Buttons Container - Centered */}
+            <div className="w-full flex flex-col items-center">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-md">
+                <button className="bg-green-600 text-white px-4 py-3 sm:px-6 rounded-lg shadow-md hover:bg-green-700 transition text-sm sm:text-base w-full sm:w-auto">
+                  <Link href="/borrower/upcoming-bills" className="block w-full">{translations[language].payNow}</Link>
+                </button>
+                {paymentProgress >= 0 ? (
+                  <button 
+                    onClick={handleReloan}
+                    className="bg-blue-600 text-white px-4 py-3 sm:px-6 rounded-lg shadow-md hover:bg-blue-700 transition text-sm sm:text-base w-full sm:w-auto"
+                  >
+                    {translations[language].reloan}
+                  </button>
+                ) : (
+                  <p className='text-xs sm:text-sm text-center text-gray-600 w-full'>{translations[language].notEligibleReloan}</p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
