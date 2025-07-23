@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import Navbar from '../../navbar';
 import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft, FiMessageSquare } from 'react-icons/fi';
 import Link from 'next/link';
+import LoanOfficerNavbar from "../../loNavbar/page";
+
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -95,7 +96,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   if (!application && !loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar />
+        <LoanOfficerNavbar />
         <div className="p-10 text-center text-gray-600 text-lg">
           Application not found.
         </div>
@@ -147,7 +148,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      <LoanOfficerNavbar />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
