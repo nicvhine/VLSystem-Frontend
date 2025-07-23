@@ -6,8 +6,12 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { FiBell } from 'react-icons/fi';
 
-export default function Navbar() {
-  const [language, setLanguage] = useState('English');
+interface NavbarProps {
+  language: 'en' | 'ceb';
+  setLanguage: (lang: 'en' | 'ceb') => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ language, setLanguage }) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -241,4 +245,6 @@ export default function Navbar() {
       </div>
     </div>
   );
-}
+};
+
+export default Navbar;

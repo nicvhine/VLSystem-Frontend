@@ -8,6 +8,87 @@ import Link from 'next/link';
 import ReceiptModal from './components/receipt';
 import ChangePasswordModal from './components/forceChange';
 
+// Translation mappings
+const translations = {
+  en: {
+    welcome: 'Welcome',
+    creditScore: 'Your Credit Score',
+    creditScoreDesc: 'Based on your repayment history',
+    goodStanding: 'Good Standing',
+    fairStanding: 'Fair Standing',
+    poorStanding: 'Poor Standing',
+    loanDetails: 'Loan Details',
+    loanId: 'Loan ID',
+    releaseDate: 'Release Date',
+    principalAmount: 'Principal Amount',
+    loanPeriod: 'Loan Period',
+    months: 'Months',
+    interestRate: 'Interest Rate',
+    totalPayable: 'Total Payable',
+    totalPayments: 'Total Payments',
+    remainingBalance: 'Remaining Balance',
+    paymentProgress: 'Payment Progress',
+    paid: 'Paid',
+    payNow: 'Pay Now',
+    reloan: 'Re-Loan',
+    notEligibleReloan: 'You are not yet eligible for Reloan.',
+    paymentHistory: 'Payment History',
+    referenceNumber: 'Reference #',
+    date: 'Date',
+    periodAmount: 'Period Amount',
+    paidAmount: 'Paid Amount',
+    mode: 'Mode',
+    eReceipt: 'E-Receipt',
+    download: 'Download',
+    noPaymentHistory: 'No payment history available',
+    balance: 'Balance',
+    downloadEReceipt: 'Download E-Receipt',
+    loading: 'Loading...',
+    of: 'of',
+    english: 'English',
+    cebuano: 'Cebuano'
+  },
+  ceb: {
+    welcome: 'Maayong Pag-abot',
+    creditScore: 'Imong Credit Score',
+    creditScoreDesc: 'Base sa imong payment history',
+    goodStanding: 'Maayong Kahimtang',
+    fairStanding: 'Kasarangan nga Kahimtang',
+    poorStanding: 'Dili Maayong Kahimtang',
+    loanDetails: 'Detalye sa Utang',
+    loanId: 'ID sa Utang',
+    releaseDate: 'Petsa sa Paghatag',
+    principalAmount: 'Kantidad sa Principal',
+    loanPeriod: 'Panahon sa Utang',
+    months: 'mga Buwan',
+    interestRate: 'Interest Rate',
+    totalPayable: 'Kinatibuk-ang Bayrunon',
+    totalPayments: 'Kinatibuk-ang Bayad',
+    remainingBalance: 'Nahabilin nga Balanse',
+    paymentProgress: 'Progreso sa Pagbayad',
+    paid: 'Nabayad',
+    payNow: 'Bayad Karon',
+    reloan: 'Bag-ong Utang',
+    notEligibleReloan: 'Dili ka pa eligible para sa bag-ong utang.',
+    paymentHistory: 'Kasaysayan sa Pagbayad',
+    referenceNumber: 'Reference #',
+    date: 'Petsa',
+    periodAmount: 'Kantidad sa Panahon',
+    paidAmount: 'Kantidad nga Nabayad',
+    mode: 'Paagi',
+    eReceipt: 'E-Receipt',
+    download: 'I-download',
+    noPaymentHistory: 'Walay kasaysayan sa pagbayad',
+    noActiveLoanFound: 'Wala pay utang nga nakit-an',
+    balance: 'Balanse',
+    downloadEReceipt: 'I-download ang E-Receipt',
+    loading: 'Nag-load...',
+    of: 'sa',
+    english: 'English',
+    cebuano: 'Cebuano'
+  }
+};
+
 interface LoanDetails {
   loanId: string;
   name: string;
@@ -38,6 +119,7 @@ interface Payment {
 }
 
 export default function BorrowerDashboard() {
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [allLoans, setAllLoans] = useState<LoanDetails[]>([]);
   const [currentLoanIndex, setCurrentLoanIndex] = useState(0);
   const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
@@ -236,14 +318,16 @@ export default function BorrowerDashboard() {
   // Calculate payment progress percentage
   const calculatePaymentProgress = () => {
     if (!loanInfo) return 0;
-    const totalLoan = loanInfo.paidAmount;
+    const totalLoan = loanInfo.totalPayable;
     const remaining = loanInfo.balance;
     const paid = totalLoan - remaining;
     return Math.round((paid / totalLoan) * 100);
   };
+  
+  const paymentProgress = calculatePaymentProgress();
 
-  if (loading) return <div className="p-6 text-center">Loading loan info...</div>;
-  if (!loanInfo) return <div className="p-6 text-center text-red-500">No active loan found.</div>;
+  if (loading) return <div className="p-6 text-center">{translations[language].loading}</div>;
+  if (!loanInfo) return <div className="p-6 text-center text-red-500">{translations[language].noActiveLoanFound}</div>;
 
   const {
     loanId, name, interestRate, dateDisbursed, principal,
@@ -252,23 +336,24 @@ export default function BorrowerDashboard() {
     creditScore, paymentHistory
   } = loanInfo;
 
-  const paymentProgress = loanInfo.paymentProgress ?? 0;
-
-
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      <Navbar key={typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : ''} />
+      <Navbar 
+        key={typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : ''} 
+        language={language} 
+        setLanguage={setLanguage} 
+      />
 
       <main className="max-w-10xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
-          Welcome, <span className="text-red-600">{name}</span>!
+          {translations[language].welcome}, <span className="text-red-600">{name}</span>!
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Credit Score */}
           <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 flex flex-col items-center text-gray-800 hover:shadow-lg transition">
-            <div className="text-lg sm:text-xl font-semibold mb-1">Your Credit Score</div>
-            <div className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 text-center">Based on your repayment history</div>
+            <div className="text-lg sm:text-xl font-semibold mb-1">{translations[language].creditScore}</div>
+            <div className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 text-center">{translations[language].creditScoreDesc}</div>
 
             <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center">
               <svg className="absolute top-0 left-0 w-full h-full" viewBox="0 0 36 36">
@@ -301,9 +386,9 @@ export default function BorrowerDashboard() {
 
             <span className="mt-3 sm:mt-4 text-xs sm:text-sm font-medium text-gray-600 text-center">
               {
-                creditScore >= 7.5 ? 'Good Standing' :
-                creditScore >= 5 ? 'Fair Standing' :
-                'Poor Standing'
+                creditScore >= 7.5 ? translations[language].goodStanding :
+                creditScore >= 5 ? translations[language].fairStanding :
+                translations[language].poorStanding
               }
             </span>
           </div>
@@ -311,9 +396,9 @@ export default function BorrowerDashboard() {
           {/* Loan Details */}
           <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 text-gray-800 hover:shadow-xl transition-all duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">Loan Details</h2>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">{translations[language].loanDetails}</h2>
               <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
-                <span>Loan ID:</span>
+                <span>{translations[language].loanId}:</span>
                 <button 
                   onClick={handlePreviousLoan}
                   disabled={currentLoanIndex === 0}
@@ -330,27 +415,27 @@ export default function BorrowerDashboard() {
                   →
                 </button>
                 {allLoans.length > 1 && (
-                  <span className="text-xs text-gray-500">({currentLoanIndex + 1} of {allLoans.length})</span>
+                  <span className="text-xs text-gray-500">({currentLoanIndex + 1} {translations[language].of} {allLoans.length})</span>
                 )}
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
               <div className="space-y-2">
-                <p><span className="font-medium">Release Date:</span> {formatDate(dateDisbursed)}</p>
-                <p><span className="font-medium">Principal Amount:</span> {formatCurrency(principal)}</p>
-                <p><span className="font-medium">Loan Period:</span> {termsInMonths} Months</p>
-                <p><span className="font-medium">Interest Rate:</span> {interestRate}%</p>
-                <p><span className="font-medium">Total Payable:</span> {formatCurrency(totalPayable)}</p>
-                <p><span className="font-medium">Total Payments:</span> {formatCurrency(paidAmount)}</p>
-                <p><span className="font-medium">Remaining Balance:</span> {formatCurrency(balance)}</p>
+                <p><span className="font-medium">{translations[language].releaseDate}:</span> {formatDate(dateDisbursed)}</p>
+                <p><span className="font-medium">{translations[language].principalAmount}:</span> {formatCurrency(principal)}</p>
+                <p><span className="font-medium">{translations[language].loanPeriod}:</span> {termsInMonths} {translations[language].months}</p>
+                <p><span className="font-medium">{translations[language].interestRate}:</span> {interestRate}%</p>
+                <p><span className="font-medium">{translations[language].totalPayable}:</span> {formatCurrency(totalPayable)}</p>
+                <p><span className="font-medium">{translations[language].totalPayments}:</span> {formatCurrency(paidAmount)}</p>
+                <p><span className="font-medium">{translations[language].remainingBalance}:</span> {formatCurrency(balance)}</p>
               </div>
             </div>
           </div>
 
           {/* Payment Progress */}
           <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-between text-gray-800 hover:shadow-lg transition">
-            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Progress</h2>
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{translations[language].paymentProgress}</h2>
             <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-3 sm:mb-4">
               <svg className="w-full h-full" viewBox="0 0 36 36">
                 <path
@@ -371,21 +456,21 @@ export default function BorrowerDashboard() {
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center text-xs sm:text-sm font-semibold">
                 <span className="text-xl sm:text-2xl text-gray-800">{paymentProgress}%</span>
-                <span className="text-gray-500">Paid</span>
+                <span className="text-gray-500">{translations[language].paid}</span>
               </div>
             </div>
             <button className="bg-green-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-green-700 transition text-sm sm:text-base w-full sm:w-auto">
-              <Link href="/borrower/upcoming-bills">Pay Now</Link>
+              <Link href="/borrower/upcoming-bills">{translations[language].payNow}</Link>
             </button>
             {paymentProgress >= 0 ? (
               <button 
                 onClick={handleReloan}
                 className="bg-blue-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-blue-700 transition text-sm sm:text-base w-full sm:w-auto mt-3 sm:mt-5"
               >
-                Re-Loan
+                {translations[language].reloan}
               </button>
             ) : (
-              <p className='mt-3 sm:mt-5 text-xs sm:text-sm text-center text-gray-600'>You are not yet eligible for Reloan.</p>
+              <p className='mt-3 sm:mt-5 text-xs sm:text-sm text-center text-gray-600'>{translations[language].notEligibleReloan}</p>
             )}
           </div>
         </div>
@@ -393,19 +478,19 @@ export default function BorrowerDashboard() {
         {/* Payment Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6 sm:mt-10">
           <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Payment History</h3>
+            <h3 className="text-lg font-medium text-gray-900">{translations[language].paymentHistory}</h3>
           </div>
-          <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+          <Suspense fallback={<div className="p-4 text-center">{translations[language].loading}</div>}>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Reference #</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Date</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Period Amount</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">Paid Amount</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">Mode</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">E-Receipt</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].referenceNumber}</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].date}</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].periodAmount}</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].paidAmount}</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">{translations[language].mode}</th>
+                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">{translations[language].eReceipt}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -427,7 +512,7 @@ export default function BorrowerDashboard() {
                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-700">{formatDate(payment.datePaid)}</td>
                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600">{formatCurrency(monthlyDue)}</td>
                         <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{formatCurrency(payment.amount)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 hidden sm:table-cell"></td>
+                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 hidden sm:table-cell">-</td>
                         <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
                           <button
                             onClick={() => {
@@ -436,47 +521,54 @@ export default function BorrowerDashboard() {
                             }}
                             className="text-blue-600 underline hover:text-blue-800"
                           >
-                            Download
+                            {translations[language].download}
                           </button>
-
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="px-3 sm:px-6 py-8 text-center text-gray-500">
-                        No payment history available
+                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                        {translations[language].noPaymentHistory}
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
-            </div>
-            
-            {/* Mobile-specific info cards for hidden columns */}
-            <div className="sm:hidden">
-              {paymentHistory && paymentHistory.length > 0 && paymentHistory.map((payment, idx) => (
-                <div key={`mobile-${idx}`} className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                  <div className="text-xs text-gray-600 space-y-1">
-                    <p><span className="font-medium">Balance:</span></p>
-                    <p><span className="font-medium">Mode:</span> </p>
-                    <a href="#" className="text-blue-600 underline hover:text-blue-800" download>
-                      Download E-Receipt
-                    </a>
-                  </div>
-                </div>
-              ))}
+              
+              {/* Mobile-specific info cards for hidden columns */}
+              <div className="sm:hidden">
+                {payments && payments.length > 0 && payments
+                  .filter(payment => payment.loanId === loanId)
+                  .map((payment, idx) => (
+                    <div key={`mobile-${idx}`} className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+                      <div className="text-xs text-gray-600 space-y-1">
+                        <p><span className="font-medium">{translations[language].balance}:</span> {formatCurrency(loanInfo.balance)}</p>
+                        <p><span className="font-medium">{translations[language].mode}:</span> -</p>
+                        <button
+                          onClick={() => {
+                            setSelectedReceipt(payment);
+                            setShowReceipt(true);
+                          }}
+                          className="text-blue-600 underline hover:text-blue-800"
+                        >
+                          {translations[language].downloadEReceipt}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
             </div>
           </Suspense>
         </div>
 
-        {showReceipt && (
-  <ReceiptModal
-    isOpen={showReceipt}
-    onClose={() => setShowReceipt(false)}
-    payment={selectedReceipt}
-  />
-)}
+        {showReceipt && selectedReceipt && (
+          <ReceiptModal
+            isOpen={showReceipt}
+            onClose={() => setShowReceipt(false)}
+            payment={selectedReceipt}
+          />
+        )}
 
       </main>
 
