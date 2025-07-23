@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { useRouter } from 'next/navigation';
-import Navbar from '../../components/borrower/navbar';
+import Navbar from './borrowerNavbar/page';
 import Link from 'next/link';
 import ReceiptModal from './components/receipt';
 import ChangePasswordModal from './components/forceChange';

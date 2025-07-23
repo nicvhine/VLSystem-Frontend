@@ -248,13 +248,16 @@ export default function ApplicationsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 space-x-2">
-                      <button
-                        className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
-                        onClick={() => handleAction(application.applicationId, 'Disbursed')}
-                      >
-                        Disbursed
-                      </button>
-                    </td>
+  {application.status !== 'Accepted' && application.status !== 'Disbursed' && application.status === 'Ready for Disbursement' && (
+    <button
+      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+      onClick={() => handleAction(application.applicationId, 'Disbursed')}
+    >
+      Disbursed
+    </button>
+  )}
+</td>
+
                   </tr>
                 ))}
               </tbody>
