@@ -63,9 +63,50 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
 
   useEffect(() => {
     if (reloanData) {
-      setAppName(reloanData.personalInfo.name);
-      const option = loanOptions.find(o => o.amount === reloanData.loanDetails.amount);
-      setSelectedLoan(option || null);
+      const { personalInfo, characterReferences } = reloanData;
+      
+      // Set personal information
+      if (personalInfo) {
+        setAppName(personalInfo.appName || personalInfo.name || "");
+        setAppDob(personalInfo.appDob || personalInfo.dob || "");
+        setAppContact(personalInfo.appContact || personalInfo.contact || "");
+        setAppEmail(personalInfo.appEmail || personalInfo.email || "");
+        setAppMarital(personalInfo.appMarital || personalInfo.maritalStatus || "");
+        setAppChildren(personalInfo.appChildren || personalInfo.children || 0);
+        setAppSpouseName(personalInfo.appSpouseName || personalInfo.spouseName || "");
+        setAppSpouseOccupation(personalInfo.appSpouseOccupation || personalInfo.spouseOccupation || "");
+        setAppAddress(personalInfo.appAddress || personalInfo.address || "");
+        
+        // Set source of income related fields
+        setSourceOfIncome(personalInfo.sourceOfIncome || "");
+        setAppMonthlyIncome(personalInfo.appMonthlyIncome || 0);
+        
+        // Set business fields if source of income is business
+        if (personalInfo.sourceOfIncome === "business") {
+          setAppTypeBusiness(personalInfo.appTypeBusiness || "");
+          setAppDateStarted(personalInfo.appDateStarted || "");
+          setAppBusinessLoc(personalInfo.appBusinessLoc || "");
+        }
+        
+        // Set employment fields if source of income is employed
+        if (personalInfo.sourceOfIncome === "employed") {
+          setAppOccupation(personalInfo.appOccupation || "");
+          setAppEmploymentStatus(personalInfo.appEmploymentStatus || "");
+          setAppCompanyName(personalInfo.appCompanyName || "");
+        }
+      }
+      
+      // Set character references if available
+      if (characterReferences && characterReferences.length > 0) {
+        // Ensure we have exactly 3 references, filling with empty objects if needed
+        const references = [...characterReferences];
+        while (references.length < 3) {
+          references.push({ name: "", contact: "", relation: "" });
+        }
+        setAppReferences(references.slice(0, 3));
+      }
+      
+      // Note: We intentionally don't set loan purpose, selected loan, or other loan-specific fields for reloan
     }
   }, [reloanData]);
 
@@ -192,13 +233,13 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
           appReferences={appReferences}
         setAppReferences={setAppReferences}
         appBusinessLoc={appBusinessLoc}
-        setAppBusinessLoc={appBusinessLoc}
+        setAppBusinessLoc={setAppBusinessLoc}
         appMonthlyIncome={appMonthlyIncome}
         setAppMonthlyIncome={setAppMonthlyIncome}
         appOccupation={appOccupation}
         setAppOccupation={setAppOccupation}
         appEmploymentStatus={appEmploymentStatus}
-        setAppEmploymentStatus={appEmploymentStatus}
+        setAppEmploymentStatus={setAppEmploymentStatus}
         appCompanyName={appCompanyName}
         setAppCompanyName={setAppCompanyName}
         sourceOfIncome={sourceOfIncome}
