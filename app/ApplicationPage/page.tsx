@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from "react";
-import Navbar from "../components/landing/landingNavbar";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "../components/borrower/navbar";
 import WithCollateralLoanForm from "./forms/withCollateral";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
@@ -12,6 +13,7 @@ import Common from "./forms/common";
 
 
 export default function ApplicationPage() {
+  const router = useRouter();
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [address, setAddress] = useState('');
   const [loanType, setLoanType] = useState<string>('');
@@ -20,6 +22,16 @@ export default function ApplicationPage() {
   const [maritalStatus, setMaritalStatus] = useState('');
   const [incomeSource, setIncomeSource] = useState('');
   const [employmentStatus, setEmploymentStatus] = useState('');
+  const [reloanData, setReloanData] = useState<any>(null);
+
+  useEffect(() => {
+    const reloanInfo = localStorage.getItem('reloanInfo');
+    if (reloanInfo) {
+      setReloanData(JSON.parse(reloanInfo));
+      localStorage.removeItem('reloanInfo');
+    }
+  }, []);
+
   const handleSubmit = () => setShowSuccessModal(true);
   const closeModal = () => setShowSuccessModal(false);
 
@@ -107,9 +119,39 @@ export default function ApplicationPage() {
   return null;
 }
 
+const handleGoBack = () => {
+    router.push('/components/borrower');
+  };
+
 return (
 <div className="min-h-screen bg-gray-50 text-black">
   <Navbar language={language} setLanguage={setLanguage} />
+  
+  {/* Simple Back Button */}
+  <div className="bg-white border-b border-gray-200 px-6 py-3">
+    <button
+      onClick={handleGoBack}
+      className="flex items-center bg-blue-600 text-white hover:bg-blue-700 transition-colors px-4 py-2 rounded-md"
+    >
+      <svg 
+        className="w-5 h-5 mr-2 text-red-600" 
+        fill="none" 
+        stroke="currentColor" 
+        viewBox="0 0 24 24"
+      >
+        <path 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          strokeWidth={2} 
+          d="M10 19l-7-7m0 0l7-7m-7 7h18" 
+        />
+      </svg>
+      <span className="font-medium">
+        {language === 'en' ? 'Back to Dashboard' : 'Balik sa Dashboard'}
+      </span>
+    </button>
+  </div>
+  
   <div className="flex min-h-screen">
        
 {/* Left Sidebar */}
@@ -217,24 +259,21 @@ return (
                   employmentStatus={employmentStatus}
                   setEmploymentStatus={setEmploymentStatus}
                   language={language}
+                  reloanData={reloanData}
                 />
               )}
 
                 {loanType === (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)') && (
-                <WithoutCollateralLoanForm language={language} />
+                <WithoutCollateralLoanForm 
+                  language={language} 
+                  reloanData={reloanData}
+                />
                 )}
 
                   {loanType === (language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam') && (
                 <OpenTermLoanForm
-                  maritalStatus={maritalStatus}
-                  setMaritalStatus={setMaritalStatus}
-                  incomeSource={incomeSource}
-                  setIncomeSource={setIncomeSource}
-                  address={address}
-                  setAddress={setAddress}
-                  employmentStatus={employmentStatus}
-                  setEmploymentStatus={setEmploymentStatus}
                   language={language}
+                  reloanData={reloanData}
                 />
                 )}
                 </div>

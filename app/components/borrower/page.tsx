@@ -38,6 +38,8 @@ interface Payment {
 }
 
 export default function BorrowerDashboard() {
+  const [allLoans, setAllLoans] = useState<LoanDetails[]>([]);
+  const [currentLoanIndex, setCurrentLoanIndex] = useState(0);
   const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -76,17 +78,20 @@ export default function BorrowerDashboard() {
         return;
       }
 
-      fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`, {
+      fetch(`http://localhost:3001/loans/borrower-loans/${borrowersId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
         .then(res => {
-          if (!res.ok) throw new Error('Failed to fetch loan');
+          if (!res.ok) throw new Error('Failed to fetch loans');
           return res.json();
         })
         .then(data => {
-          setLoanInfo(data);
+          setAllLoans(data);
+          if (data.length > 0) {
+            setLoanInfo(data[0]); // Set the first (latest) loan as default
+          }
         })
         .catch(err => {
           console.error('Loan fetch error:', err);
@@ -118,6 +123,103 @@ export default function BorrowerDashboard() {
   const handleLogout = () => {
     localStorage.clear();
     router.push('/');
+  };
+
+  // Navigation functions for loan switching
+  const handlePreviousLoan = () => {
+    if (currentLoanIndex > 0) {
+      const newIndex = currentLoanIndex - 1;
+      setCurrentLoanIndex(newIndex);
+      setLoanInfo(allLoans[newIndex]);
+    }
+  };
+
+  const handleNextLoan = () => {
+    if (currentLoanIndex < allLoans.length - 1) {
+      const newIndex = currentLoanIndex + 1;
+      setCurrentLoanIndex(newIndex);
+      setLoanInfo(allLoans[newIndex]);
+    }
+  };
+
+  const handleReloan = async () => {
+    if (loanInfo) {
+      const token = localStorage.getItem('token');
+      const borrowersId = localStorage.getItem('borrowersId');
+      try {
+        // Fetch borrower data
+        const [borrowerResponse, applicationsResponse] = await Promise.all([
+          fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          fetch('http://localhost:3001/loan-applications', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          })
+        ]);
+
+        if (!borrowerResponse.ok) throw new Error('Failed to fetch borrower data');
+        if (!applicationsResponse.ok) throw new Error('Failed to fetch loan applications');
+
+        const borrowerData = await borrowerResponse.json();
+        const allApplications = await applicationsResponse.json();
+        
+        // Find the most recent approved loan application for this borrower
+        const previousApplications = allApplications
+          .filter((app: any) => app.borrowersId === borrowersId && app.status === 'Accepted')
+          .sort((a: any, b: any) => 
+            new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime()
+          );
+
+        const previousApplication = previousApplications[0];
+
+        // Prepare reloan info with previous application data if available
+        const reloanInfo = {
+          personalInfo: {
+            ...borrowerData,
+            // Override with previous application data if available
+            ...(previousApplication && {
+              appName: previousApplication.appName,
+              appDob: previousApplication.appDob,
+              appContact: previousApplication.appContact,
+              appEmail: previousApplication.appEmail,
+              appMarital: previousApplication.appMarital,
+              appChildren: previousApplication.appChildren,
+              appSpouseName: previousApplication.appSpouseName,
+              appSpouseOccupation: previousApplication.appSpouseOccupation,
+              appAddress: previousApplication.appAddress,
+              sourceOfIncome: previousApplication.sourceOfIncome,
+              // Business fields
+              appTypeBusiness: previousApplication.appTypeBusiness,
+              appDateStarted: previousApplication.appDateStarted,
+              appBusinessLoc: previousApplication.appBusinessLoc,
+              // Employment fields
+              appOccupation: previousApplication.appOccupation,
+              appEmploymentStatus: previousApplication.appEmploymentStatus,
+              appCompanyName: previousApplication.appCompanyName,
+              // Income
+              appMonthlyIncome: previousApplication.appMonthlyIncome,
+            })
+          },
+          loanDetails: {
+            amount: loanInfo.principal,
+            term: parseInt(loanInfo.termsInMonths),
+          },
+          // Include character references from previous application if available
+          ...(previousApplication && {
+            characterReferences: previousApplication.appReferences || []
+          })
+        };
+
+        localStorage.setItem('reloanInfo', JSON.stringify(reloanInfo));
+        router.push('/ApplicationPage');
+      } catch (error) {
+        console.error("Failed to fetch data for reloan:", error);
+      }
+    }
   };
 
   const formatCurrency = (amount: number) =>
@@ -214,10 +316,28 @@ export default function BorrowerDashboard() {
           {/* Loan Details */}
           <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 text-gray-800 hover:shadow-xl transition-all duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">Current Loan Details</h2>
-              <span className="text-xs sm:text-sm text-gray-600">
-                Loan ID: <span className="font-medium text-red-500">{loanId}</span>
-              </span>
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">Loan Details</h2>
+              <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
+                <span>Loan ID:</span>
+                <button 
+                  onClick={handlePreviousLoan}
+                  disabled={currentLoanIndex === 0}
+                  className={`px-3 py-1 rounded-md border ${currentLoanIndex === 0 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:text-white hover:bg-blue-600 hover:border-blue-600'} transition-all`}
+                >
+                  ←
+                </button>
+                <span className="font-medium text-red-500">{loanId}</span>
+                <button 
+                  onClick={handleNextLoan}
+                  disabled={currentLoanIndex === allLoans.length - 1}
+                  className={`px-3 py-1 rounded-md border ${currentLoanIndex === allLoans.length - 1 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:text-white hover:bg-blue-600 hover:border-blue-600'} transition-all`}
+                >
+                  →
+                </button>
+                {allLoans.length > 1 && (
+                  <span className="text-xs text-gray-500">({currentLoanIndex + 1} of {allLoans.length})</span>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
@@ -262,7 +382,16 @@ export default function BorrowerDashboard() {
             <button className="bg-green-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-green-700 transition text-sm sm:text-base w-full sm:w-auto">
               <Link href="/borrower/upcoming-bills">Pay Now</Link>
             </button>
-            <p className='mt-3 sm:mt-5 text-xs sm:text-sm text-center text-gray-600'>You are not yet eligible for Reloan.</p>
+            {paymentProgress >= 0 ? (
+              <button 
+                onClick={handleReloan}
+                className="bg-blue-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-blue-700 transition text-sm sm:text-base w-full sm:w-auto mt-3 sm:mt-5"
+              >
+                Re-Loan
+              </button>
+            ) : (
+              <p className='mt-3 sm:mt-5 text-xs sm:text-sm text-center text-gray-600'>You are not yet eligible for Reloan.</p>
+            )}
           </div>
         </div>
 
