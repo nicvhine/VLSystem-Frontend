@@ -90,7 +90,7 @@ export default function BorrowerDashboard() {
         .then(data => {
           setAllLoans(data);
           if (data.length > 0) {
-            setLoanInfo(data[0]); // Set the first (latest) loan as default
+            setLoanInfo(data[0]); 
           }
         })
         .catch(err => {
@@ -125,7 +125,6 @@ export default function BorrowerDashboard() {
     router.push('/');
   };
 
-  // Navigation functions for loan switching
   const handlePreviousLoan = () => {
     if (currentLoanIndex > 0) {
       const newIndex = currentLoanIndex - 1;
@@ -147,7 +146,6 @@ export default function BorrowerDashboard() {
       const token = localStorage.getItem('token');
       const borrowersId = localStorage.getItem('borrowersId');
       try {
-        // Fetch borrower data
         const [borrowerResponse, applicationsResponse] = await Promise.all([
           fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
             headers: {
@@ -167,7 +165,6 @@ export default function BorrowerDashboard() {
         const borrowerData = await borrowerResponse.json();
         const allApplications = await applicationsResponse.json();
         
-        // Find the most recent approved loan application for this borrower
         const previousApplications = allApplications
           .filter((app: any) => app.borrowersId === borrowersId && app.status === 'Accepted')
           .sort((a: any, b: any) => 
@@ -176,11 +173,10 @@ export default function BorrowerDashboard() {
 
         const previousApplication = previousApplications[0];
 
-        // Prepare reloan info with previous application data if available
         const reloanInfo = {
+          isReloan: true,
           personalInfo: {
             ...borrowerData,
-            // Override with previous application data if available
             ...(previousApplication && {
               appName: previousApplication.appName,
               appDob: previousApplication.appDob,
@@ -208,14 +204,13 @@ export default function BorrowerDashboard() {
             amount: loanInfo.principal,
             term: parseInt(loanInfo.termsInMonths),
           },
-          // Include character references from previous application if available
           ...(previousApplication && {
             characterReferences: previousApplication.appReferences || []
           })
         };
 
         localStorage.setItem('reloanInfo', JSON.stringify(reloanInfo));
-        router.push('/ApplicationPage');
+        router.push(`/components/borrower/ApplicationPage/${borrowersId}`);
       } catch (error) {
         console.error("Failed to fetch data for reloan:", error);
       }
