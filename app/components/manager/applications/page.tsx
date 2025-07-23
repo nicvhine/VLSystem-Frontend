@@ -20,6 +20,7 @@ interface Application {
   status: string;
   appLoanTerms: number;
   totalPayable: number;
+  isReloan?: boolean;
 }
 
 function LoadingSpinner() {
@@ -360,16 +361,21 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                   <td className="px-6 py-4 text-sm text-gray-600">{application.totalPayable}</td>
 
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      application.displayStatus === 'Accepted' ? 'bg-green-100 text-green-800' :
-                      application.displayStatus === 'Denied' ? 'bg-red-100 text-red-800' :
-                      application.displayStatus === 'Onhold' ? 'bg-orange-100 text-orange-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {application.displayStatus === 'Onhold' ? 'On Hold' : application.displayStatus}
-                    </span>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  application.displayStatus === 'Accepted' ? 'bg-green-100 text-green-800' :
+                  application.displayStatus === 'Denied' ? 'bg-red-100 text-red-800' :
+                  application.displayStatus === 'Onhold' ? 'bg-orange-100 text-orange-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {application.displayStatus === 'Onhold' ? 'On Hold' : application.displayStatus}
+                </span>
+                {application.isReloan && (
+                  <span className="ml-2 inline-block px-2 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">
+                    Reloan
+                  </span>
+                )}
+              </td>
 
-                  </td>
 
                   <td className="px-6 py-4 space-x-2">
                     
@@ -402,18 +408,19 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                     </button>
                   )}
 
-                  {application.displayStatus === 'Disbursed' && (
-                    <button
-                      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
-                      onClick={() => {
-                        setSelectedApp(application);
-                        setGeneratedUsername(generateUsername(application.appName));
-                        setShowModal(true);
-                      }}
-                    >
-                      Create Account
-                    </button>
-                  )}
+               {application.displayStatus === 'Disbursed' && !application.isReloan && (
+                  <button
+                    className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+                    onClick={() => {
+                      setSelectedApp(application);
+                      setGeneratedUsername(generateUsername(application.appName));
+                      setShowModal(true);
+                    }}
+                  >
+                    Create Account
+                  </button>
+                )}
+
                 </td>
 
 

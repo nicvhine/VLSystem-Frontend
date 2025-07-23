@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Common from "./common";
 
 const API_URL = "http://localhost:3001/loan-applications/without";
@@ -20,9 +20,10 @@ const loanOptions: LoanOption[] = [
 
 interface WithoutCollateralFormProps {
   language: 'en' | 'ceb';
+  reloanData?: any;
 }
 
-export default function WithoutCollateralForm({ language }: WithoutCollateralFormProps) {
+export default function WithoutCollateralForm({ language, reloanData }: WithoutCollateralFormProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
@@ -48,6 +49,56 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" }
   ]); 
+
+  useEffect(() => {
+    if (reloanData) {
+      const { personalInfo, characterReferences } = reloanData;
+      
+      // Set personal information
+      if (personalInfo) {
+        setAppName(personalInfo.appName || personalInfo.name || "");
+        setAppDob(personalInfo.appDob || personalInfo.dob || "");
+        setAppContact(personalInfo.appContact || personalInfo.contact || "");
+        setAppEmail(personalInfo.appEmail || personalInfo.email || "");
+        setAppMarital(personalInfo.appMarital || personalInfo.maritalStatus || "");
+        setAppChildren(personalInfo.appChildren || personalInfo.children || 0);
+        setAppSpouseName(personalInfo.appSpouseName || personalInfo.spouseName || "");
+        setAppSpouseOccupation(personalInfo.appSpouseOccupation || personalInfo.spouseOccupation || "");
+        setAppAddress(personalInfo.appAddress || personalInfo.address || "");
+        
+        // Set source of income related fields
+        setSourceOfIncome(personalInfo.sourceOfIncome || "");
+        setAppMonthlyIncome(personalInfo.appMonthlyIncome || 0);
+        
+        // Set business fields if source of income is business
+        if (personalInfo.sourceOfIncome === "business") {
+          setAppTypeBusiness(personalInfo.appTypeBusiness || "");
+          setAppDateStarted(personalInfo.appDateStarted || "");
+          setAppBusinessLoc(personalInfo.appBusinessLoc || "");
+        }
+        
+        // Set employment fields if source of income is employed
+        if (personalInfo.sourceOfIncome === "employed") {
+          setAppOccupation(personalInfo.appOccupation || "");
+          setAppEmploymentStatus(personalInfo.appEmploymentStatus || "");
+          setAppCompanyName(personalInfo.appCompanyName || "");
+        }
+      }
+      
+      // Set character references if available
+      if (characterReferences && characterReferences.length > 0) {
+        // Ensure we have exactly 3 references, filling with empty objects if needed
+        const references = [...characterReferences];
+        while (references.length < 3) {
+          references.push({ name: "", contact: "", relation: "" });
+        }
+        setAppReferences(references.slice(0, 3));
+      }
+      
+      // Set loan details (but only if not in reloan mode)
+      // Note: We intentionally don't set loan purpose or selected loan for reloan
+    }
+  }, [reloanData]);
 
   // Translations for select options
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
@@ -143,6 +194,7 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
         language={language}
+        reloanData={reloanData}
       />
 
       {/* Loan Details */}
