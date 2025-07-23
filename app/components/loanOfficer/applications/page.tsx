@@ -91,7 +91,6 @@ export default function ApplicationsPage() {
 
   const handleAction = async (id: string, status: 'Disbursed') => {
   try {
-    // Step 1: Update application status
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -104,9 +103,7 @@ export default function ApplicationsPage() {
 
     const updatedApplication = await response.json();
 
-    // Step 2: Generate loan based on type
     if (updatedApplication.loanType?.toLowerCase().includes('reloan')) {
-      // Reloan needs the borrower ID
       const borrowersId = updatedApplication.borrowersId;
 
       const loanResponse = await fetch(`http://localhost:3001/loans/generate-reloan/${borrowersId}`, {
@@ -117,7 +114,6 @@ export default function ApplicationsPage() {
         throw new Error("Failed to generate loan for reloan application.");
       }
     } else {
-      // Regular loan uses the application ID
       const loanResponse = await fetch(`http://localhost:3001/loans/generate-loan/${id}`, {
         method: 'POST',
       });
@@ -127,7 +123,6 @@ export default function ApplicationsPage() {
       }
     }
 
-    // Refresh after action
     setTimeout(() => {
       window.location.reload();
     }, 1500);
