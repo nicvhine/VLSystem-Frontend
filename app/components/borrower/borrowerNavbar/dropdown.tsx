@@ -103,7 +103,7 @@ const handleSetDarkMode = (value: boolean) => {
           }`}
         >
           {/* Profile Header */}
-          <div className="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col items-center py-6 ">
             <div
               className="relative group w-16 h-16 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer"
               onClick={() => document.getElementById('profileUpload')?.click()}
@@ -149,7 +149,7 @@ const handleSetDarkMode = (value: boolean) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="flex flex-col ">
             {/* Settings Toggle */}
             <button
               className="flex items-center px-6 py-3 hover:bg-gray-100 hover:text-black dark:hover:text-black transition"
@@ -231,14 +231,14 @@ const handleSetDarkMode = (value: boolean) => {
 
             {/* Logout */}
             <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition text-red-600"
+              className="flex items-center px-6 py-3 hover:bg-gray-100 text-red-600"
               onClick={handleLogout}
             >
               Log Out
             </button>
           </div>
 
-          <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-center text-gray-400 py-2 ">
             Privacy Policy · Terms of Service
           </div>
         </div>
