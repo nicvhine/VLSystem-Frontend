@@ -62,29 +62,8 @@ export default function LoanDetails({
 
   return (
     <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 text-gray-800 hover:shadow-xl transition-all duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">{translations[language].loanDetails}</h2>
-        <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-600">
-          <span>{translations[language].loanId}:</span>
-          <button 
-            onClick={handlePreviousLoan}
-            disabled={currentLoanIndex === 0}
-            className={`px-3 py-1 rounded-md border ${currentLoanIndex === 0 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:text-white hover:bg-blue-600 hover:border-blue-600'} transition-all`}
-          >
-            ←
-          </button>
-          <span className="font-medium text-red-500">{loanId}</span>
-          <button 
-            onClick={handleNextLoan}
-            disabled={currentLoanIndex === allLoans.length - 1}
-            className={`px-3 py-1 rounded-md border ${currentLoanIndex === allLoans.length - 1 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:text-white hover:bg-blue-600 hover:border-blue-600'} transition-all`}
-          >
-            →
-          </button>
-          {allLoans.length > 1 && (
-            <span className="text-xs text-gray-500">({currentLoanIndex + 1} {translations[language].of} {allLoans.length})</span>
-          )}
-        </div>
+      <div className="mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">{translations[language].loanDetails}</h2>
       </div>
 
       <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
@@ -96,6 +75,29 @@ export default function LoanDetails({
           <p><span className="font-medium">{translations[language].totalPayable}:</span> {formatCurrency(totalPayable)}</p>
           <p><span className="font-medium">{translations[language].totalPayments}:</span> {formatCurrency(paidAmount)}</p>
           <p><span className="font-medium">{translations[language].remainingBalance}:</span> {formatCurrency(balance)}</p>
+        </div>
+        
+        {/* Loan Navigation */}
+        <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-100">
+          <span className="text-gray-600 text-sm">{translations[language].loanId}:</span>
+          <button
+            onClick={handlePreviousLoan}
+            disabled={currentLoanIndex === 0}
+            className={`w-8 h-8 flex items-center justify-center rounded border transition-all ${currentLoanIndex === 0 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}
+          >
+            ←
+          </button>
+          <span className="font-semibold text-red-500 min-w-[80px] text-center">{loanId}</span>
+          <button
+            onClick={handleNextLoan}
+            disabled={currentLoanIndex === allLoans.length - 1}
+            className={`w-8 h-8 flex items-center justify-center rounded border transition-all ${currentLoanIndex === allLoans.length - 1 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}
+          >
+            →
+          </button>
+          {allLoans.length > 1 && (
+            <span className="text-xs text-gray-500">({currentLoanIndex + 1} {translations[language].of} {allLoans.length})</span>
+          )}
         </div>
       </div>
     </div>
