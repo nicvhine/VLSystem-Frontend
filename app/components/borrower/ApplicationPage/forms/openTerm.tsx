@@ -176,6 +176,7 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
       specialConditions,
       appReferences,
       isCustomTerms: useCustomTerms,
+      isReloan: reloanData !== null,
     };
 
     try {

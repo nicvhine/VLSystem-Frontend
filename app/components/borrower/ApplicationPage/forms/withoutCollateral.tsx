@@ -104,13 +104,43 @@ export default function WithoutCollateralForm({ language, reloanData, onLanguage
   // Translations for select options
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
-  const handleSubmit = async () => {
-    if (!appLoanPurpose || !selectedLoan) {
-      alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
+const handleSubmit = async () => {
+  if (!appLoanPurpose || !selectedLoan) {
+    alert(language === 'en'
+      ? "Please fill in all required fields."
+      : "Palihug pun-a ang tanang kinahanglan nga field.");
+    return;
+  }
+
+  const payload: any = {
+    appLoanPurpose,
+    appLoanAmount: selectedLoan.amount,
+    appLoanTerms: selectedLoan.months,
+    appInterest: selectedLoan.interest,
+  };
+
+  let url = API_URL;
+
+  // Check if it's a reloan case
+  if (reloanData?.borrowersId || typeof window !== 'undefined') {
+    const borrowerIdFromStorage = localStorage.getItem("borrowersId");
+    const borrowersId = reloanData?.borrowersId || borrowerIdFromStorage;
+
+    if (!borrowersId) {
+      alert(language === 'en'
+        ? "Borrower ID missing. Please log in again."
+        : "Wala ang Borrower ID. Palihug pag-login pag-usab.");
       return;
     }
 
-    const payload = {
+    // Use reloan URL
+    url = `http://localhost:3001/loan-applications/without/reloan/${borrowersId}`;
+
+    // Include it in the payload (if backend wants it in body)
+    payload.borrowersId = borrowersId;
+  } else {
+    // New application (not reloan) — include all data
+    Object.assign(payload, {
       appName,
       appDob,
       appContact,
@@ -128,32 +158,44 @@ export default function WithoutCollateralForm({ language, reloanData, onLanguage
       appEmploymentStatus,
       appCompanyName,
       sourceOfIncome,
-      appLoanAmount: selectedLoan.amount,
-      appLoanTerms: selectedLoan.months,
-      appInterest: selectedLoan.interest,
-      appLoanPurpose,
       appReferences,
-    };
+    });
 
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        alert(language === 'en' ? "Loan application submitted successfully!" : "Malampusong napasa ang aplikasyon!");
-        setAppLoanPurpose("");
-        setSelectedLoan(null);
-      } else {
-        const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
-      }
-    } catch (error) {
-      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+    // Also include borrowersId here too (for new apps)
+    const borrowersId = localStorage.getItem("borrowersId");
+    if (borrowersId) {
+      payload.borrowersId = borrowersId;
     }
-  };
+  }
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      alert(language === 'en'
+        ? "Loan application submitted successfully!"
+        : "Malampusong napasa ang aplikasyon!");
+
+      setAppLoanPurpose("");
+      setSelectedLoan(null);
+    } else {
+      const errorText = await res.text();
+      alert(language === 'en'
+        ? "Failed to submit application. Server says: " + errorText
+        : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+    }
+  } catch (error) {
+    alert(language === 'en'
+      ? "An error occurred. Please try again."
+      : "Adunay sayop. Palihug sulayi pag-usab.");
+  }
+};
+
+
 
   return (
     <>

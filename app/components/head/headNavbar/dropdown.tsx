@@ -99,11 +99,11 @@ const handleSetDarkMode = (value: boolean) => {
       {isDropdownOpen && (
         <div
           className={`absolute right-0 mt-3 w-96 rounded-2xl shadow-2xl z-30 p-0 border transition-all ${
-            darkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-gray-900 border-gray-200'
+            darkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900 border-gray-200'
           }`}
         >
           {/* Profile Header */}
-          <div className="flex flex-col items-center py-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col items-center py-6">
             <div
               className="relative group w-16 h-16 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer"
               onClick={() => document.getElementById('profileUpload')?.click()}
@@ -149,10 +149,10 @@ const handleSetDarkMode = (value: boolean) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col divide-y divide-gray-200 dark:divide-gray-700">
+          <div className="flex flex-col">
             {/* Settings Toggle */}
             <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 hover:text-black dark:hover:text-black transition"
+              className="flex items-center px-6 py-3 hover:bg-gray-100 hover:text-black transition"
               onClick={toggleEdit}
             >
               Account Settings
@@ -231,14 +231,14 @@ const handleSetDarkMode = (value: boolean) => {
 
             {/* Logout */}
             <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition text-red-600"
+              className="flex items-center px-6 py-3 hover:bg-gray-100 transition text-red-600"
               onClick={handleLogout}
             >
               Log Out
             </button>
           </div>
 
-          <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-xs text-center text-gray-400 py-2">
             Privacy Policy · Terms of Service
           </div>
         </div>

@@ -158,6 +158,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       collateralValue,
       collateralDescription,
       ownershipStatus,
+      isReloan: reloanData !== null,
     };
 
     try {

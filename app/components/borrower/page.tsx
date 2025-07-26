@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { jwtDecode } from 'jwt-decode';
+import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-import Navbar from '../../components/borrower/navbar';
-import Link from 'next/link';
-import ReceiptModal from './components/receipt';
-import ChangePasswordModal from './components/forceChange';
+import useInactivityLogout from "../inactivity/logic";
+import ChangePasswordModal from "./components/forceChange";
+import AreYouStillThereModal from "../inactivity/modal";
+import BorrowerNavbar from "./borrowerNavbar/page";
 
+<<<<<<< HEAD
 // Translation mappings
 const translations = {
   en: {
@@ -90,57 +90,36 @@ const translations = {
     cebuano: 'Cebuano'
   }
 };
+=======
+export default function Borrower({ children }: {children?: React.ReactNode }) {
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+    const router = useRouter();
+>>>>>>> 386cb3c80eb65ba2688888847ec8283bbd68e1db
 
-interface LoanDetails {
-  loanId: string;
-  name: string;
-  interestRate: number;
-  dateDisbursed: string;
-  principal: number;
-  startDate: string;
-  endDate: string;
-  monthlyDue: number;
-  totalPayable: number;
-  termsInMonths: string;
-  numberOfPeriods: number;
-  status: string;
-  balance: number;
-  paidAmount: number;
-  creditScore: number;
-  paymentHistory: Payment[];
-  paymentProgress: number;
-}
+    const {showModal, countdown, stayLoggedIn, logout} = useInactivityLogout();
 
-interface Payment {
-  loanId: string;
-  referenceNumber: string;
-  borrowersId: string;
-  collector: string;
-  amount: number;
-  datePaid: string;
-}
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const mustChange = localStorage.getItem('forcePasswordChange');
 
-export default function BorrowerDashboard() {
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-  const [allLoans, setAllLoans] = useState<LoanDetails[]>([]);
-  const [currentLoanIndex, setCurrentLoanIndex] = useState(0);
-  const [loanInfo, setLoanInfo] = useState<LoanDetails | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [showReceipt, setShowReceipt] = useState(false);
-  const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
+        if (!token) {
+            router.push('/');
+            return;
+        }
 
-  const router = useRouter();
+        if (mustChange === 'true') {
+            setShowChangePasswordModal(true);
+        }
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
+        setIsCheckingAuth(false);
+    }, [router]);
 
-    if (!token) {
-      router.push('/');
-      return;
+    if (isCheckingAuth){
+        return <div className="min-h-screen bg-white"></div>;
     }
 
+<<<<<<< HEAD
     try {
       const decoded: any = jwtDecode(token);
       const now = Date.now() / 1000;
@@ -483,110 +462,25 @@ export default function BorrowerDashboard() {
               </div>
             </div>
           </div>
+=======
+    return (
+        <div className="min-h-screen bg-white">
+            <BorrowerNavbar />
+            
+            {showChangePasswordModal && (
+                <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+            )}
+
+            {children}
+
+            {showModal && (
+                <AreYouStillThereModal
+                    countdown={countdown}
+                    onStay={stayLoggedIn}
+                    onLogout={logout}
+                />
+            )}
+>>>>>>> 386cb3c80eb65ba2688888847ec8283bbd68e1db
         </div>
-
-        {/* Payment Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-6 sm:mt-10">
-          <div className="px-4 py-3 sm:px-6 sm:py-4 bg-gray-50 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">{translations[language].paymentHistory}</h3>
-          </div>
-          <Suspense fallback={<div className="p-4 text-center">{translations[language].loading}</div>}>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 text-xs sm:text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].referenceNumber}</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].date}</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].periodAmount}</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600">{translations[language].paidAmount}</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">{translations[language].mode}</th>
-                    <th className="px-3 sm:px-6 py-2 sm:py-3 text-left font-medium text-gray-600 hidden sm:table-cell">{translations[language].eReceipt}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {payments && payments.length > 0 ? (
-                    Object.values(
-                    payments
-                      .filter(payment => payment.loanId === loanId)
-                      .reduce((acc, payment) => {
-                        if (!acc[payment.referenceNumber]) {
-                          acc[payment.referenceNumber] = { ...payment };
-                        } else {
-                          acc[payment.referenceNumber].amount += payment.amount;
-                        }
-                        return acc;
-                      }, {} as Record<string, Payment>)
-                    ).map((payment, idx) => (
-                      <tr key={idx} className="hover:bg-gray-50">
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{payment.referenceNumber}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-700">{formatDate(payment.datePaid)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-600">{formatCurrency(monthlyDue)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium">{formatCurrency(payment.amount)}</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 hidden sm:table-cell">-</td>
-                        <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
-                          <button
-                            onClick={() => {
-                              setSelectedReceipt(payment);
-                              setShowReceipt(true);
-                            }}
-                            className="text-blue-600 underline hover:text-blue-800"
-                          >
-                            {translations[language].download}
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                        {translations[language].noPaymentHistory}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-              
-              {/* Mobile-specific info cards for hidden columns */}
-              <div className="sm:hidden">
-                {payments && payments.length > 0 && payments
-                  .filter(payment => payment.loanId === loanId)
-                  .map((payment, idx) => (
-                    <div key={`mobile-${idx}`} className="px-4 py-3 border-t border-gray-200 bg-gray-50">
-                      <div className="text-xs text-gray-600 space-y-1">
-                        <p><span className="font-medium">{translations[language].balance}:</span> {formatCurrency(loanInfo.balance)}</p>
-                        <p><span className="font-medium">{translations[language].mode}:</span> -</p>
-                        <button
-                          onClick={() => {
-                            setSelectedReceipt(payment);
-                            setShowReceipt(true);
-                          }}
-                          className="text-blue-600 underline hover:text-blue-800"
-                        >
-                          {translations[language].downloadEReceipt}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </Suspense>
-        </div>
-
-        {showReceipt && selectedReceipt && (
-          <ReceiptModal
-            isOpen={showReceipt}
-            onClose={() => setShowReceipt(false)}
-            payment={selectedReceipt}
-          />
-        )}
-
-      </main>
-
-      {showChangePasswordModal && (
-        <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
-      )}
-      
-    </div>
-  );
+    );
 }
-
