@@ -9,6 +9,7 @@ import WithoutCollateralForm from "../forms/withoutCollateral";
 import OpenTermForm from "../forms/openTerm";
 import axios from "axios";
 import Common from "../forms/common";
+import Borrower from "../../page";
 
 
 export default function ApplicationPage() {
@@ -128,33 +129,8 @@ const handleGoBack = () => {
   };
 
 return (
-
+<Borrower>
 <div className="min-h-screen bg-gray-50 text-black">
-  {/* Simple Back Button */}
-  <div className="bg-white border-b border-gray-200 px-6 py-3">
-    <button
-      onClick={handleGoBack}
-      className="flex items-center bg-blue-600 text-white hover:bg-blue-700 transition-colors px-4 py-2 rounded-md"
-    >
-      <svg 
-        className="w-5 h-5 mr-2 text-red-600" 
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          strokeWidth={2} 
-          d="M10 19l-7-7m0 0l7-7m-7 7h18" 
-        />
-      </svg>
-      <span className="font-medium">
-        {language === 'en' ? 'Back to Dashboard' : 'Balik sa Dashboard'}
-      </span>
-    </button>
-  </div>
-  
   <div className="flex min-h-screen">
        
 {/* Left Sidebar */}
@@ -313,5 +289,6 @@ return (
         </div>
       )}
     </div>
+    </Borrower>
   );
 }
