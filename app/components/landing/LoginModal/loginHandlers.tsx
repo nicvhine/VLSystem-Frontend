@@ -28,7 +28,7 @@ export async function loginHandler({ username, password, onClose, router }: Logi
         ? localStorage.setItem('forcePasswordChange', 'true')
         : localStorage.removeItem('forcePasswordChange');
       onClose();
-      router.push('/components/borrower');
+      router.push('/components/borrower/dashboard');
       return;
     }
 

@@ -10,7 +10,7 @@ import MobileMenu from './mobileMenu';
 import ProfileDropdown from './dropdown';
 import { FiBell } from 'react-icons/fi';
 
-export default function HeadNavbar() {
+export default function BorrowerNavbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -175,7 +175,7 @@ const {
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link
-            href="/components/head/dashboard"
+            href="/components/borrower/dashboard"
             className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
           >
             <span>VLSystem</span>
@@ -293,10 +293,10 @@ const {
             </div>
           </div>
         </div>
-
+{/* 
         {isMobileMenuOpen && (
             <MobileMenu navItems={navItems} language={language} setLanguage={setLanguage} />
-        )}
+        )} */}
 
       </div>
     </div>

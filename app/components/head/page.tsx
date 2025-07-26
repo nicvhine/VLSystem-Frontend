@@ -6,7 +6,6 @@ import ChangePasswordModal from "../changePasswordInternal/forceChange";
 import HeadNavbar from "./headNavbar/page";
 import useInactivityLogout from '../inactivity/logic';
 import AreYouStillThereModal from '../inactivity/modal';
-import Dashboard from "./dashboard/page";
 
 export default function Head({ children }: { children?: React.ReactNode }) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);

@@ -52,13 +52,13 @@ export default function LoanStatsDashboard() {
     icon: any;
     isAmount?: boolean;
   }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
       <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${color.replace('text-', 'bg-').replace('-600', '-50')} dark:${color.replace('text-', 'bg-').replace('-600', '-900')}`}>
+        <div className={`p-3 rounded-xl ${color.replace('text-', 'bg-').replace('-600', '-50')} `}>
           <Icon className={`w-6 h-6 ${color}`} />
         </div>
       </div>
-      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{label}</h4>
+      <h4 className="text-sm font-medium text-gray-500 mb-2">{label}</h4>
       <p className={`text-2xl font-bold ${color}`}>
         {isAmount ? `₱${value.toLocaleString()}` : value.toLocaleString()}
       </p>
@@ -70,10 +70,10 @@ export default function LoanStatsDashboard() {
       {/* Financial Overview */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-red-50 dark:bg-red-900 rounded-lg">
+          <div className="p-2 bg-red-50 rounded-lg">
             <FiDollarSign className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Financial Overview</h2>
+          <h2 className="text-xl font-semibold text-gray-800 ">Financial Overview</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard 
@@ -96,10 +96,10 @@ export default function LoanStatsDashboard() {
       {/* Collection Status */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-red-50 dark:bg-red-900 rounded-lg">
+          <div className="p-2 bg-red-50 rounded-lg">
             <FiCheckCircle className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Collection Status</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Collection Status</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard 
@@ -129,10 +129,10 @@ export default function LoanStatsDashboard() {
       {/* Application Status */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-red-50 dark:bg-red-900 rounded-lg">
+          <div className="p-2 bg-red-50 rounded-lg">
             <FiUsers className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Application Status</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Application Status</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard 
@@ -159,10 +159,10 @@ export default function LoanStatsDashboard() {
       {/* Loan Types */}
       <section>
         <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-red-50 dark:bg-red-900 rounded-lg">
+          <div className="p-2 bg-red-50 rounded-lg">
             <FiPieChart className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Loan Types</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Loan Types</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard 
