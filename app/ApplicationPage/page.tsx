@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/landing/landingNavbar";
 import WithCollateralLoanForm from "./forms/withCollateral";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
@@ -12,7 +12,39 @@ import Common from "./forms/common";
 
 
 export default function ApplicationPage() {
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  // Initialize language from reloan info if it exists, otherwise default to 'en'
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== 'undefined') {
+      const reloanInfo = localStorage.getItem('reloanInfo');
+      if (reloanInfo) {
+        try {
+          const parsed = JSON.parse(reloanInfo);
+          return parsed.language || 'en';
+        } catch (e) {
+          return 'en';
+        }
+      }
+    }
+    return 'en';
+  });
+  
+  // Update language in local storage when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const reloanInfo = localStorage.getItem('reloanInfo');
+      if (reloanInfo) {
+        try {
+          const parsed = JSON.parse(reloanInfo);
+          localStorage.setItem('reloanInfo', JSON.stringify({
+            ...parsed,
+            language: language
+          }));
+        } catch (e) {
+          console.error('Error updating reloan info with language:', e);
+        }
+      }
+    }
+  }, [language]);
   const [address, setAddress] = useState('');
   const [loanType, setLoanType] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -221,7 +253,10 @@ return (
               )}
 
                 {loanType === (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)') && (
-                <WithoutCollateralLoanForm language={language} />
+                <WithoutCollateralLoanForm 
+                  language={language} 
+                  onLanguageChange={setLanguage}
+                />
                 )}
 
                   {loanType === (language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam') && (

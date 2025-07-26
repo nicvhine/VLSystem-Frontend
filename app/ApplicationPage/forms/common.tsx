@@ -272,14 +272,14 @@ function MapComponent({
 <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
   <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
     <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-    {language === 'en' ? 'Source of Income' : 'Mga Source ng Kita'}
+    {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
   </h4>
 
   {/* Radio Buttons */}
   <div className="flex gap-6 mb-4">
     {[
-      { value: 'business', label: 'Business Owner' },
-      { value: 'employed', label: 'Employed' },
+      { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
+      { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
     ].map(({ value, label }) => (
       <label key={value} className="flex items-center">
         <input
@@ -299,7 +299,7 @@ function MapComponent({
   {sourceOfIncome === 'business' ? (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Business:' : 'Uri ng Trabaho:'}</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Business:' : 'Matang sa Negosyo:'}</label>
         <input
           type="text"
           value={appTypeBusiness}
@@ -317,7 +317,7 @@ function MapComponent({
         />
       </div>
         <div>
-        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Business Location:' : 'Lokasyon ng Trabaho:'}</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Business Location:' : 'Lokasyon sa Negosyo:'}</label>
         <input
           type="text"
           value={appBusinessLoc}
@@ -350,7 +350,7 @@ function MapComponent({
         />
       </div>
       <div>
-        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Employment Status:' : 'Status ng Trabaho:'}</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Employment Status:' : 'Kahimtang sa Trabaho:'}</label>
         <select
           value={appEmploymentStatus}
           onChange={(e) => setAppEmploymentStatus(e.target.value)}
@@ -358,11 +358,11 @@ function MapComponent({
         >
         <option value="">{language === 'en' ? 'Select Employment status' : 'Pili ang status ng trabaho'}</option>
         <option value="regular">{language === 'en' ? 'Regular' : 'Regular'}</option>
-        <option value="irregular">{language === 'en' ? 'Irregular' : 'Iregular'}</option>
+        <option value="irregular">{language === 'en' ? 'Irregular' : 'Dili Regular'}</option>
         </select>
       </div>
       <div>
-        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Company Name:' : 'Ngalan ng Trabaho:'}</label>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Company Name:' : 'Ngalan sa Kompanya:'}</label>
         <input
           type="text"
           value={appCompanyName}
@@ -389,14 +389,14 @@ function MapComponent({
 <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
   <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
     <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-    {language === 'en' ? 'Character References' : 'Mga Sanggunian'}
+    {language === 'en' ? 'Character References' : 'Mga Tigi-uyonanan'}
   </h4>
 
   {[1, 2, 3].map((i) => (
     <div key={i} className="grid grid-cols-3 gap-4 mb-4">
       <div>
         <label className="block font-medium mb-2 text-gray-700">
-          {language === 'en' ? `Reference ${i} Name:` : `Pangalan ng Sanggunian ${i}:`}
+          {language === 'en' ? `Reference ${i} Name:` : `Pangalan sa Tig-uyon ${i}:`}
         </label>
         <input
           type="text"

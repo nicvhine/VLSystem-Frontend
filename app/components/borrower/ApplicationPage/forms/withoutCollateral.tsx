@@ -21,9 +21,10 @@ const loanOptions: LoanOption[] = [
 interface WithoutCollateralFormProps {
   language: 'en' | 'ceb';
   reloanData?: any;
+  onLanguageChange?: (lang: 'en' | 'ceb') => void;
 }
 
-export default function WithoutCollateralForm({ language, reloanData }: WithoutCollateralFormProps) {
+export default function WithoutCollateralForm({ language, reloanData, onLanguageChange }: WithoutCollateralFormProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
@@ -198,6 +199,28 @@ const handleSubmit = async () => {
 
   return (
     <>
+      {/* Language Toggle - Only show in reloan modal */}
+      {reloanData && (
+        <div className="flex justify-end mb-4">
+          <label className="flex items-center cursor-pointer select-none text-xs">
+            <span className="mr-2 font-medium text-gray-600">{language === 'en' ? 'English' : 'Cebuano'}</span>
+            <input
+              type="checkbox"
+              checked={language === 'ceb'}
+              onChange={() => onLanguageChange ? onLanguageChange(language === 'en' ? 'ceb' : 'en') : null}
+              className="sr-only"
+            />
+            <span className="w-10 h-5 flex items-center bg-gray-200 rounded-full p-1 duration-300 ease-in-out">
+              <span
+                className={
+                  `bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${language === 'ceb' ? 'translate-x-5' : ''}`
+                }
+              />
+            </span>
+          </label>
+        </div>
+      )}
+
       <Common
         appName={appName}
         setAppName={setAppName}

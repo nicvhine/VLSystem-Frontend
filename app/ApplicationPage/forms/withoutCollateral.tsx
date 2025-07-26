@@ -20,9 +20,10 @@ const loanOptions: LoanOption[] = [
 
 interface WithoutCollateralFormProps {
   language: 'en' | 'ceb';
+  onLanguageChange?: (lang: 'en' | 'ceb') => void;
 }
 
-export default function WithoutCollateralForm({ language }: WithoutCollateralFormProps) {
+export default function WithoutCollateralForm({ language, onLanguageChange }: WithoutCollateralFormProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
@@ -44,7 +45,7 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
   const [appReferences, setAppReferences] = useState([
-   { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" }
   ]); 
@@ -105,6 +106,31 @@ export default function WithoutCollateralForm({ language }: WithoutCollateralFor
 
   return (
     <>
+      {onLanguageChange && (
+        <div className="flex justify-end mb-4">
+          <label className="flex items-center cursor-pointer border border-gray-200 rounded-lg p-2">
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={language === 'ceb'}
+              onChange={() => {
+                const newLang = language === 'en' ? 'ceb' : 'en';
+                onLanguageChange(newLang);
+              }}
+            />
+            <div className="relative w-10 h-5 bg-gray-300 rounded-full transition">
+              <div
+                className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition ${
+                  language === 'ceb' ? 'translate-x-5' : ''
+                }`}
+              ></div>
+            </div>
+            <span className="text-xs text-gray-600 ml-2">
+              {language === 'en' ? 'EN' : 'CEB'}
+            </span>
+          </label>
+        </div>
+      )}
       <Common
         appName={appName}
         setAppName={setAppName}
