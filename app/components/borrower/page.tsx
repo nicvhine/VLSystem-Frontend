@@ -7,95 +7,10 @@ import ChangePasswordModal from "./components/forceChange";
 import AreYouStillThereModal from "../inactivity/modal";
 import BorrowerNavbar from "./borrowerNavbar/page";
 
-<<<<<<< HEAD
-// Translation mappings
-const translations = {
-  en: {
-    welcome: 'Welcome',
-    creditScore: 'Your Credit Score',
-    creditScoreDesc: 'Based on your repayment history',
-    goodStanding: 'Good Standing',
-    fairStanding: 'Fair Standing',
-    poorStanding: 'Poor Standing',
-    loanDetails: 'Loan Details',
-    loanId: 'Loan ID',
-    releaseDate: 'Release Date',
-    principalAmount: 'Principal Amount',
-    loanPeriod: 'Loan Period',
-    months: 'Months',
-    interestRate: 'Interest Rate',
-    totalPayable: 'Total Payable',
-    totalPayments: 'Total Payments',
-    remainingBalance: 'Remaining Balance',
-    paymentProgress: 'Payment Progress',
-    paid: 'Paid',
-    payNow: 'Pay Now',
-    reloan: 'Re-Loan',
-    notEligibleReloan: 'You are not yet eligible for Reloan.',
-    paymentHistory: 'Payment History',
-    referenceNumber: 'Reference #',
-    date: 'Date',
-    periodAmount: 'Period Amount',
-    paidAmount: 'Paid Amount',
-    mode: 'Mode',
-    eReceipt: 'E-Receipt',
-    download: 'Download',
-    noPaymentHistory: 'No payment history available',
-    balance: 'Balance',
-    downloadEReceipt: 'Download E-Receipt',
-    loading: 'Loading...',
-    of: 'of',
-    noActiveLoanFound: 'No active loan found',
-    english: 'English',
-    cebuano: 'Cebuano'
-  },
-  ceb: {
-    welcome: 'Maayong Pag-abot',
-    creditScore: 'Imong Credit Score',
-    creditScoreDesc: 'Base sa imong payment history',
-    goodStanding: 'Maayong Kahimtang',
-    fairStanding: 'Kasarangan nga Kahimtang',
-    poorStanding: 'Dili Maayong Kahimtang',
-    loanDetails: 'Detalye sa Utang',
-    loanId: 'ID sa Utang',
-    releaseDate: 'Petsa sa Paghatag',
-    principalAmount: 'Kantidad sa Principal',
-    loanPeriod: 'Panahon sa Utang',
-    months: 'mga Buwan',
-    interestRate: 'Interest Rate',
-    totalPayable: 'Kinatibuk-ang Bayrunon',
-    totalPayments: 'Kinatibuk-ang Bayad',
-    remainingBalance: 'Nahabilin nga Balanse',
-    paymentProgress: 'Progreso sa Pagbayad',
-    paid: 'Nabayad',
-    payNow: 'Bayad Karon',
-    reloan: 'Bag-ong Utang',
-    notEligibleReloan: 'Dili ka pa eligible para sa bag-ong utang.',
-    paymentHistory: 'Kasaysayan sa Pagbayad',
-    referenceNumber: 'Reference #',
-    date: 'Petsa',
-    periodAmount: 'Kantidad sa Panahon',
-    paidAmount: 'Kantidad nga Nabayad',
-    mode: 'Paagi',
-    eReceipt: 'E-Receipt',
-    download: 'I-download',
-    noPaymentHistory: 'Walay kasaysayan sa pagbayad',
-    noActiveLoanFound: 'Wala pay utang nga nakit-an',
-    balance: 'Balanse',
-    downloadEReceipt: 'I-download ang E-Receipt',
-    loading: 'Nag-load...',
-    of: 'sa',
-    noActiveLoanFound: 'Wala pay utang nga nakit-an',
-    english: 'English',
-    cebuano: 'Cebuano'
-  }
-};
-=======
 export default function Borrower({ children }: {children?: React.ReactNode }) {
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const router = useRouter();
->>>>>>> 386cb3c80eb65ba2688888847ec8283bbd68e1db
 
     const {showModal, countdown, stayLoggedIn, logout} = useInactivityLogout();
 
@@ -119,30 +34,22 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
         return <div className="min-h-screen bg-white"></div>;
     }
 
-<<<<<<< HEAD
-    try {
-      const decoded: any = jwtDecode(token);
-      const now = Date.now() / 1000;
+    useEffect(() => {
+      const fetchPayments = async () => {
+        try {
+          const response = await fetch(`http://localhost:3001/payments`);
+          const data = await response.json();
+          setPayments(Array.isArray(data) ? data : []);
+        } catch (error) {
+          console.error("Failed to fetch payments:", error);
+          setPayments([]);
+        }
+      };
 
-      if (decoded.exp && decoded.exp < now) {
-        localStorage.clear();
-        router.push('/');
-        return;
-      }
+      fetchPayments();
+    }, []);
 
-      const mustChange = localStorage.getItem('forcePasswordChange');
-      if (mustChange === 'true') {
-        setShowChangePasswordModal(true);
-      }
-
-      const borrowersId = localStorage.getItem('borrowersId');
-      if (!borrowersId) {
-        router.push('/');
-        return;
-      }
-
-      fetch(`http://localhost:3001/loans/borrower-loans/${borrowersId}`, {
-        headers: {
+    const handleLogout = () => {
           Authorization: `Bearer ${token}`,
         },
       })
