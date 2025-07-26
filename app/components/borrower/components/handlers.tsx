@@ -109,7 +109,11 @@ export function useBorrowerDashboard() {
     if (currentLoanIndex > 0) {
       const newIndex = currentLoanIndex - 1;
       setCurrentLoanIndex(newIndex);
-      setLoanInfo(allLoans[newIndex]);
+      const nextLoan = allLoans[newIndex];
+      if (!nextLoan.name) {
+        nextLoan.name = loanInfo?.name || '';
+      }
+      setLoanInfo({ ...nextLoan });
     }
   };
 
@@ -117,7 +121,11 @@ export function useBorrowerDashboard() {
     if (currentLoanIndex < allLoans.length - 1) {
       const newIndex = currentLoanIndex + 1;
       setCurrentLoanIndex(newIndex);
-      setLoanInfo(allLoans[newIndex]);
+      const nextLoan = allLoans[newIndex];
+      if (!nextLoan.name) {
+        nextLoan.name = loanInfo?.name || '';
+      }
+      setLoanInfo({ ...nextLoan });
     }
   };
 
