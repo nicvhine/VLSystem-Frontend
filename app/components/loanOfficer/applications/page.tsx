@@ -97,41 +97,18 @@ export default function ApplicationsPage() {
       body: JSON.stringify({ status }),
     });
 
-    if (!response.ok) {
-      throw new Error("Failed to update application status.");
+    if (response.ok) {
+      const updated = await response.json();
+      setApplications((prev) =>
+        prev.map((app) =>
+          app.applicationId === updated.applicationId ? updated : app
+        )
+      );
     }
-
-    const updatedApplication = await response.json();
-
-    if (updatedApplication.loanType?.toLowerCase().includes('reloan')) {
-      const borrowersId = updatedApplication.borrowersId;
-
-      const loanResponse = await fetch(`http://localhost:3001/loans/generate-reloan/${borrowersId}`, {
-        method: 'POST',
-      });
-
-      if (!loanResponse.ok) {
-        throw new Error("Failed to generate loan for reloan application.");
-      }
-    } else {
-      const loanResponse = await fetch(`http://localhost:3001/loans/generate-loan/${id}`, {
-        method: 'POST',
-      });
-
-      if (!loanResponse.ok) {
-        throw new Error("Failed to generate loan.");
-      }
-    }
-
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
-
   } catch (error) {
-    console.error('Error in handleAction:', error);
+    console.error('Failed to update application:', error);
   }
-};
-
+}
 
   return (
     <LoanOfficer>
