@@ -42,7 +42,7 @@ export default function LoanDetails({
 
   const {
     loanId, interestRate, dateDisbursed, principal,
-    termsInMonths, totalPayable, paidAmount, balance
+    termsInMonths, totalPayable, paidAmount, balance, status
   } = loanInfo;
 
   const formatCurrency = (amount: number) =>
@@ -75,6 +75,11 @@ export default function LoanDetails({
           <p><span className="font-medium">{translations[language].totalPayable}:</span> {formatCurrency(totalPayable)}</p>
           <p><span className="font-medium">{translations[language].totalPayments}:</span> {formatCurrency(paidAmount)}</p>
           <p><span className="font-medium">{translations[language].remainingBalance}:</span> {formatCurrency(balance)}</p>
+          <p><span className="font-medium">{translations[language].loanStatus || 'Loan Status'}:</span> 
+            <span className={`font-semibold ${status === 'Closed' ? 'text-blue-600' : (status === 'In Progress' || status === 'Active') ? 'text-green-600' : status === 'Overdue' ? 'text-red-600' : 'text-gray-600'}`}>
+              {status === 'Closed' ? (translations[language].completed || 'Closed') : status === 'In Progress' ? (translations[language].inProgress || 'In Progress') : status}
+            </span>
+          </p>
         </div>
         
         {/* Loan Navigation */}

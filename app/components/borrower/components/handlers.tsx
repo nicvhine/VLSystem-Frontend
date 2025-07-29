@@ -71,6 +71,7 @@ export function useBorrowerDashboard() {
           return res.json();
         })
         .then(data => {
+          console.log('Fetched All Loans Data:', data); // Debugging line
           setAllLoans(data);
           if (data.length > 0) setLoanInfo(data[0]);
         })
@@ -84,6 +85,12 @@ export function useBorrowerDashboard() {
       router.push('/');
     }
   }, [router]);
+
+  useEffect(() => {
+    if (allLoans.length > 0) {
+      setLoanInfo(allLoans[currentLoanIndex]);
+    }
+  }, [currentLoanIndex, allLoans]);
 
   useEffect(() => {
     const fetchPayments = async () => {
@@ -107,25 +114,13 @@ export function useBorrowerDashboard() {
 
   const handlePreviousLoan = () => {
     if (currentLoanIndex > 0) {
-      const newIndex = currentLoanIndex - 1;
-      setCurrentLoanIndex(newIndex);
-      const nextLoan = allLoans[newIndex];
-      if (!nextLoan.name) {
-        nextLoan.name = loanInfo?.name || '';
-      }
-      setLoanInfo({ ...nextLoan });
+      setCurrentLoanIndex(currentLoanIndex - 1);
     }
   };
 
   const handleNextLoan = () => {
     if (currentLoanIndex < allLoans.length - 1) {
-      const newIndex = currentLoanIndex + 1;
-      setCurrentLoanIndex(newIndex);
-      const nextLoan = allLoans[newIndex];
-      if (!nextLoan.name) {
-        nextLoan.name = loanInfo?.name || '';
-      }
-      setLoanInfo({ ...nextLoan });
+      setCurrentLoanIndex(currentLoanIndex + 1);
     }
   };
 
