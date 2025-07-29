@@ -39,13 +39,15 @@ const translations = {
       cebuano: 'Cebuano'
     },
     ceb: {
+    loanHistory: 'Kasaysayan sa Utang',
+    loanDetails: 'Mga Detalye sa Utang',
       welcome: 'Maayong Pag-abot',
       creditScore: 'Imong Credit Score',
       creditScoreDesc: 'Base sa imong payment history',
       goodStanding: 'Maayong Kahimtang',
       fairStanding: 'Kasarangan nga Kahimtang',
       poorStanding: 'Dili Maayong Kahimtang',
-      loanDetails: 'Detalye sa Utang',
+      
       loanId: 'ID sa Utang',
       releaseDate: 'Petsa sa Paghatag',
       principalAmount: 'Kantidad sa Principal',
@@ -80,4 +82,3 @@ const translations = {
   };
   
   export default translations;
-  
