@@ -38,7 +38,7 @@ export default function BorrowerLoanHistoryPage() {
   return (
     <Borrower>
       <div className="min-h-screen bg-gray-50 relative">
-        <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center justify-between">
             {translations[language].loanHistory || 'Loan History'}
             <button
