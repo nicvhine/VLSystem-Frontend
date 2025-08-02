@@ -4,10 +4,6 @@ interface Props {
   translations: any;
   language: 'en' | 'ceb';
   loanInfo: LoanDetails;
-  allLoans: LoanDetails[];
-  currentLoanIndex: number;
-  handlePreviousLoan: () => void;
-  handleNextLoan: () => void;
 }
 
 interface LoanDetails {
@@ -30,19 +26,20 @@ interface LoanDetails {
   paymentProgress: number;
 }
 
+import { useRouter } from 'next/navigation';
+
+interface LoanDetailsProps extends Props {}
+
 export default function LoanDetails({
   translations,
   language,
-  loanInfo,
-  allLoans,
-  currentLoanIndex,
-  handlePreviousLoan,
-  handleNextLoan
-}: Props) {
+  loanInfo
+}: LoanDetailsProps) {
+  const router = useRouter();
 
   const {
     loanId, interestRate, dateDisbursed, principal,
-    termsInMonths, totalPayable, paidAmount, balance
+    termsInMonths, totalPayable, paidAmount, balance, status
   } = loanInfo;
 
   const formatCurrency = (amount: number) =>
@@ -62,8 +59,14 @@ export default function LoanDetails({
 
   return (
     <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 text-gray-800 hover:shadow-xl transition-all duration-300">
-      <div className="mb-4 sm:mb-6">
+      <div className="mb-4 sm:mb-6 flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">{translations[language].loanDetails}</h2>
+        <button
+          className="ml-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-xs sm:text-sm font-medium"
+          onClick={() => router.push('/components/borrower/loan-history')}
+        >
+          {translations[language].loanHistory || 'Loan History'}
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-4 text-xs sm:text-sm">
@@ -75,29 +78,17 @@ export default function LoanDetails({
           <p><span className="font-medium">{translations[language].totalPayable}:</span> {formatCurrency(totalPayable)}</p>
           <p><span className="font-medium">{translations[language].totalPayments}:</span> {formatCurrency(paidAmount)}</p>
           <p><span className="font-medium">{translations[language].remainingBalance}:</span> {formatCurrency(balance)}</p>
+          <p><span className="font-medium">{translations[language].loanStatus || 'Loan Status'}:</span> 
+            <span className={`font-semibold ${status === 'Closed' ? 'text-blue-600' : (status === 'In Progress' || status === 'Active') ? 'text-green-600' : status === 'Overdue' ? 'text-red-600' : 'text-gray-600'}`}>
+              {status === 'Closed' ? (translations[language].completed || 'Closed') : status === 'In Progress' ? (translations[language].inProgress || 'In Progress') : status}
+            </span>
+          </p>
         </div>
         
-        {/* Loan Navigation */}
+        {/* Loan ID Display */}
         <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-gray-100">
           <span className="text-gray-600 text-sm">{translations[language].loanId}:</span>
-          <button
-            onClick={handlePreviousLoan}
-            disabled={currentLoanIndex === 0}
-            className={`w-8 h-8 flex items-center justify-center rounded border transition-all ${currentLoanIndex === 0 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}
-          >
-            ←
-          </button>
-          <span className="font-semibold text-red-500 min-w-[80px] text-center">{loanId}</span>
-          <button
-            onClick={handleNextLoan}
-            disabled={currentLoanIndex === allLoans.length - 1}
-            className={`w-8 h-8 flex items-center justify-center rounded border transition-all ${currentLoanIndex === allLoans.length - 1 ? 'text-gray-300 border-gray-200 cursor-not-allowed' : 'text-blue-600 border-blue-300 hover:bg-blue-600 hover:text-white hover:border-blue-600'}`}
-          >
-            →
-          </button>
-          {allLoans.length > 1 && (
-            <span className="text-xs text-gray-500">({currentLoanIndex + 1} {translations[language].of} {allLoans.length})</span>
-          )}
+          <span className="font-semibold text-red-500">{loanId}</span>
         </div>
       </div>
     </div>

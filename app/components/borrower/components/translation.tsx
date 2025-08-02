@@ -22,6 +22,7 @@ const translations = {
       reloan: 'Re-Loan',
       notEligibleReloan: 'You are not yet eligible for Reloan.',
       paymentHistory: 'Payment History',
+      loanHistory: 'Loan History',
       referenceNumber: 'Reference #',
       date: 'Date',
       periodAmount: 'Period Amount',
@@ -39,13 +40,15 @@ const translations = {
       cebuano: 'Cebuano'
     },
     ceb: {
+    loanHistory: 'Kasaysayan sa Utang',
+    loanDetails: 'Mga Detalye sa Utang',
       welcome: 'Maayong Pag-abot',
       creditScore: 'Imong Credit Score',
       creditScoreDesc: 'Base sa imong payment history',
       goodStanding: 'Maayong Kahimtang',
       fairStanding: 'Kasarangan nga Kahimtang',
       poorStanding: 'Dili Maayong Kahimtang',
-      loanDetails: 'Detalye sa Utang',
+      
       loanId: 'ID sa Utang',
       releaseDate: 'Petsa sa Paghatag',
       principalAmount: 'Kantidad sa Principal',
@@ -61,6 +64,7 @@ const translations = {
       reloan: 'Bag-ong Utang',
       notEligibleReloan: 'Dili ka pa eligible para sa bag-ong utang.',
       paymentHistory: 'Kasaysayan sa Pagbayad',
+      loanHistory: 'Kasaysayan sa Utang',
       referenceNumber: 'Reference #',
       date: 'Petsa',
       periodAmount: 'Kantidad sa Panahon',
@@ -80,4 +84,3 @@ const translations = {
   };
   
   export default translations;
-  

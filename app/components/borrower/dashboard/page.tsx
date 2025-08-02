@@ -7,8 +7,10 @@ import translations from '../components/translation';
 import Borrower from '../page';
 import CreditScore from '../components/creditScore';
 import LoanDetails from '../components/loanDetails';
+
 import PaymentTable from '../components/paymentTable';
 import { useBorrowerDashboard } from '../components/handlers';
+
 
 export default function BorrowerDashboard() {
   const router = useRouter();
@@ -36,6 +38,7 @@ export default function BorrowerDashboard() {
   } = useBorrowerDashboard();
 
   const paymentProgress = calculatePaymentProgress();
+
 
   if (loading)
     return <div className="p-6 text-center">{translations[language].loading}</div>;
@@ -86,10 +89,6 @@ export default function BorrowerDashboard() {
               translations={translations}
               language={language}
               loanInfo={loanInfo}
-              allLoans={allLoans}
-              currentLoanIndex={currentLoanIndex}
-              handlePreviousLoan={handlePreviousLoan}
-              handleNextLoan={handleNextLoan}
             />
 
             <PaymentProgress
@@ -109,6 +108,8 @@ export default function BorrowerDashboard() {
             translations={translations}
             language={language}
           />
+
+
 
           {showReceipt && selectedReceipt && (
             <ReceiptModal
