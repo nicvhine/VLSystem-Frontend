@@ -27,7 +27,7 @@ interface WithoutCollateralFormProps {
 export default function WithoutCollateralForm({ language, reloanData, onLanguageChange }: WithoutCollateralFormProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
-
+  const [appReloanType, setAppReloanType] = useState("");
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
   const [appContact, setAppContact] = useState("");
@@ -138,6 +138,8 @@ const handleSubmit = async () => {
 
     // Include it in the payload (if backend wants it in body)
     payload.borrowersId = borrowersId;
+    payload.appReloanType = appReloanType;
+
   } else {
     // New application (not reloan) — include all data
     Object.assign(payload, {
@@ -268,6 +270,43 @@ const handleSubmit = async () => {
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
+
+       <div className="mb-4">
+          <label className="block font-medium mb-2 text-gray-700">
+            {language === 'en' ? 'Reloan Type:' : 'Klase sa Reloan:'}
+          </label>
+          <select
+            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            onChange={(e) => setAppReloanType(e.target.value)}
+            value={appReloanType}
+          >
+            <option value="">{language === 'en' ? 'Select reloan type' : 'Pilia ang klase sa reloan'}</option>
+            <option value="add-to-principal">
+              {language === 'en' ? 'Add-to-Principal' : 'Idugang sa Prinsipal'}
+            </option>
+            <option value="net-proceeds">
+              {language === 'en' ? 'Net-Proceeds' : 'Iminus sa Madawat'}
+            </option>
+          </select>
+
+          {/* Definition below dropdown */}
+          {appReloanType === "add-to-principal" && (
+            <p className="text-sm text-gray-500 mt-1">
+              {language === 'en'
+                ? "Remaining balance will be added to your new loan principal."
+                : "Ang nabiling utang idugang sa bag-ong prinsipal."}
+            </p>
+          )}
+
+          {appReloanType === "net-proceeds" && (
+            <p className="text-sm text-gray-500 mt-1">
+              {language === 'en'
+                ? "Remaining balance will be deducted from the amount you receive."
+                : "Ang nabiling utang kuhaan sa kantidad nga imong madawat."}
+            </p>
+          )}
+        </div>
+
 
         <div className="grid grid-cols-2 gap-4">
           <div>
