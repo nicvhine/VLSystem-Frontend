@@ -22,6 +22,7 @@ interface LoanDetails {
   creditScore: number;
   paymentHistory: Payment[];
   paymentProgress: number;
+  releasedAmount: number;
 }
 
 interface Payment {

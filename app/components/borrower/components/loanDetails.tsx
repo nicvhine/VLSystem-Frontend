@@ -24,6 +24,7 @@ interface LoanDetails {
   creditScore: number;
   paymentHistory: any[];
   paymentProgress: number;
+  releasedAmount: number;
 }
 
 import { useRouter } from 'next/navigation';
@@ -39,7 +40,7 @@ export default function LoanDetails({
 
   const {
     loanId, interestRate, dateDisbursed, principal,
-    termsInMonths, totalPayable, paidAmount, balance, status
+    termsInMonths, totalPayable, paidAmount, balance, status, releasedAmount
   } = loanInfo;
 
   const formatCurrency = (amount: number) =>
@@ -73,6 +74,7 @@ export default function LoanDetails({
         <div className="space-y-2">
           <p><span className="font-medium">{translations[language].releaseDate}:</span> {formatDate(dateDisbursed)}</p>
           <p><span className="font-medium">{translations[language].principalAmount}:</span> {formatCurrency(principal)}</p>
+          <p><span className="font-medium">Released Amount:</span>{formatCurrency(releasedAmount)}</p>
           <p><span className="font-medium">{translations[language].loanPeriod}:</span> {termsInMonths} {translations[language].months}</p>
           <p><span className="font-medium">{translations[language].interestRate}:</span> {interestRate}%</p>
           <p><span className="font-medium">{translations[language].totalPayable}:</span> {formatCurrency(totalPayable)}</p>
