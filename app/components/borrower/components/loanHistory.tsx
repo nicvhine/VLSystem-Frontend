@@ -95,7 +95,7 @@ export default function LoanHistory({ loans, translations, language }: LoanHisto
         return 'text-blue-600 bg-blue-50 border-blue-200';
       case 'Overdue':
         return 'text-red-600 bg-red-50 border-red-200';
-      case 'In Progress':
+      case 'Active':
         return 'text-green-600 bg-green-50 border-green-200';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';

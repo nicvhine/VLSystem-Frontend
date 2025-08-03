@@ -23,6 +23,11 @@ export async function loginHandler({ username, password, onClose, router }: Logi
       localStorage.setItem('token', data.token || '');
       localStorage.setItem('fullName', data.fullName || data.name || data.username);
       localStorage.setItem('role', 'borrower');
+      
+      if (data.profilePic) {
+  const fullPicUrl = `http://localhost:3001${data.profilePic}`;
+  localStorage.setItem('profilePic', fullPicUrl);
+}
       if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
       data.isFirstLogin
         ? localStorage.setItem('forcePasswordChange', 'true')
