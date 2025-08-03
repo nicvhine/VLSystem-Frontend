@@ -53,6 +53,13 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
   // Translations for select options
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
+  const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
+
+
+   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUploadedFiles(e.target.files);
+  };
+
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan) {
       alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
@@ -225,6 +232,30 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
               readOnly
             />
           </div>
+        </div>
+      </div>
+
+       {/* Document Upload */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
+        </h4>
+        <div>
+          <label className="block font-medium mb-3 text-gray-700">{language === 'en' ? 'Upload Required Documents:' : 'Iupload ang mga Kinahanglanon nga Dokumento:'}</label>
+          <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
+            <input
+              type="file"
+              multiple
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
+                        file:rounded-lg file:border-0 file:text-sm file:font-medium
+                        file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+              title={language === 'en' ? 'Choose files' : 'Pilia ang mga file'}
+            />
+          </div>
+          <p className="text-xs text-gray-500 mt-2 text-center">{language === 'en' ? 'Accepted: PDF, JPG, PNG. You can upload multiple files.' : 'Dawaton: PDF, JPG, PNG. Pwede ka mag-upload og daghang files.'}</p>
         </div>
       </div>
 
