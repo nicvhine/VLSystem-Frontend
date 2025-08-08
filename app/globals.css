@@ -24,3 +24,34 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Fix map overlaying issue */
+.map-container {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.leaflet-container {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.leaflet-pane {
+  z-index: 1 !important;
+}
+
+.leaflet-control {
+  z-index: 2 !important;
+}
+
+/* Ensure proper stacking context for form elements */
+.bg-white {
+  position: relative;
+  z-index: 1;
+}
+
+/* Prevent map from overlaying when scrolling */
+.overflow-y-auto {
+  position: relative;
+  z-index: 1;
+}

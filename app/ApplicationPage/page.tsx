@@ -55,14 +55,6 @@ export default function ApplicationPage() {
   const handleSubmit = () => setShowSuccessModal(true);
   const closeModal = () => setShowSuccessModal(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setDocuments(e.target.files);
-    }
-  };
-
-
-
   const loanTypes = [
     language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)',
     language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)',
@@ -255,7 +247,6 @@ return (
                 {loanType === (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)') && (
                 <WithoutCollateralLoanForm 
                   language={language} 
-                  onLanguageChange={setLanguage}
                 />
                 )}
 
