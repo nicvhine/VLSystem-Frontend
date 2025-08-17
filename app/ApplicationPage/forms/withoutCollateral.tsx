@@ -54,10 +54,32 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
+  const [filePreviewUrls, setFilePreviewUrls] = useState<string[]>([]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setUploadedFiles(e.target.files);
+      
+      // Create preview URLs for uploaded files
+      const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file as Blob));
+      setFilePreviewUrls(urls);
+    }
+  };
 
-   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUploadedFiles(e.target.files);
+  const removeFile = (index: number) => {
+    if (uploadedFiles) {
+      const dt = new DataTransfer();
+      const files = Array.from(uploadedFiles);
+      files.splice(index, 1);
+      files.forEach(file => dt.items.add(file as File));
+      
+      const newFileList = dt.files;
+      setUploadedFiles(newFileList);
+      
+      // Update preview URLs
+      const newUrls = Array.from(newFileList).map(file => URL.createObjectURL(file as Blob));
+      setFilePreviewUrls(newUrls);
+    }
   };
 
   const handleSubmit = async () => {
@@ -113,31 +135,6 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
 
   return (
     <>
-      {onLanguageChange && (
-        <div className="flex justify-end mb-4">
-          <label className="flex items-center cursor-pointer border border-gray-200 rounded-lg p-2">
-            <input
-              type="checkbox"
-              className="sr-only"
-              checked={language === 'ceb'}
-              onChange={() => {
-                const newLang = language === 'en' ? 'ceb' : 'en';
-                onLanguageChange(newLang);
-              }}
-            />
-            <div className="relative w-10 h-5 bg-gray-300 rounded-full transition">
-              <div
-                className={`absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition ${
-                  language === 'ceb' ? 'translate-x-5' : ''
-                }`}
-              ></div>
-            </div>
-            <span className="text-xs text-gray-600 ml-2">
-              {language === 'en' ? 'EN' : 'CEB'}
-            </span>
-          </label>
-        </div>
-      )}
       <Common
         appName={appName}
         setAppName={setAppName}
@@ -257,6 +254,47 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
           </div>
           <p className="text-xs text-gray-500 mt-2 text-center">{language === 'en' ? 'Accepted: PDF, JPG, PNG. You can upload multiple files.' : 'Dawaton: PDF, JPG, PNG. Pwede ka mag-upload og daghang files.'}</p>
         </div>
+
+        {/* File Preview */}
+        {filePreviewUrls.length > 0 && (
+          <div className="mt-4">
+            <h5 className="font-medium mb-3 text-gray-700">{language === 'en' ? 'Uploaded Files:' : 'Mga File nga Na-upload:'}</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filePreviewUrls.map((url, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-3 relative">
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    title={language === 'en' ? 'Remove file' : 'Tangtangon ang file'}
+                  >
+                    ×
+                  </button>
+                  {url.toLowerCase().endsWith('.pdf') ? (
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                        <span className="text-red-600 font-bold">PDF</span>
+                      </div>
+                      <p className="text-sm text-gray-600 truncate">
+                        {uploadedFiles?.[index]?.name || `File ${index + 1}`}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <img
+                        src={url}
+                        alt={`Preview ${index + 1}`}
+                        className="w-16 h-16 object-cover rounded-lg mx-auto mb-2"
+                      />
+                      <p className="text-sm text-gray-600 truncate">
+                        {uploadedFiles?.[index]?.name || `File ${index + 1}`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <button

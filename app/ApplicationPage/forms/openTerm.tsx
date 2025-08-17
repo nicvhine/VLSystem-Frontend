@@ -62,12 +62,14 @@ export default function OpenTermForm({
   // Open-term specific states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
-  const [customLoanAmount, setCustomLoanAmount] = useState<number>(0);
-  const [customInterestRate, setCustomInterestRate] = useState<number>(0);
-  const [customLoanTerms, setCustomLoanTerms] = useState<number>(0);
-  const [useCustomTerms, setUseCustomTerms] = useState(false);
   const [repaymentSchedule, setRepaymentSchedule] = useState("");
   const [specialConditions, setSpecialConditions] = useState("");
+
+  // Collateral specific states
+  const [collateralType, setCollateralType] = useState("");
+  const [collateralValue, setCollateralValue] = useState<number>(0);
+  const [collateralDescription, setCollateralDescription] = useState("");
+  const [ownershipStatus, setOwnershipStatus] = useState("");
 
   const [appReferences, setAppReferences] = useState([
    { name: "", contact: "", relation: "" },
@@ -77,6 +79,7 @@ export default function OpenTermForm({
 
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
+  const [filePreviewUrls, setFilePreviewUrls] = useState<string[]>([]);
 
   // Translations for select options
   const repaymentOptions = [
@@ -88,34 +91,44 @@ export default function OpenTermForm({
     { value: 'flexible', label: language === 'en' ? 'Flexible' : 'Flexible' },
   ];
 
+  const collateralTypeOptions = [
+    { value: '', label: language === 'en' ? 'Select collateral type' : 'Pilia ang klase sa kolateral' },
+    { value: 'real-estate', label: language === 'en' ? 'Real Estate' : 'Yuta/Balay' },
+    { value: 'vehicle', label: language === 'en' ? 'Vehicle' : 'Sakyanan' },
+    { value: 'equipment', label: language === 'en' ? 'Equipment' : 'Kagamitan' },
+    { value: 'others', label: language === 'en' ? 'Others' : 'Uban pa' },
+  ];
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUploadedFiles(e.target.files);
+    if (e.target.files) {
+      setUploadedFiles(e.target.files);
+      
+      // Create preview URLs for uploaded files
+      const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file as Blob));
+      setFilePreviewUrls(urls);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    if (uploadedFiles) {
+      const dt = new DataTransfer();
+      const files = Array.from(uploadedFiles);
+      files.splice(index, 1);
+      files.forEach(file => dt.items.add(file as File));
+      
+      const newFileList = dt.files;
+      setUploadedFiles(newFileList);
+      
+      // Update preview URLs
+      const newUrls = Array.from(newFileList).map(file => URL.createObjectURL(file as Blob));
+      setFilePreviewUrls(newUrls);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!appLoanPurpose) {
+    if (!appLoanPurpose || !selectedLoan) {
       alert(language === 'en' ? 'Please fill in all required fields.' : 'Palihug pun-a ang tanang kinahanglan nga field.');
       return;
-    }
-
-    // Determine loan details based on whether custom terms are used
-    let loanAmount, loanTerms, interestRate;
-    
-    if (useCustomTerms) {
-      if (!customLoanAmount || !customLoanTerms || !customInterestRate) {
-        alert(language === 'en' ? 'Please fill in all custom loan details.' : 'Palihug pun-a ang tanang detalye sa custom nga loan.');
-        return;
-      }
-      loanAmount = customLoanAmount;
-      loanTerms = customLoanTerms;
-      interestRate = customInterestRate;
-    } else {
-      if (!selectedLoan) {
-        alert(language === 'en' ? 'Please select a loan option or use custom terms.' : 'Palihug pili og loan option o gamita ang custom nga terms.');
-        return;
-      }
-      loanAmount = selectedLoan.amount;
-      interestRate = selectedLoan.interest;
     }
 
     const payload = {
@@ -136,14 +149,17 @@ export default function OpenTermForm({
       appEmploymentStatus,
       appCompanyName,
       sourceOfIncome,
-      appLoanAmount: loanAmount,
-      appLoanTerms: loanTerms,
-      appInterest: interestRate,
+      appLoanAmount: selectedLoan.amount,
+      appInterest: selectedLoan.interest,
       appLoanPurpose,
       repaymentSchedule,
       specialConditions,
       appReferences,
-      isCustomTerms: useCustomTerms,
+      // Collateral information
+      collateralType,
+      collateralValue,
+      collateralDescription,
+      ownershipStatus,
     };
 
     try {
@@ -158,12 +174,12 @@ export default function OpenTermForm({
         // Reset form
         setAppLoanPurpose("");
         setSelectedLoan(null);
-        setCustomLoanAmount(0);
-        setCustomInterestRate(0);
-        setCustomLoanTerms(0);
-        setUseCustomTerms(false);
         setRepaymentSchedule("");
         setSpecialConditions("");
+        setCollateralType("");
+        setCollateralValue(0);
+        setCollateralDescription("");
+        setOwnershipStatus("");
       } else {
         const errorText = await res.text();
         alert(language === 'en' ? 'Failed to submit application. Server says: ' : 'Napakyas ang pagpasa sa aplikasyon. Sulti sa server: ' + errorText);
@@ -215,6 +231,57 @@ export default function OpenTermForm({
         language={language}
       />
 
+      {/* Collateral Information */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral'}
+        </h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Collateral Type:' : 'Klase sa Kolateral:'}</label>
+            <select 
+              value={collateralType}
+              onChange={(e) => setCollateralType(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            >
+              {collateralTypeOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Estimated Value:' : 'Gibanabanang Kantidad:'}</label>
+            <input 
+              type="number" 
+              value={collateralValue}
+              onChange={(e) => setCollateralValue(parseFloat(e.target.value))}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+              placeholder={language === 'en' ? 'Enter estimated value' : 'Isulod ang gibanabanang kantidad'} 
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Collateral Description:' : 'Deskripsyon sa Kolateral:'}</label>
+            <textarea 
+              value={collateralDescription}
+              onChange={(e) => setCollateralDescription(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+              placeholder={language === 'en' ? 'Provide detailed description of your collateral' : 'Isulat ang detalyadong deskripsyon sa imong kolateral'}
+            ></textarea>
+          </div>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Ownership Status:' : 'Kahimtang sa Pagpanag-iya:'}</label>
+            <input
+              type="text"
+              value={ownershipStatus}
+              onChange={(e) => setOwnershipStatus(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder={language === 'en' ? 'Enter ownership status' : 'Isulod ang kahimtang sa pagpanag-iya'}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Open-Term Loan Specific Details */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
@@ -222,18 +289,6 @@ export default function OpenTermForm({
           {language === 'en' ? 'Open-Term Loan Details' : 'Detalye sa Open-Term nga Pahulam'}
         </h4>
         
-        <div className="mb-4">
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={useCustomTerms}
-              onChange={(e) => setUseCustomTerms(e.target.checked)}
-              className="mr-2"
-            />
-            <span className="text-gray-700">{language === 'en' ? 'Use custom loan terms' : 'Gamiton ang custom nga terms sa loan'}</span>
-          </label>
-        </div>
-
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Purpose:' : 'Katuyoan sa Pahulam:'}</label>
@@ -245,63 +300,33 @@ export default function OpenTermForm({
             />
           </div>
 
-          {!useCustomTerms ? (
-            <>
-              <div>
-                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
-                <select
-                  className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  onChange={(e) => {
-                    const selected = loanOptions.find((opt) => opt.amount === parseInt(e.target.value));
-                    setSelectedLoan(selected || null);
-                  }}
-                  value={selectedLoan?.amount || ""}
-                >
-                  <option value="">{language === 'en' ? 'Select amount' : 'Pilia ang kantidad'}</option>
-                  {loanOptions.map((opt) => (
-                    <option key={opt.amount} value={opt.amount}>
-                      ₱{opt.amount.toLocaleString()}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
+            <select
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              onChange={(e) => {
+                const selected = loanOptions.find((opt) => opt.amount === parseInt(e.target.value));
+                setSelectedLoan(selected || null);
+              }}
+              value={selectedLoan?.amount || ""}
+            >
+              <option value="">{language === 'en' ? 'Select amount' : 'Pilia ang kantidad'}</option>
+              {loanOptions.map((opt) => (
+                <option key={opt.amount} value={opt.amount}>
+                  ₱{opt.amount.toLocaleString()}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            </>
-          ) : (
-            <>
-              <div>
-                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Custom Loan Amount:' : 'Custom nga Kantidad sa Pahulam:'}</label>
-                <input 
-                  type="number"
-                  value={customLoanAmount}
-                  onChange={(e) => setCustomLoanAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-                  placeholder={language === 'en' ? 'Enter custom amount' : 'Isulod ang custom nga kantidad'} 
-                />
-              </div>
-              <div>
-                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Custom Loan Terms (months):' : 'Custom nga Panahon (buwan):'}</label>
-                <input 
-                  type="number"
-                  value={customLoanTerms}
-                  onChange={(e) => setCustomLoanTerms(parseInt(e.target.value) || 0)}
-                  className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-                  placeholder={language === 'en' ? 'Enter number of months' : 'Isulod ang ihap sa buwan'} 
-                />
-              </div>
-              <div>
-                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Custom Interest Rate (%):' : 'Custom nga Interest Rate (%):'}</label>
-                <input 
-                  type="number"
-                  step="0.1"
-                  value={customInterestRate}
-                  onChange={(e) => setCustomInterestRate(parseFloat(e.target.value) || 0)}
-                  className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-                  placeholder={language === 'en' ? 'Enter interest rate' : 'Isulod ang interest rate'} 
-                />
-              </div>
-            </>
-          )}
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Interest Rate (%):' : 'Interest Rate (%):'}</label>
+            <input 
+              className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
+              value={selectedLoan?.interest || ""} 
+              readOnly 
+            />
+          </div>
 
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Preferred Repayment Schedule:' : 'Gipili nga Iskedyul sa Pagbayad:'}</label>
@@ -349,6 +374,47 @@ export default function OpenTermForm({
           </div>
           <p className="text-xs text-gray-500 mt-2 text-center">{language === 'en' ? 'Accepted: PDF, JPG, PNG. You can upload multiple files.' : 'Dawaton: PDF, JPG, PNG. Pwede ka mag-upload og daghang files.'}</p>
         </div>
+
+        {/* File Preview */}
+        {filePreviewUrls.length > 0 && (
+          <div className="mt-4">
+            <h5 className="font-medium mb-3 text-gray-700">{language === 'en' ? 'Uploaded Files:' : 'Mga File nga Na-upload:'}</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filePreviewUrls.map((url, index) => (
+                <div key={index} className="border border-gray-200 rounded-lg p-3 relative">
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                    title={language === 'en' ? 'Remove file' : 'Tangtangon ang file'}
+                  >
+                    ×
+                  </button>
+                  {url.toLowerCase().endsWith('.pdf') ? (
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                        <span className="text-red-600 font-bold">PDF</span>
+                      </div>
+                      <p className="text-sm text-gray-600 truncate">
+                        {uploadedFiles?.[index]?.name || `File ${index + 1}`}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <img
+                        src={url}
+                        alt={`Preview ${index + 1}`}
+                        className="w-16 h-16 object-cover rounded-lg mx-auto mb-2"
+                      />
+                      <p className="text-sm text-gray-600 truncate">
+                        {uploadedFiles?.[index]?.name || `File ${index + 1}`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <button

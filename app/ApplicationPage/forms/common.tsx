@@ -251,11 +251,12 @@ function MapComponent({
           />
         </div>
 
-        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200" style={{ height: 300 }}>
+        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200 relative" style={{ height: 300 }}>
           <MapContainer
             center={markerPosition || [12.8797, 121.774]}
             zoom={6}
-            style={{ height: "100%", width: "100%" }}
+            style={{ height: "100%", width: "100%", zIndex: 1 }}
+            className="map-container"
           >
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <MapComponent
