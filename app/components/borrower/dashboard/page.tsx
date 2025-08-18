@@ -48,31 +48,36 @@ export default function BorrowerDashboard() {
 
     const handlePayNowClick = async () => {
         try {
-            setLoading(true);
-            const response = await fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    amount: nextPaymentAmount,
-                    description: `Payment for Loan ${loanId}`,
-                }),
-            });
-
-            const data = await response.json();
-            if (data.session && data.session.attributes.checkout_url) {
-                window.location.href = data.session.attributes.checkout_url;
-            } else {
-                alert('Failed to create checkout session');
-            }
-        } catch (error) {
-            console.error('Error initiating payment:', error);
-            alert('An error occurred. Please try again.');
-        } finally {
-            setLoading(false);
+          const response = await fetch("http://localhost:3001/payments/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount: 10000, 
+              currency: "PHP",
+              description: "Loan Payment"
+            }),
+          });
+      
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+          }
+      
+          const data = await response.json();
+          console.log("Checkout Session Response:", data);
+      
+          if (data.checkoutUrl) {
+            window.location.href = data.checkoutUrl; 
+          } else {
+            console.error("Checkout URL missing:", data);
+          }
+        } catch (err) {
+          console.error("Error initiating payment:", err);
         }
-    };
+      };
+      
+      
+      
 
     useEffect(() => {
         const token = localStorage.getItem('token');
