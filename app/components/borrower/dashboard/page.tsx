@@ -46,8 +46,32 @@ export default function BorrowerDashboard() {
         fetchPaymentData();
     };
 
-    const handlePayNowClick = () => {
-        setIsPaymentModalOpen(true);
+    const handlePayNowClick = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    amount: nextPaymentAmount,
+                    description: `Payment for Loan ${loanId}`,
+                }),
+            });
+
+            const data = await response.json();
+            if (data.session && data.session.attributes.checkout_url) {
+                window.location.href = data.session.attributes.checkout_url;
+            } else {
+                alert('Failed to create checkout session');
+            }
+        } catch (error) {
+            console.error('Error initiating payment:', error);
+            alert('An error occurred. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     useEffect(() => {
