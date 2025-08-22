@@ -26,6 +26,7 @@ export default function UpcomingBillsPage() {
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
 
+  // Fetch active loan
   useEffect(() => {
     if (!borrowersId) return;
     async function fetchActiveLoan() {
@@ -37,8 +38,7 @@ export default function UpcomingBillsPage() {
         const data: Loan = await res.json();
         setActiveLoan(data);
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Error fetching active loan';
-        setError(errorMsg);
+        setError(err instanceof Error ? err.message : 'Error fetching active loan');
       } finally {
         setLoading(false);
       }
@@ -46,9 +46,9 @@ export default function UpcomingBillsPage() {
     fetchActiveLoan();
   }, [borrowersId]);
 
-  // Fetch collections for active loan
+  // Fetch collections
   useEffect(() => {
-    if (!activeLoan || !borrowersId) return;
+    if (!activeLoan?.loanId || !borrowersId) return; // <-- optional chaining ensures null safety
     async function fetchCollections() {
       setLoading(true);
       setError('');
@@ -58,14 +58,43 @@ export default function UpcomingBillsPage() {
         const data: Collection[] = await res.json();
         setCollections(data);
       } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : 'Error fetching collections';
-        setError(errorMsg);
+        setError(err instanceof Error ? err.message : 'Error fetching collections');
       } finally {
         setLoading(false);
       }
     }
     fetchCollections();
   }, [activeLoan, borrowersId]);
+
+  // PayMongo handler
+  async function handlePay(collection: Collection) {
+    if (!activeLoan) return;
+
+    try {
+      const res = await fetch(`http://localhost:3001/payment/paymongo/gcash`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: collection.periodAmount,
+          collectionNumber: collection.collectionNumber,
+          referenceNumber: collection.referenceNumber,
+          borrowersId: activeLoan.borrowersId
+        })
+        
+        
+      });
+
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        alert('Failed to create payment.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error connecting to payment gateway.');
+    }
+  }
 
   if (loading) return <p className="text-center mt-8">Loading...</p>;
   if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
@@ -77,33 +106,30 @@ export default function UpcomingBillsPage() {
         <h2 className="text-2xl font-bold mb-6 text-red-600">Upcoming Bills</h2>
 
         {activeLoan ? (
-          <>
-
-            {collections.length > 0 ? (
-              <div className="flex flex-col gap-4">
-                {collections.map((c) => (
-                  <div
-                    key={c.referenceNumber}
-                    className={`p-5 rounded-xl shadow-md border transition ${
-                      c.status === 'Paid' ? 'bg-gray-100 border-gray-300' : 'bg-white'
-                    }`}
-                    onClick={() => alert(`Pay for collection ${c.referenceNumber}`)} 
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <p className="font-semibold text-gray-800">Collection {c.collectionNumber}</p>
-                      <p className={`font-semibold ${c.status === 'Paid' ? 'text-green-600' : 'text-red-600'}`}>{c.status}</p>
-                    </div>
-                    <p className="text-gray-500 mb-1">
-                      Due: {new Date(c.dueDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                    <p className="text-gray-800 font-medium">₱{c.periodAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+          collections.length > 0 ? (
+            <div className="flex flex-col gap-4">
+              {collections.map((c) => (
+                <div
+                  key={c.referenceNumber}
+                  className={`p-5 rounded-xl shadow-md border transition cursor-pointer ${
+                    c.status === 'Paid' ? 'bg-gray-100 border-gray-300' : 'bg-white hover:bg-green-50 border-green-200'
+                  }`}
+                  onClick={() => handlePay(c)}
+                >
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-semibold text-gray-800">Collection {c.collectionNumber}</p>
+                    <p className={`font-semibold ${c.status === 'Paid' ? 'text-green-600' : 'text-red-600'}`}>{c.status}</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No upcoming collections for this loan.</p>
-            )}
-          </>
+                  <p className="text-gray-500 mb-1">
+                    Due: {new Date(c.dueDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                  <p className="text-gray-800 font-medium">₱{c.periodAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-600">No upcoming collections for this loan.</p>
+          )
         ) : (
           <p className="text-gray-600">You have no active loans.</p>
         )}
