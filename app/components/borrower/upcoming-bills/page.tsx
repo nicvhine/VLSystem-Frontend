@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import BorrowerNavbar from '../../components/borrower/borrowerNavbar/page';
+import BorrowerNavbar from '../borrowerNavbar/page';
 
 interface Collection {
   collectionNumber: number;
