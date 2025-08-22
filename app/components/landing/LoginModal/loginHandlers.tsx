@@ -24,6 +24,8 @@ export async function loginHandler({ username, password, onClose, router }: Logi
       localStorage.setItem('fullName', data.fullName || data.name || data.username);
       localStorage.setItem('role', 'borrower');
       
+      if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
+
       if (data.profilePic) {
   const fullPicUrl = `http://localhost:3001${data.profilePic}`;
   localStorage.setItem('profilePic', fullPicUrl);
@@ -36,6 +38,8 @@ export async function loginHandler({ username, password, onClose, router }: Logi
       router.push('/components/borrower/dashboard');
       return;
     }
+    
+    
 
     const staffRes = await fetch('http://localhost:3001/users/login', {
       method: 'POST',
