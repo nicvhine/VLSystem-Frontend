@@ -18,7 +18,7 @@ export default function PaymentProgress({
   language
 }: Props) {
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 flex flex-col items-center justify-between text-gray-800 hover:shadow-lg transition">
+    <div className="flex flex-col items-center justify-between text-gray-800">
       <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">{translations[language].paymentProgress}</h2>
 
       <div className="relative w-32 h-32 sm:w-40 sm:h-40 mb-3 sm:mb-4">

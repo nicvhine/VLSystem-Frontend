@@ -59,7 +59,7 @@ export default function LoanDetails({
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 text-gray-800 hover:shadow-xl transition-all duration-300">
+    <div className="flex flex-col text-gray-800">
       <div className="mb-4 sm:mb-6 flex items-center justify-between">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">{translations[language].loanDetails}</h2>
         <button
