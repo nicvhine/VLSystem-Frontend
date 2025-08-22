@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useInactivityLogout from "../inactivity/logic";
 import ChangePasswordModal from "./components/forceChange";
@@ -30,7 +30,7 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
         setIsCheckingAuth(false);
     }, [router]);
 
-    if (isCheckingAuth){
+    if (isCheckingAuth) {
         return <div className="min-h-screen bg-white"></div>;
     }
 
