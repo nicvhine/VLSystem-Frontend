@@ -103,9 +103,9 @@ export default function ProfileSettingsPanel({
 }: Props) {
   
   return (
-     <div className="px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300">
+     <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300`}>
     {/* Tab switch buttons */}
-      <div className="flex mb-4 bg-white  rounded-lg p-1 relative">
+      <div className="flex mb-4 bg-white rounded-lg p-1 relative">
         <div
           className={`absolute top-1 h-8 bg-red-600 rounded-md transition-all duration-300 ease-in-out ${ 
             activeSettingsTab === 'account'

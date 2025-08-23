@@ -250,8 +250,6 @@ const {
               email={email}       
               phoneNumber={phoneNumber}       
               username={username}
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleLogout={handleLogout}
