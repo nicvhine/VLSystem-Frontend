@@ -67,11 +67,23 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
       setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
     };  
 
-  const handleSubmit = async () => {
-    if (!appLoanPurpose || !selectedLoan) {
-      alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
-      return;
-    }
+    const handleSubmit = async () => {
+      if (!appLoanPurpose || !selectedLoan) {
+        alert(language === 'en'
+          ? "Please fill in all required fields."
+          : "Palihug pun-a ang tanang kinahanglan nga field."
+        );
+        return;
+      }
+
+      // Require at least one uploaded document
+      if (uploadedFiles.length === 0) {
+        alert(language === 'en'
+          ? "Please upload at least one document."
+          : "Palihug i-upload ang usa ka dokumento."
+        );
+        return;
+      }
 
     const payload = {
       appName,
@@ -99,24 +111,51 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
     };
 
     try {
+      const formData = new FormData();
+  
+      // append all simple fields
+      for (const key of Object.keys(payload)) {
+        // @ts-ignore
+        const value = payload[key];
+  
+        if (value === null || value === undefined) {
+          formData.append(key, "");
+        } else if (key === "appReferences") {
+          // Properly append references array
+          appReferences.forEach((ref, index) => {
+            formData.append(`appReferences[${index}][name]`, ref.name);
+            formData.append(`appReferences[${index}][contact]`, ref.contact);
+            formData.append(`appReferences[${index}][relation]`, ref.relation);
+          });
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+  
+      // append files
+      uploadedFiles.forEach((file) => {
+        formData.append("documents", file);
+      });
+  
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
-
+  
       if (res.ok) {
         alert(language === 'en' ? "Loan application submitted successfully!" : "Malampusong napasa ang aplikasyon!");
         setAppLoanPurpose("");
         setSelectedLoan(null);
+        setUploadedFiles([]);
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
       }
     } catch (error) {
       alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
     }
   };
+
 
   return (
     <>
@@ -229,7 +268,7 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
             <input
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.png"
               onChange={handleFileChange}
               className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
                         file:rounded-lg file:border-0 file:text-sm file:font-medium

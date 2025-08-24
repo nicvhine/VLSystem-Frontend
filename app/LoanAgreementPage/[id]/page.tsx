@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiSave, FiPrinter, FiEdit } from 'react-icons/fi';
-
+import { FiSave, FiPrinter, FiEdit, FiArrowLeft} from 'react-icons/fi';
+import LoanOfficerNavbar from "../../../app/components/loanOfficer/loNavbar/page";
 const API_URL = "http://localhost:3001/loan-applications";
-
+import Link from "next/link";
 // Icons as Unicode symbols - no external dependencies
 const Icons = {
   Upload: () => <span className="inline-block">📁</span>,
@@ -242,13 +242,20 @@ const capitalizeWords = (str: string) =>
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <LoanOfficerNavbar />
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button className="flex items-center text-gray-600 hover:text-gray-800">
-              <Icons.ArrowLeft /> <span className="ml-2">Back to Applications</span>
-            </button>
+          <Link
+  href={`/components/loanOfficer/applications/${application?.applicationId || ""}`}
+  className="inline-flex items-center text-black hover:text-gray-600 mb-2 transition-colors"
+>
+  <FiArrowLeft className="w-4 h-4 mr-2" />
+  Back to Applications
+</Link>
+
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
                 {currentData?.applicationId} - {currentData?.loanType}
@@ -474,85 +481,6 @@ const capitalizeWords = (str: string) =>
               </div>
             </div>
           </div>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="w-80 bg-gray-50 border-l border-gray-200 p-6">
-          {/* Upload Documents Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-4 py-3 border-b border-gray-200">
-              <h3 className="text-sm font-medium text-gray-900 flex items-center">
-                <Icons.FileText /> <span className="ml-2">Uploaded Documents</span>
-              </h3>
-            </div>
-            <div className="p-4">
-              {/* Upload Area */}
-              <div
-                className={`border-2 border-dashed rounded-lg p-6 text-center ${
-                  isDragging ? 'border-blue-400 bg-blue-50' : 'border-gray-300'
-                }`}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <Icons.Upload />
-                <p className="text-sm text-gray-600 mb-2 mt-2">
-                  Drag and drop images here, or{' '}
-                  <label className="text-blue-600 cursor-pointer underline">
-                    browse
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e.target.files)}
-                    />
-                  </label>
-                </p>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-              </div>
-
-              {/* Uploaded Files List */}
-              {uploadedFiles.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {uploadedFiles.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <div className="flex items-center space-x-2 flex-1 min-w-0">
-                        <img 
-                          src={file.url} 
-                          alt={file.name}
-                          className="h-8 w-8 object-cover rounded"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">{file.name}</p>
-                          <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <button 
-                          className="p-1 text-gray-400 hover:text-blue-600"
-                          onClick={() => window.open(file.url, '_blank')}
-                        >
-                          <Icons.Eye />
-                        </button>
-                        <button 
-                          className="p-1 text-gray-400 hover:text-green-600"
-                        >
-                          <Icons.Download />
-                        </button>
-                        <button 
-                          className="p-1 text-gray-400 hover:text-red-600"
-                          onClick={() => removeFile(file.id)}
-                        >
-                          <Icons.Trash2 />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
