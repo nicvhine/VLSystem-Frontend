@@ -8,7 +8,11 @@ import 'swiper/css/navigation';
 import { Navigation, Autoplay } from 'swiper/modules';
 import TrackModal from './trackModal';
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  language?: 'en' | 'ceb';
+}
+
+export default function HeroSection({ language = 'en' }: HeroSectionProps) {
   const [isTrackOpen, setIsTrackOpen] = useState(false);
 
   const slides = [
