@@ -46,7 +46,7 @@ export default function PaymentProgress({
       </div>
 
       <button className="bg-green-600 text-white px-4 py-3 sm:p-4 rounded-lg shadow-md hover:bg-green-700 transition text-sm sm:text-base w-full sm:w-auto">
-        <Link href="/borrower/upcoming-bills">{translations[language].payNow}</Link>
+        <Link href="/components/borrower/upcoming-bills">{translations[language].payNow}</Link>
       </button>
 
       {canReloan ? (

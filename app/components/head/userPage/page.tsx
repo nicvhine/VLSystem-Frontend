@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import HeadNavbar from "../headNavbar/page";
 import { FiSearch, FiUserPlus, FiEdit2, FiTrash2, FiMoreVertical, FiLoader } from "react-icons/fi";
 import { createPortal } from "react-dom";
@@ -33,7 +33,7 @@ function UserActions({
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
-  useState(() => {
+   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         ref.current &&
@@ -46,9 +46,9 @@ function UserActions({
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  });
+  }, [onClose, anchorRef]);
 
-  useState(() => {
+  useEffect(() => {
     if (anchorRef.current) {
       const rect = anchorRef.current.getBoundingClientRect();
       setPosition({
@@ -56,7 +56,7 @@ function UserActions({
         left: rect.right + window.scrollX - 192,
       });
     }
-  });
+  }, [anchorRef]);
 
   return createPortal(
     <div
@@ -64,12 +64,18 @@ function UserActions({
       className="fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in-0 zoom-in-95 duration-200"
       style={{ top: position.top, left: position.left }}
     >
-      <div className="py-1" role="menu" aria-orientation="vertical">
-        <button onClick={onEdit} className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+      <div className="py-1">
+        <button
+          onClick={onEdit}
+          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        >
           <FiEdit2 className="mr-3 h-4 w-4" />
           Edit User
         </button>
-        <button onClick={onDelete} className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer">
+        <button
+          onClick={onDelete}
+          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+        >
           <FiTrash2 className="mr-3 h-4 w-4" />
           Delete User
         </button>
@@ -77,6 +83,7 @@ function UserActions({
     </div>,
     document.body
   );
+
 }
 
 export default function UsersPage() {

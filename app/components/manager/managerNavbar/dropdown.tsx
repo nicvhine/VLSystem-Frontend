@@ -97,11 +97,14 @@ const handleSetDarkMode = (value: boolean) => {
   return (
     <div className="relative">
       {isDropdownOpen && (
-        <div
-          className={`absolute right-0 mt-3 w-96 rounded-2xl shadow-2xl z-30 p-0 border transition-all ${
-            darkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-gray-900 border-gray-200'
-          }`}
-        >
+      <div
+      className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
+      style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
+    >
+
+        {/* Connector Arrow */}
+    <div className="absolute -top-2 left-87 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
+
           {/* Profile Header */}
           <div className="flex flex-col items-center py-6">
             <div
@@ -202,32 +205,6 @@ const handleSetDarkMode = (value: boolean) => {
                 setDarkMode={handleSetDarkMode}
               />
             )}
-
-            {/* Dark Mode Toggle */}
-            <div  className="flex items-center px-6 py-3 justify-between hover:bg-gray-100 hover:text-black dark:hover:text-black transition">
-              <span className="flex items-center">
-                Dark Mode
-              </span>
-              <label className="inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={darkMode}
-                  onChange={() => handleSetDarkMode(!darkMode)}
-                  className="sr-only"
-                />
-                <span
-                  className={`w-10 h-5 flex items-center bg-gray-300 rounded-full p-1 transition-all duration-300 ease-in-out ${
-                    darkMode ? 'bg-orange-500' : ''
-                  }`}
-                >
-                  <span
-                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition duration-300 ease-in-out ${
-                      darkMode ? 'translate-x-5' : ''
-                    }`}
-                  ></span>
-                </span>
-              </label>
-            </div>
 
             {/* Logout */}
             <button

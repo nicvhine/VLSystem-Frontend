@@ -53,40 +53,37 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
   // Translations for select options
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
-  const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
-  const [filePreviewUrls, setFilePreviewUrls] = useState<string[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setUploadedFiles(e.target.files);
-      
-      // Create preview URLs for uploaded files
-      const urls = Array.from(e.target.files).map(file => URL.createObjectURL(file as Blob));
-      setFilePreviewUrls(urls);
+      const files = Array.from(e.target.files);
+      setUploadedFiles((prev) => [...prev, ...files]);
     }
   };
 
-  const removeFile = (index: number) => {
-    if (uploadedFiles) {
-      const dt = new DataTransfer();
-      const files = Array.from(uploadedFiles);
-      files.splice(index, 1);
-      files.forEach(file => dt.items.add(file as File));
-      
-      const newFileList = dt.files;
-      setUploadedFiles(newFileList);
-      
-      // Update preview URLs
-      const newUrls = Array.from(newFileList).map(file => URL.createObjectURL(file as Blob));
-      setFilePreviewUrls(newUrls);
-    }
-  };
+    // Remove file by index
+    const removeFile = (index: number) => {
+      setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+    };  
 
-  const handleSubmit = async () => {
-    if (!appLoanPurpose || !selectedLoan) {
-      alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
-      return;
-    }
+    const handleSubmit = async () => {
+      if (!appLoanPurpose || !selectedLoan) {
+        alert(language === 'en'
+          ? "Please fill in all required fields."
+          : "Palihug pun-a ang tanang kinahanglan nga field."
+        );
+        return;
+      }
+
+      // Require at least one uploaded document
+      if (uploadedFiles.length === 0) {
+        alert(language === 'en'
+          ? "Please upload at least one document."
+          : "Palihug i-upload ang usa ka dokumento."
+        );
+        return;
+      }
 
     const payload = {
       appName,
@@ -114,24 +111,51 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
     };
 
     try {
+      const formData = new FormData();
+  
+      // append all simple fields
+      for (const key of Object.keys(payload)) {
+        // @ts-ignore
+        const value = payload[key];
+  
+        if (value === null || value === undefined) {
+          formData.append(key, "");
+        } else if (key === "appReferences") {
+          // Properly append references array
+          appReferences.forEach((ref, index) => {
+            formData.append(`appReferences[${index}][name]`, ref.name);
+            formData.append(`appReferences[${index}][contact]`, ref.contact);
+            formData.append(`appReferences[${index}][relation]`, ref.relation);
+          });
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+  
+      // append files
+      uploadedFiles.forEach((file) => {
+        formData.append("documents", file);
+      });
+  
       const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: formData,
       });
-
+  
       if (res.ok) {
         alert(language === 'en' ? "Loan application submitted successfully!" : "Malampusong napasa ang aplikasyon!");
         setAppLoanPurpose("");
         setSelectedLoan(null);
+        setUploadedFiles([]);
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
       }
     } catch (error) {
       alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
     }
   };
+
 
   return (
     <>
@@ -244,7 +268,7 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
             <input
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.png"
               onChange={handleFileChange}
               className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
                         file:rounded-lg file:border-0 file:text-sm file:font-medium
@@ -255,46 +279,30 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
           <p className="text-xs text-gray-500 mt-2 text-center">{language === 'en' ? 'Accepted: PDF, JPG, PNG. You can upload multiple files.' : 'Dawaton: PDF, JPG, PNG. Pwede ka mag-upload og daghang files.'}</p>
         </div>
 
-        {/* File Preview */}
-        {filePreviewUrls.length > 0 && (
-          <div className="mt-4">
-            <h5 className="font-medium mb-3 text-gray-700">{language === 'en' ? 'Uploaded Files:' : 'Mga File nga Na-upload:'}</h5>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filePreviewUrls.map((url, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-3 relative">
-                  <button
-                    onClick={() => removeFile(index)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                    title={language === 'en' ? 'Remove file' : 'Tangtangon ang file'}
-                  >
-                    ×
-                  </button>
-                  {url.toLowerCase().endsWith('.pdf') ? (
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center mx-auto mb-2">
-                        <span className="text-red-600 font-bold">PDF</span>
-                      </div>
-                      <p className="text-sm text-gray-600 truncate">
-                        {uploadedFiles?.[index]?.name || `File ${index + 1}`}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <img
-                        src={url}
-                        alt={`Preview ${index + 1}`}
-                        className="w-16 h-16 object-cover rounded-lg mx-auto mb-2"
-                      />
-                      <p className="text-sm text-gray-600 truncate">
-                        {uploadedFiles?.[index]?.name || `File ${index + 1}`}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* File List */}
+      {uploadedFiles.length > 0 && (
+        <div className="mt-4">
+          <h5 className="font-medium mb-3 text-gray-700">
+            {language === "en" ? "Uploaded Files:" : "Mga File nga Na-upload:"}
+          </h5>
+          <ul className="list-disc list-inside text-sm text-gray-600">
+            {uploadedFiles.map((file, index) => (
+              <li
+                key={index}
+                className="flex justify-between items-center gap-4 py-1"
+              >
+                <span>{file.name}</span>
+                <button
+                  onClick={() => removeFile(index)}
+                  className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                >
+                  {language === 'en' ? 'Remove' : 'Tangtangon'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       </div>
 
       <button

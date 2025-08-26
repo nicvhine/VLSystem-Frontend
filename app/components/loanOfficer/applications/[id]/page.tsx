@@ -41,7 +41,7 @@ interface Application {
   loanTerm: string;
   interestRate: number;
   paymentSchedule: string;
-  uploadedDocuments: string[]; 
+  documents: { fileName: string; filePath: string; mimeType: string }[];
   sourceOfIncome: string;
 }
 
@@ -362,16 +362,34 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
 
              {/* Right Column */}
       <div className="space-y-6">
-        {/* Uploaded Documents */}
-        <section className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center mb-4">
-            <FiPaperclip className="w-5 h-5 text-yellow-500 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-800">Uploaded Documents</h2>
-          </div>
-          <ul className="space-y-2">
-            
-          </ul>
-        </section>
+ {/* Uploaded Documents */}
+ <section className="bg-white rounded-lg shadow-sm p-6 text-black">
+              <div className="flex items-center mb-4">
+                <FiPaperclip className="w-5 h-5 text-yellow-500 mr-2" />
+                <h2 className="text-xl font-semibold text-gray-800">Uploaded Documents</h2>
+              </div>
+
+              {application?.documents && application.documents.length > 0 ? (
+  <ul>
+    {application.documents.map((doc, i) => (
+      <li key={i} className="flex justify-between items-center py-1">
+        <span>{doc.fileName}</span>
+        <a
+          href={`http://localhost:3001/${doc.filePath}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline"
+        >
+          View
+        </a>
+      </li>
+    ))}
+  </ul>
+) : (
+  <p>No documents uploaded.</p>
+)}
+            </section>
+
 
         {/* Comments / Notes */}
         <section className="bg-white rounded-lg shadow-sm p-6">
