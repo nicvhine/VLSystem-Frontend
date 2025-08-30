@@ -12,6 +12,7 @@ import Footer from './footer';
 import TeamSection from './teamsection';
 import LoginModal from './LoginModal/page';
 import SimulatorModal from './loanSimulator';
+import TrackModal from './trackModal';
 import Navbar from './navbar';
 import Page from './page';
 
@@ -22,6 +23,7 @@ export default function Home() {
   // Modal states
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
+  const [isTrackOpen, setIsTrackOpen] = useState(false);
 
   // Trigger page fade-in animation on mount
   useEffect(() => {
@@ -57,7 +59,11 @@ export default function Home() {
         />
         
         {/* Main Content Sections */}
-        <HeroSection language={language} />
+        <HeroSection 
+          language={language} 
+          isTrackOpen={isTrackOpen}
+          setIsTrackOpen={setIsTrackOpen}
+        />
         <FeatureSection language={language} />
         <TestimonialSection language={language} />
         <section id="team">
@@ -76,6 +82,7 @@ export default function Home() {
       {/* Modal components - rendered outside main container to avoid transform issues */}
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
       <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} language={language} />
+      <TrackModal isOpen={isTrackOpen} onClose={() => setIsTrackOpen(false)} />
     </>
   );
 }
