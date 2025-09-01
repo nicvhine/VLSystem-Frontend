@@ -1,25 +1,61 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import LoginModal from './LoginModal/page';
-import SimulatorModal from './loanSimulator';
+import { useState, useEffect } from 'react';
 
 interface LandingNavbarProps {
   language: 'en' | 'ceb';
   setLanguage: (lang: 'en' | 'ceb') => void;
+  onLogoClick?: () => void;
+  isLoginOpen?: boolean;
+  setIsLoginOpen?: (open: boolean) => void;
+  isCalculationOpen?: boolean;
+  setIsCalculationOpen?: (open: boolean) => void;
 }
 
-export default function LandingNavbar({ language, setLanguage }: LandingNavbarProps) {
+export default function LandingNavbar({ 
+  language, 
+  setLanguage, 
+  onLogoClick,
+  isLoginOpen: parentIsLoginOpen,
+  setIsLoginOpen: parentSetIsLoginOpen,
+  isCalculationOpen: parentIsCalculationOpen,
+  setIsCalculationOpen: parentSetIsCalculationOpen
+}: LandingNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCalculationOpen, setIsCalculationOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  // Use parent state if provided, otherwise use local state
+  const [localIsCalculationOpen, setLocalIsCalculationOpen] = useState(false);
+  const [localIsLoginOpen, setLocalIsLoginOpen] = useState(false);
+  
+  const isCalculationOpen = parentIsCalculationOpen !== undefined ? parentIsCalculationOpen : localIsCalculationOpen;
+  const setIsCalculationOpen = parentSetIsCalculationOpen || setLocalIsCalculationOpen;
+  const isLoginOpen = parentIsLoginOpen !== undefined ? parentIsLoginOpen : localIsLoginOpen;
+  const setIsLoginOpen = parentSetIsLoginOpen || setLocalIsLoginOpen;
+
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('isCalculationOpen changed:', isCalculationOpen);
+  }, [isCalculationOpen]);
+
+  // Smooth scroll function
+  const smoothScrollTo = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  };
 
   const navItems = [
-    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => setIsCalculationOpen(true) },
-    { name: 'Team', href: '#team' },
-    { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: '#about' },
-    { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer' },
+    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => {
+      console.log('Loan Simulator clicked! Setting state to true');
+      setIsCalculationOpen(true);
+    } },
+    { name: 'Team', href: '#team', onClick: () => smoothScrollTo('team') },
+    { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: '#about', onClick: () => smoothScrollTo('about') },
+    { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer', onClick: () => smoothScrollTo('footer') },
   ];
 
   return (
@@ -27,12 +63,15 @@ export default function LandingNavbar({ language, setLanguage }: LandingNavbarPr
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
-          <Link
-            href="/"
+          <button
+            onClick={() => {
+              if (onLogoClick) onLogoClick();
+              else window.location.reload();
+            }}
             className="text-2xl font-bold text-transparent bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text hover:from-red-700 hover:to-red-900 transition-all"
           >
             VLSystem
-          </Link>
+          </button>
 
           {/* Desktop Nav */}
           <nav className="hidden sm:flex items-center gap-9">
@@ -52,32 +91,27 @@ export default function LandingNavbar({ language, setLanguage }: LandingNavbarPr
               </span>
             </label>
             {/* Loan Simulator (first nav item) */}
-            <Link
-              key={navItems[0].name}
-              href={navItems[0].href}
+            <button
               onClick={(e) => {
                 e.preventDefault();
-                if (navItems[0].onClick) navItems[0].onClick();
+                navItems[0].onClick();
               }}
               className="text-sm font-medium text-black hover:text-gray-900 transition"
             >
               {navItems[0].name}
-            </Link>
+            </button>
             {/* Other nav items */}
             {navItems.slice(1).map((item) => (
-              <Link
+              <button
                 key={item.name}
-                href={item.href}
                 onClick={(e) => {
-                  if (item.onClick) {
-                    e.preventDefault();
-                    item.onClick();
-                  }
+                  e.preventDefault();
+                  if (item.onClick) item.onClick();
                 }}
                 className="text-sm font-medium text-black hover:text-gray-900 transition"
               >
                 {item.name}
-              </Link>
+              </button>
             ))}
             <button
               onClick={() => setIsLoginOpen(true)}
@@ -130,32 +164,29 @@ export default function LandingNavbar({ language, setLanguage }: LandingNavbarPr
               </span>
             </label>
             {/* Loan Simulator (first nav item) */}
-            <Link
-              key={navItems[0].name + '-mobile'}
-              href={navItems[0].href}
+            <button
               onClick={(e) => {
                 e.preventDefault();
-                if (navItems[0].onClick) navItems[0].onClick();
+                navItems[0].onClick();
+                setIsMenuOpen(false); // Close mobile menu
               }}
-              className="text-base font-medium text-gray-900 hover:text-gray-700"
+              className="text-base font-medium text-gray-900 hover:text-gray-700 text-left"
             >
               {navItems[0].name}
-            </Link>
+            </button>
             {/* Other nav items */}
             {navItems.slice(1).map((item) => (
-              <Link
+              <button
                 key={item.name + '-mobile'}
-                href={item.href}
                 onClick={(e) => {
-                  if (item.onClick) {
-                    e.preventDefault();
-                    item.onClick();
-                  }
+                  e.preventDefault();
+                  if (item.onClick) item.onClick();
+                  setIsMenuOpen(false); // Close mobile menu
                 }}
-                className="text-base font-medium text-gray-900 hover:text-gray-700"
+                className="text-base font-medium text-gray-900 hover:text-gray-700 text-left"
               >
                 {item.name}
-              </Link>
+              </button>
             ))}
             <button
               onClick={() => setIsLoginOpen(true)}
@@ -166,11 +197,6 @@ export default function LandingNavbar({ language, setLanguage }: LandingNavbarPr
           </div>
         </div>
       </div>
-
-      {/* Modals */}
-      {/* @ts-expect-error: language prop is supported in our LoginModal and SimulatorModal */}
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
-      <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} language={language} />
     </header>
   );
 }

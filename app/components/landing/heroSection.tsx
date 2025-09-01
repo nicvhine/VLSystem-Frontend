@@ -6,10 +6,23 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import { Navigation, Autoplay } from 'swiper/modules';
-import TrackModal from './trackModal';
 
-export default function HeroSection() {
-  const [isTrackOpen, setIsTrackOpen] = useState(false);
+interface HeroSectionProps {
+  language?: 'en' | 'ceb';
+  isTrackOpen?: boolean;
+  setIsTrackOpen?: (open: boolean) => void;
+}
+
+export default function HeroSection({ 
+  language = 'en', 
+  isTrackOpen: parentIsTrackOpen, 
+  setIsTrackOpen: parentSetIsTrackOpen 
+}: HeroSectionProps) {
+  // Use parent state if provided, otherwise use local state
+  const [localIsTrackOpen, setLocalIsTrackOpen] = useState(false);
+  
+  const isTrackOpen = parentIsTrackOpen !== undefined ? parentIsTrackOpen : localIsTrackOpen;
+  const setIsTrackOpen = parentSetIsTrackOpen || setLocalIsTrackOpen;
 
   const slides = [
     { img: '../image1.jpg', alt: 'Slide 1' },
@@ -73,8 +86,6 @@ export default function HeroSection() {
           <div className="custom-prev swiper-button-prev"></div>
           <div className="custom-next swiper-button-next"></div>
         </div>
-
-        <TrackModal isOpen={isTrackOpen} onClose={() => setIsTrackOpen(false)} />
       </div>
     </section>
   );

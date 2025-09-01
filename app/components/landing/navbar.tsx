@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useState, Dispatch, SetStateAction } from 'react';
 import { usePathname } from 'next/navigation';
 import SimulatorModal from './loanSimulator';
+import LoginModal from './LoginModal/page';
+import TrackModal from './trackModal';
 
 interface NavbarProps {
   language: 'en' | 'ceb';
@@ -17,12 +19,22 @@ export default function Navbar({ language, setLanguage }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoanSimulatorOpen, setIsLoanSimulatorOpen] = useState(false);
   
-  const navItems = [
+  // Smooth scroll function
+  const smoothScrollTo = (elementId: string) => {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  };
   
+  const navItems = [
     { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => setIsLoanSimulatorOpen(true),},
-    { name: 'Team', href: '#team' },
-    { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: "#about" },
-    { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer' },
+    { name: 'Team', href: '#team', onClick: () => smoothScrollTo('team') },
+    { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: "#about", onClick: () => smoothScrollTo('about') },
+    { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer', onClick: () => smoothScrollTo('footer') },
   ];
 
   const isActive = (href: string) => pathname === href || (href === '#' && pathname !== '/');
@@ -71,22 +83,32 @@ export default function Navbar({ language, setLanguage }: NavbarProps) {
             const active = isActive(item.href);
             return (
               <li key={item.name}>
-                <Link
-                  href={item.href || '#'}
-                  onClick={(e) => {
-                    if (item.onClick) {
+                {item.onClick ? (
+                  <button
+                    onClick={(e) => {
                       e.preventDefault();
                       item.onClick();
-                    }
-                  }}
-                  className={`px-4 py-2 text-sm font-medium transition-all ${
-                    active
-                      ? 'text-gray-600 '
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
-                >
-                  {item.name}
-                </Link>
+                    }}
+                    className={`px-4 py-2 text-sm font-medium transition-all ${
+                      active
+                        ? 'text-gray-600 '
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    {item.name}
+                  </button>
+                ) : (
+                  <Link
+                    href={item.href || '#'}
+                    className={`px-4 py-2 text-sm font-medium transition-all ${
+                      active
+                        ? 'text-gray-600 '
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                )}
               </li>
             );
           })}

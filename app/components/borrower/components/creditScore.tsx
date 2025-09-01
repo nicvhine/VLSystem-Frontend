@@ -8,7 +8,7 @@ interface Props {
 
 export default function CreditScore({ creditScore, translations, language }: Props) {
   return (
-    <div className="bg-white shadow-md rounded-2xl p-4 sm:p-6 flex flex-col items-center text-gray-800 hover:shadow-lg transition">
+    <div className="flex flex-col items-center text-gray-800">
       <h2 className="text-lg sm:text-xl font-semibold mb-1">{translations[language].creditScore}</h2>
       <div className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 text-center">{translations[language].creditScoreDesc}</div>
 

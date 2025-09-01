@@ -78,26 +78,32 @@ export default function BorrowerDashboard() {
             <span className="text-red-600">{name}</span>!
           </h1>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            <CreditScore
-              creditScore={creditScore}
-              translations={translations}
-              language={language}
-            />
+          <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mt-6">
+            <div className="flex-1 bg-white rounded-2xl shadow p-8 h-full flex flex-col justify-center">
+              <CreditScore
+                creditScore={creditScore}
+                translations={translations}
+                language={language}
+              />
+            </div>
 
-            <LoanDetails
-              translations={translations}
-              language={language}
-              loanInfo={loanInfo}
-            />
+            <div className="flex-1 bg-white rounded-2xl shadow p-8 h-full flex flex-col justify-center">
+              <LoanDetails
+                translations={translations}
+                language={language}
+                loanInfo={loanInfo}
+              />
+            </div>
 
-            <PaymentProgress
-              progress={paymentProgress}
-              canReloan={paymentProgress >= 0}
-              onReloanClick={handleReloan}
-              translations={translations}
-              language={language}
-            />
+            <div className="flex-1 bg-white rounded-2xl shadow p-8 h-full flex flex-col justify-center">
+              <PaymentProgress
+                progress={paymentProgress}
+                canReloan={paymentProgress >= 0}
+                onReloanClick={handleReloan}
+                translations={translations}
+                language={language}
+              />
+            </div>
           </div>
 
           <PaymentTable
@@ -108,8 +114,6 @@ export default function BorrowerDashboard() {
             translations={translations}
             language={language}
           />
-
-
 
           {showReceipt && selectedReceipt && (
             <ReceiptModal

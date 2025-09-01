@@ -29,6 +29,14 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const [loanType, setLoanType] = useState('');
   const [loanOptions, setLoanOptions] = useState<number[]>([]);
   const [selectedLoanAmount, setSelectedLoanAmount] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+
+  // Debug: Log when props change
+  useEffect(() => {
+    console.log('SimulatorModal props:', { isOpen, showModal });
+  }, [isOpen, showModal]);
   const [result, setResult] = useState<{
     paymentPeriod: string;
     principalAmount: string;
@@ -40,6 +48,20 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   } | null>(null);
 
   const paymentPeriod = 'monthly';
+
+  // Handle animation timing
+  useEffect(() => {
+    if (isOpen) {
+      setShowModal(true);
+      // Small delay to trigger animation after mount
+      const timer = setTimeout(() => setAnimateIn(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setAnimateIn(false);
+      const timer = setTimeout(() => setShowModal(false), 300); // Match transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   const withCollateralTable: LoanOptionWithCollateral[] = [
     { amount: 20000, months: 8, interest: 7 },
@@ -77,6 +99,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
     setSelectedLoanAmount('');
     setResult(null);
+    setShowResult(false);
   }, [loanType]);
 
   const calculateLoan = (e: React.FormEvent) => {
@@ -84,8 +107,12 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
     if (!loanType || !selectedLoanAmount) {
       setResult(null);
+      setShowResult(false);
       return;
     }
+
+    // Reset animation state first
+    setShowResult(false);
 
     const amt = Number(selectedLoanAmount);
     let loanOption: LoanOption | undefined;
@@ -100,6 +127,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
     if (!loanOption) {
       setResult(null);
+      setShowResult(false);
       return;
     }
 
@@ -122,9 +150,12 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
         maximumFractionDigits: 2,
       })}`,
     });
+
+    // Trigger animation after setting result
+    setTimeout(() => setShowResult(true), 10);
   };
 
-  if (!isOpen) return null;
+  if (!showModal) return null;
 
   const resultLabels = {
     principalAmount: language === 'en' ? 'Principal Amount:' : 'Pangunang Kantidad:',
@@ -143,8 +174,8 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   };
 
   return (
-    <div className="fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6">
+    <div className={`fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6 transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
@@ -202,7 +233,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
         </form>
 
         {result && (
-          <div className="mt-8 bg-gray-50 rounded-lg p-6">
+          <div className={`mt-8 bg-gray-50 rounded-lg p-6 transform transition-all duration-500 ease-out ${showResult ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}>
             <h3 className="text-lg font-semibold mb-4 text-gray-800">{resultLabels.summary}</h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2">
               <div>
