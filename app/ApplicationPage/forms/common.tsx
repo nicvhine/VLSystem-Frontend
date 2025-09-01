@@ -116,14 +116,72 @@ function MapComponent({
   } = props;
 
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
- 
+  const [refErrors, setRefErrors] = useState<string[]>(["", "", ""]);
 
-  const handleReferenceChange = (index: number, field: 'name' | 'contact' | 'relation', value: string) => {
-  const updated = [...props.appReferences];
-  updated[index][field] = value;
-  props.setAppReferences(updated);
+  function validateReferenceUniqueness(
+    refs: { name: string; contact: string; relation: string }[]
+  ) {
+    const errors = ["", "", ""];
+    const nameMap = new Map<string, number[]>();
+    const numberMap = new Map<string, number[]>();
+  
+    refs.forEach((r, idx) => {
+      const nameKey = (r.name || "").trim().toLowerCase();
+      const numKey = (r.contact || "").trim();
+  
+      if (nameKey) {
+        nameMap.set(nameKey, [...(nameMap.get(nameKey) || []), idx]);
+      }
+      if (numKey) {
+        numberMap.set(numKey, [...(numberMap.get(numKey) || []), idx]);
+      }
+    });
+  
+    nameMap.forEach((indices) => {
+      if (indices.length > 1) {
+        indices.forEach((i) => {
+          errors[i] = errors[i]
+            ? errors[i] + " • Duplicate name"
+            : "Duplicate name";
+        });
+      }
+    });
+  
+    numberMap.forEach((indices) => {
+      if (indices.length > 1) {
+        indices.forEach((i) => {
+          errors[i] = errors[i]
+            ? errors[i] + " • Duplicate contact number"
+            : "Duplicate contact number";
+        });
+      }
+    });
+  
+    setRefErrors(errors);
+    return errors.every((e) => !e);
+  }
+
+  const handleReferenceChange = (
+    index: number,
+    field: "name" | "contact" | "relation",
+    value: string
+  ) => {
+    const updated = [...props.appReferences];
+  
+    for (let i = 0; i < 3; i++) {
+      if (!updated[i]) updated[i] = { name: "", contact: "", relation: "" };
+    }
+  
+    updated[index][field] = value;
+    props.setAppReferences(updated);
+  
+    validateReferenceUniqueness(updated);
   };
-
+  
+  function isValidPHMobile(num: string) {
+    const trimmed = (num || "").trim();
+    return /^09\d{9}$/.test(trimmed) || /^\+639\d{9}$/.test(trimmed);
+  }
 
   const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     props.setAppAddress(e.target.value);
@@ -412,12 +470,32 @@ function MapComponent({
           {language === 'en' ? 'Contact Number:' : 'Numero ng Telepono:'}
         </label>
         <input
-          type="text"
-          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-          placeholder="09XXXXXXXXX"
-          value={props.appReferences[i - 1]?.contact || ""}
-          onChange={(e) => handleReferenceChange(i - 1, 'contact', e.target.value)}
-        />
+  type="text"
+  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+    refErrors[i - 1] ? "border-red-400" : "border-gray-200"
+  }`}
+  placeholder="09XXXXXXXXX"
+  value={props.appReferences[i - 1]?.contact || ""}
+  onChange={(e) => handleReferenceChange(i - 1, "contact", e.target.value)}
+  onBlur={(e) => {
+    const v = e.target.value.trim();
+    if (v && !isValidPHMobile(v)) {
+      const next = [...refErrors];
+      next[i - 1] = next[i - 1]
+        ? next[i - 1] + " • Invalid mobile format"
+        : "Invalid mobile format";
+      setRefErrors(next);
+    } else {
+      validateReferenceUniqueness(props.appReferences);
+    }
+  }}
+  aria-invalid={!!refErrors[i - 1]}
+/>
+
+{refErrors[i - 1] && (
+  <p className="text-sm text-red-600 mt-1">{refErrors[i - 1]}</p>
+)}
+
       </div>
       <div>
         <label className="block font-medium mb-2 text-gray-700">

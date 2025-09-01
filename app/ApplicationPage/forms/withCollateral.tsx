@@ -67,6 +67,16 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
   const [collateralDescription, setCollateralDescription] = useState("");
   const [ownershipStatus, setOwnershipStatus] = useState("");
 
+  // Success Modal State
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [loanId, setLoanId] = useState<string | null>(null);
+
+  // Close Modal Function
+  const closeModal = () => {
+    setShowSuccessModal(false);
+    setLoanId(null);
+  };
+
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
@@ -83,64 +93,82 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
 
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
-      alert(language === 'en' ? "Please fill in all required fields including collateral information." : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral.");
+      alert(language === 'en'
+        ? "Please fill in all required fields including collateral information."
+        : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral."
+      );
       return;
     }
-
-    const payload = {
-      appName,
-      appDob,
-      appContact,
-      appEmail,
-      appMarital,
-      appChildren,
-      appSpouseName,
-      appSpouseOccupation,
-      appAddress,
-      appTypeBusiness,
-      appDateStarted,
-      appBusinessLoc,
-      appMonthlyIncome,
-      appOccupation,
-      appEmploymentStatus,
-      appCompanyName,
-      sourceOfIncome,
-      appLoanAmount: selectedLoan.amount,
-      appLoanTerms: selectedLoan.months,
-      appInterest: selectedLoan.interest,
-      appLoanPurpose,
-      appReferences,
-      // Collateral information
-      collateralType,
-      collateralValue,
-      collateralDescription,
-      ownershipStatus,
-    };
-
+  
+    if (uploadedFiles.length === 0) {
+      alert(language === "en"
+        ? "Please upload at least one document."
+        : "Palihug i-upload ang usa ka dokumento."
+      );
+      return;
+    }
+  
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      const formData = new FormData();
+      formData.append("appName", appName);
+      formData.append("appDob", appDob);
+      formData.append("appContact", appContact);
+      formData.append("appEmail", appEmail);
+      formData.append("appMarital", appMarital);
+      formData.append("appChildren", String(appChildren));
+      formData.append("appSpouseName", appSpouseName);
+      formData.append("appSpouseOccupation", appSpouseOccupation);
+      formData.append("appAddress", appAddress);
+      formData.append("appTypeBusiness", appTypeBusiness);
+      formData.append("appDateStarted", appDateStarted);
+      formData.append("appBusinessLoc", appBusinessLoc);
+      formData.append("appMonthlyIncome", String(appMonthlyIncome));
+      formData.append("appOccupation", appOccupation);
+      formData.append("appEmploymentStatus", appEmploymentStatus);
+      formData.append("appCompanyName", appCompanyName);
+      formData.append("sourceOfIncome", sourceOfIncome);
+  
+      formData.append("appLoanAmount", String(selectedLoan.amount));
+      formData.append("appLoanTerms", String(selectedLoan.months));
+      formData.append("appInterest", String(selectedLoan.interest));
+      formData.append("appLoanPurpose", appLoanPurpose);
+  
+      formData.append("collateralType", collateralType);
+      formData.append("collateralValue", String(collateralValue));
+      formData.append("collateralDescription", collateralDescription);
+      formData.append("ownershipStatus", ownershipStatus);
+  
+      // references must be stringified because backend expects objects
+      formData.append("appReferences", JSON.stringify(appReferences));
+  
+      uploadedFiles.forEach(file => {
+        formData.append("documents", file);
       });
-
+  
+      const res = await fetch(API_URL, { method: "POST", body: formData });
+  
       if (res.ok) {
-        alert(language === 'en' ? "Loan application with collateral submitted successfully!" : "Malampusong napasa ang aplikasyon nga adunay kolateral!");
-        // Reset form
+        const data = await res.json();
+
+        setLoanId(data.application?.applicationId);
+        setShowSuccessModal(true);
+        
         setAppLoanPurpose("");
         setSelectedLoan(null);
         setCollateralType("");
         setCollateralValue(0);
         setCollateralDescription("");
         setOwnershipStatus("");
+        setUploadedFiles([]);
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
       }
     } catch (error) {
       alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
     }
   };
+  
 
   // Translations for select options
   const collateralTypeOptions = [
@@ -308,7 +336,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
             <input
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.png"
               onChange={handleFileChange}
               className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
                         file:rounded-lg file:border-0 file:text-sm file:font-medium
@@ -351,6 +379,43 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       >
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
+
+        {/* Success Modal */}
+{showSuccessModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">
+          {language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}
+        </h3>
+        <p className="text-gray-600 mb-4">
+          {language === 'en'
+            ? 'Your loan application has been received and is being processed.'
+            : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
+        </p>
+        {loanId && (
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <p className="text-sm text-gray-600 mb-1">
+              {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
+            </p>
+            <p className="text-lg font-semibold text-red-600">{loanId}</p>
+          </div>
+        )}
+        <button
+          onClick={closeModal}
+          className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
+        >
+          {language === 'en' ? 'Close' : 'Sirado'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </>
   );
 }
