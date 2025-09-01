@@ -9,6 +9,7 @@ import WithoutCollateralLoanForm from "./forms/withoutCollateral";
 import OpenTermLoanForm from "./forms/openTerm";
 import axios from "axios";
 import Common from "./forms/common";
+import LoginModal from "../components/landing/LoginModal/page";
 
 
 export default function ApplicationPage() {
@@ -27,6 +28,8 @@ export default function ApplicationPage() {
     }
     return 'en';
   });
+
+  const [isLoginOpen, setIsLoginOpen] = useState(false); 
   
   // Update language in local storage when it changes
   useEffect(() => {
@@ -133,7 +136,15 @@ export default function ApplicationPage() {
 
 return (
 <div className="min-h-screen bg-gray-50 text-black">
-  <Navbar language={language} setLanguage={setLanguage} />
+<Navbar 
+  language={language} 
+  setLanguage={setLanguage} 
+  isLoginOpen={isLoginOpen} 
+  setIsLoginOpen={setIsLoginOpen}
+/>
+
+<LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
+
   <div className="flex min-h-screen">
        
 {/* Left Sidebar */}
