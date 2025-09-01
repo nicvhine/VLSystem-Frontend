@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import Navbar from "../components/landing/landingNavbar";
+import Navbar from "../ApplicationPage/navbar";
 import WithCollateralLoanForm from "./forms/withCollateral";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
