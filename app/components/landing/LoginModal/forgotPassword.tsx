@@ -32,13 +32,14 @@ const sendOtpViaEmail = async (toEmail: string, otp: string) => {
   }
 };
 
-
 export default function ForgotPasswordModal({
   forgotRole,
   setForgotRole,
   setShowForgotModal,
 }: Props) {
-  const [step, setStep] = useState<'account' | 'otp' | 'reset'>('account');
+  // 👇 NEW: added 'staff'
+  const [step, setStep] = useState<'role' | 'account' | 'otp' | 'reset' | 'staff'>('role');
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -96,7 +97,7 @@ export default function ForgotPasswordModal({
   
     try {
       const res = await fetch(`http://localhost:3001/borrowers/reset-password/${borrowerId}`, {
-        method: 'PUT',  // must be PUT
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword }),
       });
@@ -113,14 +114,48 @@ export default function ForgotPasswordModal({
       setError('Server error. Please try again.');
     }
   };
-  
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
       <div className="bg-white w-[400px] rounded-lg shadow-lg p-6">
-        {/* Step 1: Enter username + email */}
+        
+        {/* Step 0: Choose Role */}
+        {step === 'role' && (
+          <>
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
+              Forgot Password
+            </h2>
+            <button
+              onClick={() => setStep('account')}
+              className="w-full px-4 py-2 mb-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+            >
+              I am a Borrower
+            </button>
+            <button
+              onClick={() => {
+                setStep('staff');
+              }}
+              className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition"
+            >
+              I am a Staff
+            </button>
+          </>
+        )}
+
+      {/* Step 1: Enter username + email */}
         {step === 'account' && (
           <>
+            {/* Close icon */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => setShowForgotModal(false)}
+                className="text-gray-500 hover:text-gray-800"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
               Forgot Password
             </h2>
@@ -148,6 +183,7 @@ export default function ForgotPasswordModal({
             </button>
           </>
         )}
+
 
         {/* Step 2: OTP */}
         {step === 'otp' && (
@@ -200,6 +236,24 @@ export default function ForgotPasswordModal({
               className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50"
             >
               Reset Password
+            </button>
+          </>
+        )}
+
+        {/* ✅ Step 4: Staff Info */}
+        {step === 'staff' && (
+          <>
+            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
+              Staff Password Reset
+            </h2>
+            <p className="text-center text-gray-600 mb-6">
+              Please contact your administrator to change your password.
+            </p>
+            <button
+              onClick={() => setShowForgotModal(false)}
+              className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+            >
+              Close
             </button>
           </>
         )}
