@@ -56,14 +56,25 @@ export default function ApplicationsPage() {
     fetchApplications();
   }, []);
 
-  const filteredApplications = applications.filter(application => {
+  const filteredApplications = applications
+  .filter(application => {
     const matchesSearch = Object.values(application).some(value =>
       value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
     );
     if (!matchesSearch) return false;
     if (activeFilter === 'All') return true;
     return application.status === activeFilter;
+  })
+  .sort((a, b) => {
+    if (sortBy === "date") {
+      return new Date(b.dateApplied).getTime() - new Date(a.dateApplied).getTime(); 
+    }
+    if (sortBy === "amount") {
+      return b.appLoanAmount - a.appLoanAmount; 
+    }
+    return 0; 
   });
+
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {

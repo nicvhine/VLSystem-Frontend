@@ -158,11 +158,16 @@ const verifyEmailCode = () => {
   if (userEnteredCode === emailVerificationCode) {
     setEmailVerified(true);
     setPasswordError('');
-    setSettingsSuccess('✔ Email verified.');
-    } else {
+
+    localStorage.setItem('email', editingEmail);
+
+    setSettingsSuccess('✔ Email changed successfully!');
+    setIsEditingEmailField(false); 
+  } else {
     setPasswordError('Incorrect verification code.');
   }
 };
+
 
 //SMS VERIFICATION
 const sendSmsVerificationCode = async () => {

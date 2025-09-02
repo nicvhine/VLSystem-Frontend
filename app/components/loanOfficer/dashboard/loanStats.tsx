@@ -27,17 +27,49 @@ export default function LoanStatsDashboard() {
     openTerm: 0,
   });
 
+  // 🔹 Application status stats
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch("http://localhost:3001/loans/loan-stats", {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
+    fetch("http://localhost:3001/loan-applications/loan-stats", {
+      headers: { 'Authorization': `Bearer ${token}` },
     })
       .then(res => res.json())
-      .then(data => setLoanStats(data))
+      .then(data => {
+        console.log("Loan Stats API Response:", data); 
+        setLoanStats(prev => ({
+          ...prev,
+          ...data, 
+        }));
+      })
       .catch(err => console.error("Failed to load stats:", err));
   }, []);
+
+  // 🔹 Loan type stats
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    fetch("http://localhost:3001/loan-applications/loan-type-stats", {
+      headers: { 'Authorization': `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("Loan Type Stats API Response:", data);
+
+        // Map array into direct counts
+        const withCollateral = data.find(t => t.loanType === "Regular Loan With Collateral")?.count || 0;
+        const withoutCollateral = data.find(t => t.loanType === "Regular Loan Without Collateral")?.count || 0;
+        const openTerm = data.find(t => t.loanType === "Open-Term Loan")?.count || 0;
+
+        setLoanStats(prev => ({
+          ...prev,
+          typeStats: data,
+          withCollateral,
+          withoutCollateral,
+          openTerm,
+        }));
+      })
+      .catch(err => console.error("Failed to load loan type stats:", err));
+  }, []);
+  
 
   const StatCard = ({
     label,
@@ -60,7 +92,7 @@ export default function LoanStatsDashboard() {
       </div>
       <h4 className="text-sm font-medium text-gray-500  mb-2">{label}</h4>
       <p className={`text-2xl font-bold ${color}`}>
-        {isAmount ? `₱${value.toLocaleString()}` : value.toLocaleString()}
+        {isAmount ? `₱${value?.toLocaleString?.() ?? 0}` : value?.toLocaleString?.() ?? 0}
       </p>
     </div>
   );
