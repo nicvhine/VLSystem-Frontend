@@ -81,18 +81,6 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     verifySmsCode,
   } = useProfileDropdownLogic(setIsEditing);
 
-const [darkMode, setDarkMode] = useState(() => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('darkMode') === 'true';
-  }
-  return false;
-});
-
-const handleSetDarkMode = (value: boolean) => {
-  setDarkMode(value); 
-  localStorage.setItem('darkMode', value.toString());
-};
-
 
   return (
     <div className="relative">
@@ -201,8 +189,6 @@ const handleSetDarkMode = (value: boolean) => {
                 smsVerificationSent={smsVerificationSent}
                 sendSmsVerificationCode={sendSmsVerificationCode}
                 verifySmsCode={verifySmsCode}
-                darkMode={darkMode}
-                setDarkMode={handleSetDarkMode}
               />
             )}
             

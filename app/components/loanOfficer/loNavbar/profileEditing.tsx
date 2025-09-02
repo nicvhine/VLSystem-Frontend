@@ -54,9 +54,6 @@ interface Props {
   verifySmsCode: () => void;
   smsVerificationSent: boolean;
 
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
-
 }
 
 export default function ProfileSettingsPanel({
@@ -98,12 +95,10 @@ export default function ProfileSettingsPanel({
   sendSmsVerificationCode,
   verifySmsCode,
   smsVerificationSent,
-  darkMode,
-  setDarkMode,
 }: Props) {
   
   return (
-     <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300`}>
+     <div className="px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300">
     {/* Tab switch buttons */}
       <div className="flex mb-4 bg-white rounded-lg p-1 relative">
         <div
@@ -165,11 +160,6 @@ export default function ProfileSettingsPanel({
                   {isEditingEmailField ? 'Cancel' : 'Edit'}
                 </button>
               </div>
-
-              {/* Error message moved here - right after Email Address label */}
-              {passwordError && (
-                <p className="text-sm text-red-600 mb-2 text-right">{passwordError}</p>
-              )}
       
 
               {!isEditingEmailField ? (
@@ -192,22 +182,30 @@ export default function ProfileSettingsPanel({
                   </button>
 
                   {emailVerificationSent && (
-                    <div className="mt-2">
-                      <input
-                        type="text"
-                        value={userEnteredCode}
-                        onChange={(e) => setUserEnteredCode(e.target.value)}
-                        placeholder="Enter verification code"
-                        className="mt-2 w-full px-3 py-2 border border-gray-300 rounded"
-                      />
-                      <button
-                        onClick={verifyEmailCode}
-                        className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
-                      >
-                        Verify Code
-                      </button>
-                    </div>
-                  )}
+  <div className="mt-2">
+    <input
+      type="text"
+      value={userEnteredCode}
+      onChange={(e) => setUserEnteredCode(e.target.value)}
+      placeholder="Enter verification code"
+      className="mt-2 w-full px-3 py-2 border border-gray-300 rounded"
+    />
+    <button
+      onClick={verifyEmailCode}
+      className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+    >
+      Verify Code
+    </button>
+
+    {settingsSuccess.includes("Email verified") && (
+      <p className="text-green-600 text-sm mt-2">{settingsSuccess}</p>
+    )}
+    {passwordError.includes("Incorrect verification code") && (
+      <p className="text-red-600 text-sm mt-2">{passwordError}</p>
+    )}
+  </div>
+)}
+
                 </>
               )}
             </div>
