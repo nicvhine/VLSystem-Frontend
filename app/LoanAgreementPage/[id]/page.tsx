@@ -150,6 +150,7 @@ useEffect(() => {
   const updatedFields = {
     appInterest: editData?.appInterest,
     appLoanTerms: editData?.appLoanTerms,
+    appLoanAmount: editData?.appLoanAmount,
   };
 
   console.log("Updating application:", application?.applicationId);
