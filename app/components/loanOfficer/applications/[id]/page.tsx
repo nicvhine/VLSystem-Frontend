@@ -58,21 +58,34 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   const [comments, setComments] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
    
-     useEffect(() => {
-       const fetchApplications = async () => {
-         try {
-           const response = await fetch (API_URL);
-           const data = await response.json();
-           setApplications(data);
-         } catch (error) {
-           console.error("Failed to fetch applications:", error);
-         } finally {
-           setLoading(false);
-         }
-       };
-   
-       fetchApplications();
-     }, []);
+  async function authFetch(url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token in localStorage");
+  
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const response = await authFetch(API_URL);
+        if (!response.ok) throw new Error("Unauthorized");
+        const data = await response.json();
+        setApplications(data);
+      } catch (error) {
+        console.error("Failed to fetch applications:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApplications();
+  }, []);
+  
 
 
 
@@ -123,15 +136,14 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
 
   const handleDenyApplication = async () => {
   try {
-    const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
-      method: "PUT", 
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status: "Denied by LO",
-      }),
-    });
+    const token = localStorage.getItem("token"); 
+    console.log("TOKEN BEING SENT:", token);
+
+    const response = await authFetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
+  method: "PUT",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ status: "Denied by LO" }),
+});
 
     if (!response.ok) {
       throw new Error("Failed to update status");

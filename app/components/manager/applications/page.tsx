@@ -81,10 +81,24 @@ export default function ApplicationsPage() {
     return parts[0].slice(0, 3) + parts[parts.length - 1];
   };
 
+  async function authFetch(url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token found in localStorage");
+  
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+  
+
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await fetch (API_URL);
+        const response = await authFetch(API_URL);
         const data = await response.json();
         setApplications(data);
       } catch (error) {
@@ -100,7 +114,7 @@ export default function ApplicationsPage() {
   useEffect(() => {
   const fetchCollectors = async () => {
     try {
-      const res = await fetch("http://localhost:3001/users/collectors");
+      const res = await authFetch("http://localhost:3001/users/collectors");
       if (!res.ok) throw new Error("Network response was not ok");
 
       const data = await res.json();
@@ -127,7 +141,7 @@ const handleCreateAccount = async () => {
       return;
     }
 
-    const borrowerRes = await fetch("http://localhost:3001/borrowers", {
+    const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -232,7 +246,7 @@ const handleCreateAccount = async () => {
 
 const handleAction = async (id: string, status: 'Disbursed') => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authFetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -385,7 +399,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                       className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700"
                       onClick={async () => {
                         try {
-                          const response = await fetch(`${API_URL}/${application.applicationId}`, {
+                          const response = await authFetch(`${API_URL}/${application.applicationId}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ status: 'Ready for Disbursement' }),
@@ -428,7 +442,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                   onClick={async () => {
   try {
     // Update application status to Accepted
-    const response = await fetch(`${API_URL}/${application.applicationId}`, {
+    const response = await authFetch(`${API_URL}/${application.applicationId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'Accepted' }),

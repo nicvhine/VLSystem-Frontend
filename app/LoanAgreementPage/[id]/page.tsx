@@ -64,17 +64,32 @@ export default function LoanAgreement({ params }: { params: { id: string } }) {
   const [isDragging, setIsDragging] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const fetchApplications = async () => {
-  try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
-    setApplications(data);
-  } catch (error) {
-    console.error("Failed to fetch applications:", error);
-  } finally {
-    setLoading(false);
+  async function authFetch(url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token in localStorage");
+  
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
   }
-};
+  
+  const fetchApplications = async () => {
+    try {
+      const response = await authFetch(API_URL);
+      if (!response.ok) throw new Error("Unauthorized");
+      const data = await response.json();
+      setApplications(data);
+    } catch (error) {
+      console.error("Failed to fetch applications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
 
 useEffect(() => {
   fetchApplications();
@@ -146,24 +161,22 @@ useEffect(() => {
 };
 
 
- const handleSave = async () => {
+const handleSave = async () => {
   const updatedFields = {
     appInterest: editData?.appInterest,
     appLoanTerms: editData?.appLoanTerms,
     appLoanAmount: editData?.appLoanAmount,
   };
 
-  console.log("Updating application:", application?.applicationId);
-  console.log("With fields:", updatedFields);
-
   try {
-    const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedFields),
-    });
+    const response = await authFetch(
+      `http://localhost:3001/loan-applications/${application?.applicationId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedFields),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -177,7 +190,6 @@ useEffect(() => {
     console.error("Error saving data to the server:", error);
   }
 };
-
 
 
   const handleCancel = () => {
@@ -211,15 +223,14 @@ const handlePrint = () => {
 
 const handleSubmitAgreement = async () => {
   try {
-    const response = await fetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
-      method: "PUT", // or PATCH, depending on your backend
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status: "Endorsed",
-      }),
-    });
+    const response = await authFetch(
+      `http://localhost:3001/loan-applications/${application?.applicationId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Endorsed" }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to update status");
@@ -231,6 +242,7 @@ const handleSubmitAgreement = async () => {
     alert("Something went wrong.");
   }
 };
+
 
 
 
