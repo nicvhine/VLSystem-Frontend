@@ -159,7 +159,7 @@ const handleCreateAccount = async () => {
 
     setTempPassword(borrowerData.tempPassword);
 
-    const updateRes = await fetch(`${API_URL}/${selectedApp.applicationId}`, {
+    const updateRes = await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Accepted" }),

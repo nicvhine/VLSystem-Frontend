@@ -43,6 +43,9 @@ interface Application {
   paymentSchedule: string;
   documents: { fileName: string; filePath: string; mimeType: string }[];
   sourceOfIncome: string;
+  interviewDate: string;
+  interviewTime: string;
+  status: string;
 }
 
 
@@ -58,6 +61,63 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   const [comments, setComments] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
    
+  //SCHEDULE MODAL
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [interviewDate, setInterviewDate] = useState(''); 
+  const [interviewTime, setInterviewTime] = useState('');
+
+
+  const handleScheduleInterview = async () => {
+    if (!interviewDate || !interviewTime) {
+      alert('Please select both date and time.');
+      return;
+    }
+  
+    try {
+      const response = await authFetch(
+        `http://localhost:3001/loan-applications/${application?.applicationId}/schedule-interview`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            interviewDate,
+            interviewTime
+          }),
+        }
+      );
+  
+      if (!response.ok) {
+        throw new Error("Failed to save schedule");
+      }
+  
+      alert("Interview scheduled successfully!");
+      setIsModalOpen(false);
+  
+    } catch (error) {
+      console.error("Error saving schedule:", error);
+      alert("Could not schedule interview. Try again.");
+    }
+  };
+    
+  const handleApproveLoan = async () => {
+    try {
+      const response = await authFetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Endorsed" }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to update status");
+      }
+  
+      alert("Loan has been endorsed!");
+    } catch (error) {
+      console.error("Failed to approve loan:", error);
+      alert("Something went wrong.");
+    }
+  };
+  
   async function authFetch(url: string, options: RequestInit = {}) {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token in localStorage");
@@ -105,6 +165,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   };
 
   const application = applications.find(app => app.applicationId === params.id);
+
 
   if (!application && !loading) {
     return (
@@ -156,6 +217,8 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   }
 };
 
+const hasInterviewScheduled = Boolean(application?.interviewDate && application?.interviewTime);
+
 
 
   return (
@@ -175,20 +238,33 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{params.id} - {application?.loanType}</h1>
           </div>
           <div className="flex flex-wrap gap-3">
-          {application && application.applicationId && (
-          <Link
-            href={`/LoanAgreementPage/${application.applicationId}`}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
-          >
-            Generate Loan Agreement
-          </Link>
-        )}
-            <button 
-            onClick={handleDenyApplication}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">
-              Deny Application
-            </button>
-          </div>
+  {application?.status !== "Endorsed" && application?.status !== "Denied" && application?.status !== "Denied by LO" && (
+    <>
+      <button
+        onClick={hasInterviewScheduled ? handleApproveLoan : () => setIsModalOpen(true)}
+        className={`px-4 py-2 rounded-lg text-white whitespace-nowrap transition-colors ${
+          hasInterviewScheduled ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700"
+        }`}
+      >
+        {hasInterviewScheduled ? "Approve Loan" : "Schedule Interview"}
+      </button>
+
+      <button
+        onClick={handleDenyApplication}
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
+      >
+        Deny
+      </button>
+    </>
+  )}
+  {application?.status === "Endorsed" && (
+    <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">Loan Endorsed</span>
+  )}
+  {application?.status === "Denied" || application?.status === "Denied by LO" ? (
+    <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">Loan Denied</span>
+  ) : null}
+</div>
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -367,9 +443,6 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
                   {application?.appInterest|| '—'}
                 </p>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Payment Schedule</p>
-            </div>
           </div>
         </section>
       </div>
@@ -435,6 +508,45 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
           </div>
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-md flex items-center justify-center z-50 text-black">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-lg font-semibold mb-4">Schedule Interview</h2>
+            
+            <label className="block mb-2 text-sm font-medium text-gray-700">Date</label>
+            <input
+              type="date"
+              className="w-full border rounded px-3 py-2 mb-4"
+              value={interviewDate}
+              onChange={(e) => setInterviewDate(e.target.value)}
+            />
+
+            <label className="block mb-2 text-sm font-medium text-gray-700">Time</label>
+            <input
+              type="time"
+              className="w-full border rounded px-3 py-2 mb-4"
+              value={interviewTime}
+              onChange={(e) => setInterviewTime(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleScheduleInterview}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

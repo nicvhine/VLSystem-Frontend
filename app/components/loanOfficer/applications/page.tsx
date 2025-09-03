@@ -35,6 +35,19 @@ export default function ApplicationsPage() {
   const [sortBy, setSortBy] = useState('');
   const [activeFilter, setActiveFilter] = useState('Pending');
 
+  async function authFetch(url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token in localStorage");
+  
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  }
+
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -102,7 +115,7 @@ export default function ApplicationsPage() {
 
   const handleAction = async (id: string, status: 'Disbursed') => {
   try {
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await authFetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -186,7 +199,7 @@ export default function ApplicationsPage() {
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
                 <option value="">Sort by</option>
-                <option value="date">Release Date</option>
+                <option value="date">Application Date</option>
                 <option value="amount">Amount</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
@@ -198,7 +211,7 @@ export default function ApplicationsPage() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Collectable Amount', 'Status'].map((heading) => (
+                  {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Collectable Amount', 'Status', 'Action'].map((heading) => (
                     <th
                       key={heading}
                       className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -214,23 +227,36 @@ export default function ApplicationsPage() {
                     key={application.applicationId}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-4">
-                      <Link href={`/components/loanOfficer/applications/${application.applicationId}`} className="text-blue-600 hover:text-blue-700 font-medium">
-                        {application.applicationId}
-                      </Link>
+                   <td className="px-6 py-4">
+                      {application.status === 'Pending' ? (
+                        <Link
+                          href={`/components/loanOfficer/applications/${application.applicationId}`}
+                          className="text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          {application.applicationId}
+                        </Link>
+                      ) : (
+                        <Link
+                        href={`/components/loanOfficer/applications/${application.applicationId}`}
+                          className="text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          {application.applicationId}
+                        </Link>
+                      )}
                     </td>
+
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{application.appName}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{application.loanType}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.dateApplied)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{formatDate(application.dateApplied)}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{application.appInterest}%</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{application.totalPayable}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{application.appInterest}%</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(application.totalPayable)}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                        application.status === 'Accepted' ? 'bg-green-100 text-green-800' :
-                        application.status === 'Denied' ? 'bg-red-100 text-red-800' :
-                        application.status === 'Onhold' ? 'bg-orange-100 text-orange-800' :
-                        'bg-yellow-100 text-yellow-800'
+                      <span className={`inline-flex items-center px-0 py-1 rounded-full text-xs font-medium ${
+                        application.status === 'Accepted' ? 'text-green-600' :
+                        application.status === 'Denied' ? 'text-red-600' :
+                        application.status === 'Onhold' ? 'text-orange-600' :
+                        'text-yellow-600'
                       }`}>
                         {application.status === 'Onhold' ? 'On Hold' : application.status}
                       </span>

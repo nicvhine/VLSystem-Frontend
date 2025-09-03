@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { FiSave, FiPrinter, FiEdit, FiArrowLeft} from 'react-icons/fi';
-import LoanOfficerNavbar from "../../../app/components/loanOfficer/loNavbar/page";
+import LoanOfficerNavbar from "@/app/components/loanOfficer/loNavbar/page";
 const API_URL = "http://localhost:3001/loan-applications";
 import Link from "next/link";
 // Icons as Unicode symbols - no external dependencies
@@ -57,7 +57,7 @@ const formatCurrency = (amount?: number) => {
 };
 
 
-export default function LoanAgreement({ params }: { params: { id: string } }) {
+export default function SubmittedPage({ params }: { params: { id: string } }) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -248,76 +248,12 @@ const handleSubmitAgreement = async () => {
 
 const currentData = isEditing ? editData : application;
 
-const capitalizeWords = (str: string) =>
-  str
-    .toLowerCase()
-    .replace(/\b\w/g, char => char.toUpperCase());
+const capitalizeWords = (str?: string) => str?.toUpperCase() || '';
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       <LoanOfficerNavbar />
-
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-          <Link
-  href={`/components/loanOfficer/applications/${application?.applicationId || ""}`}
-  className="inline-flex items-center text-black hover:text-gray-600 mb-2 transition-colors"
->
-  <FiArrowLeft className="w-4 h-4 mr-2" />
-  Back to Applications
-</Link>
-
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                {currentData?.applicationId} - {currentData?.loanType}
-              </h1>
-            </div>
-          </div>
-          <div className="flex space-x-3">
-            {isEditing ? (
-              <>
-                <button 
-                  onClick={handleSave}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <Icons.Save /> <span className="ml-2">Save Changes</span>
-                </button>
-
-                <button 
-                  onClick={handleCancel}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <Icons.X /> <span className="ml-2">Cancel</span>
-                </button>
-              </>
-            ) : (
-              <>
-                <button 
-                  onClick={handleEdit}
-                  className=" px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <Icons.Edit size={20} />
-                <button 
-                  onClick={handlePrint}
-                  className=" px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <Icons.Print size={20} />   
-              </button>
-                </button>
-                <button
-                  onClick={handleSubmitAgreement}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  Submit Loan Agreement
-                </button>
-
-              </>
-            )}
-          </div>
-        </div>
-      </div>
 
       <div className="flex">
         {/* Main Content */}
@@ -331,30 +267,27 @@ const capitalizeWords = (str: string) =>
                 <p className="text-center text-sm">BG Business Center, Cantecson, Gairan</p>
                 <p className="text-center text-sm mb-6">Bogo City, Cebu</p>
 
-                <h3 className="text-center text-lg font-semibold underline mb-6">LOAN AGREEMENT</h3>
+                <h3 className="text-center text-lg font-semibold mb-6">LOAN AGREEMENT</h3>
 
                 <p>This Loan Agreement is made and executed by and between:</p>
 
                 <p>
-                  <strong>VISTULA LENDING CORPORATION</strong>, located at Gairan, Bogo City, Cebu,
-                  represented by <strong>DIVINA DAMAYO ALBURO</strong>, hereinafter the <strong>LENDER</strong>.
+                VISTULA LENDING CORPORATION, a business establishment with office address at Gairan, Bogo City, Cebu,
+                  represented in this instance by its owner, DIVINA DAMAYO ALBURO, of legal age, Filipino and a resident of Don Pedro Rodriguez St., Bogo City, Cebu, hereinafter known as the LENDER.
                 </p>
 
                 <p>AND</p>
 
                 <p>
-                  <strong>
-                    {currentData?.appName}
-                  </strong>, of legal age, Filipino and resident of <strong>
-                    {currentData?.appAddress}
-                  </strong>,
-                  hereinafter the <strong>BORROWER</strong>.
+                    {capitalizeWords(currentData?.appName)}
+                  , of legal age, Filipino and resident of {currentData?.appAddress},
+                  hereinafter the BORROWER.
                 </p>
 
-                <p className="font-semibold underline mb-3">WITNESSETH:</p>
+                <p className="font-semibold mb-3">WITNESSETH:</p>
                 <ol className="list-decimal list-inside space-y-2">
                   <li>
-                    <strong>Loan Amount.</strong> The LENDER agrees to lend and the BORROWER agrees to borrow  
+                    Loan Amount. The LENDER agrees to lend and the BORROWER agrees to borrow the sum of
                       ₱{isEditing ? (
                         <input
                         type="number"
@@ -364,26 +297,25 @@ const capitalizeWords = (str: string) =>
                       ) : currentData?.appLoanAmount}.
                   </li>
                   <li>
-                    <strong>Interest Rate.</strong> {isEditing ? (
+                    Interest Rate. The loan shall accrue interest at a rate of {isEditing ? (
                       <input
                         type="number"
                         value={editData?.appInterest}
                         onChange={(e) => handleInputChange('appInterest', parseFloat(e.target.value) || 0)}
                         className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-16"
                       />
-                    ) : currentData?.appInterest}% interest on the principal amount.
+                    ) : currentData?.appInterest}%, calculated based on the principal amount.
                   </li>
                   <li>
-                    <strong>Repayment Terms.</strong> Repayment in <strong>
-                      {isEditing ? (
+                  Repayment Terms. The Borrower shall repay the loan according to the following terms: <br></br>
+                  -Repayment Schedule: Loan shall be paid on {isEditing ? (
                         <input
                           type="number"
                           value={editData?.appLoanTerms}
                           onChange={(e) => handleInputChange('appLoanTerms', parseInt(e.target.value) || 0)}
                           className="border border-gray-300 rounded px-2 py-1 bg-yellow-50 w-16"
                         />
-                      ) : currentData?.appLoanTerms}
-                    </strong> installment(s) of <strong>{isEditing ? (
+                      ) : currentData?.appLoanTerms} installment(s) in the uniform amount of {isEditing ? (
                       <span>
                         ₱<input
                           type="number"
@@ -393,16 +325,14 @@ const capitalizeWords = (str: string) =>
                         />
                       </span>
                     ) : `₱${(currentData?.installmentAmount || 3300).toFixed(2)}`}.
-                    </strong> First payment: <strong>
-                      {isEditing ? (
+                    The first payment of interest with principal shall be on {isEditing ? (
                         <input
                           type="text"
                           value={editData?.firstPaymentDate || 'May 13, 2025'}
                           onChange={(e) => handleInputChange('firstPaymentDate', e.target.value)}
                           className="border border-gray-300 rounded px-2 py-1 bg-yellow-50"
                         />
-                      ) : (currentData?.firstPaymentDate || 'May 13, 2025')}
-                    </strong>. Then every <strong>
+                      ) : (currentData?.firstPaymentDate || 'May 13, 2025')} and the remaining amount will be due every after <strong>
                       {isEditing ? (
                         <select
                           value={editData?.paymentFrequency || 'Monthly'}
@@ -442,18 +372,16 @@ const capitalizeWords = (str: string) =>
                     <div className="mt-10">
                   <span>Signed in the presence of:</span>
                     <div className="flex flex-col items-start mt-2">
-        
-                      <span className=" w-64 text-sm mt-11 text-gray-700">
+                      <span className=" w-64 text-sm mt-7 text-gray-700">
                         DIVINA DAMAYO ALBURO
                       </span>
                     </div>
                   </div>
 
-
                   </div>
                   <div>
                   <p className="font-semibold">BORROWER</p>
-                  <p>{currentData?.appName ? capitalizeWords(currentData.appName) : ""}</p>
+                  <p>{capitalizeWords(currentData?.appName)}</p>
                   <p className="mt-4">Type of ID: ____________________</p>
                   <p>ID Number: ______________________</p>
                   <p>Valid Until: ______________________</p>
@@ -468,8 +396,8 @@ const capitalizeWords = (str: string) =>
                         style={{ maxWidth: "290px" }}
                       />
                     )}
-                    <span className="w-64 text-sm text-gray-700 pt-1">
-                      {currentData?.appName}
+                    <span className="w-64 text-sm mt-7 text-gray-700 pt-1">
+                      {capitalizeWords(currentData?.appName)}
                     </span>
                   </div>
                 </div>
