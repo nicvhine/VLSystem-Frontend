@@ -9,6 +9,7 @@ import navItems from './navItems';
 import useAccountSettings from './accountSettings';
 import MobileMenu from './mobileMenu';
 import ProfileDropdown from './dropdown';
+import { Bell } from 'lucide-react'; 
 
 export default function LoanOfficerNavbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -24,47 +25,48 @@ export default function LoanOfficerNavbar() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-
+  // 🔔 Notification state
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifs, setShowNotifs] = useState(false);
 
   const {
-  profilePic,
-  setProfilePic,
-  previewPic,
-  setPreviewPic,
-  originalPic,
-  setOriginalPic,
-  isUploadingPic,
-  setIsUploadingPic,
-  handleFileChange,
-  handleSaveProfilePic,
-  handleCancelUpload
-} = useProfilePic();
+    profilePic,
+    setProfilePic,
+    previewPic,
+    setPreviewPic,
+    originalPic,
+    setOriginalPic,
+    isUploadingPic,
+    setIsUploadingPic,
+    handleFileChange,
+    handleSaveProfilePic,
+    handleCancelUpload
+  } = useProfilePic();
 
-const {
-  editingEmail,
-  setEditingEmail,
-  editingPhone,
-  setEditingPhone,
-  isEditingEmailField,
-  setIsEditingEmailField,
-  isEditingPhoneField,
-  setIsEditingPhoneField,
-  isEditingPasswordField,
-  setIsEditingPasswordField,
-  newPassword,
-  setNewPassword,
-  confirmPassword,
-  setConfirmPassword,
-  notificationPreferences,
-  setNotificationPreferences,
-  passwordError,
-  setPasswordError,
-  settingsSuccess,
-  setSettingsSuccess,
-  activeSettingsTab,
-  setActiveSettingsTab
-} = useAccountSettings();
-
+  const {
+    editingEmail,
+    setEditingEmail,
+    editingPhone,
+    setEditingPhone,
+    isEditingEmailField,
+    setIsEditingEmailField,
+    isEditingPhoneField,
+    setIsEditingPhoneField,
+    isEditingPasswordField,
+    setIsEditingPasswordField,
+    newPassword,
+    setNewPassword,
+    confirmPassword,
+    setConfirmPassword,
+    notificationPreferences,
+    setNotificationPreferences,
+    passwordError,
+    setPasswordError,
+    settingsSuccess,
+    setSettingsSuccess,
+    activeSettingsTab,
+    setActiveSettingsTab
+  } = useAccountSettings();
 
   useEffect(() => {
     const storedName = localStorage.getItem('fullName');
@@ -79,13 +81,11 @@ const {
       setEmail(storedEmail);
       setEditingEmail(storedEmail);
     }
-
     if (storedPhoneNumber) {
       setPhoneNumber(storedPhoneNumber);
       setEditingPhone(storedPhoneNumber);
     }
-
-    if(storedUsername) setUsername(storedUsername);
+    if (storedUsername) setUsername(storedUsername);
     if (storedPic) {
       setProfilePic(storedPic);
       setOriginalPic(storedPic);
@@ -101,70 +101,28 @@ const {
         });
       }
     }
+
+    // 🔔 Fetch loan officer notifications
+    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+    if (userId && token) {
+      fetch(`http://localhost:3001/notifications/loan-officer`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => res.json())
+        .then(data => setNotifications(data || []))
+        .catch(err => console.error("Failed to load notifications:", err));
+    }
   }, []);
 
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+  const toggleDropdown = () => setIsDropdownOpen(prev => !prev);
 
-  const handleNotificationToggle = (type: 'sms' | 'email') => {
-    const newPrefs = {
-      ...notificationPreferences,
-      [type]: !notificationPreferences[type]
-    };
-    setNotificationPreferences(newPrefs);
-    localStorage.setItem('notificationPreferences', JSON.stringify(newPrefs));
+  const handleLogout = () => {
+    localStorage.clear();
+    router.push('/');
   };
 
-  const handleAccountSettingsUpdate = () => {
-    // Reset errors
-    setPasswordError('');
-    setSettingsSuccess('');
-
-    // Validate passwords if changing
-    if (newPassword && newPassword !== confirmPassword) {
-      setPasswordError('New Password and Confirm Password do not match.');
-      return;
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(editingEmail)) {
-      setPasswordError('Please enter a valid email address.');
-      return;
-    }
-
-    // Update localStorage
-    localStorage.setItem('email', editingEmail);
-    setEmail(editingEmail);
-    
-    // Clear form
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setSettingsSuccess('Settings updated successfully!');
-    
-    // Hide success message after 3 seconds
-    setTimeout(() => setSettingsSuccess(''), 3000);
-  };
-
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
-    setActiveSettingsTab('account');
-    setPasswordError('');
-    setSettingsSuccess('');
-    setIsEditingEmailField(false);
-    setIsEditingPasswordField(false);
-  };
-
-
- const handleLogout = () => {
-  localStorage.clear();
-  router.push('/');
-};
-
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen((prev) => !prev);
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
   return (
     <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
@@ -192,19 +150,9 @@ const {
               aria-hidden="true"
             >
               {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
           </button>
@@ -218,7 +166,9 @@ const {
                     <Link
                       href={item.href}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isActive ? 'text-blue-600 bg-blue-50 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        isActive
+                          ? 'text-blue-600 bg-blue-50 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       {item.name}
@@ -227,6 +177,70 @@ const {
                 );
               })}
             </ul>
+
+    {/* 🔔 Notifications Bell */}
+<div className="relative">
+  <button
+    className="relative p-2 rounded-full hover:bg-gray-100"
+    onClick={() => setShowNotifs(prev => !prev)}
+  >
+    <Bell className="h-6 w-6 text-gray-700" />
+    {notifications.some(n => !n.read) && (
+      <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
+        {notifications.filter(n => !n.read).length}
+      </span>
+    )}
+  </button>
+
+  {/* Dropdown */}
+  {showNotifs && (
+    <div
+    className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
+      style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
+    >
+
+      {notifications.length > 0 ? (
+        notifications.map((notif, idx) => (
+          <div
+            key={idx}
+            className={`px-4 py-3 border-b last:border-none cursor-pointer transition-colors duration-150 hover:bg-gray-50 ${
+              !notif.read ? ' font-medium' : ''
+            }`}
+            onClick={async () => {
+              if (!notif.read) {
+                try {
+                  const token = localStorage.getItem('token');
+                  await fetch(
+                    `http://localhost:3001/notifications/notifications/loan-officer/${notif._id}/read`,
+                    { method: 'PUT', headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  setNotifications(prev =>
+                    prev.map(n => (n._id === notif._id ? { ...n, read: true } : n))
+                  );
+                } catch (err) {
+                  console.error("Failed to mark notification as read:", err);
+                }
+              }
+            }}
+          >
+            <p className="text-sm text-gray-800">{notif.message}</p>
+            {notif.applicationId && (
+              <p className="text-xs text-gray-500 mt-1">
+                App ID: {notif.applicationId} | Status: {notif.previousStatus} → {notif.status}
+              </p>
+            )}
+            <p className="text-xs text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
+          </div>
+        ))
+      ) : (
+        <div className="px-4 py-3 text-sm text-gray-500 text-center">
+          No notifications
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
 
             {/* Profile Dropdown */}
             <div className="relative">
@@ -244,36 +258,33 @@ const {
               </div>
 
               {isDropdownOpen && (
-              <ProfileDropdown
-              name={name}
-              email={email}       
-              phoneNumber={phoneNumber}       
-              username={username}
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              handleLogout={handleLogout}
-              isDropdownOpen={isDropdownOpen}
-              setIsDropdownOpen={setIsDropdownOpen}
-              profilePic={profilePic || ''}
-              previewPic={previewPic || ''}
-              isUploadingPic={isUploadingPic}
-              handleFileChange={handleFileChange}
-              handleSaveProfilePic={handleSaveProfilePic}
-              handleCancelUpload={handleCancelUpload}
-            />
-
-            )}
-
+                <ProfileDropdown
+                  name={name}
+                  email={email}
+                  phoneNumber={phoneNumber}
+                  username={username}
+                  darkMode={darkMode}
+                  setDarkMode={setDarkMode}
+                  isEditing={isEditing}
+                  setIsEditing={setIsEditing}
+                  handleLogout={handleLogout}
+                  isDropdownOpen={isDropdownOpen}
+                  setIsDropdownOpen={setIsDropdownOpen}
+                  profilePic={profilePic || ''}
+                  previewPic={previewPic || ''}
+                  isUploadingPic={isUploadingPic}
+                  handleFileChange={handleFileChange}
+                  handleSaveProfilePic={handleSaveProfilePic}
+                  handleCancelUpload={handleCancelUpload}
+                />
+              )}
             </div>
           </div>
         </div>
 
         {isMobileMenuOpen && (
-            <MobileMenu navItems={navItems} language={language} setLanguage={setLanguage} />
+          <MobileMenu navItems={navItems} language={language} setLanguage={setLanguage} />
         )}
-
       </div>
     </div>
   );

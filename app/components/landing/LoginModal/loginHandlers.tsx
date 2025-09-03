@@ -51,7 +51,7 @@ export async function loginHandler({ username, password, onClose, router }: Logi
   const data = await staffRes.json();
   const user = data.user; 
 
-  localStorage.setItem('token', data.token || '');
+  localStorage.setItem('token', data.token);
   localStorage.setItem('fullName', user.name || user.username || user.email);
   localStorage.setItem('email', user.email);
   localStorage.setItem('phoneNumber', user.phoneNumber);
