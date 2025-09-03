@@ -25,7 +25,6 @@ export default function LoanOfficerNavbar() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
-  // 🔔 Notification state
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
 
@@ -102,16 +101,15 @@ export default function LoanOfficerNavbar() {
       }
     }
 
-    // 🔔 Fetch loan officer notifications
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  const token = localStorage.getItem('token');
     if (userId && token) {
-      fetch(`http://localhost:3001/notifications/loan-officer`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(res => res.json())
-        .then(data => setNotifications(data || []))
-        .catch(err => console.error("Failed to load notifications:", err));
+    fetch(`http://localhost:3001/notifications/loan-officer`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => setNotifications(data || []))
+      .catch(err => console.error("Failed to load notifications:", err));
     }
   }, []);
 
@@ -124,80 +122,78 @@ export default function LoanOfficerNavbar() {
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
-  return (
-    <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
-      <div className="w-full px-6 py-3">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/components/loanOfficer/dashboard"
-            className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
-          >
-            <span>VLSystem</span>
-          </Link>
+return (
+  <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
+    <div className="w-full px-6 py-3">
+      <div className="flex items-center justify-between">
+        <Link
+          href="/components/loanOfficer/dashboard"
+          className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all">
+          <span>VLSystem</span>
+        </Link>
 
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="h-6 w-6 text-gray-700"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+  {/* Mobile menu button */}
+  <button
+    className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
+      onClick={toggleMobileMenu}
+      aria-label="Toggle menu"
+  >
+  <svg
+    className="h-6 w-6 text-gray-700"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
+  {isMobileMenuOpen ? (
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  ) : (
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+  )}
+  </svg>
+  </button>
 
-          <div className="hidden md:flex items-center space-x-8">
-            <ul className="flex items-center space-x-6">
-              {navItems.map(item => {
-                const isActive = pathname === item.href;
-                return (
-                  <li key={item.name}>
-                    <Link
-                      href={item.href}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isActive
-                          ? 'text-blue-600 bg-blue-50 shadow-sm'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+<div className="hidden md:flex items-center space-x-8">
+  <ul className="flex items-center space-x-6">
+  {navItems.map(item => {
+  const isActive = pathname === item.href;
+    return (
+      <li key={item.name}>
+        <Link
+          href={item.href}
+          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all 
+          ${isActive
+            ? 'text-blue-600 bg-blue-50 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+          }`}>
+          {item.name}
+        </Link>
+      </li>
+  );
+  })}
+  </ul>
 
-    {/* 🔔 Notifications Bell */}
-<div className="relative">
+  <div className="relative">
   <button
     className="relative p-2 rounded-full hover:bg-gray-100"
     onClick={() => setShowNotifs(prev => !prev)}
   >
-    <Bell className="h-6 w-6 text-gray-700" />
-    {notifications.some(n => !n.read) && (
+    <Bell className="h-5 w-5 text-gray-700" />
+    {notifications.filter(n => !n.read).length > 0 && (
       <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
         {notifications.filter(n => !n.read).length}
       </span>
     )}
   </button>
 
-  {/* Dropdown */}
   {showNotifs && (
     <div
-    className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
+      className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
       style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
     >
+      {/* Caret arrow */}
+      <div className="absolute -top-2 right-20 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white"></div>
 
       {notifications.length > 0 ? (
         notifications.map((notif, idx) => (
@@ -226,7 +222,7 @@ export default function LoanOfficerNavbar() {
             <p className="text-sm text-gray-800">{notif.message}</p>
             {notif.applicationId && (
               <p className="text-xs text-gray-500 mt-1">
-                App ID: {notif.applicationId} | Status: {notif.previousStatus} → {notif.status}
+                 Status: {notif.previousStatus} → {notif.status}
               </p>
             )}
             <p className="text-xs text-gray-400 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
@@ -240,9 +236,7 @@ export default function LoanOfficerNavbar() {
     </div>
   )}
 </div>
-
-
-            {/* Profile Dropdown */}
+  
             <div className="relative">
               <div
                 className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
