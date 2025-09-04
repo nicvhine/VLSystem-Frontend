@@ -19,27 +19,18 @@ const loanOptions: LoanOption[] = [
 
 interface OpenTermLoanFormProps {
   language: 'en' | 'ceb';
-  maritalStatus: string;
-  setMaritalStatus: (status: string) => void;
-  incomeSource: string;
-  setIncomeSource: (source: string) => void;
-  address: string;
-  setAddress: (address: string) => void;
-  employmentStatus: string;
-  setEmploymentStatus: (status: string) => void;
+  maritalStatus?: string;
+  setMaritalStatus?: any;
+  incomeSource?: string;
+  setIncomeSource?: any;
+  address?: string;
+  setAddress?: any;
+  employmentStatus?: string;
+  setEmploymentStatus?: any;
 }
 
-export default function OpenTermForm({ 
-  language, 
-  maritalStatus, 
-  setMaritalStatus, 
-  incomeSource, 
-  setIncomeSource, 
-  address, 
-  setAddress, 
-  employmentStatus, 
-  setEmploymentStatus 
-}: OpenTermLoanFormProps) {
+export default function OpenTermForm(props: OpenTermLoanFormProps) { 
+  const { language = 'en', ...rest } = props;
   // Common form states
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
@@ -58,48 +49,126 @@ export default function OpenTermForm({
   const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
+  const [appReferences, setAppReferences] = useState([
+    { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" }
+  ]);
 
   // Open-term specific states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
-  const [repaymentSchedule, setRepaymentSchedule] = useState("");
-  const [specialConditions, setSpecialConditions] = useState("");
-
+ 
   // Collateral specific states
   const [collateralType, setCollateralType] = useState("");
   const [collateralValue, setCollateralValue] = useState<number>(0);
   const [collateralDescription, setCollateralDescription] = useState("");
   const [ownershipStatus, setOwnershipStatus] = useState("");
 
-  //Success Modal
+
+  // Success Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loanId, setLoanId] = useState<string | null>(null);
 
+  // Close Modal Function
   const closeModal = () => {
     setShowSuccessModal(false);
     setLoanId(null);
   };
 
+   // File upload state
+   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  const [appReferences, setAppReferences] = useState([
-   { name: "", contact: "", relation: "" },
-    { name: "", contact: "", relation: "" },
-    { name: "", contact: "", relation: "" }
-  ]); 
+   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+     if (e.target.files) {
+       const files = Array.from(e.target.files);
+       setUploadedFiles((prev) => [...prev, ...files]);
+     }
+   };
 
-  // File upload state
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+   const removeFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  }; 
+
+  const handleSubmit = async () => {
+    if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
+      alert(language === 'en'
+        ? "Please fill in all required fields including collateral information."
+        : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral."
+      );
+      return;
+    }
+  
+    if (uploadedFiles.length === 0) {
+      alert(language === "en"
+        ? "Please upload at least one document."
+        : "Palihug i-upload ang usa ka dokumento."
+      );
+      return;
+    }
+  
+    try {
+      const formData = new FormData();
+      formData.append("appName", appName);
+      formData.append("appDob", appDob);
+      formData.append("appContact", appContact);
+      formData.append("appEmail", appEmail);
+      formData.append("appMarital", appMarital);
+      formData.append("appChildren", String(appChildren));
+      formData.append("appSpouseName", appSpouseName);
+      formData.append("appSpouseOccupation", appSpouseOccupation);
+      formData.append("appAddress", appAddress);
+      formData.append("appTypeBusiness", appTypeBusiness);
+      formData.append("appDateStarted", appDateStarted);
+      formData.append("appBusinessLoc", appBusinessLoc);
+      formData.append("appMonthlyIncome", String(appMonthlyIncome));
+      formData.append("appOccupation", appOccupation);
+      formData.append("appEmploymentStatus", appEmploymentStatus);
+      formData.append("appCompanyName", appCompanyName);
+      formData.append("sourceOfIncome", sourceOfIncome);
+  
+      formData.append("appLoanAmount", String(selectedLoan.amount));
+      formData.append("appLoanTerms", String(selectedLoan.months));
+      formData.append("appInterest", String(selectedLoan.interest));
+      formData.append("appLoanPurpose", appLoanPurpose);
+  
+      formData.append("collateralType", collateralType);
+      formData.append("collateralValue", String(collateralValue));
+      formData.append("collateralDescription", collateralDescription);
+      formData.append("ownershipStatus", ownershipStatus);
+  
+      // references must be stringified because backend expects objects
+      formData.append("appReferences", JSON.stringify(appReferences));
+  
+      uploadedFiles.forEach(file => {
+        formData.append("documents", file);
+      });
+  
+      const res = await fetch(API_URL, { method: "POST", body: formData });
+  
+      if (res.ok) {
+        const data = await res.json();
+
+        setLoanId(data.application?.applicationId);
+        setShowSuccessModal(true);
+        
+        setAppLoanPurpose("");
+        setSelectedLoan(null);
+        setCollateralType("");
+        setCollateralValue(0);
+        setCollateralDescription("");
+        setOwnershipStatus("");
+        setUploadedFiles([]);
+      } else {
+        const errorText = await res.text();
+        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+      }
+    } catch (error) {
+      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+    }
+  };
 
   // Translations for select options
-  const repaymentOptions = [
-    { value: '', label: language === 'en' ? 'Select schedule' : 'Pilia ang iskedyul' },
-    { value: 'monthly', label: language === 'en' ? 'Monthly' : 'Matag Buwan' },
-    { value: 'bi-weekly', label: language === 'en' ? 'Bi-weekly' : 'Matag Duha ka Semana' },
-    { value: 'weekly', label: language === 'en' ? 'Weekly' : 'Matag Semana' },
-    { value: 'quarterly', label: language === 'en' ? 'Quarterly' : 'Matag Quarter' },
-    { value: 'flexible', label: language === 'en' ? 'Flexible' : 'Flexible' },
-  ];
-
   const collateralTypeOptions = [
     { value: '', label: language === 'en' ? 'Select collateral type' : 'Pilia ang klase sa kolateral' },
     { value: 'real-estate', label: language === 'en' ? 'Real Estate' : 'Yuta/Balay' },
@@ -108,92 +177,9 @@ export default function OpenTermForm({
     { value: 'others', label: language === 'en' ? 'Others' : 'Uban pa' },
   ];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setUploadedFiles((prev) => [...prev, ...files]);
-    }
-  };
-
-    // Remove file by index
-    const removeFile = (index: number) => {
-      setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-    };  
-
-  const handleSubmit = async () => {
-    if (!appLoanPurpose || !selectedLoan) {
-      alert(language === 'en' ? 'Please fill in all required fields.' : 'Palihug pun-a ang tanang kinahanglan nga field.');
-      return;
-    }
-
-    const payload = {
-      appName,
-      appDob,
-      appContact,
-      appEmail,
-      appMarital,
-      appChildren,
-      appSpouseName,
-      appSpouseOccupation,
-      appAddress,
-      appTypeBusiness,
-      appDateStarted,
-      appBusinessLoc,
-      appMonthlyIncome,
-      appOccupation,
-      appEmploymentStatus,
-      appCompanyName,
-      sourceOfIncome,
-      appLoanAmount: selectedLoan.amount,
-      appInterest: selectedLoan.interest,
-      appLoanPurpose,
-      repaymentSchedule,
-      specialConditions,
-      appReferences,
-      // Collateral information
-      collateralType,
-      collateralValue,
-      collateralDescription,
-      ownershipStatus,
-    };
-
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setLoanId(data.application?.applicationId); 
-        setShowSuccessModal(true);
-      
-        setAppLoanPurpose("");
-        setSelectedLoan(null);
-        setRepaymentSchedule("");
-        setSpecialConditions("");
-        setCollateralType("");
-        setCollateralValue(0);
-        setCollateralDescription("");
-        setOwnershipStatus("");
-      } else {
-        const errorText = await res.text();
-        alert(
-          (language === "en"
-            ? "Failed to submit application. Server says: "
-            : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: ") + errorText
-        );
-      }
-      
-    } catch (error) {
-      alert(language === 'en' ? 'An error occurred. Please try again.' : 'Adunay sayop. Palihug sulayi pag-usab.');
-    }
-  };
-
   return (
     <>
-      <Common
+      <Common {...rest} language={language}
         appName={appName}
         setAppName={setAppName}
         appDob={appDob}
@@ -230,7 +216,6 @@ export default function OpenTermForm({
         setAppCompanyName={setAppCompanyName}
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
-        language={language}
       />
 
       {/* Collateral Information */}
@@ -329,31 +314,39 @@ export default function OpenTermForm({
               readOnly 
             />
           </div>
-
-          <div>
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Preferred Repayment Schedule:' : 'Gipili nga Iskedyul sa Pagbayad:'}</label>
-            <select 
-              value={repaymentSchedule}
-              onChange={(e) => setRepaymentSchedule(e.target.value)}
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              {repaymentOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="col-span-2">
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Special Conditions or Requests:' : 'Espesyal nga mga Kahimtang o Hangyo:'}</label>
-            <textarea 
-              value={specialConditions}
-              onChange={(e) => setSpecialConditions(e.target.value)}
-              className="w-full border border-gray-200 p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-              placeholder={language === 'en' ? 'Enter any special conditions, flexible terms, or requests' : 'Isulod ang mga espesyal nga kahimtang, flexible nga terms, o hangyo'}
-            ></textarea>
-          </div>
         </div>
       </div>
+
+ {/* 2x2 Upload */}
+        {/* <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+            {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
+          </h4>
+          <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png"
+              onChange={handlePhoto2x2Change}
+              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
+                        file:rounded-lg file:border-0 file:text-sm file:font-medium
+                        file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+            />
+          </div>
+          {photo2x2 && (
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600 mb-2">
+                {language === 'en' ? 'Selected Photo:' : 'Napiling Litrato:'} {photo2x2.name}
+              </p>
+              <button
+                onClick={() => setPhoto2x2(null)}
+                className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+              >
+                {language === 'en' ? 'Remove' : 'Tangtangon'}
+              </button>
+            </div>
+          )}
+        </div> */}
 
       {/* Document Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
@@ -367,17 +360,18 @@ export default function OpenTermForm({
             <input
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.png"
               onChange={handleFileChange}
               className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
                         file:rounded-lg file:border-0 file:text-sm file:font-medium
                         file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+              title={language === 'en' ? 'Choose files' : 'Pilia ang mga file'}
             />
           </div>
           <p className="text-xs text-gray-500 mt-2 text-center">{language === 'en' ? 'Accepted: PDF, JPG, PNG. You can upload multiple files.' : 'Dawaton: PDF, JPG, PNG. Pwede ka mag-upload og daghang files.'}</p>
         </div>
 
-        {/* File List */}
+      {/* File List */}
       {uploadedFiles.length > 0 && (
         <div className="mt-4">
           <h5 className="font-medium mb-3 text-gray-700">

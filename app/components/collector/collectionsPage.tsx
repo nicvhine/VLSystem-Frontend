@@ -133,48 +133,60 @@ const overallTargetAchieved = overallTotalTarget > 0
 
   const handleConfirmPayment = async () => {
     if (!selectedCollection) return;
-
+  
     try {
-      const response = await fetch(`http://localhost:3001/collections/${selectedCollection.referenceNumber}/pay`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount: paymentAmount }),
-      });
-
-      if (!response.ok) throw new Error('Failed to post payment');
-
-      // Apply update only to next month's collection
+      const response = await fetch(
+        `http://localhost:3001/collections/${selectedCollection.referenceNumber}/pay`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: paymentAmount }),
+        }
+      );
+  
+      if (!response.ok) throw new Error("Failed to post payment");
+  
+      // Update paidAmount immediately for this schedule
       setCollections((prev) =>
         prev.map((col) => {
-          if (
-            col.loanId === selectedCollection.loanId &&
-            col.collectionNumber === selectedCollection.collectionNumber + 1
-          ) {
+          if (col.referenceNumber === selectedCollection.referenceNumber) {
             const newPaid = (col.paidAmount || 0) + paymentAmount;
-            const newBal = Math.max((col.loanBalance || col.periodAmount) - paymentAmount, 0);
+            const newBal = Math.max((col.periodAmount || 0) - newPaid, 0);
             return {
               ...col,
               paidAmount: newPaid,
               balance: newBal,
-              status: newBal === 0 ? 'Paid' : 'Partial',
+              status: newBal === 0 ? "Paid" : "Partial",
             };
           }
-
+  
+          // Apply forward to next month
+          if (
+            col.loanId === selectedCollection.loanId &&
+            col.collectionNumber === selectedCollection.collectionNumber + 1
+          ) {
+            const newTotal = (col.totalPayment || 0) + paymentAmount;
+            const newBal = (col.loanBalance || col.periodAmount) - paymentAmount;
+            return {
+              ...col,
+              totalPayment: newTotal,
+              loanBalance: newBal,
+            };
+          }
+  
           return col;
         })
       );
-
     } catch (err) {
-      console.error('Payment failed:', err);
-      alert('Payment failed.');
+      console.error("Payment failed:", err);
+      alert("Payment failed.");
     } finally {
       setShowModal(false);
       setSelectedCollection(null);
       setPaymentAmount(0);
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-50">
