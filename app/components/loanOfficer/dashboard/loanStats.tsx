@@ -27,7 +27,6 @@ export default function LoanStatsDashboard() {
     openTerm: 0,
   });
 
-  // 🔹 Application status stats
   useEffect(() => {
     const token = localStorage.getItem('token');
     fetch("http://localhost:3001/loan-applications/loan-stats", {
@@ -44,7 +43,6 @@ export default function LoanStatsDashboard() {
       .catch(err => console.error("Failed to load stats:", err));
   }, []);
 
-  // 🔹 Loan type stats
   useEffect(() => {
     const token = localStorage.getItem('token');
     fetch("http://localhost:3001/loan-applications/loan-type-stats", {
@@ -84,80 +82,89 @@ export default function LoanStatsDashboard() {
     icon: any;
     isAmount?: boolean;
   }) => (
-    <div className="bg-white rounded-2xl border border-gray-100  p-6 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-3 rounded-xl ${color.replace('text-', 'bg-').replace('-600', '-50')}`}>
-          <Icon className={`w-6 h-6 ${color}`} />
+    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
+      <div className="flex items-center justify-between mb-2">
+        <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('-600', '-50')}`}>
+          <Icon className={`w-5 h-5 ${color}`} />
         </div>
       </div>
-      <h4 className="text-sm font-medium text-gray-500  mb-2">{label}</h4>
-      <p className={`text-2xl font-bold ${color}`}>
+      <h4 className="text-xs font-medium text-gray-500 mb-1">{label}</h4>
+      <p className={`text-lg font-bold ${color}`}>
         {isAmount ? `₱${value?.toLocaleString?.() ?? 0}` : value?.toLocaleString?.() ?? 0}
       </p>
     </div>
   );
-
+  
   return (
     <div className="space-y-8">
-      {/* Application Status */}
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-red-50 rounded-lg">
-            <FiUsers className="text-red-600 w-5 h-5" />
+      {/* Wrap both in one row */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Application Status */}
+        <section className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-yellow-50 rounded-lg">
+              <FiUsers className="text-yellow-600 w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Application Status
+            </h2>
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Application Status</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <StatCard 
-            label="Pending Applications" 
-            value={loanStats.pending ?? 0} 
-            color="text-yellow-600" 
-            icon={FiClock}
-          />
-          <StatCard 
-            label="Approved Applications" 
-            value={loanStats.approved ?? 0} 
-            color="text-green-600" 
-            icon={FiCheckCircle}
-          />
-          <StatCard 
-            label="Denied Applications" 
-            value={loanStats.denied ?? 0} 
-            color="text-red-600" 
-            icon={FiXCircle}
-          />
-        </div>
-      </section>
-
-      {/* Loan Types */}
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-red-50 rounded-lg">
-            <FiPieChart className="text-red-600 w-5 h-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard 
+              label="Pending Applications" 
+              value={loanStats.pending ?? 0} 
+              color="text-yellow-600" 
+              icon={FiClock}
+            />
+            <StatCard 
+              label="Approved Applications" 
+              value={loanStats.approved ?? 0} 
+              color="text-green-600" 
+              icon={FiCheckCircle}
+            />
+            <StatCard 
+              label="Denied Applications" 
+              value={loanStats.denied ?? 0} 
+              color="text-red-600" 
+              icon={FiXCircle}
+            />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Loan Types</h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatCard 
-            label="With Collateral" 
-            value={loanStats.withCollateral ?? 0} 
-            color="text-blue-600" 
-            icon={FiUsers}
-          />
-          <StatCard 
-            label="Without Collateral" 
-            value={loanStats.withoutCollateral ?? 0} 
-            color="text-green-600" 
-            icon={FiUsers}
-          />
-          <StatCard 
-            label="Open-Term Loans" 
-            value={loanStats.openTerm ?? 0} 
-            color="text-red-600" 
-            icon={FiUsers}
-          />
-        </div>
-      </section>
+        </section>
+  
+        {/* Loan Types */}
+        <section className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <FiPieChart className="text-blue-600 w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Loan Types
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard 
+              label="With Collateral" 
+              value={loanStats.withCollateral ?? 0} 
+              color="text-blue-600" 
+              icon={FiUsers}
+            />
+            <StatCard 
+              label="Without Collateral" 
+              value={loanStats.withoutCollateral ?? 0} 
+              color="text-green-600" 
+              icon={FiUsers}
+            />
+            <StatCard 
+              label="Open-Term Loans" 
+              value={loanStats.openTerm ?? 0} 
+              color="text-red-600" 
+              icon={FiUsers}
+            />
+          </div>
+        </section>
+      </div>
     </div>
   );
+  
+  
 }

@@ -99,19 +99,19 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
     }
   };
     
-  const handleApproveLoan = async () => {
+  const handleClearedLoan = async () => {
     try {
       const response = await authFetch(`http://localhost:3001/loan-applications/${application?.applicationId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Endorsed" }),
+        body: JSON.stringify({ status: "Cleared" }),
       });
   
       if (!response.ok) {
         throw new Error("Failed to update status");
       }
   
-      alert("Loan has been endorsed!");
+      alert("Loan status has been set to cleared.");
     } catch (error) {
       console.error("Failed to approve loan:", error);
       alert("Something went wrong.");
@@ -210,7 +210,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
       throw new Error("Failed to update status");
     }
 
-    alert("Loan status changed to 'Denied'.");
+    alert("Loan status changed to 'Denied by LO'.");
   } catch (error) {
     console.error("Submission failed:", error);
     alert("Something went wrong.");
@@ -238,37 +238,37 @@ const hasInterviewScheduled = Boolean(application?.interviewDate && application?
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{params.id} - {application?.loanType}</h1>
           </div>
           <div className="flex flex-wrap gap-3">
-  {application?.status !== "Endorsed" && application?.status !== "Denied" && application?.status !== "Denied by LO" && (
+  {["Cleared", "Denied", "Denied by LO", "Endorsed", "Accepted"].includes(application?.status || "") ? (
+    // ✅ Show unclickable gray status badge if application is finalized
+    <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg cursor-not-allowed">
+      {application?.status}
+    </span>
+  ) : (
+    // ✅ Show action buttons if no final decision yet
     <>
       <button
-        onClick={hasInterviewScheduled ? handleApproveLoan : () => setIsModalOpen(true)}
+        onClick={hasInterviewScheduled ? handleClearedLoan : () => setIsModalOpen(true)}
         className={`px-4 py-2 rounded-lg text-white whitespace-nowrap transition-colors ${
           hasInterviewScheduled ? "bg-blue-600 hover:bg-blue-700" : "bg-green-600 hover:bg-green-700"
         }`}
       >
-        {hasInterviewScheduled ? "Approve Loan" : "Schedule Interview"}
+        {hasInterviewScheduled ? "Cleared" : "Schedule Interview"}
       </button>
 
       <button
         onClick={handleDenyApplication}
         className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap"
       >
-        Deny
+        Dismiss
       </button>
     </>
   )}
-  {application?.status === "Endorsed" && (
-    <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">Loan Endorsed</span>
-  )}
-  {application?.status === "Denied" || application?.status === "Denied by LO" ? (
-    <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg">Loan Denied</span>
-  ) : null}
 </div>
+
 
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left and center columns combined for larger screens */}
           <div className="lg:col-span-2 space-y-6">
             {/* Basic Information */}
             <section className="bg-white rounded-lg shadow-sm p-6">
@@ -476,35 +476,6 @@ const hasInterviewScheduled = Boolean(application?.interviewDate && application?
   <p>No documents uploaded.</p>
 )}
             </section>
-
-
-        {/* Comments / Notes */}
-        <section className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center mb-4">
-            <FiMessageSquare className="w-5 h-5 text-pink-500 mr-2" />
-            <h2 className="text-xl font-semibold text-gray-800">Comments / Notes</h2>
-          </div>
-          <textarea
-            className="w-full border rounded-md p-3 mb-2 text-sm"
-            placeholder="Write a comment or note..."
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-          />
-          <button
-            onClick={handleCommentSubmit}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            Add Comment
-          </button>
-          <ul className="mt-4 space-y-2 max-h-64 overflow-y-auto">
-            {comments.map((c, idx) => (
-              <li key={idx} className="bg-gray-100 p-3 rounded-md">
-                <p className="text-sm text-gray-800">{c.text}</p>
-                <p className="text-xs text-gray-500 mt-1">{c.date}</p>
-              </li>
-            ))}
-          </ul>
-        </section>
           </div>
         </div>
       </div>

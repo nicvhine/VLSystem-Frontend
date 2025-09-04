@@ -153,7 +153,7 @@ export default function ApplicationsPage() {
                 onChange={(e) => setActiveFilter(e.target.value)}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                {['All', 'Pending', 'Accepted', 'Denied', 'Onhold', 'Ready for Disbursement'].map((status) => (
+                {['All', 'Pending', 'Approved', 'Denied', 'Accepted'].map((status) => (
                   <option key={status} value={status}>
                     {status === 'Onhold' ? 'On Hold' : status}
                   </option>
@@ -163,19 +163,20 @@ export default function ApplicationsPage() {
             </div>
 
             {/* Desktop buttons */}
-            <div className="hidden w-180 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-              {['All', 'Pending', 'Accepted', 'Denied', 'Denied by LO', 'Onhold', 'Ready for Disbursement'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setActiveFilter(status)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeFilter === status
-                      ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' || status === 'Denied by LO' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' || status === 'Denied by LO' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-600 shadow-sm`
-                      : 'text-gray-600 hover:bg-gray-100'
-                  }`}
-                >
-                  {status === 'Onhold' ? 'On Hold' : status}
-                </button>
+            <div className="hidden w-97 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+              {['All', 'Pending', 'Approved', 'Denied', 'Active'].map((status) => (
+               <button
+               key={status}
+               onClick={() => setActiveFilter(status)}
+               className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                 activeFilter === status
+                   ? "bg-blue-50 text-blue-600 shadow-sm"
+                   : "text-gray-600 hover:bg-gray-100"
+               }`}
+             >
+               {status === "Onhold" ? "On Hold" : status}
+             </button>
+             
               ))}
             </div>
           </div>
@@ -252,16 +253,22 @@ export default function ApplicationsPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">{application.appInterest}%</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(application.totalPayable)}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-0 py-1 rounded-full text-xs font-medium ${
-                        application.status === 'Accepted' ? 'text-green-600' :
-                        application.status === 'Denied' ? 'text-red-600' :
-                        application.status === 'Onhold' ? 'text-orange-600' :
-                        'text-yellow-600'
-                      }`}>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
                         {application.status === 'Onhold' ? 'On Hold' : application.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 space-x-2">
+
+           {/* If Approved → Show Generate Loan Agreement */}
+{application.status === 'Approved' && (
+  <Link
+    href={`/LoanAgreementPage/${application.applicationId}`}
+    className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 inline-block"
+  >
+    Generate
+  </Link>
+)}
+
   {application.status !== 'Accepted' && application.status !== 'Disbursed' && application.status === 'Ready for Disbursement' && (
     <button
       className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"

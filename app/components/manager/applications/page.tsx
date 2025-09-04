@@ -162,7 +162,7 @@ const handleCreateAccount = async () => {
     const updateRes = await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "Accepted" }),
+      body: JSON.stringify({ status: "Active" }),
     });
 
     if (!updateRes.ok) throw new Error("Failed to update application status");
@@ -286,7 +286,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
             onChange={(e) => setActiveFilter(e.target.value)}
             className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
           >
-            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold'].map((status) => (
+            {['All', 'Cleared', 'Disbursed'].map((status) => (
               <option key={status} value={status}>
                 {status === 'Onhold' ? 'On Hold' : status}
               </option>
@@ -297,14 +297,14 @@ const handleAction = async (id: string, status: 'Disbursed') => {
 
 
         {/* Tabs for desktop */}
-          <div className="hidden w-130 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-            {['All', 'Pending', 'Accepted', 'Denied', 'Onhold', 'Disbursed'].map((status) => (
+          <div className="hidden w-145 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+            {['All', 'Cleared','Disbursed','Active'].map((status) => (
               <button
                 key={status}
                 onClick={() => setActiveFilter(status)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                   activeFilter === status
-                    ? `bg-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : status === 'Disbursed' ? 'yellow' : 'blue'}-600 shadow-sm`
+                    ? `bg-${status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : status === 'Disbursed' ? 'yellow' : 'blue'}-600 shadow-sm`
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -393,6 +393,65 @@ const handleAction = async (id: string, status: 'Disbursed') => {
 
 
                   <td className="px-6 py-4 space-x-2">
+
+                  {application.displayStatus === 'Cleared' && (
+  <div className="flex gap-2">
+    <button
+      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+      onClick={async () => {
+        try {
+          const response = await authFetch(`${API_URL}/${application.applicationId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Approved' }),
+          });
+
+          if (!response.ok) throw new Error("Failed to approve application");
+
+          const updated = await response.json();
+          setApplications((prev) =>
+            prev.map((app) =>
+              app.applicationId === updated.applicationId ? updated : app
+            )
+          );
+        } catch (err) {
+          console.error(err);
+          alert("Failed to approve.");
+        }
+      }}
+    >
+      Approve
+    </button>
+
+    <button
+      className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700"
+      onClick={async () => {
+        try {
+          const response = await authFetch(`${API_URL}/${application.applicationId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'Denied' }),
+          });
+
+          if (!response.ok) throw new Error("Failed to deny application");
+
+          const updated = await response.json();
+          setApplications((prev) =>
+            prev.map((app) =>
+              app.applicationId === updated.applicationId ? updated : app
+            )
+          );
+        } catch (err) {
+          console.error(err);
+          alert("Failed to deny.");
+        }
+      }}
+    >
+      Deny
+    </button>
+  </div>
+)}
+
                     
                   {application.displayStatus === 'Pending' && (
                     <button
@@ -402,7 +461,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                           const response = await authFetch(`${API_URL}/${application.applicationId}`, {
                             method: 'PUT',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'Ready for Disbursement' }),
+                            body: JSON.stringify({ status: 'Approved' }),
                           });
 
                           if (!response.ok) throw new Error("Failed to endorse application");
@@ -419,7 +478,7 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                         }
                       }}
                     >
-                      Endorse for Disbursement
+                      Approve
                     </button>
                   )}
 
@@ -441,7 +500,6 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                   className="bg-indigo-600 text-white px-3 py-1 rounded-md text-xs hover:bg-indigo-700"
                   onClick={async () => {
   try {
-    // Update application status to Accepted
     const response = await authFetch(`${API_URL}/${application.applicationId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
