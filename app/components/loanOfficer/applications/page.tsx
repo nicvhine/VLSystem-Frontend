@@ -251,7 +251,11 @@ export default function ApplicationsPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">{formatDate(application.dateApplied)}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{application.appInterest}%</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(application.totalPayable)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {application.loanType === "Open-Term Loan"
+                        ? "----"
+                        : formatCurrency(application.totalPayable)}
+                    </td>
                     <td className="px-6 py-4">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
                         {application.status === 'Onhold' ? 'On Hold' : application.status}
