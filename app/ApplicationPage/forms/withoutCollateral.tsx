@@ -326,42 +326,50 @@ const closeModal = () => {
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
 
-      {/* Success Modal */}
-{showSuccessModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          {language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}
-        </h3>
-        <p className="text-gray-600 mb-4">
-          {language === 'en'
-            ? 'Your loan application has been received and is being processed.'
-            : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
-        </p>
-        {loanId && (
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-600 mb-1">
-              {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
+    {/* Success Modal */}
+    {showSuccessModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-lg">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg
+                className="w-8 h-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              {language === 'en'
+                ? 'Application Submitted Successfully!'
+                : 'Malampusong Napasa ang Aplikasyon!'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+              {language === 'en'
+                ? 'Your loan application has been received and is being processed.'
+                : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
             </p>
-            <p className="text-lg font-semibold text-red-600">{loanId}</p>
+            {loanId && (
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-1">
+                  {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
+                </p>
+                <p className="text-lg font-semibold text-red-600">{loanId}</p>
+              </div>
+            )}
+            <button
+              onClick={closeModal}
+              className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
+            >
+              {language === 'en' ? 'Close' : 'Sirado'}
+            </button>
           </div>
-        )}
-        <button
-          onClick={closeModal}
-          className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
-        >
-          {language === 'en' ? 'Close' : 'Sirado'}
-        </button>
+        </div>
       </div>
-    </div>
-  </div>
-)}
+    )}
+
 
     </>
   );
