@@ -11,6 +11,12 @@ interface NavbarProps {
   setLanguage: (lang: 'en' | 'ceb') => void;
 }
 
+interface ProfilePic {
+  fileName: string;
+  filePath: string;
+  mimeType: string;
+}
+
 const Navbar: React.FC<NavbarProps> = ({ language, setLanguage }) => {
   const pathname = usePathname();
   const router = useRouter();

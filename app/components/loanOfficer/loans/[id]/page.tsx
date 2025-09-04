@@ -25,6 +25,12 @@ interface CurrentLoan {
   dateDisbursed: string;
 }
 
+interface ProfilePic {
+  fileName: string;
+  filePath: string;
+  mimeType: string;
+}
+
 interface LoanDetails {
   loanId: string;
   name: string;
@@ -57,6 +63,7 @@ interface LoanDetails {
   characterReferences?: CharacterReference[];
   currentLoan?: CurrentLoan;
   imageUrl?: string;
+  profilePic?: ProfilePic;
 }
 
 const formatDate = (dateString: string) => {
@@ -77,6 +84,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
       try {
         const response = await fetch(`${API_URL}/${params.id}`);
         const data = await response.json();
+        console.log("API data:", data); 
         setClient(data);
       } catch (error) {
         console.error("Failed to fetch loan details:", error);
@@ -84,9 +92,11 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
         setLoading(false);
       }
     };
-
+  
     fetchLoanDetails();
   }, [params.id]);
+  
+  
 
   if (loading) {
     return <div className="p-6 text-gray-500">Loading...</div>;
@@ -117,13 +127,12 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
       {/* Client Header */}
       <div className="w-full bg-white shadow-sm py-6 mb-6">
         <div className="max-w-6xl mx-auto px-4 flex items-center">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-red-600 flex-shrink-0">
-            <img
-              src={client.imageUrl || "/default-avatar.png"}
-              alt="Client"
-              className="w-full h-full object-cover"
-            />
-          </div>
+        <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-red-600 flex-shrink-0">
+        <img
+  src={client.profilePic ? `http://localhost:3001/${client.profilePic.filePath}` : "/default-avatar.png"}
+  alt={client.name}
+/>
+    </div>
           <div className="ml-6">
             <h1 className="text-3xl font-bold text-gray-800">{client.name}</h1>
             <div className="flex items-center space-x-4 mt-2">

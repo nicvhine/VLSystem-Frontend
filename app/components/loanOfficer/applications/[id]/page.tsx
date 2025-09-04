@@ -239,7 +239,6 @@ const hasInterviewScheduled = Boolean(application?.interviewDate && application?
           </div>
           <div className="flex flex-wrap gap-3">
   {["Cleared", "Denied", "Denied by LO", "Endorsed", "Accepted"].includes(application?.status || "") ? (
-    // ✅ Show unclickable gray status badge if application is finalized
     <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg cursor-not-allowed">
       {application?.status}
     </span>

@@ -90,6 +90,21 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   }; 
 
+  //2x2 upload state
+  const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+
+ 
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setPhoto2x2((prev) => [...prev, ...files]);
+    }
+  };
+
+  const removeProfile = (index: number) => {
+    setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
+  };
+  
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
       alert(language === 'en'
@@ -107,8 +122,17 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
       return;
     }
   
+    if (photo2x2.length === 0) {
+      alert(language === "en"
+        ? "Please upload your 2x2 photo."
+        : "Palihug i-upload ang imong 2x2 nga litrato."
+      );
+      return;
+    }
+  
     try {
       const formData = new FormData();
+      // Append all form fields (existing code)
       formData.append("appName", appName);
       formData.append("appDob", appDob);
       formData.append("appContact", appContact);
@@ -126,32 +150,33 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
       formData.append("appEmploymentStatus", appEmploymentStatus);
       formData.append("appCompanyName", appCompanyName);
       formData.append("sourceOfIncome", sourceOfIncome);
-  
       formData.append("appLoanAmount", String(selectedLoan.amount));
-      formData.append("appLoanTerms", String(selectedLoan.months));
       formData.append("appInterest", String(selectedLoan.interest));
       formData.append("appLoanPurpose", appLoanPurpose);
-  
       formData.append("collateralType", collateralType);
       formData.append("collateralValue", String(collateralValue));
       formData.append("collateralDescription", collateralDescription);
       formData.append("ownershipStatus", ownershipStatus);
-  
-      // references must be stringified because backend expects objects
       formData.append("appReferences", JSON.stringify(appReferences));
   
+      // Append multiple document files
       uploadedFiles.forEach(file => {
         formData.append("documents", file);
       });
+  
+      // Append profile picture (2x2 photo) correctly
+      if (photo2x2[0]) {
+        formData.append("profilePic", photo2x2[0]);
+      }
   
       const res = await fetch(API_URL, { method: "POST", body: formData });
   
       if (res.ok) {
         const data = await res.json();
-
         setLoanId(data.application?.applicationId);
         setShowSuccessModal(true);
-        
+  
+        // Reset form
         setAppLoanPurpose("");
         setSelectedLoan(null);
         setCollateralType("");
@@ -159,6 +184,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         setCollateralDescription("");
         setOwnershipStatus("");
         setUploadedFiles([]);
+        setPhoto2x2([]);
       } else {
         const errorText = await res.text();
         alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
@@ -167,6 +193,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
       alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
     }
   };
+  
 
   // Translations for select options
   const collateralTypeOptions = [
@@ -317,36 +344,39 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         </div>
       </div>
 
- {/* 2x2 Upload */}
-        {/* <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-            <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-            {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
-          </h4>
-          <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png"
-              onChange={handlePhoto2x2Change}
-              className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
-                        file:rounded-lg file:border-0 file:text-sm file:font-medium
-                        file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
-            />
+      {/* 2x2 Upload */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
+        </h4>
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
+          <input
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            onChange={handleProfileChange}
+            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
+                      file:rounded-lg file:border-0 file:text-sm file:font-medium
+                      file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+          />
+        </div>
+        {photo2x2.length > 0 && (
+          <div className="mt-4 text-center">
+            {photo2x2.map((file, index) => (
+              <div key={index} className="flex justify-center items-center gap-4 py-1">
+                <p className="text-sm text-gray-600">{file.name}</p>
+                <button
+                  onClick={() => removeProfile(index)}
+                  className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                >
+                  {language === 'en' ? 'Remove' : 'Tangtangon'}
+                </button>
+              </div>
+            ))}
           </div>
-          {photo2x2 && (
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600 mb-2">
-                {language === 'en' ? 'Selected Photo:' : 'Napiling Litrato:'} {photo2x2.name}
-              </p>
-              <button
-                onClick={() => setPhoto2x2(null)}
-                className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
-              >
-                {language === 'en' ? 'Remove' : 'Tangtangon'}
-              </button>
-            </div>
-          )}
-        </div> */}
+        )}
+      </div>
+
 
       {/* Document Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">

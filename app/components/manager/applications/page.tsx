@@ -133,14 +133,14 @@ export default function ApplicationsPage() {
 }, []);
 
 const handleCreateAccount = async () => {
+  if (!selectedApp) return;
+  if (!selectedCollector) {
+    alert("Please select a collector.");
+    return;
+  }
+
   try {
-    if (!selectedApp) return;
-
-    if (!selectedCollector) {
-      alert("Please select a collector before proceeding.");
-      return;
-    }
-
+    // 1. Create borrower account
     const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -152,31 +152,25 @@ const handleCreateAccount = async () => {
         assignedCollector: selectedCollector,
       }),
     });
-
     const borrowerData = await borrowerRes.json();
-    if (!borrowerRes.ok)
-      throw new Error(borrowerData?.error || "Failed to create borrower account");
+    if (!borrowerRes.ok) throw new Error(borrowerData?.error);
 
-    setTempPassword(borrowerData.tempPassword);
-
+    // 2. Update application status to Active BEFORE generating loan
     const updateRes = await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "Active" }),
+      body: JSON.stringify({ status: "Active" }), // update status first
     });
+    const updatedApp = await updateRes.json();
 
-    if (!updateRes.ok) throw new Error("Failed to update application status");
-    const updated = await updateRes.json();
+    // 3. Generate loan (backend now sees status "Active")
+    const loanResponse = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
+      method: "POST",
+    });
+    const loanData = await loanResponse.json();
+    if (!loanResponse.ok) throw new Error(loanData?.error);
 
-    const loanRes = await fetch(
-      `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
-      { method: "POST" }
-    );
-    if (!loanRes.ok) {
-      const err = await loanRes.json();
-      throw new Error(err?.error || "Failed to generate loan");
-    }
-
+    // 4. Send email
     await sendEmail({
       to_name: selectedApp.appName,
       email: selectedApp.appEmail,
@@ -184,20 +178,24 @@ const handleCreateAccount = async () => {
       borrower_password: borrowerData.tempPassword,
     });
 
+    // 5. Update frontend applications list
     setApplications((prev) =>
       prev.map((app) =>
-        app.applicationId === updated.applicationId ? updated : app
+        app.applicationId === updatedApp.applicationId ? updatedApp : app
       )
     );
+
     setShowModal(false);
     setSelectedApp(null);
     setSelectedCollector('');
     alert("Account created and loan generated successfully.");
   } catch (error: any) {
-    console.error("Error during borrower creation or loan generation:", error);
-    alert(`Error: ${error.message || "Something went wrong."}`);
+    console.error(error);
+    alert(`Error: ${error.message}`);
   }
 };
+
+
 
 
   const filteredApplications = applications
@@ -243,28 +241,6 @@ const handleCreateAccount = async () => {
     currency: 'PHP',
   }).format(total);
 };
-
-const handleAction = async (id: string, status: 'Disbursed') => {
-  try {
-    const response = await authFetch(`${API_URL}/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-
-    if (response.ok) {
-      const updated = await response.json();
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.applicationId === updated.applicationId ? updated : app
-        )
-      );
-    }
-  } catch (error) {
-    console.error('Failed to update application:', error);
-  }
-};
-
 
 
   return (
@@ -482,18 +458,19 @@ const handleAction = async (id: string, status: 'Disbursed') => {
                     </button>
                   )}
 
-               {application.displayStatus === 'Disbursed' && !application.isReloan && (
-                <button
-                  className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
-                  onClick={() => {
-                    setSelectedApp(application);
-                    setGeneratedUsername(generateUsername(application.appName));
-                    setShowModal(true);
-                  }}
-                >
-                  Create Account
-                </button>
-              )}
+                  {application.displayStatus === 'Disbursed' && !application.isReloan && (
+                    <button
+                      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+                      onClick={() => {
+                        setSelectedApp(application);
+                        setGeneratedUsername(generateUsername(application.appName));
+                        setShowModal(true);
+                      }}
+                    >
+                      Create Account
+                    </button>
+                  )}
+
 
               {application.displayStatus === 'Disbursed' && application.isReloan && (
                 <button
