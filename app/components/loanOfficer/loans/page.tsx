@@ -14,6 +14,7 @@ interface LoanDetails {
   principal: number;
   termsInMonths: number;
   totalPayable: number;
+  paidAmount: number;
   balance: number;
   status: string;
   dateReleased: string; 
@@ -201,9 +202,9 @@ export default function LoansPage() {
                   <tr className="bg-gray-100">
                     <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">ID</th>
                     <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Name</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Release Date</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">End Date</th>
                     <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Principal</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Total Payable</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Paid Amount</th>
                     <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Balance</th>
                     <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Progress</th>
                     <th className="px-6 py-3.5 text-left text-sm font-semibold text-gray-600">Status</th>
@@ -227,10 +228,11 @@ export default function LoansPage() {
                           </Link>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-900">{loan.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateReleased)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateReleased)}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.principal)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.totalPayable)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.paidAmount)}</td>
                         <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.balance)}</td>
+
                         
                         {/* Progress Number */}
                         <td className="px-6 py-4 text-sm font-semibold text-blue-600">

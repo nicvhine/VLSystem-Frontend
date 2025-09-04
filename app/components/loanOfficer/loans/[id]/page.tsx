@@ -37,6 +37,7 @@ interface LoanDetails {
   dateReleased: string;
 
   id?: string;
+  borrowersId: string;
   dateOfBirth?: string;
   maritalStatus?: string;
   numberOfChildren?: number;
@@ -47,7 +48,7 @@ interface LoanDetails {
   municipality?: string;
   province?: string;
   houseStatus?: string;
-  sourceOfIncome?: string;
+  incomeSource?: string;
   occupation?: string;
   monthlyIncome?: number;
   score?: number;
@@ -95,6 +96,21 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     return <div className="p-6 text-red-500">Client not found.</div>;
   }
 
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP'
+    }).format(amount);
+  };
+
+  const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-500">{label}</span>
+      <div className="font-medium text-gray-800">{value}</div>
+    </div>
+  );
+
   return (
     <LoanOfficer>
     <div className="min-h-screen bg-gray-50 text-black">
@@ -111,11 +127,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
           <div className="ml-6">
             <h1 className="text-3xl font-bold text-gray-800">{client.name}</h1>
             <div className="flex items-center space-x-4 mt-2">
-              <span className="bg-gray-200 rounded-full px-3 py-1 text-sm font-medium text-gray-700">ID: {client.id}</span>
-              <span className={`rounded-full px-3 py-1 text-sm font-medium ${client.activeLoan === "Yes" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
-                {client.activeLoan === "Yes" ? "Active Loan" : "No Active Loan"}
-              </span>
-              <span className="bg-blue-100 rounded-full px-3 py-1 text-sm font-medium text-blue-800">Score: {client.score}</span>
+              <span className="text-sm font-medium text-gray-700">{client.borrowersId}</span>
             </div>
           </div>
         </div>
@@ -149,10 +161,11 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               <div>
                 <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
                 <div className="space-y-3">
-                  <div><span className="text-sm text-gray-500">Full Name</span><div className="font-medium">{client.name}</div></div>
+                  <div><span className="text-sm text-gray-500">Name</span><div className="font-medium">{client.name}</div></div>
                   <div><span className="text-sm text-gray-500">Date of Birth</span><div className="font-medium">{client.dateOfBirth}</div></div>
                   <div><span className="text-sm text-gray-500">Marital Status</span><div className="font-medium">{client.maritalStatus}</div></div>
                   <div><span className="text-sm text-gray-500">Number of Children</span><div className="font-medium">{client.numberOfChildren}</div></div>
+                  <div><span className="text-sm text-gray-500">Home Address</span><div className="font-medium">{client.address}</div></div>
                 </div>
               </div>
               <div>
@@ -169,74 +182,123 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
               <div>
-                <h2 className="text-xl font-semibold mb-4">Financial Information</h2>
-                <div className="space-y-3">
-                  <div><span className="text-sm text-gray-500">House Status</span><div className="font-medium">{client.houseStatus}</div></div>
-                  <div><span className="text-sm text-gray-500">Source of Income</span><div className="font-medium">{client.sourceOfIncome}</div></div>
-                  <div><span className="text-sm text-gray-500">Occupation</span><div className="font-medium">{client.occupation}</div></div>
-                  <div><span className="text-sm text-gray-500">Monthly Income</span><div className="font-medium">{client.monthlyIncome}</div></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* LOAN TAB */}
-          {activeTab === "loan" && (
-            <div>
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Loan Summary</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <span className="text-sm text-blue-600">Total Loans</span>
-                    <p className="text-2xl font-bold text-blue-700">{client.numberOfLoans}</p>
-                  </div>
-                  <div className={client.activeLoan === "Yes" ? "bg-green-50 p-4" : "bg-yellow-50 p-4"}>
-                    <span className={client.activeLoan === "Yes" ? "text-sm text-green-600" : "text-sm text-yellow-600"}>
-                      Loan Status
-                    </span>
-                    <p className={client.activeLoan === "Yes" ? "text-2xl font-bold text-green-700" : "text-2xl font-bold text-yellow-700"}>
-                      {client.activeLoan === "Yes" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 p-4">
-                    <span className="text-sm text-purple-600">Credit Score</span>
-                    <p className="text-2xl font-bold text-purple-700">{client.score}</p>
-                  </div>
-                </div>
-              </div>
-
-              {client.currentLoan ? (
+              <h2 className="text-xl font-semibold mb-4">Financial Information</h2>
+              <div className="space-y-3">
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Current Loan Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div><span className="text-sm text-gray-500">Loan Type</span><div className="font-medium">{client.currentLoan.type}</div></div>
-                      <div><span className="text-sm text-gray-500">Principal Amount</span><div className="font-medium">{client.currentLoan.amount}</div></div> 
-                      <div><span className="text-sm text-gray-500">Interest Rate</span><div className="font-medium">{client.currentLoan.interestRate}% monthly</div></div>
-                               <div><span className="text-sm text-gray-500">Loan Term</span><div className="font-medium">{client.currentLoan.terms} months</div></div>
-                      <div><span className="text-sm text-gray-500">Total Payable Amount</span><div className="font-medium">{client.currentLoan.totalPayable}</div></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div><span className="text-sm text-gray-500">Disbursed Date</span><div className="font-medium">{formatDate(client.currentLoan.dateDisbursed)}</div></div>
-                      <div><span className="text-sm text-gray-500">Payment Schedule</span><div className="font-medium">{client.currentLoan.paymentSchedule}</div></div>
-                      <div><span className="text-sm text-gray-500">Maturity Date</span><div className="font-medium">{client.currentLoan.maturityDate}</div></div>
-                    </div>
+                  <span className="text-sm text-gray-500">Source of Income</span>
+                  <div className="font-medium">
+                    {client.incomeSource 
+                      ? client.incomeSource.charAt(0).toUpperCase() + client.incomeSource.slice(1) 
+                      : "-"}
                   </div>
+                </div>  
 
-                  <div className="mt-6 pt-6 border-t">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-medium text-gray-700">Remaining Balance</span>
-                      <span className="text-xl font-bold text-red-600">{client.currentLoan.remainingBalance}</span>
+                {client.incomeSource === "Business Owner" && (
+                  <>
+                    <div>
+                      <span className="text-sm text-gray-500">Type of Business</span>
+                      <div className="font-medium">{client.businessType}</div>
                     </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No active loans at the moment</p>
-                </div>
-              )}
+                    <div>
+                      <span className="text-sm text-gray-500">Business Location</span>
+                      <div className="font-medium">{client.businessLocation}</div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Date Started</span>
+                      <div className="font-medium">{client.businessDateStarted}</div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Monthly Income</span>
+                      <div className="font-medium">{client.monthlyIncome}</div>
+                    </div>
+                  </>
+                )}
+
+                {client.incomeSource === "employed" && (
+                  <>
+                    <div>
+                      <span className="text-sm text-gray-500">Occupation</span>
+                      <div className="font-medium">{client.occupation}</div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Employment Status</span>
+                      <div className="font-medium">{client.employmentStatus}</div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Company Name</span>
+                      <div className="font-medium">{client.companyName}</div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Monthly Income</span>
+                      <div className="font-medium">{client.monthlyIncome}</div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
             </div>
           )}
+          
+          {/* LOAN TAB */}
+{activeTab === "loan" && (
+  <div className="space-y-10">
+    {/* Loan Summary */}
+    <section className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-2xl font-bold mb-6">Loan Summary</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-blue-50 rounded-lg p-4 text-center flex flex-col items-center justify-center shadow-sm">
+          <span className="text-sm text-blue-600 font-medium">Total Loans</span>
+          <p className="text-3xl font-bold text-blue-700">{client.numberOfLoans}</p>
+        </div>
+        <div className={`${client.activeLoan === "Yes" ? "bg-green-50" : "bg-yellow-50"} rounded-lg p-4 text-center flex flex-col items-center justify-center shadow-sm`}>
+          <span className={`text-sm font-medium ${client.activeLoan === "Yes" ? "text-green-600" : "text-yellow-600"}`}>Loan Status</span>
+          <p className={`text-3xl font-bold ${client.activeLoan === "Yes" ? "text-green-700" : "text-yellow-700"}`}>
+            {client.activeLoan === "Yes" ? "Active" : "Inactive"}
+          </p>
+        </div>
+        <div className="bg-purple-50 rounded-lg p-4 text-center flex flex-col items-center justify-center shadow-sm">
+          <span className="text-sm text-purple-600 font-medium">Credit Score</span>
+          <p className="text-3xl font-bold text-purple-700">{client.score}</p>
+        </div>
+      </div>
+    </section>
+
+    {/* Current Loan Details */}
+    {client.currentLoan ? (
+      <section className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-2xl font-bold mb-6 border-b pb-2">Current Loan Details</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Left Column */}
+          <div className="space-y-4">
+            <DetailRow label="Loan Type" value={client.currentLoan.type} />
+            <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
+            <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
+            <DetailRow label="Loan Term" value={`${client.currentLoan.terms} months`} />
+            <DetailRow label="Total Payable" value={formatCurrency(client.currentLoan.totalPayable)} />
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-4">
+            <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
+            <DetailRow label="Payment Schedule" value={client.currentLoan.paymentSchedule} />
+            <DetailRow label="Maturity Date" value={formatDate(client.currentLoan.maturityDate)} />
+            <div className="pt-4 border-t mt-4">
+              <span className="text-sm text-gray-500">Remaining Balance</span>
+              <div className="font-bold text-red-600 text-xl">{formatCurrency(client.currentLoan.remainingBalance)}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    ) : (
+      <div className="text-center py-12 bg-gray-50 rounded-lg shadow-sm">
+        <p className="text-gray-500 text-lg font-medium">No active loans at the moment</p>
+      </div>
+    )}
+  </div>
+)}
+
 
         {/* HISTORY TAB */}
         {activeTab === "history" && (
@@ -250,7 +312,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                     <p className="text-sm text-gray-600">Amount: {loan.amount}</p>
                     <p className="text-sm text-gray-600">Released: {formatDate(loan.dateReleased)}</p>
                     <p className="text-sm text-gray-600">Status: {loan.status}</p>
-                  </li>
+                  </li> 
                 ))}
               </ul>
             ) : (
@@ -265,7 +327,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
           {activeTab === "references" && (
             <div>
               <h2 className="text-xl font-semibold mb-4">Character References</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-4">
                 {client.characterReferences?.map((ref, index) => (
                   <div key={index} className="bg-gray-50 p-4 rounded-lg">
                     <p className="font-medium">{ref.name}</p>
@@ -275,6 +337,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>
