@@ -1,6 +1,65 @@
+
 'use client';
 
-import { useState } from "react";
+// Animated Success Modal Component
+import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
+type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
+function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
+  const [animateIn, setAnimateIn] = useState(false);
+  const router = useRouter();
+  useEffect(() => {
+    setAnimateIn(true);
+    return () => setAnimateIn(false);
+  }, []);
+  const handleClose = () => {
+    onClose();
+    router.push('/');
+  };
+  return (
+    <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-8 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+        <button
+          onClick={handleClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition text-2xl"
+          aria-label="Close"
+        >
+          ×
+        </button>
+        <div className="text-center">
+          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+            {language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}
+          </h3>
+          <p className="text-gray-600 mb-4">
+            {language === 'en'
+              ? 'Your loan application has been received and is being processed.'
+              : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
+          </p>
+          {loanId && (
+            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-gray-600 mb-1">
+                {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
+              </p>
+              <p className="text-lg font-semibold text-red-600">{loanId}</p>
+            </div>
+          )}
+          <button
+            onClick={handleClose}
+            className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
+          >
+            {language === 'en' ? 'Close' : 'Sirado'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 import Common from "./common";
 
 const API_URL = "http://localhost:3001/loan-applications/open-term";
@@ -436,39 +495,11 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
 
        {/* Success Modal */}
 {showSuccessModal && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-8 max-w-md w-full mx-4">
-      <div className="text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-          {language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}
-        </h3>
-        <p className="text-gray-600 mb-4">
-          {language === 'en'
-            ? 'Your loan application has been received and is being processed.'
-            : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
-        </p>
-        {loanId && (
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
-            <p className="text-sm text-gray-600 mb-1">
-              {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
-            </p>
-            <p className="text-lg font-semibold text-red-600">{loanId}</p>
-          </div>
-        )}
-        <button
-          onClick={closeModal}
-          className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
-        >
-          {language === 'en' ? 'Close' : 'Sirado'}
-        </button>
-      </div>
-    </div>
-  </div>
+  <SuccessModalWithAnimation
+    language={language}
+    loanId={loanId}
+    onClose={closeModal}
+  />
 )}
 
     </>

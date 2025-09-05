@@ -19,12 +19,16 @@ export default function LoanOfficerDashboard() {
         <div className="bg-white px-6">
         </div>
 
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-8 min-h-[calc(100vh-140px)]">
-            <LoanStatsDashboard />
-
-            <InterviewCalendar 
-            />
+        <div className="p-4">
+          <div className="flex gap-4 h-[calc(100vh-100px)]">
+            {/* Left column: Application Status and Loan Types stacked, compact */}
+            <div className="flex flex-col gap-4 w-72 flex-shrink-0">
+              <LoanStatsDashboard />
+            </div>
+            {/* Right column: Calendar */}
+            <div className="flex-1 min-w-0">
+              <InterviewCalendar />
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import emailjs from 'emailjs-com';
 
 type Props = {
@@ -37,9 +37,8 @@ export default function ForgotPasswordModal({
   setForgotRole,
   setShowForgotModal,
 }: Props) {
-  // 👇 NEW: added 'staff'
+  const [animateIn, setAnimateIn] = useState(false);
   const [step, setStep] = useState<'role' | 'account' | 'otp' | 'reset' | 'staff'>('role');
-
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -49,7 +48,22 @@ export default function ForgotPasswordModal({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
 
-  // Step 1: Check username + email with backend
+  // Animation for step transitions
+  const [pendingStep, setPendingStep] = useState<typeof step | null>(null);
+  useEffect(() => {
+    if (pendingStep) {
+      setAnimateIn(false);
+      const timer = setTimeout(() => {
+        setStep(pendingStep);
+        setAnimateIn(true);
+        setPendingStep(null);
+      }, 250); // match transition duration
+      return () => clearTimeout(timer);
+    }
+  }, [pendingStep]);
+  useEffect(() => {
+    setAnimateIn(true);
+  }, []);
   const handleAccountSubmit = async () => {
     setError('');
     try {
@@ -116,8 +130,8 @@ export default function ForgotPasswordModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white w-[400px] rounded-lg shadow-lg p-6">
+    <div className={`fixed inset-0 bg-black/50 flex justify-center items-center z-50 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white w-[400px] rounded-lg shadow-lg p-6 transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         
         {/* Step 0: Choose Role */}
         {step === 'role' && (
@@ -126,15 +140,13 @@ export default function ForgotPasswordModal({
               Forgot Password
             </h2>
             <button
-              onClick={() => setStep('account')}
+              onClick={() => setPendingStep('account')}
               className="w-full px-4 py-2 mb-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
             >
               I am a Borrower
             </button>
             <button
-              onClick={() => {
-                setStep('staff');
-              }}
+              onClick={() => setPendingStep('staff')}
               className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition"
             >
               I am a Staff
@@ -145,7 +157,6 @@ export default function ForgotPasswordModal({
       {/* Step 1: Enter username + email */}
         {step === 'account' && (
           <>
-            {/* Close icon */}
             <div className="flex justify-end">
               <button
                 onClick={() => setShowForgotModal(false)}
@@ -155,7 +166,6 @@ export default function ForgotPasswordModal({
                 ✕
               </button>
             </div>
-
             <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
               Forgot Password
             </h2>
