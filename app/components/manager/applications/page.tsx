@@ -245,8 +245,8 @@ const handleCreateAccount = async () => {
 
   return (
     <Manager>
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto px-4 sm:px-6 py-8">
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Loan Applications</h1>
@@ -525,47 +525,88 @@ const handleCreateAccount = async () => {
           </table>
 
                   {/* Modal */}
-        {showModal && selectedApp && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-              <h2 className="text-xl font-semibold mb-4">Create Account</h2>
-              <p className="mb-2"><strong>Name:</strong> {selectedApp.appName}</p>
-              <p className="mb-4">
-                <strong>Generated Username:</strong>{" "}
-                <span className="text-blue-600">{generatedUsername}</span>
-              </p>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
-              <select
-                value={selectedCollector}
-                onChange={(e) => setSelectedCollector(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select a collector</option>
-                {collectors.map((name) => (
-                  <option key={name} value={name}>{name}</option>
-                ))}
-              </select>
+                  <ModalWithAnimation isOpen={showModal && !!selectedApp} onClose={() => setShowModal(false)}>
+                    {selectedApp && <>
+                      <h2 className="text-xl font-semibold mb-4">Create Account</h2>
+                      <p className="mb-2"><strong>Name:</strong> {selectedApp.appName}</p>
+                      <p className="mb-4">
+                        <strong>Generated Username:</strong>{" "}
+                        <span className="text-blue-600">{generatedUsername}</span>
+                      </p>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
+                      <select
+                        value={selectedCollector}
+                        onChange={(e) => setSelectedCollector(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Select a collector</option>
+                        {collectors.map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
 
-              <div className="flex justify-end gap-3 mt-4">
-                <button
-                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
-                  onClick={() => setShowModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  onClick={handleCreateAccount}
-                >
-                  Create Account
-                </button>
-              </div>
-            </div>
-            </div>
-)}
+                      <div className="flex justify-end gap-3 mt-4">
+                        <button
+                          className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+                          onClick={() => setShowModal(false)}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                          onClick={handleCreateAccount}
+                        >
+                          Create Account
+                        </button>
+                      </div>
+                    </>}
+                  </ModalWithAnimation>
+        </div>
       </div>
     </div>
-    </div>
-    </Manager>
+  </Manager>
   );
+
+
+interface ModalWithAnimationProps {
+  isOpen: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+}
+
+function ModalWithAnimation({ isOpen, onClose, children }: ModalWithAnimationProps) {
+  const [show, setShow] = useState(isOpen);
+  const [animateIn, setAnimateIn] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShow(true);
+      setTimeout(() => setAnimateIn(true), 10);
+    } else if (show) {
+      setAnimateIn(false);
+      // Wait for animation to finish before unmounting
+      const timeout = setTimeout(() => setShow(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  if (!show) return null;
+
+  return (
+    <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+        <button
+          onClick={() => {
+            setAnimateIn(false);
+            setTimeout(onClose, 300);
+          }}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition"
+        >
+          ✖
+        </button>
+        {children}
+      </div>
+    </div>
+  );
+}
 }
