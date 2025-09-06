@@ -370,65 +370,16 @@ const handleCreateAccount = async () => {
 
                   <td className="px-6 py-4 space-x-2">
 
-                  {application.displayStatus === 'Cleared' && (
-  <div className="flex gap-2">
-    <button
-      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
-      onClick={async () => {
-        try {
-          const response = await authFetch(`${API_URL}/${application.applicationId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Approved' }),
-          });
+                      {/* If Pending → Show View Application */}
+                      {application.status === 'Cleared' && (
+                          <Link
+                            href={`/components/manager/applications/${application.applicationId}`}
+                            className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                          >
+                            View 
+                          </Link>
+                        )}
 
-          if (!response.ok) throw new Error("Failed to approve application");
-
-          const updated = await response.json();
-          setApplications((prev) =>
-            prev.map((app) =>
-              app.applicationId === updated.applicationId ? updated : app
-            )
-          );
-        } catch (err) {
-          console.error(err);
-          alert("Failed to approve.");
-        }
-      }}
-    >
-      Approve
-    </button>
-
-    <button
-      className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700"
-      onClick={async () => {
-        try {
-          const response = await authFetch(`${API_URL}/${application.applicationId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'Denied' }),
-          });
-
-          if (!response.ok) throw new Error("Failed to deny application");
-
-          const updated = await response.json();
-          setApplications((prev) =>
-            prev.map((app) =>
-              app.applicationId === updated.applicationId ? updated : app
-            )
-          );
-        } catch (err) {
-          console.error(err);
-          alert("Failed to deny.");
-        }
-      }}
-    >
-      Deny
-    </button>
-  </div>
-)}
-
-                    
                   {application.displayStatus === 'Pending' && (
                     <button
                       className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700"

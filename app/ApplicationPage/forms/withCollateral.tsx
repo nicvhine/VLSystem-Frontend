@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 
-// Animated Success Modal Component
-// Animated Success Modal Component (top-level, outside main export)
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
 function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
   const [animateIn, setAnimateIn] = useState(false);
