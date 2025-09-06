@@ -1,9 +1,9 @@
 
 'use client';
 
-// Animated Success Modal Component
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
+
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
 function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
   const [animateIn, setAnimateIn] = useState(false);

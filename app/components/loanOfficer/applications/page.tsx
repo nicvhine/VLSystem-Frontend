@@ -33,7 +33,7 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
-  const [activeFilter, setActiveFilter] = useState('Pending');
+  const [activeFilter, setActiveFilter] = useState('Applied');
 
   async function authFetch(url: string, options: RequestInit = {}) {
     const token = localStorage.getItem("token");
@@ -153,7 +153,7 @@ export default function ApplicationsPage() {
                 onChange={(e) => setActiveFilter(e.target.value)}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                {['All', 'Pending', 'Approved', 'Denied', 'Accepted'].map((status) => (
+                {['All', 'Applied', 'Pending', 'Approved', 'Denied', 'Accepted'].map((status) => (
                   <option key={status} value={status}>
                     {status === 'Onhold' ? 'On Hold' : status}
                   </option>
@@ -163,8 +163,8 @@ export default function ApplicationsPage() {
             </div>
 
             {/* Desktop buttons */}
-            <div className="hidden w-97 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-              {['All', 'Pending', 'Approved', 'Denied', 'Active'].map((status) => (
+            <div className="hidden w-140 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+              {['All', 'Applied', 'Pending', 'Approved', 'Denied', 'Active'].map((status) => (
                <button
                key={status}
                onClick={() => setActiveFilter(status)}
@@ -228,24 +228,7 @@ export default function ApplicationsPage() {
                     key={application.applicationId}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
                   >
-                   <td className="px-6 py-4">
-                      {application.status === 'Pending' ? (
-                        <Link
-                          href={`/components/loanOfficer/applications/${application.applicationId}`}
-                          className="text-blue-600 hover:text-blue-700 font-medium"
-                        >
-                          {application.applicationId}
-                        </Link>
-                      ) : (
-                        <Link
-                        href={`/components/loanOfficer/applications/${application.applicationId}`}
-                          className="text-blue-600 hover:text-blue-700 font-medium"
-                        >
-                          {application.applicationId}
-                        </Link>
-                      )}
-                    </td>
-
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{application.applicationId}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{application.appName}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{application.loanType}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatDate(application.dateApplied)}</td>
@@ -263,15 +246,27 @@ export default function ApplicationsPage() {
                     </td>
                     <td className="px-6 py-4 space-x-2">
 
-           {/* If Approved → Show Generate Loan Agreement */}
-{application.status === 'Approved' && (
-  <Link
-    href={`/LoanAgreementPage/${application.applicationId}`}
-    className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700 inline-block"
-  >
-    Generate
-  </Link>
-)}
+                   {/* If Pending OR Approved → Show View Application */}
+                  {(application.status === 'Pending' || application.status === 'Approved' || application.status === 'Active') && (
+                    <Link
+                      href={`/components/loanOfficer/applications/${application.applicationId}`}
+                      className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                    >
+                      View
+                    </Link>
+                  )}
+
+                      {/* If status = Applied → Show Schedule Interview */}
+            {application.status === 'Applied' && (
+              <Link
+                href={`/components/loanOfficer/applications/${application.applicationId}`}
+                className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-indigo-700 inline-block"
+              >
+                Schedule
+              </Link>
+            )}
+
+     
 
   {application.status !== 'Accepted' && application.status !== 'Disbursed' && application.status === 'Ready for Disbursement' && (
     <button

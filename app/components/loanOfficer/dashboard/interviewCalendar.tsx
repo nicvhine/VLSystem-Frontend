@@ -70,7 +70,7 @@ export default function InterviewCalendar() {
             end.setHours(end.getHours() + 1);
 
             return { 
-              title: `Interview: ${app.appName}`, 
+              title: `${app.appName}`, 
               start, 
               end,
               applicationId: app.applicationId

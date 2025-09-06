@@ -83,22 +83,24 @@ export default function LoanStatsDashboard() {
     isAmount?: boolean;
   }) => (
     <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-      <div className="flex items-center justify-between mb-2">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
         <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('-600', '-50')}`}>
           <Icon className={`w-5 h-5 ${color}`} />
         </div>
+        <h4 className="text-sm font-medium text-gray-600">{label}</h4>
       </div>
-      <h4 className="text-xs font-medium text-gray-500 mb-1">{label}</h4>
-      <p className={`text-lg font-bold ${color}`}>
+      <p className={`text-base font-bold ${color}`}>
         {isAmount ? `₱${value?.toLocaleString?.() ?? 0}` : value?.toLocaleString?.() ?? 0}
       </p>
     </div>
+  </div>
   );
   
   return (
     <div className="flex flex-col gap-6 h-full">
       {/* Application Status */}
-      <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+      <section className="p-5 flex flex-col gap-3">
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-yellow-50 rounded-lg">
             <FiUsers className="text-yellow-600 w-5 h-5" />
@@ -107,7 +109,7 @@ export default function LoanStatsDashboard() {
             Application Status
           </h2>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="flex flex-col gap-3">
           <StatCard 
             label="Pending" 
             value={loanStats.pending ?? 0} 
@@ -130,7 +132,7 @@ export default function LoanStatsDashboard() {
       </section>
 
       {/* Loan Types */}
-      <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+      <section className="p-5 flex flex-col gap-3">
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 bg-blue-50 rounded-lg">
             <FiPieChart className="text-blue-600 w-5 h-5" />
@@ -139,7 +141,7 @@ export default function LoanStatsDashboard() {
             Loan Types
           </h2>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="flex flex-col gap-3">
           <StatCard 
             label="With" 
             value={loanStats.withCollateral ?? 0} 

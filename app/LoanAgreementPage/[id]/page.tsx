@@ -334,15 +334,15 @@ const formatCurrency = (amount?: number) => {
                 {application?.status === "Disbursed" ? (
   <button
     disabled
-    className="bg-gray-400 text-white px-4 py-2 rounded cursor-not-allowed"
-  >
+    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-700 transition-colors"
+    >
     Disbursed
   </button>
 ) : (
   <button
     onClick={handleDisburse}
-    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-  >
+    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+    >
     Disburse
   </button>
 )}

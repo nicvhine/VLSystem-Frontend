@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft, FiMessageSquare } from 'react-icons/fi';
 import Link from 'next/link';
-import LoanOfficerNavbar from "../../loNavbar/page";
+import ManagerNavbar from '../../managerNavbar/page';
 
 
 const API_URL = "http://localhost:3001/loan-applications";
@@ -67,45 +67,53 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   const [interviewTime, setInterviewTime] = useState('');
 
 
-  const handleScheduleInterview = async () => {
-    if (!interviewDate || !interviewTime) {
-      alert("Please select both date and time.");
-      return;
-    }
-  
+  // Approve a cleared application
+const handleApproveApplication = async () => {
     try {
       const id = application?.applicationId;
       if (!id) throw new Error("Missing application id");
   
-      const scheduleRes = await authFetch(`${API_URL}/${id}/schedule-interview`, {
+      const response = await authFetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ interviewDate, interviewTime }),
+        body: JSON.stringify({ status: "Approved" }),
       });
-      if (!scheduleRes.ok) throw new Error("Failed to save schedule");
-  
-      const statusRes = await authFetch(`${API_URL}/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Pending" }),
-      });
-      if (!statusRes.ok) throw new Error("Failed to set status to Pending");
+      if (!response.ok) throw new Error("Failed to update status");
   
       setApplications(prev =>
-        prev.map(app =>
-          app.applicationId === id
-            ? { ...app, interviewDate, interviewTime, status: "Pending" }
-            : app
-        )
+        prev.map(app => (app.applicationId === id ? { ...app, status: "Approved" } : app))
       );
   
-      setIsModalOpen(false);
-      alert("Interview scheduled. Status is now Pending.");
+      alert("Application approved.");
     } catch (error) {
-      console.error("Error saving schedule:", error);
-      alert("Could not schedule interview. Try again.");
+      console.error("Failed to approve application:", error);
+      alert("Could not approve application. Try again.");
     }
   };
+  
+  const handleDenyFromCleared = async () => {
+    try {
+      const id = application?.applicationId;
+      if (!id) throw new Error("Missing application id");
+  
+      const response = await authFetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Denied by LO" }),
+      });
+      if (!response.ok) throw new Error("Failed to update status");
+  
+      setApplications(prev =>
+        prev.map(app => (app.applicationId === id ? { ...app, status: "Denied by LO" } : app))
+      );
+  
+      alert("Application denied.");
+    } catch (error) {
+      console.error("Failed to deny application:", error);
+      alert("Could not deny application. Try again.");
+    }
+  };
+  
   
     
   const handleClearedLoan = async () => {
@@ -211,7 +219,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   if (!application && !loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <LoanOfficerNavbar />
+        <ManagerNavbar />
         <div className="p-10 text-center text-gray-600 text-lg">
           Application not found.
         </div>
@@ -243,7 +251,7 @@ const hasInterviewScheduled = Boolean(application?.interviewDate && application?
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <LoanOfficerNavbar />
+      <ManagerNavbar />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
@@ -257,64 +265,74 @@ const hasInterviewScheduled = Boolean(application?.interviewDate && application?
             </Link>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{params.id} - {application?.loanType}</h1>
           </div>
+
           <div className="flex flex-wrap gap-3">
-            {application?.status === "Applied" && (
-              <>
-                <button
-                  onClick={() => setIsModalOpen(true)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Set Schedule
-                </button>
-                <button
-                  onClick={handleDenyApplication}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Dismiss
-                </button>
-              </>
-            )}
+  {/* Applied => Set Schedule + Dismiss */}
+  {application?.status === "Applied" && (
+    <>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+      >
+        Set Schedule
+      </button>
+      <button
+        onClick={handleDenyApplication}
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+      >
+        Dismiss
+      </button>
+    </>
+  )}
 
-            {application?.status === "Pending" && (
-              <>
-                <button
-                  onClick={handleClearedLoan}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Clear
-                </button>
-                <button
-                  onClick={handleDenyApplication}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Dismiss
-                </button>
-              </>
-            )}
+  {/* Pending => Clear + Dismiss */}
+  {application?.status === "Pending" && (
+    <>
+      <button
+        onClick={handleClearedLoan}
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Clear
+      </button>
+      <button
+        onClick={handleDenyApplication}
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+      >
+        Dismiss
+      </button>
+    </>
+  )}
 
-            {application?.status === "Approved" && (
-              <>
-                <Link
-                href={`/LoanAgreementPage/${application.applicationId}`}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Generate Loan Agreement 
-                </Link>
-              </>
-            )}
+  {/* Cleared => Approve + Deny (no "Cleared" label) */}
+  {application?.status === "Cleared" && (
+    <>
+      <button
+        onClick={handleApproveApplication}
+        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+      >
+        Approve
+      </button>
+      <button
+        onClick={handleDenyFromCleared}
+        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+      >
+        Deny
+      </button>
+    </>
+  )}
 
-            {["Cleared", "Denied", "Denied by LO", "Endorsed", "Accepted"].includes(
-              application?.status || ""
-            ) && (
-              <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg cursor-not-allowed">
-                {application?.status}
-              </span>
-            )}
-          </div>
+  {/* Final statuses (show read-only label): include Approved */}
+  {["Approved", "Denied", "Denied by LO", "Endorsed", "Accepted"].includes(
+    application?.status || ""
+  ) && (
+    <span className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg cursor-not-allowed">
+      {application?.status}
+    </span>
+  )}
+</div>
 
 
-
-        </div>
+  </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
@@ -548,20 +566,6 @@ const hasInterviewScheduled = Boolean(application?.interviewDate && application?
               onChange={(e) => setInterviewTime(e.target.value)}
             />
 
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleScheduleInterview}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Schedule
-              </button>
-            </div>
           </div>
         </div>
       )}
