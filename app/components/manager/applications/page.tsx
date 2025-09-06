@@ -244,7 +244,7 @@ const handleCreateAccount = async () => {
 
 
   return (
-    <Manager>
+    <Manager blurNavbar={showModal && !!selectedApp}>
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">

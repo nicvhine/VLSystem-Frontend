@@ -8,7 +8,7 @@ import AreYouStillThereModal from '../inactivity/modal';
 import Dashboard from "./dashboard/page";
 import ManagerNavbar from "./managerNavbar/page";
 
-export default function Manager({ children }: { children?: React.ReactNode }) {
+export default function Manager({ children, blurNavbar }: { children?: React.ReactNode, blurNavbar?: boolean }) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function Manager({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-white">
-      <ManagerNavbar />
+      <ManagerNavbar blur={blurNavbar} />
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}
