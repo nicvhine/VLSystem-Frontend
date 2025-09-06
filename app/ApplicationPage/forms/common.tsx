@@ -464,37 +464,41 @@ function MapComponent({
           value={props.appReferences[i - 1]?.name || ""}
           onChange={(e) => handleReferenceChange(i - 1, 'name', e.target.value)}
         />
+        {/* Show only duplicate name error here */}
+        {refErrors[i - 1] && refErrors[i - 1].toLowerCase().includes('duplicate name') && (
+          <p className="text-sm text-red-600 mt-1">{refErrors[i - 1].split('•').filter(err => err.toLowerCase().includes('duplicate name')).join(' • ')}</p>
+        )}
       </div>
       <div>
         <label className="block font-medium mb-2 text-gray-700">
           {language === 'en' ? 'Contact Number:' : 'Numero ng Telepono:'}
         </label>
         <input
-  type="text"
-  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-    refErrors[i - 1] ? "border-red-400" : "border-gray-200"
-  }`}
-  placeholder="09XXXXXXXXX"
-  value={props.appReferences[i - 1]?.contact || ""}
-  onChange={(e) => handleReferenceChange(i - 1, "contact", e.target.value)}
-  onBlur={(e) => {
-    const v = e.target.value.trim();
-    if (v && !isValidPHMobile(v)) {
-      const next = [...refErrors];
-      next[i - 1] = next[i - 1]
-        ? next[i - 1] + " • Invalid mobile format"
-        : "Invalid mobile format";
-      setRefErrors(next);
-    } else {
-      validateReferenceUniqueness(props.appReferences);
-    }
-  }}
-  aria-invalid={!!refErrors[i - 1]}
-/>
-
-{refErrors[i - 1] && (
-  <p className="text-sm text-red-600 mt-1">{refErrors[i - 1]}</p>
-)}
+          type="text"
+          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+            refErrors[i - 1] && refErrors[i - 1].toLowerCase().includes('contact') ? "border-red-400" : "border-gray-200"
+          }`}
+          placeholder="09XXXXXXXXX"
+          value={props.appReferences[i - 1]?.contact || ""}
+          onChange={(e) => handleReferenceChange(i - 1, "contact", e.target.value)}
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            if (v && !isValidPHMobile(v)) {
+              const next = [...refErrors];
+              next[i - 1] = next[i - 1]
+                ? next[i - 1] + " • Invalid mobile format"
+                : "Invalid mobile format";
+              setRefErrors(next);
+            } else {
+              validateReferenceUniqueness(props.appReferences);
+            }
+          }}
+          aria-invalid={!!refErrors[i - 1] && refErrors[i - 1].toLowerCase().includes('contact')}
+        />
+        {/* Show only contact-related errors here */}
+        {refErrors[i - 1] && refErrors[i - 1].toLowerCase().match(/contact|mobile/) && (
+          <p className="text-sm text-red-600 mt-1">{refErrors[i - 1].split('•').filter(err => err.toLowerCase().includes('contact') || err.toLowerCase().includes('mobile')).join(' • ')}</p>
+        )}
 
       </div>
       <div>

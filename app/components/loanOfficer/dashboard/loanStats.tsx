@@ -96,73 +96,70 @@ export default function LoanStatsDashboard() {
   );
   
   return (
-    <div className="space-y-8">
-      {/* Wrap both in one row */}
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Application Status */}
-        <section className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-yellow-50 rounded-lg">
-              <FiUsers className="text-yellow-600 w-5 h-5" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800">
-              Application Status
-            </h2>
+    <div className="flex flex-col gap-6 h-full">
+      {/* Application Status */}
+      <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 bg-yellow-50 rounded-lg">
+            <FiUsers className="text-yellow-600 w-5 h-5" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <StatCard 
-              label="Pending Applications" 
-              value={loanStats.pending ?? 0} 
-              color="text-yellow-600" 
-              icon={FiClock}
-            />
-            <StatCard 
-              label="Approved Applications" 
-              value={loanStats.approved ?? 0} 
-              color="text-green-600" 
-              icon={FiCheckCircle}
-            />
-            <StatCard 
-              label="Denied Applications" 
-              value={loanStats.denied ?? 0} 
-              color="text-red-600" 
-              icon={FiXCircle}
-            />
+          <h2 className="text-lg font-semibold text-gray-800">
+            Application Status
+          </h2>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard 
+            label="Pending" 
+            value={loanStats.pending ?? 0} 
+            color="text-yellow-600" 
+            icon={FiClock}
+          />
+          <StatCard 
+            label="Approved" 
+            value={loanStats.approved ?? 0} 
+            color="text-green-600" 
+            icon={FiCheckCircle}
+          />
+          <StatCard 
+            label="Denied" 
+            value={loanStats.denied ?? 0} 
+            color="text-red-600" 
+            icon={FiXCircle}
+          />
+        </div>
+      </section>
+
+      {/* Loan Types */}
+      <section className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col gap-3">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <FiPieChart className="text-blue-600 w-5 h-5" />
           </div>
-        </section>
-  
-        {/* Loan Types */}
-        <section className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <FiPieChart className="text-blue-600 w-5 h-5" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-800">
-              Loan Types
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <StatCard 
-              label="With Collateral" 
-              value={loanStats.withCollateral ?? 0} 
-              color="text-blue-600" 
-              icon={FiUsers}
-            />
-            <StatCard 
-              label="Without Collateral" 
-              value={loanStats.withoutCollateral ?? 0} 
-              color="text-green-600" 
-              icon={FiUsers}
-            />
-            <StatCard 
-              label="Open-Term Loans" 
-              value={loanStats.openTerm ?? 0} 
-              color="text-red-600" 
-              icon={FiUsers}
-            />
-          </div>
-        </section>
-      </div>
+          <h2 className="text-lg font-semibold text-gray-800">
+            Loan Types
+          </h2>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard 
+            label="With" 
+            value={loanStats.withCollateral ?? 0} 
+            color="text-blue-600" 
+            icon={FiUsers}
+          />
+          <StatCard 
+            label="Without" 
+            value={loanStats.withoutCollateral ?? 0} 
+            color="text-green-600" 
+            icon={FiUsers}
+          />
+          <StatCard 
+            label="Open-Term" 
+            value={loanStats.openTerm ?? 0} 
+            color="text-red-600" 
+            icon={FiUsers}
+          />
+        </div>
+      </section>
     </div>
   );
   

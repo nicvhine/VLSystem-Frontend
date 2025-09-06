@@ -64,7 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({ language, setLanguage }) => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm">
+  <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link
