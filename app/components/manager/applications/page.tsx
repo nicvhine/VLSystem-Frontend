@@ -248,8 +248,8 @@ const handleCreateAccount = async () => {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Loan Applications</h1>
+        <div>
+            <h1 className="text-2xl font-semibold text-gray-800">Loan Applications</h1>
           </div>
         </div>
 
@@ -271,23 +271,23 @@ const handleCreateAccount = async () => {
           <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
         </div>
 
-
-        {/* Tabs for desktop */}
-          <div className="hidden w-145 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-            {['All', 'Cleared','Disbursed','Active'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setActiveFilter(status)}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeFilter === status
-                    ? `bg-${status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : 'blue'}-50 text-${status === 'Pending' ? 'yellow' : status === 'Accepted' ? 'green' : status === 'Denied' ? 'red' : status === 'Onhold' ? 'orange' : status === 'Disbursed' ? 'yellow' : 'blue'}-600 shadow-sm`
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                {status === 'Onhold' ? 'On Hold' : status}
-              </button>
-            ))}
-          </div>
+        {/* Desktop buttons */}
+            <div className="hidden w-110 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+              {['All', 'Cleared', 'Approved', 'Disbursed', 'Denied'].map((status) => (
+               <button
+               key={status}
+               onClick={() => setActiveFilter(status)}
+               className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                 activeFilter === status
+                   ? "bg-blue-50 text-blue-600 shadow-sm"
+                   : "text-gray-600 hover:bg-gray-100"
+               }`}
+             >
+               {status === "Onhold" ? "On Hold" : status}
+             </button>
+             
+              ))}
+            </div>
         </div>
 
         {/* Search and Sort */}
@@ -350,28 +350,17 @@ const handleCreateAccount = async () => {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{application.appInterest}%</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{application.totalPayable}</td>
-
                   <td className="px-6 py-4">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                  application.displayStatus === 'Accepted' ? 'bg-green-100 text-green-800' :
-                  application.displayStatus === 'Denied' ? 'bg-red-100 text-red-800' :
-                  application.displayStatus === 'Onhold' ? 'bg-orange-100 text-orange-800' :
-                  'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {application.displayStatus === 'Onhold' ? 'On Hold' : application.displayStatus}
-                </span>
-                {application.isReloan && (
-                  <span className="ml-2 inline-block px-2 py-0.5 text-xs bg-purple-100 text-purple-800 rounded-full">
-                    Reloan
-                  </span>
-                )}
-              </td>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
+                        {application.status === 'Onhold' ? 'On Hold' : application.status}
+                      </span>
+                    </td>
 
 
                   <td className="px-6 py-4 space-x-2">
 
                       {/* If Pending → Show View Application */}
-                      {application.status === 'Cleared' && (
+                      {application.status === 'Cleared' || application.status === 'Denied' && (
                           <Link
                             href={`/components/manager/applications/${application.applicationId}`}
                             className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"

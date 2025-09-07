@@ -52,7 +52,7 @@ useEffect(() => {
   const fetchCollections = async () => {
     try {
       setLoading(true);
-      const url = 'http://localhost:3001/collections'; // No ?collector
+      const url = 'http://localhost:3001/collections'; 
       const response = await fetch(url);
       const data = await response.json();
 
@@ -136,7 +136,7 @@ const overallTargetAchieved = overallTotalTarget > 0
     <Manager>
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto px-6 py-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-8">Collections</h1>
+      <h1 className="text-2xl font-semibold text-gray-800 mb-5">Collections</h1>
 
         {/* Collector Filters */}
         <div className="flex items-center gap-2 mb-6">

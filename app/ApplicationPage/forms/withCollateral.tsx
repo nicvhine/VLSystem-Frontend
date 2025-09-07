@@ -148,6 +148,48 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
   };  
 
+        //2x2 upload state
+        const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+
+  
+        const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          if (e.target.files) {
+            const files = Array.from(e.target.files);
+        
+            files.forEach((file) => {
+              const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+              if (!validTypes.includes(file.type)) {
+                alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+                return;
+              }
+        
+              if (file.size > 2 * 1024 * 1024) {
+                alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+                return;
+              }
+        
+              const img = new Image();
+              img.onload = () => {
+                const { width, height } = img;
+                const aspectRatio = width / height;
+        
+                if (aspectRatio < 0.9 || aspectRatio > 1.1) {
+                  alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+                  return;
+                }
+        
+                setPhoto2x2((prev) => [...prev, file]);
+              };
+              img.src = URL.createObjectURL(file);
+            });
+          }
+        };
+        
+    
+        const removeProfile = (index: number) => {
+          setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
+        };
+
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
       alert(language === 'en'
@@ -161,6 +203,14 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       alert(language === "en"
         ? "Please upload at least one document."
         : "Palihug i-upload ang usa ka dokumento."
+      );
+      return;
+    }
+
+    if (photo2x2.length === 0) {
+      alert(language === "en"
+        ? "Please upload your 2x2 photo."
+        : "Palihug i-upload ang imong 2x2 nga litrato."
       );
       return;
     }
@@ -195,12 +245,19 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       formData.append("collateralDescription", collateralDescription);
       formData.append("ownershipStatus", ownershipStatus);
   
-      // references must be stringified because backend expects objects
-      formData.append("appReferences", JSON.stringify(appReferences));
-  
+      appReferences.forEach((ref, i) => {
+        formData.append(`appReferences[${i}][name]`, ref.name);
+        formData.append(`appReferences[${i}][contact]`, ref.contact);
+        formData.append(`appReferences[${i}][relation]`, ref.relation);
+      });
+
       uploadedFiles.forEach(file => {
         formData.append("documents", file);
       });
+
+      if (photo2x2[0]) {
+        formData.append("profilePic", photo2x2[0]);
+      }
   
       const res = await fetch(API_URL, { method: "POST", body: formData });
   
@@ -217,6 +274,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         setCollateralDescription("");
         setOwnershipStatus("");
         setUploadedFiles([]);
+        setPhoto2x2([]);
       } else {
         const errorText = await res.text();
         alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
@@ -381,6 +439,41 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         </div>
       </div>
 
+
+       {/* 2x2 Upload */}
+       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
+        </h4>
+        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
+          <input
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            onChange={handleProfileChange}
+            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
+                      file:rounded-lg file:border-0 file:text-sm file:font-medium
+                      file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+          />
+        </div>
+        {photo2x2.length > 0 && (
+          <div className="mt-4 text-center">
+            {photo2x2.map((file, index) => (
+              <div key={index} className="flex justify-center items-center gap-4 py-1">
+                <p className="text-sm text-gray-600">{file.name}</p>
+                <button
+                  onClick={() => removeProfile(index)}
+                  className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                >
+                  {language === 'en' ? 'Remove' : 'Tangtangon'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+
       {/* Document Upload */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
@@ -388,7 +481,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
           {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
         </h4>
         <div>
-          <label className="block font-medium mb-3 text-gray-700">{language === 'en' ? 'Upload Required Documents:' : 'Iupload ang mga Kinahanglanon nga Dokumento:'}</label>
+          <label className="block text-sm mb-3 text-gray-500">{language === 'en' ? 'Refer to the sidebar for the list of required documents.' : 'Tan-awa ang sidebar para sa listahan sa mga kinahanglan nga dokumento.'}</label>
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
             <input
               type="file"

@@ -224,9 +224,11 @@ const handlePrint = () => {
 };
 
 const handleDisburse = async () => {
+  if (!application) return;
+  
   try {
     const response = await authFetch(
-      `http://localhost:3001/loan-applications/${application?.applicationId}`,
+      `${API_URL}/${application.applicationId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -234,9 +236,15 @@ const handleDisburse = async () => {
       }
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to update status");
-    }
+    if (!response.ok) throw new Error("Failed to update status");
+
+    setApplications(prev =>
+      prev.map(app =>
+        app.applicationId === application.applicationId
+          ? { ...app, status: "Disbursed" }
+          : app
+      )
+    );
 
     alert("Loan status changed to 'Disbursed'.");
   } catch (error) {
@@ -244,6 +252,7 @@ const handleDisburse = async () => {
     alert("Something went wrong.");
   }
 };
+
 
 function addMonthsSafe(date: Date, months: number) {
   const d = new Date(date);
@@ -334,14 +343,14 @@ const formatCurrency = (amount?: number) => {
                 {application?.status === "Disbursed" ? (
   <button
     disabled
-    className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-red-700 transition-colors"
+    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
     >
     Disbursed
   </button>
 ) : (
   <button
     onClick={handleDisburse}
-    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
     >
     Disburse
   </button>
