@@ -1,9 +1,10 @@
-  'use client';
+'use client';
 
   import { useState, useEffect } from 'react';
   import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from 'react-icons/fi';
   import Link from 'next/link';
   import LoanOfficerNavbar from "../../loNavbar/page";
+  import emailjs from "emailjs-com";
 
   import WithCollateral from './withCollateral';
   import OpenTerm from './openTerm';
@@ -81,7 +82,7 @@
       const fetchApplications = async () => {
         try {
           const response = await authFetch(API_URL);
-          if (!response.ok) throw new Error("Unauthorized");
+          if (!response.ok) throw new Error("Unautho  rized");
           const data = await response.json();
   
           const mappedData = data.map((app: any) => ({
@@ -113,6 +114,14 @@
       });
     }
 
+    function formatTimeTo12Hour(time: string) {
+      const [hourStr, minute] = time.split(":");
+      let hour = parseInt(hourStr, 10);
+      const ampm = hour >= 12 ? "PM" : "AM";
+      hour = hour % 12 || 12; 
+      return `${hour}:${minute} ${ampm}`;
+    }
+
     const handleScheduleInterview = async () => {
       if (!interviewDate || !interviewTime) {
         alert("Please select both date and time.");
@@ -121,20 +130,21 @@
       try {
         const id = application?.applicationId;
         if (!id) throw new Error("Missing application id");
-
+    
+        // Save schedule
         const scheduleRes = await authFetch(`${API_URL}/${id}/schedule-interview`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ interviewDate, interviewTime }),
         });
         if (!scheduleRes.ok) throw new Error("Failed to save schedule");
-
+    
         await authFetch(`${API_URL}/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "Pending" }),
         });
-
+    
         setApplications(prev =>
           prev.map(app =>
             app.applicationId === id
@@ -143,12 +153,47 @@
           )
         );
         setIsModalOpen(false);
-        alert("Interview scheduled. Status is now Pending.");
+
+        console.log({
+          email: application.appEmail,
+          to_name: application.appName,
+          address: application.appAddress,
+          interviewDate,
+          interviewTime,
+        });
+        
+    
+        if (application?.appEmail) {
+          try {
+
+            const formattedTime = formatTimeTo12Hour(interviewTime);
+            
+            await emailjs.send(
+              "service_xmh62vd",   
+              "template_u19oksn",  
+              {
+                email: application.appEmail,
+                to_name: application.appName,
+                address: application.appAddress,
+                interviewDate: interviewDate,
+                interviewTime: interviewTime,
+              },
+              "oXk6jvK9nrgWsbn_o"    
+            );
+            alert("Interview scheduled. Email sent to applicant.");
+          } catch (err) {
+            console.error("EmailJS error:", err);
+            alert("Interview scheduled but failed to send email.");
+          }
+        } else {
+          alert("Interview scheduled, but applicant has no email.");
+        }
       } catch (error) {
         console.error(error);
         alert("Could not schedule interview. Try again.");
       }
     };
+    
 
     const handleClearedLoan = async () => {
       try {
@@ -524,4 +569,4 @@
 
       </div>
     );
-  }
+  } 
