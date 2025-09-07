@@ -148,7 +148,8 @@ return (
   <div className="flex min-h-screen">
        
 {/* Left Sidebar */}
-<div className="w-80 bg-white shadow-sm p-6 space-y-6">
+<div className="w-80 bg-white shadow-sm p-6 space-y-6 sticky top-0 h-screen overflow-y-auto">
+
 
 {/* Type of Loan Section */}
 <div className="bg-white rounded-lg shadow-sm border border-gray-100">

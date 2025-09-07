@@ -191,7 +191,6 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
   
     try {
       const formData = new FormData();
-      // Append all form fields (existing code)
       formData.append("appName", appName);
       formData.append("appDob", appDob);
       formData.append("appContact", appContact);
@@ -444,7 +443,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
           {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
         </h4>
         <div>
-          <label className="block font-medium mb-3 text-gray-700">{language === 'en' ? 'Upload Required Documents:' : 'Iupload ang mga Kinahanglanon nga Dokumento:'}</label>
+        <label className="block text-sm mb-3 text-gray-500">{language === 'en' ? 'Refer to the sidebar for the list of required documents.' : 'Tan-awa ang sidebar para sa listahan sa mga kinahanglan nga dokumento.'}</label>
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
             <input
               type="file"

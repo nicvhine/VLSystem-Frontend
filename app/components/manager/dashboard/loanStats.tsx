@@ -12,32 +12,89 @@ import {
 } from 'react-icons/fi';
 
 export default function LoanStatsDashboard() {
+  const [loading, setLoading] = useState(true);
+
   const [loanStats, setLoanStats] = useState({
     typeStats: [],
     totalPrincipal: 0,
     totalInterest: 0,
+  });
+
+  const [collectionStats, setCollectionStats] = useState({
     totalCollectables: 0,
     totalCollected: 0,
     totalUnpaid: 0,
-    approved: 0,
-    denied: 0,
-    pending: 0,
+  })
+
+  const [typeStats, setTypeStats] = useState({
     withCollateral: 0,
     withoutCollateral: 0,
     openTerm: 0,
-  });
+  })
+
+  const [applicationStats, setApplicationStats] = useState({
+    applied: 0,
+    approved: 0,
+    denied: 0,
+  })
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch("http://localhost:3001/loans/loan-stats", {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    })
-      .then(res => res.json())
-      .then(data => setLoanStats(data))
-      .catch(err => console.error("Failed to load stats:", err));
+  
+    const fetchStats = async () => {
+      try {
+        const [typeRes, loanRes, collectionRes, appRes] = await Promise.all([
+          fetch("http://localhost:3001/loans/loan-type-stats", { headers: { Authorization: `Bearer ${token}` }}),
+          fetch("http://localhost:3001/loans/loan-stats", { headers: { Authorization: `Bearer ${token}` }}),
+          fetch("http://localhost:3001/collections/collection-stats", { headers: { Authorization: `Bearer ${token}` }}),
+          fetch("http://localhost:3001/loan-applications/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` }})
+        ]);
+  
+        const typeData = await typeRes.json();
+        const loanData = await loanRes.json();
+        const collectionData = await collectionRes.json();
+        const appData = await appRes.json();
+  
+        const withCollateral = typeData.find(t => t.loanType === "Regular Loan With Collateral")?.count || 0;
+        const withoutCollateral = typeData.find(t => t.loanType === "Regular Loan Without Collateral")?.count || 0;
+        const openTerm = typeData.find(t => t.loanType === "Open-Term Loan")?.count || 0;
+  
+        setLoanStats({
+          typeStats: typeData,
+          ...loanData
+        });
+  
+        setCollectionStats({
+          totalCollectables: collectionData.totalCollectables || 0,
+          totalCollected: collectionData.totalCollected || 0,
+          totalUnpaid: collectionData.totalUnpaid || 0
+        });
+  
+        setApplicationStats({
+          applied: appData.applied || 0,
+          approved: appData.approved || 0,
+          denied: appData.denied || 0
+        });
+
+        setTypeStats({
+          withCollateral,
+          withoutCollateral,
+          openTerm,
+        })
+  
+        setLoading(false); 
+  
+      } catch (err) {
+        console.error("Failed to fetch loan stats:", err);
+        setLoading(false); 
+      }
+    };
+  
+    fetchStats();
   }, []);
+  
+  
+  
 
   const StatCard = ({
     label,
@@ -64,6 +121,14 @@ export default function LoanStatsDashboard() {
       </p>
     </div>
   );
+
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-500 text-lg">Loading stats...</p>
+        </div>
+      );
+    }
 
   return (
     <div className="space-y-8">
@@ -104,21 +169,21 @@ export default function LoanStatsDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard 
             label="Total Collectables" 
-            value={loanStats.totalCollectables ?? 0} 
+            value={collectionStats.totalCollectables ?? 0} 
             color="text-blue-600" 
             icon={FiPieChart}
             isAmount={true}
           />
           <StatCard 
             label="Total Collected" 
-            value={loanStats.totalCollected ?? 0} 
+            value={collectionStats.totalCollected ?? 0} 
             color="text-green-600" 
             icon={FiCheckCircle}
             isAmount={true}
           />
           <StatCard 
             label="Total Unpaid" 
-            value={loanStats.totalUnpaid ?? 0} 
+            value={collectionStats.totalUnpaid ?? 0} 
             color="text-red-600" 
             icon={FiXCircle}
             isAmount={true}
@@ -136,20 +201,20 @@ export default function LoanStatsDashboard() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard 
-            label="Pending Applications" 
-            value={loanStats.pending ?? 0} 
+            label="Applied" 
+            value={applicationStats.applied ?? 0} 
             color="text-yellow-600" 
             icon={FiClock}
           />
           <StatCard 
-            label="Approved Applications" 
-            value={loanStats.approved ?? 0} 
+            label="Approved" 
+            value={applicationStats.approved ?? 0} 
             color="text-green-600" 
             icon={FiCheckCircle}
           />
           <StatCard 
-            label="Denied Applications" 
-            value={loanStats.denied ?? 0} 
+            label="Denied" 
+            value={applicationStats.denied ?? 0} 
             color="text-red-600" 
             icon={FiXCircle}
           />
@@ -167,19 +232,19 @@ export default function LoanStatsDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard 
             label="With Collateral" 
-            value={loanStats.withCollateral ?? 0} 
+            value={typeStats.withCollateral ?? 0} 
             color="text-blue-600" 
             icon={FiUsers}
           />
           <StatCard 
             label="Without Collateral" 
-            value={loanStats.withoutCollateral ?? 0} 
+            value={typeStats.withoutCollateral ?? 0} 
             color="text-green-600" 
             icon={FiUsers}
           />
           <StatCard 
             label="Open-Term Loans" 
-            value={loanStats.openTerm ?? 0} 
+            value={typeStats.openTerm ?? 0} 
             color="text-red-600" 
             icon={FiUsers}
           />

@@ -1,169 +1,123 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  FiTrendingUp,
-  FiDollarSign,
-  FiClock,
-  FiCheckCircle,
-  FiXCircle,
-  FiUsers,
-  FiPieChart
-} from 'react-icons/fi';
+
+interface LoanTypeStat {
+  loanType: string;
+  count: number;
+}
+
+interface ApplicationStats {
+  applied: number;
+  pending: number;
+  approved: number;
+  denied: number;
+}
+
+interface TypeStats {
+  withCollateral: number;
+  withoutCollateral: number;
+  openTerm: number;
+}
 
 export default function LoanStatsDashboard() {
-  const [loanStats, setLoanStats] = useState({
-    typeStats: [],
-    totalPrincipal: 0,
-    totalInterest: 0,
-    totalCollectables: 0,
-    totalCollected: 0,
-    totalUnpaid: 0,
-    approved: 0,
-    denied: 0,
-    pending: 0,
+  const [typeStats, setTypeStats] = useState<TypeStats>({
     withCollateral: 0,
     withoutCollateral: 0,
     openTerm: 0,
   });
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    fetch("http://localhost:3001/loan-applications/loan-stats", {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Loan Stats API Response:", data); 
-        setLoanStats(prev => ({
-          ...prev,
-          ...data, 
-        }));
-      })
-      .catch(err => console.error("Failed to load stats:", err));
-  }, []);
+  const [applicationStats, setApplicationStats] = useState<ApplicationStats>({
+    applied: 0,
+    pending: 0,
+    approved: 0,
+    denied: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    fetch("http://localhost:3001/loan-applications/loan-type-stats", {
-      headers: { 'Authorization': `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log("Loan Type Stats API Response:", data);
 
-        // Map array into direct counts
-        const withCollateral = data.find(t => t.loanType === "Regular Loan With Collateral")?.count || 0;
-        const withoutCollateral = data.find(t => t.loanType === "Regular Loan Without Collateral")?.count || 0;
-        const openTerm = data.find(t => t.loanType === "Open-Term Loan")?.count || 0;
+    const fetchStats = async () => {
+      try {
+        const [typeRes, appRes] = await Promise.all([
+          fetch("http://localhost:3001/loan-applications/loan-type-stats", { headers: { Authorization: `Bearer ${token}` }}),
+          fetch("http://localhost:3001/loan-applications/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` }})
+        ]);
 
-        setLoanStats(prev => ({
-          ...prev,
-          typeStats: data,
-          withCollateral,
-          withoutCollateral,
-          openTerm,
-        }));
-      })
-      .catch(err => console.error("Failed to load loan type stats:", err));
+        const typeData: LoanTypeStat[] = await typeRes.json();
+        const appData: ApplicationStats = await appRes.json();
+
+        const withCollateral = typeData.find((t: LoanTypeStat) => t.loanType === "Regular Loan With Collateral")?.count || 0;
+        const withoutCollateral = typeData.find((t: LoanTypeStat) => t.loanType === "Regular Loan Without Collateral")?.count || 0;
+        const openTerm = typeData.find((t: LoanTypeStat) => t.loanType === "Open-Term Loan")?.count || 0;
+
+        setTypeStats({ withCollateral, withoutCollateral, openTerm });
+        setApplicationStats({
+          applied: appData.applied || 0,
+          pending: appData.pending || 0,
+          approved: appData.approved || 0,
+          denied: appData.denied || 0,
+        });
+
+      } catch (err) {
+        console.error("Failed to fetch loan stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
   }, []);
-  
 
   const StatCard = ({
     label,
     value,
-    color,
-    icon: Icon,
     isAmount = false,
   }: {
     label: string;
-    value: any;
-    color: string;
-    icon: any;
+    value: number;
     isAmount?: boolean;
   }) => (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-    <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
-        <div className={`p-2 rounded-lg ${color.replace('text-', 'bg-').replace('-600', '-50')}`}>
-          <Icon className={`w-5 h-5 ${color}`} />
-        </div>
-        <h4 className="text-sm font-medium text-gray-600">{label}</h4>
-      </div>
-      <p className={`text-base font-bold ${color}`}>
-        {isAmount ? `₱${value?.toLocaleString?.() ?? 0}` : value?.toLocaleString?.() ?? 0}
+    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 flex justify-between items-center">
+      <h4 className="text-sm font-medium text-gray-600">{label}</h4>
+      <p className="text-base font-bold text-black">
+        {isAmount ? `₱${value.toLocaleString()}` : value.toLocaleString()}
       </p>
     </div>
-  </div>
   );
-  
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-gray-500 text-lg">Loading stats...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6 h-full">
       {/* Application Status */}
       <section className="p-5 flex flex-col gap-3">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-yellow-50 rounded-lg">
-            <FiUsers className="text-yellow-600 w-5 h-5" />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-800">
-            Application Status
-          </h2>
-        </div>
+        <h2 className="text-lg font-semibold text-gray-800 mb-2">Application Status</h2>
         <div className="flex flex-col gap-3">
-          <StatCard 
-            label="Pending" 
-            value={loanStats.pending ?? 0} 
-            color="text-yellow-600" 
-            icon={FiClock}
-          />
-          <StatCard 
-            label="Approved" 
-            value={loanStats.approved ?? 0} 
-            color="text-green-600" 
-            icon={FiCheckCircle}
-          />
-          <StatCard 
-            label="Denied" 
-            value={loanStats.denied ?? 0} 
-            color="text-red-600" 
-            icon={FiXCircle}
-          />
+          <StatCard label="Applied" value={applicationStats.applied} />
+          <StatCard label="Pending" value={applicationStats.pending} />
+          <StatCard label="Approved" value={applicationStats.approved} />
+          <StatCard label="Denied" value={applicationStats.denied} />
         </div>
       </section>
 
       {/* Loan Types */}
       <section className="p-5 flex flex-col gap-3">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-blue-50 rounded-lg">
-            <FiPieChart className="text-blue-600 w-5 h-5" />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-800">
-            Loan Types
-          </h2>
-        </div>
+        <h2 className="text-lg font-semibold text-gray-800 mb-2">Loan Types</h2>
         <div className="flex flex-col gap-3">
-          <StatCard 
-            label="With" 
-            value={loanStats.withCollateral ?? 0} 
-            color="text-blue-600" 
-            icon={FiUsers}
-          />
-          <StatCard 
-            label="Without" 
-            value={loanStats.withoutCollateral ?? 0} 
-            color="text-green-600" 
-            icon={FiUsers}
-          />
-          <StatCard 
-            label="Open-Term" 
-            value={loanStats.openTerm ?? 0} 
-            color="text-red-600" 
-            icon={FiUsers}
-          />
+          <StatCard label="With Collateral" value={typeStats.withCollateral} />
+          <StatCard label="Without Collateral" value={typeStats.withoutCollateral} />
+          <StatCard label="Open-Term" value={typeStats.openTerm} />
         </div>
       </section>
     </div>
   );
-  
-  
 }

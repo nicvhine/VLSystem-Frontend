@@ -163,8 +163,8 @@ export default function ApplicationsPage() {
             </div>
 
             {/* Desktop buttons */}
-            <div className="hidden w-140 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
-              {['All', 'Applied', 'Pending', 'Approved', 'Denied', 'Active'].map((status) => (
+            <div className="hidden w-145 sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm">
+              {['All', 'Applied', 'Pending', 'Cleared', 'Approved', 'Disbursed', 'Denied'].map((status) => (
                <button
                key={status}
                onClick={() => setActiveFilter(status)}
