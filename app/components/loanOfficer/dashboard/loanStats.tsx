@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FiFileText, FiClock, FiCheckCircle, FiXCircle, FiShield, FiDollarSign, FiCalendar } from 'react-icons/fi';
 
 interface LoanTypeStat {
   loanType: string;
@@ -74,17 +75,24 @@ export default function LoanStatsDashboard() {
   const StatCard = ({
     label,
     value,
+    icon: Icon,
     isAmount = false,
   }: {
     label: string;
     value: number;
+    icon: any;
     isAmount?: boolean;
   }) => (
-    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 flex justify-between items-center">
-      <h4 className="text-sm font-medium text-gray-600">{label}</h4>
-      <p className="text-base font-bold text-black">
-        {isAmount ? `₱${value.toLocaleString()}` : value.toLocaleString()}
-      </p>
+    <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:border-gray-300">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Icon className="w-5 h-5 text-gray-500" />
+          <h4 className="text-sm font-medium text-gray-600">{label}</h4>
+        </div>
+        <p className="text-xl font-semibold text-gray-900">
+          {isAmount ? `₱${value.toLocaleString()}` : value.toLocaleString()}
+        </p>
+      </div>
     </div>
   );
 
@@ -99,23 +107,23 @@ export default function LoanStatsDashboard() {
   return (
     <div className="flex flex-col gap-6 h-full">
       {/* Application Status */}
-      <section className="p-5 flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Application Status</h2>
+      <section className="bg-gray-50 rounded-lg p-5">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Application Status</h2>
         <div className="flex flex-col gap-3">
-          <StatCard label="Applied" value={applicationStats.applied} />
-          <StatCard label="Pending" value={applicationStats.pending} />
-          <StatCard label="Approved" value={applicationStats.approved} />
-          <StatCard label="Denied" value={applicationStats.denied} />
+          <StatCard label="Applied" value={applicationStats.applied} icon={FiFileText} />
+          <StatCard label="Pending" value={applicationStats.pending} icon={FiClock} />
+          <StatCard label="Approved" value={applicationStats.approved} icon={FiCheckCircle} />
+          <StatCard label="Denied" value={applicationStats.denied} icon={FiXCircle} />
         </div>
       </section>
 
       {/* Loan Types */}
-      <section className="p-5 flex flex-col gap-3">
-        <h2 className="text-lg font-semibold text-gray-800 mb-2">Loan Types</h2>
+      <section className="bg-gray-50 rounded-lg p-5">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Loan Types</h2>
         <div className="flex flex-col gap-3">
-          <StatCard label="With Collateral" value={typeStats.withCollateral} />
-          <StatCard label="Without Collateral" value={typeStats.withoutCollateral} />
-          <StatCard label="Open-Term" value={typeStats.openTerm} />
+          <StatCard label="With Collateral" value={typeStats.withCollateral} icon={FiShield} />
+          <StatCard label="Without Collateral" value={typeStats.withoutCollateral} icon={FiDollarSign} />
+          <StatCard label="Open-Term" value={typeStats.openTerm} icon={FiCalendar} />
         </div>
       </section>
     </div>
