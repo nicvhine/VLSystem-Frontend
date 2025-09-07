@@ -10,7 +10,7 @@ import useAccountSettings from './accountSettings';
 import MobileMenu from './mobileMenu';
 import ProfileDropdown from './dropdown';
 
-export default function ManagerNavbar({ blur }: { blur?: boolean }) {
+export default function ManagerNavbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -168,7 +168,7 @@ const {
   };
 
   return (
-  <div className={`w-full border-b border-gray-200 shadow-sm ${blur ? 'transition-all duration-300 backdrop-blur-2xl pointer-events-none select-none' : 'sticky top-0 z-50 bg-gradient-to-r from-gray-50 to-white transition-all duration-300'}`}> 
+  <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link
