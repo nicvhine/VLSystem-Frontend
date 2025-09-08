@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import Navbar from '../../navbar';
+import { useEffect, useState } from "react";
+import Manager from "../../page";
 
 const API_URL = "http://localhost:3001/loans";
 
 interface CharacterReference {
   name: string;
-  contactNumber: string;
+  contact: string;
+  relation?: string;
 }
 
 interface CurrentLoan {
@@ -18,35 +19,34 @@ interface CurrentLoan {
   interestRate: number;
   paymentSchedule: string;
   startDate: string;
-  maturityDate: string;
+  paidAmount: number;
   remainingBalance: number;
   totalPayable: number;
   dateDisbursed: string;
+  status?: string;
+}
+
+interface ProfilePic {
+  fileName: string;
+  filePath: string;
+  mimeType: string;
 }
 
 interface LoanDetails {
   loanId: string;
   name: string;
-  interestRate: number;
-  principal: number;
-  termsInMonths: number;
-  totalPayable: number;
-  balance: number;
-  status: string;
-  dateReleased: string;
-
-  id?: string;
+  loanType: string;
+  borrowersId: string;
   dateOfBirth?: string;
   maritalStatus?: string;
+  spouseName?: string;
+  spouseOccupation?: string;
   numberOfChildren?: number;
   contactNumber?: string;
   emailAddress?: string;
   address?: string;
-  barangay?: string;
-  municipality?: string;
-  province?: string;
-  houseStatus?: string;
-  sourceOfIncome?: string;
+  incomeSource?: string;
+  employmentStatus?: string;
   occupation?: string;
   monthlyIncome?: number;
   score?: number;
@@ -54,21 +54,39 @@ interface LoanDetails {
   numberOfLoans?: number;
   characterReferences?: CharacterReference[];
   currentLoan?: CurrentLoan;
-  imageUrl?: string;
+  profilePic?: ProfilePic;
+  previousLoans?: CurrentLoan[];
+  
+
+  collateralType: string;
+  collateralValue: string;
+  collateralDescription: string;
+  ownershipStatus: string;
 }
 
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-PH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+const formatDate = (dateString?: string) =>
+  dateString
+    ? new Date(dateString).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "—";
+
+const capitalizeWords = (text?: string) => {
+  if (!text) return "—";
+  return text
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
 export default function LoansDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("loan");
-  const [loading, setLoading] = useState(true);
+  const [loanSubTab, setLoanSubTab] = useState("active");
   const [client, setClient] = useState<LoanDetails | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLoanDetails = async () => {
@@ -82,172 +100,255 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
         setLoading(false);
       }
     };
-
     fetchLoanDetails();
   }, [params.id]);
 
-  if (loading) {
-    return <div className="p-6 text-gray-500">Loading...</div>;
-  }
+  if (loading)
+    return <div className="p-8 text-gray-500 text-center">Loading client details...</div>;
+  if (!client)
+    return <div className="p-8 text-red-500 text-center">Client not found.</div>;
 
-  if (!client) {
-    return <div className="p-6 text-red-500">Client not found.</div>;
-  }
+  const formatCurrency = (amount?: number) =>
+    amount
+      ? new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount)
+      : "—";
+
+  const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="flex flex-col">
+      <span className="text-sm text-gray-400">{label}</span>
+      <div className="font-medium text-gray-800">{value}</div>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 text-black">
-      <Navbar />
-
-      {/* Client Header */}
-      <div className="w-full bg-white shadow-sm py-6 mb-6">
-        <div className="max-w-6xl mx-auto px-4 flex items-center">
-          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-red-600 flex-shrink-0">
-            <img
-              src={client.imageUrl || "/default-avatar.png"}
-              alt="Client"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="ml-6">
-            <h1 className="text-3xl font-bold text-gray-800">{client.name}</h1>
-            <div className="flex items-center space-x-4 mt-2">
-              <span className="bg-gray-200 rounded-full px-3 py-1 text-sm font-medium text-gray-700">ID: {client.id}</span>
-              <span className={`rounded-full px-3 py-1 text-sm font-medium ${client.activeLoan === "Yes" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
-                {client.activeLoan === "Yes" ? "Active Loan" : "No Active Loan"}
-              </span>
-              <span className="bg-blue-100 rounded-full px-3 py-1 text-sm font-medium text-blue-800">Score: {client.score}</span>
+    <Manager>
+      <div className="min-h-screen bg-gray-50 text-gray-900">
+        {/* Header */}
+        <div className="bg-white shadow py-8 mb-8">
+          <div className="max-w-6xl mx-auto px-6 flex items-center space-x-6">
+            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-red-600 flex-shrink-0 shadow">
+              <img
+                src={
+                  client.profilePic
+                    ? `http://localhost:3001/${client.profilePic.filePath}`
+                    : "/default-avatar.png"
+                }
+                alt={client.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900">{client.name}</h1>
+              <p className="text-sm text-gray-500 mt-1">{client.borrowersId}</p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="max-w-6xl mx-auto px-4 pb-12">
-        <div className="flex border-b border-gray-200 mb-6">
-          {["personal", "loan", "references"].map((tab) => (
-            <button
-              key={tab}
-              className={`px-6 py-3 text-md font-medium ${activeTab === tab ? "border-b-2 border-red-600 text-red-600" : "text-gray-500 hover:text-gray-700"}`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab === "personal" ? "Personal Information" : tab === "loan" ? "Loan Information" : "References"}
-            </button>
-          ))}
-        </div>
+        <div className="max-w-6xl mx-auto px-6 pb-12">
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 mb-8">
+            {["personal", "loan"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-3 font-medium text-lg ${
+                  activeTab === tab
+                    ? "border-b-2 border-red-600 text-red-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {tab === "personal" ? "Personal Information" : "Loan Information"}
+              </button>
+            ))}
+          </div>
 
-        {/* Tab Contents */}
-        <div className="bg-white rounded-lg shadow-md p-6">
           {/* PERSONAL TAB */}
           {activeTab === "personal" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* General Info */}
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
+                <h3 className="text-xl font-semibold mb-4 border-b pb-2">General Information</h3>
                 <div className="space-y-3">
-                  <div><span className="text-sm text-gray-500">Full Name</span><div className="font-medium">{client.name}</div></div>
-                  <div><span className="text-sm text-gray-500">Date of Birth</span><div className="font-medium">{client.dateOfBirth}</div></div>
-                  <div><span className="text-sm text-gray-500">Marital Status</span><div className="font-medium">{client.maritalStatus}</div></div>
-                  <div><span className="text-sm text-gray-500">Number of Children</span><div className="font-medium">{client.numberOfChildren}</div></div>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-                <div className="space-y-3">
-                  <div><span className="text-sm text-gray-500">Mobile Number</span><div className="font-medium">{client.contactNumber}</div></div>
-                  <div><span className="text-sm text-gray-500">Email Address</span><div className="font-medium">{client.emailAddress}</div></div>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Address Information</h2>
-                <div className="space-y-3">
-                  <div><span className="text-sm text-gray-500">Home Address</span><div className="font-medium">{client.address}</div></div>
-                </div>
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-4">Financial Information</h2>
-                <div className="space-y-3">
-                  <div><span className="text-sm text-gray-500">House Status</span><div className="font-medium">{client.houseStatus}</div></div>
-                  <div><span className="text-sm text-gray-500">Source of Income</span><div className="font-medium">{client.sourceOfIncome}</div></div>
-                  <div><span className="text-sm text-gray-500">Occupation</span><div className="font-medium">{client.occupation}</div></div>
-                  <div><span className="text-sm text-gray-500">Monthly Income</span><div className="font-medium">{client.monthlyIncome}</div></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* LOAN TAB */}
-          {activeTab === "loan" && (
-            <div>
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Loan Summary</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <span className="text-sm text-blue-600">Total Loans</span>
-                    <p className="text-2xl font-bold text-blue-700">{client.numberOfLoans}</p>
-                  </div>
-                  <div className={client.activeLoan === "Yes" ? "bg-green-50 p-4" : "bg-yellow-50 p-4"}>
-                    <span className={client.activeLoan === "Yes" ? "text-sm text-green-600" : "text-sm text-yellow-600"}>
-                      Loan Status
-                    </span>
-                    <p className={client.activeLoan === "Yes" ? "text-2xl font-bold text-green-700" : "text-2xl font-bold text-yellow-700"}>
-                      {client.activeLoan === "Yes" ? "Active" : "Inactive"}
-                    </p>
-                  </div>
-                  <div className="bg-purple-50 p-4">
-                    <span className="text-sm text-purple-600">Credit Score</span>
-                    <p className="text-2xl font-bold text-purple-700">{client.score}</p>
-                  </div>
+                  <DetailRow label="Address" value={client.address || "—"} />
+                  <DetailRow label="Date of Birth" value={client.dateOfBirth || "—"} />
+                  <DetailRow label="Marital Status" value={client.maritalStatus || "—"} />
+                  {client.maritalStatus === "Married" && (
+                    <>
+                      <DetailRow label="Spouse Name" value={client.spouseName || "—"} />
+                      <DetailRow label="Spouse Occupation" value={client.spouseOccupation || "—"} />
+                    </>
+                  )}
+                  <DetailRow label="Number of Children" value={client.numberOfChildren ?? "—"} />
                 </div>
               </div>
 
-              {client.currentLoan ? (
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">Current Loan Details</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <div><span className="text-sm text-gray-500">Loan Type</span><div className="font-medium">{client.currentLoan.type}</div></div>
-                      <div><span className="text-sm text-gray-500">Principal Amount</span><div className="font-medium">{client.currentLoan.amount}</div></div> 
-                      <div><span className="text-sm text-gray-500">Interest Rate</span><div className="font-medium">{client.currentLoan.interestRate}% monthly</div></div>
-                               <div><span className="text-sm text-gray-500">Loan Term</span><div className="font-medium">{client.currentLoan.terms} months</div></div>
-                      <div><span className="text-sm text-gray-500">Total Payable Amount</span><div className="font-medium">{client.currentLoan.totalPayable}</div></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div><span className="text-sm text-gray-500">Disbursed Date</span><div className="font-medium">{formatDate(client.currentLoan.dateDisbursed)}</div></div>
-                      <div><span className="text-sm text-gray-500">Payment Schedule</span><div className="font-medium">{client.currentLoan.paymentSchedule}</div></div>
-                      <div><span className="text-sm text-gray-500">Maturity Date</span><div className="font-medium">{client.currentLoan.maturityDate}</div></div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-6 border-t">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-medium text-gray-700">Remaining Balance</span>
-                      <span className="text-xl font-bold text-red-600">{client.currentLoan.remainingBalance}</span>
-                    </div>
-                  </div>
+              {/* Contact Info */}
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
+                <h3 className="text-xl font-semibold mb-4 border-b pb-2">Contact Information</h3>
+                <div className="space-y-3">
+                  <DetailRow label="Contact Number" value={client.contactNumber || "—"} />
+                  <DetailRow label="Email Address" value={client.emailAddress || "—"} />
                 </div>
-              ) : (
-                <div className="text-center py-8 bg-gray-50 rounded-lg">
-                  <p className="text-gray-500">No active loans at the moment</p>
+              </div>
+
+              {/* Income Info */}
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
+                <h3 className="text-xl font-semibold mb-4 border-b pb-2">Income Information</h3>
+                <div className="space-y-3">
+                  <DetailRow label="Source of Income" value={capitalizeWords(client.incomeSource)} />
+                  {client.incomeSource === "business" && (
+                    <>
+                      <DetailRow label="Business Type" value={client.spouseName || "—"} />
+                      <DetailRow label="Spouse Occupation" value={client.spouseOccupation || "—"} />
+                    </>
+                  )}
+                  {client.incomeSource === "employed" && (
+                    <>
+                      <DetailRow label="Occupation" value={capitalizeWords(client.occupation)} />
+                      <DetailRow label="Employment Status" value={capitalizeWords(client.employmentStatus)} />
+                    </>
+                  )}
+                  <DetailRow label="Monthly Income" value={formatCurrency(client.monthlyIncome)} />
+                </div>
+              </div>
+
+              {/* Character References */}
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
+                <h3 className="text-xl font-semibold mb-4 border-b pb-2">Character References</h3>
+                <div className="space-y-3">
+                  {client.characterReferences?.length ? (
+                    client.characterReferences.map((ref, i) => (
+                      <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <p className="font-medium text-gray-700">{ref.name}</p>
+                        <p className="text-sm text-gray-500">Contact: {ref.contact}</p>
+                        {ref.relation && <p className="text-sm text-gray-500">Relationship: {ref.relation}</p>}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-gray-400">No character references provided</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Collateral Info */}
+              {(client.loanType === "Regular Loan With Collateral" ||
+                client.loanType === "Open-Term Loan") && (
+                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
+                  <h3 className="text-xl font-semibold mb-4 border-b pb-2">Collateral Information</h3>
+                  <div className="space-y-3">
+                    <DetailRow label="Collateral Type" value={capitalizeWords(client.collateralType)} />
+                    <DetailRow label="Collateral Value" value={capitalizeWords(client.collateralValue)} />
+                    <DetailRow label="Collateral Description" value={capitalizeWords(client.collateralDescription)} />
+                    <DetailRow label="Ownership Status" value={capitalizeWords(client.ownershipStatus)} />
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* REFERENCES TAB */}
-          {activeTab === "references" && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Character References</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {client.characterReferences?.map((ref, index) => (
-                  <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                    <p className="font-medium">{ref.name}</p>
-                    <p className="text-sm text-gray-600">{ref.contactNumber}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* LOAN TAB */}
+{activeTab === "loan" && (
+  <div className="space-y-8">
+    {/* Loan Summary */}
+    <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+      <h2 className="text-2xl font-bold mb-6 text-gray-900">Loan Summary</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Total Loans */}
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-5 text-center shadow hover:shadow-lg transition transform hover:-translate-y-1">
+          <span className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Total Loans</span>
+          <p className="text-3xl font-bold text-blue-700 mt-2">{client.numberOfLoans}</p>
+        </div>
+
+        {/* Borrower Status */}
+        <div
+          className={`${
+            client.activeLoan === "Yes" ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-yellow-50 to-yellow-100"
+          } rounded-xl p-5 text-center shadow hover:shadow-lg transition transform hover:-translate-y-1`}
+        >
+          <span
+            className={`text-sm font-semibold uppercase tracking-wide ${
+              client.activeLoan === "Yes" ? "text-green-600" : "text-yellow-600"
+            }`}
+          >
+            Borrower Status
+          </span>
+          <p
+            className={`text-3xl font-bold mt-2 ${
+              client.activeLoan === "Yes" ? "text-green-700" : "text-yellow-700"
+            }`}
+          >
+            {client.activeLoan === "Yes" ? "Active" : "Inactive"}
+          </p>
+        </div>
+
+        {/* Credit Score */}
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-5 text-center shadow hover:shadow-lg transition transform hover:-translate-y-1">
+          <span className="text-sm text-purple-600 font-semibold uppercase tracking-wide">Credit Score</span>
+          <p className="text-3xl font-bold text-purple-700 mt-2">{client.score}</p>
         </div>
       </div>
+    </section>
+
+    {/* Loan Sub-Tabs */}
+    <div className="flex border-b border-gray-200">
+      {["active", "past"].map((tab) => (
+        <button
+          key={tab}
+          className={`px-6 py-3 font-medium ${
+            loanSubTab === tab ? "border-b-2 border-red-600 text-red-600" : "text-gray-500 hover:text-gray-700"
+          }`}
+          onClick={() => setLoanSubTab(tab)}
+        >
+          {tab === "active" ? "Active Loan" : "Past Loans"}
+        </button>
+      ))}
     </div>
+
+    {/* Active Loan */}
+    {loanSubTab === "active" && client.currentLoan && (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition transform hover:-translate-y-1">
+          <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-900">Current Loan</h3>
+          <DetailRow label="Loan Type" value={client.currentLoan.type} />
+          <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
+          <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
+          <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
+          <DetailRow label="Loan Term" value={`${client.currentLoan.terms} months`} />
+          <DetailRow label="Total Payable" value={formatCurrency(client.currentLoan.totalPayable)} />
+          <DetailRow label="Paid Amount" value={formatCurrency(client.currentLoan.paidAmount)} />
+          <DetailRow label="Remaining Balance" value={formatCurrency(client.currentLoan.remainingBalance)} />
+        </div>
+      </div>
+    )}
+
+    {/* Past Loans */}
+    {loanSubTab === "past" && (
+      <div className="mt-4">
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">Loan History</h2>
+        {client.previousLoans?.length ? (
+          <ul className="space-y-4">
+            {client.previousLoans.map((loan, idx) => (
+              <li
+                key={idx}
+                className="bg-white p-4 rounded-2xl shadow hover:shadow-lg border border-gray-200 transition transform hover:-translate-y-1"
+              >
+                <p className="font-medium text-gray-800">{loan.type}</p>
+                <p className="text-sm text-gray-500">Amount: {formatCurrency(loan.amount)}</p>
+                <p className="text-sm text-gray-500">Released: {formatDate(loan.dateDisbursed)}</p>
+                <p className="text-sm text-gray-500">Status: {loan.status}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400">No previous loans available</p>
+        )}
+      </div>
+    )}
+  </div>
+)}
+
+        </div>
+      </div>
+    </Manager>
   );
 }

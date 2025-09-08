@@ -14,6 +14,8 @@ export function useProfileDropdownLogic(
   const [smsVerificationCode, setSmsVerificationCode] = useState('');
   const [smsVerified, setSmsVerified] = useState(false);
   const [smsVerificationSent, setSmsVerificationSent] = useState(false);
+  const [emailVerificationMessage, setEmailVerificationMessage] = useState('');
+
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -132,11 +134,14 @@ export function useProfileDropdownLogic(
     if (userEnteredCode === emailVerificationCode) {
       setEmailVerified(true);
       setPasswordError('');
-      setSettingsSuccess('✔ Email verified.');
+      setSettingsSuccess('✔ Email verified.'); 
+      setEmailVerificationMessage('✔ Email verified.'); 
     } else {
       setPasswordError('Incorrect verification code.');
+      setEmailVerificationMessage('Incorrect verification code.');
     }
   };
+  
 
   // SMS VERIFICATION
   const sendSmsVerificationCode = async () => {
@@ -194,6 +199,7 @@ export function useProfileDropdownLogic(
     localStorage.setItem('notificationPreferences', JSON.stringify(updatedPrefs));
   };
 
+  // ✅ Full async function (fixes "await only in async" error)
   const handleAccountSettingsUpdate = async () => {
     setPasswordError('');
     setPhoneError('');
@@ -236,8 +242,10 @@ export function useProfileDropdownLogic(
 
         localStorage.setItem('email', editingEmail);
 
-        // ✅ Show success modal
+        // ✅ Show success modal + success message
         setShowSuccessModal(true);
+        setSettingsSuccess('✔ Email changed successfully.');
+        setTimeout(() => setSettingsSuccess(''), 4000); // auto-hide after 4s
       }
 
       // PHONE UPDATE
@@ -301,8 +309,11 @@ export function useProfileDropdownLogic(
       setIsEditingPasswordField(false);
       setNewPassword('');
       setConfirmPassword('');
-      setSettingsSuccess('Settings updated successfully!');
-      setTimeout(() => setSettingsSuccess(''), 3000);
+
+      if (!settingsSuccess) {
+        setSettingsSuccess('Settings updated successfully!');
+        setTimeout(() => setSettingsSuccess(''), 4000);
+      }
     } catch (error) {
       console.error('Error updating account settings:', error);
       setPasswordError('Failed to update account settings.');
@@ -342,6 +353,7 @@ export function useProfileDropdownLogic(
     handleLogout,
     sendVerificationCode,
     verifyEmailCode,
+    emailVerificationMessage,
     emailVerificationSent,
     userEnteredCode,
     setUserEnteredCode,

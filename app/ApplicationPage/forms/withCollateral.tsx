@@ -189,6 +189,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
           setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
         };
 
+        
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
       alert(language === 'en'

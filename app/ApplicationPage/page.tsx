@@ -136,12 +136,13 @@ export default function ApplicationPage() {
 
 return (
   <div className="h-screen bg-white text-black overflow-hidden">
-    <Navbar 
-      language={language} 
-      setLanguage={setLanguage} 
-      isLoginOpen={isLoginOpen} 
-      setIsLoginOpen={setIsLoginOpen}
-    />
+    <Navbar
+  language={language}
+  setLanguage={setLanguage}
+  isLoginOpen={isLoginOpen}
+  setIsLoginOpen={setIsLoginOpen}
+  isModalOpen={showSuccessModal} 
+/>
 
     <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
 

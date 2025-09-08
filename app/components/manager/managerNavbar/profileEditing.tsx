@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useState, useEffect } from 'react';
 
 interface Props {
   username: string;
@@ -29,8 +28,6 @@ interface Props {
   activeSettingsTab: string;
   setActiveSettingsTab: (v: 'account' | 'notifications') => void;
 
-
-  
   passwordError: string;
   setPasswordError: (v: string) => void; 
   phoneError: string;
@@ -53,10 +50,6 @@ interface Props {
   sendSmsVerificationCode: () => void;
   verifySmsCode: () => void;
   smsVerificationSent: boolean;
-
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
-
 }
 
 export default function ProfileSettingsPanel({
@@ -98,41 +91,9 @@ export default function ProfileSettingsPanel({
   sendSmsVerificationCode,
   verifySmsCode,
   smsVerificationSent,
-  darkMode,
-  setDarkMode,
 }: Props) {
-  
   return (
-     <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300 ${
-      darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-white-900'
-    }`}>
-    {/* Tab switch buttons */}
-      <div className="flex mb-4 bg-white dark:bg-gray-800 rounded-lg p-1 relative">
-        <div
-          className={`absolute top-1 h-8 bg-red-600 rounded-md transition-all duration-300 ease-in-out ${ 
-            activeSettingsTab === 'account'
-              ? 'left-1 w-[calc(50%-4px)]'
-              : 'left-[calc(50%+2px)] w-[calc(50%-4px)]'
-          }`}
-        />
-        <button
-          onClick={() => setActiveSettingsTab('account')}
-          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 ${
-            activeSettingsTab === 'account' ? 'text-white' : 'text-gray-600'
-          }`}
-        >
-          Account
-        </button>
-        <button
-          onClick={() => setActiveSettingsTab('notifications')}
-          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 ${
-            activeSettingsTab === 'notifications' ? 'text-white' : 'text-gray-600'
-          }`}
-        >
-          Notifications
-        </button>
-      </div>
-
+    <div className="px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300">
       {/* Tabs */}
       <div className="relative overflow-hidden">
         {/* Account tab */}
@@ -144,11 +105,13 @@ export default function ProfileSettingsPanel({
           }`}
         >
           <div className="space-y-4">
+            {/* Username */}
             <div>
               <span className="text-sm text-gray-700">Username</span>
               <div className="text-base text-gray-900">{username}</div>
             </div>
 
+            {/* Email */}
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Email Address</span>
@@ -156,10 +119,10 @@ export default function ProfileSettingsPanel({
                   onClick={() => {
                     setIsEditingEmailField(!isEditingEmailField);
                     if (isEditingEmailField) {
-                      setEditingEmail(email); 
-                      setUserEnteredCode(""); 
+                      setEditingEmail(email);
+                      setUserEnteredCode('');
                       setPasswordError('');
-                        setSettingsSuccess('');
+                      setSettingsSuccess('');
                     }
                   }}
                   className="text-xs text-red-600 font-medium"
@@ -168,16 +131,14 @@ export default function ProfileSettingsPanel({
                 </button>
               </div>
 
-              {/* Error message moved here - right after Email Address label */}
-              {passwordError && (
-                <p className="text-sm text-red-600 mb-2 text-right">{passwordError}</p>
-              )}
-      
-
               {!isEditingEmailField ? (
                 <span className="block text-base text-gray-900">{email || 'No email set'}</span>
               ) : (
                 <>
+                  {passwordError && passwordError.toLowerCase().includes('email') && (
+                    <p className="text-sm text-red-600 mb-1 text-right">{passwordError}</p>
+                  )}
+
                   <input
                     type="email"
                     value={editingEmail}
@@ -208,55 +169,60 @@ export default function ProfileSettingsPanel({
                       >
                         Verify Code
                       </button>
+
+                      {settingsSuccess.includes('Email verified') && (
+                        <p className="text-green-600 text-sm mt-2">{settingsSuccess}</p>
+                      )}
+                      {passwordError.includes('Incorrect verification code') && (
+                        <p className="text-red-600 text-sm mt-2">{passwordError}</p>
+                      )}
                     </div>
                   )}
                 </>
               )}
             </div>
 
+            {/* Phone */}
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Phone Number</span>
                 <button
-                 onClick={() => {
-                  if (isEditingPhoneField) {
-                    setPhoneError('');
-                    setEditingPhone('');
-                  }
-                  setIsEditingPhoneField(!isEditingPhoneField);
+                  onClick={() => {
+                    if (isEditingPhoneField) {
+                      setPhoneError('');
+                      setEditingPhone('');
+                    }
+                    setIsEditingPhoneField(!isEditingPhoneField);
                   }}
-
                   className="text-xs text-red-600 font-medium"
                 >
                   {isEditingPhoneField ? 'Cancel' : 'Edit'}
                 </button>
               </div>
 
-                {phoneError && (
-                  <p className="text-sm text-red-600 mb-2 text-right">{phoneError}</p>
-                )}
+              {phoneError && (
+                <p className="text-sm text-red-600 mb-2 text-right">{phoneError}</p>
+              )}
 
               {!isEditingPhoneField ? (
-                <span className="block text-base text-gray-900">
-                  {phoneNumber}
-                </span>
+                <span className="block text-base text-gray-900">{phoneNumber}</span>
               ) : (
                 <>
-                <input
-                  type="tel"
-                  value={editingPhone}
-                  onChange={(e) => setEditingPhone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                  placeholder={phoneNumber}
-                />
-                   <button
+                  <input
+                    type="tel"
+                    value={editingPhone}
+                    onChange={(e) => setEditingPhone(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    placeholder={phoneNumber}
+                  />
+                  <button
                     onClick={sendSmsVerificationCode}
                     className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
                   >
                     Send Verification Code
                   </button>
 
-                   {smsVerificationSent && (
+                  {smsVerificationSent && (
                     <div className="mt-2">
                       <input
                         type="text"
@@ -277,6 +243,7 @@ export default function ProfileSettingsPanel({
               )}
             </div>
 
+            {/* Password */}
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Password</span>
@@ -325,79 +292,6 @@ export default function ProfileSettingsPanel({
           </div>
         </div>
 
-        {/* Notification tab */}
-        <div
-          className={`transition-all duration-300 ease-in-out ${
-            activeSettingsTab === 'notifications'
-              ? 'opacity-100 translate-x-0'
-              : 'opacity-0 -translate-x-full absolute top-0 left-0 w-full'
-          }`}
-        >
-          <div className="space-y-4">
-            <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-3">
-                Notification Preferences
-              </h4>
-              <div className="space-y-4">
-                {/* Email Toggle */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">Email Notifications</span>
-                      <p className="text-xs text-gray-500">Receive notifications via email</p>
-                    </div>
-                  </div>
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationPreferences.email}
-                      onChange={() => handleNotificationToggle('email')}
-                      className="sr-only"
-                    />
-                    <span className={`w-11 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
-                      notificationPreferences.email ? 'bg-red-600' : ''
-                    }`}>
-                      <span className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                        notificationPreferences.email ? 'translate-x-5' : ''
-                      }`}></span>
-                    </span>
-                  </label>
-                </div>
-
-                {/* SMS Toggle */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">SMS Notifications</span>
-                      <p className="text-xs text-gray-500">Receive notifications via text message</p>
-                    </div>
-                  </div>
-                  <label className="inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={notificationPreferences.sms}
-                      onChange={() => handleNotificationToggle('sms')}
-                      className="sr-only"
-                    />
-                    <span className={`w-11 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out ${
-                      notificationPreferences.sms ? 'bg-red-600' : ''
-                    }`}>
-                      <span className={`bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out ${
-                        notificationPreferences.sms ? 'translate-x-5' : ''
-                      }`}></span>
-                    </span>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

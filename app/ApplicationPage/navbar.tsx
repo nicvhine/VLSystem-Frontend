@@ -11,16 +11,18 @@ interface LandingNavbarProps {
   setIsLoginOpen?: (open: boolean) => void;
   isCalculationOpen?: boolean;
   setIsCalculationOpen?: (open: boolean) => void;
+  isModalOpen?: boolean; 
 }
 
-export default function ApplicationNavbar({ 
+export default function Navbar({ 
   language, 
   setLanguage, 
   onLogoClick,
   isLoginOpen: parentIsLoginOpen,
   setIsLoginOpen: parentSetIsLoginOpen,
   isCalculationOpen: parentIsCalculationOpen,
-  setIsCalculationOpen: parentSetIsCalculationOpen
+  setIsCalculationOpen: parentSetIsCalculationOpen,
+  isModalOpen
 }: LandingNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Use parent state if provided, otherwise use local state
@@ -31,6 +33,8 @@ export default function ApplicationNavbar({
   const setIsCalculationOpen = parentSetIsCalculationOpen || setLocalIsCalculationOpen;
   const isLoginOpen = parentIsLoginOpen !== undefined ? parentIsLoginOpen : localIsLoginOpen;
   const setIsLoginOpen = parentSetIsLoginOpen || setLocalIsLoginOpen;
+
+  if (isModalOpen) return null;
 
   // Debug: Log state changes
   useEffect(() => {
@@ -50,9 +54,12 @@ export default function ApplicationNavbar({
 
 
   return (
-    <header className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-md sticky top-0 z-50">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex justify-between items-center">
+  <header
+        className={`w-full sticky top-0 z-50 border-b border-gray-200 shadow-md bg-white transition-all
+          ${isModalOpen ? 'opacity-30 pointer-events-none backdrop-blur-md' : 'opacity-100'}`}
+      >
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-3 ">
+      <div className="flex justify-between items-center">
           {/* Logo */}
 {onLogoClick ? (
   <button

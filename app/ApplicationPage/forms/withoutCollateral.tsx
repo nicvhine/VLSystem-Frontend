@@ -178,6 +178,8 @@ const closeModal = () => {
       setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
     };
     
+  
+    
     const handleSubmit = async () => {
       if (!appLoanPurpose || !selectedLoan) {
         alert(language === 'en'

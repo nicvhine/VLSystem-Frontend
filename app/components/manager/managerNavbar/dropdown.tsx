@@ -81,29 +81,17 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     verifySmsCode,
   } = useProfileDropdownLogic(setIsEditing);
 
-const [darkMode, setDarkMode] = useState(() => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('darkMode') === 'true';
-  }
-  return false;
-});
-
-const handleSetDarkMode = (value: boolean) => {
-  setDarkMode(value); 
-  localStorage.setItem('darkMode', value.toString());
-};
-
 
   return (
     <div className="relative">
-      {isDropdownOpen && (
-      <div
-      className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
-      style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
-    >
+    {isDropdownOpen && (
+    <div
+    className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
+    style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
+  >
 
-        {/* Connector Arrow */}
-    <div className="absolute -top-2 left-87 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
+      {/* Connector Arrow */}
+  <div className="absolute -top-2 left-87 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
 
           {/* Profile Header */}
           <div className="flex flex-col items-center py-6">
@@ -201,14 +189,12 @@ const handleSetDarkMode = (value: boolean) => {
                 smsVerificationSent={smsVerificationSent}
                 sendSmsVerificationCode={sendSmsVerificationCode}
                 verifySmsCode={verifySmsCode}
-                darkMode={darkMode}
-                setDarkMode={handleSetDarkMode}
               />
             )}
-
+            
             {/* Logout */}
             <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 transition text-red-600"
+              className="flex items-center px-6 py-3 hover:bg-gray-100  transition text-red-600"
               onClick={handleLogout}
             >
               Log Out

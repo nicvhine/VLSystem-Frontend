@@ -216,6 +216,30 @@
       }
     };
 
+    const handleDisburse = async () => {
+      try {
+        const id = application?.applicationId;
+        if (!id) throw new Error("Missing application id");
+    
+        await authFetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Disbursed" }),
+        });
+    
+        setApplications(prev =>
+          prev.map(app => app.applicationId === id ? { ...app, status: "Disbursed" } : app)
+        );
+    
+        setIsAgreementOpen(true);
+    
+      } catch (error) {
+        console.error(error);
+        alert("Something went wrong while disbursing the loan.");
+      }
+    };
+    
+
     const handleDenyApplication = async () => {
       try {
         const id = application?.applicationId;
@@ -314,12 +338,23 @@
                 )}
                 {application?.status === "Approved" && (
                   <button
+                    onClick={handleDisburse}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    Disburse
+                  </button>
+                )}
+
+                {application?.status === "Disbursed" && (
+                  <button
                     onClick={() => setIsAgreementOpen(true)}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                   >
-                    Generate Loan Agreement
+                    Loan Agreement
                   </button>
                 )}
+
+
               </div>
             </div>
           </div>
