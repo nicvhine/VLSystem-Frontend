@@ -18,9 +18,9 @@ export default function HeroSection({
   isTrackOpen: parentIsTrackOpen, 
   setIsTrackOpen: parentSetIsTrackOpen 
 }: HeroSectionProps) {
-  // Use parent state if provided, otherwise use local state
+
+  //TRACK APPLICATIONS
   const [localIsTrackOpen, setLocalIsTrackOpen] = useState(false);
-  
   const isTrackOpen = parentIsTrackOpen !== undefined ? parentIsTrackOpen : localIsTrackOpen;
   const setIsTrackOpen = parentSetIsTrackOpen || setLocalIsTrackOpen;
 
@@ -33,7 +33,7 @@ export default function HeroSection({
   return (
     <section className="text-black">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3 mt-20 flex flex-col md:flex-row items-center md:items-start gap-8 overflow-hidden">
-        {/* Text Content */}
+        
         <div className="w-full md:w-1/2 md:text-left px-6 md:px-12">
           <p className="text-xl mb-2 select-none">VLSystem by Vistula Lending Corporation</p>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-4 select-none">

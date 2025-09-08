@@ -359,15 +359,14 @@ const handleCreateAccount = async () => {
 
                   <td className="px-6 py-4 space-x-2">
 
-                      {/* If Pending → Show View Application */}
-                      {application.status === 'Cleared' || application.status === 'Denied' && (
-                          <Link
-                            href={`/components/manager/applications/${application.applicationId}`}
-                            className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
-                          >
-                            View 
-                          </Link>
-                        )}
+                  {(application.status === 'Cleared' || application.status === 'Denied') && (
+                    <Link
+                      href={`/components/manager/applications/${application.applicationId}`}
+                      className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                    >
+                      View 
+                    </Link>
+                  )}
 
                   {application.displayStatus === 'Pending' && (
                     <button

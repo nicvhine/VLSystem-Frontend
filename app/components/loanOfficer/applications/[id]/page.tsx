@@ -9,6 +9,8 @@
   import WithCollateral from './withCollateral';
   import OpenTerm from './openTerm';
 
+  import LoanAgreementModal from '@/app/LoanAgreementPage/LoanAgreementModal';
+
   const API_URL = "http://localhost:3001/loan-applications";
 
   interface Application {
@@ -23,6 +25,8 @@
     appContact?: string;
     appEmail?: string;
     appMarital?: string;
+    appSpouseName?: string;
+    appSpouseOccupation?: string;
     appChildren?: number;
     appAddress?: string;
     sourceOfIncome?: string;
@@ -69,6 +73,9 @@
     const [interviewTime, setInterviewTime] = useState('');
 
     const application = applications.find(app => app.applicationId === params.id);
+
+    const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+
 
     // Fetch applications
     useEffect(() => {
@@ -267,7 +274,9 @@
                   <FiArrowLeft className="w-5 h-5" />
                 </Link>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Applicant profile</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Applicant profile | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
+                </h1>
                   <div className="flex items-center space-x-4 mt-1">
                     <span className={`px-2 py-1 rounded text-xs font-medium uppercase ${
                       application?.status === 'Applied' ? 'bg-red-100 text-red-800' :
@@ -304,9 +313,12 @@
                   </>
                 )}
                 {application?.status === "Approved" && (
-                  <Link href={`/LoanAgreementPage/${application.applicationId}`} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                    GENERATE AGREEMENT
-                  </Link>
+                  <button
+                    onClick={() => setIsAgreementOpen(true)}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                  >
+                    Generate Loan Agreement
+                  </button>
                 )}
               </div>
             </div>
@@ -363,6 +375,21 @@
                     <p className="text-sm font-medium text-gray-500">Marital Status:</p>
                     <p className="text-gray-900">{application?.appMarital || '—'}</p>
                   </div>
+                  
+                  {/* Conditional Spouse Info */}
+                  {application?.appMarital === "Married" && (
+                    <>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Spouse Name:</p>
+                        <p className="text-gray-900">{application?.appSpouseName || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-500">Spouse Occupation:</p>
+                        <p className="text-gray-900">{application?.appSpouseOccupation || '—'}</p>
+                      </div>
+                    </>
+                  )}
+                  
                   <div>
                     <p className="text-sm font-medium text-gray-500">Children:</p>
                     <p className="text-gray-900">{application?.appChildren || '—'}</p>
@@ -469,7 +496,7 @@
                       {application?.characterReferences && application.characterReferences.length > 0 ? (
                         <div className="space-y-4">
                           {application.characterReferences.map((ref, i) => (
-                            <div key={i} className="p-4 bg-gray-50 rounded-lg border-l-4 border-red-500">
+                            <div key={i} className="p-4 bg-gray-50 rounded-lg">
                               <div className="flex items-center mb-2">
                                 <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
                                   Reference {i + 1}
@@ -551,59 +578,66 @@
 
             {/* Right Column - Loan Details */}
             <div className="lg:col-span-1 flex flex-col h-full">
-              {/* Loan Computation Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Loan Computation</h3>
+            {/* Loan Computation Card */}
+            <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-md mx-auto">
+              {/* Card Header */}
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">Loan Computation</h3>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6 space-y-6">
+                {/* Loan Details */}
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-500">Loan Purpose</span>
+                    <span className="text-gray-900">{application?.appLoanPurpose || '—'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-500">Loan Amount</span>
+                    <span className="text-gray-900">{formatCurrency(application?.appLoanAmount)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-500">Interest Rate</span>
+                    <span className="text-gray-900">{application?.appInterest || '—'}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm font-medium text-gray-500">Loan Term</span>
+                    <span className="text-gray-900">{application?.appLoanTerms || '—'} months</span>
+                  </div>
                 </div>
-                <div className="p-6 space-y-6">
-                  <div className="space-y-6">
-                    <div>
-                      <p className="text-base font-medium text-gray-500">Loan Purpose:</p>
-                      <p className="text-lg text-gray-900 break-words">{application?.appLoanPurpose || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-base font-medium text-gray-500">Loan Amount:</p>
-                      <p className="text-2xl text-gray-900">{formatCurrency(application?.appLoanAmount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-base font-medium text-gray-500">Interest Rate:</p>
-                      <p className="text-xl text-gray-900">{application?.appInterest || '—'}%</p>
-                    </div>
-                    <div>
-                      <p className="text-base font-medium text-gray-500">Loan Terms:</p>
-                      <p className="text-xl text-gray-900">{application?.appLoanTerms || '—'} months</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4 pt-6 border-t border-gray-200">
-                    <div>
-                      <p className="text-base font-medium text-gray-500">Total Payable:</p>
-                      <p className="text-3xl font-bold text-green-600">
-                        {formatCurrency(
-                          (Number(application?.appLoanAmount || 0)) +
-                          (Number(application?.appLoanAmount || 0) *
-                          Number(application?.appInterest || 0) *
-                          Number(application?.appLoanTerms || 0) / 100)
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-base font-medium text-gray-500">Monthly Due:</p>
-                      <p className="text-2xl text-gray-900">
-                        {formatCurrency(
-                          (
-                            (Number(application?.appLoanAmount || 0)) +
-                            (Number(application?.appLoanAmount || 0) *
-                            Number(application?.appInterest || 0) *
-                            Number(application?.appLoanTerms || 0) / 100)
-                          ) / (Number(application?.appLoanTerms || 1))
-                        )}
-                      </p>
-                    </div>
-                  </div>
+
+                {/* Computation Details */}
+                <div className="pt-4 border-t border-gray-200 space-y-3">
+                  {(() => {
+                    const principal = Number(application?.appLoanAmount || 0);
+                    const interestRate = Number(application?.appInterest || 0);
+                    const terms = Number(application?.appLoanTerms || 1);
+
+                    const totalInterest = (principal * interestRate * terms) / 100;
+                    const totalPayable = principal + totalInterest;
+                    const monthlyDue = totalPayable / terms;
+
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-500">Total Interest</span>
+                          <span className="text-gray-900">{formatCurrency(totalInterest)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-500">Total Payable</span>
+                          <span className="text-gray-900 font-semibold text-lg">{formatCurrency(totalPayable)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-500">Monthly Due</span>
+                          <span className="text-gray-900">{formatCurrency(monthlyDue)}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -658,6 +692,12 @@
             </div>
           </div>
         )}
+
+      <LoanAgreementModal
+        isOpen={isAgreementOpen}
+        onClose={() => setIsAgreementOpen(false)}
+        application={application}
+      />
       </div>
     );
   } 
