@@ -342,14 +342,19 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
             ></textarea>
           </div>
           <div>
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Ownership Status:' : 'Kahimtang sa Pagpanag-iya:'}</label>
-            <input
-              type="text"
+            <label className="block font-medium mb-2 text-gray-700">
+              {language === 'en' ? 'Ownership Status:' : 'Kahimtang sa Pagpanag-iya:'}
+            </label>
+            <select
               value={ownershipStatus}
               onChange={(e) => setOwnershipStatus(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder={language === 'en' ? 'Enter ownership status' : 'Isulod ang kahimtang sa pagpanag-iya'}
-            />
+            >
+              <option value="">{language === 'en' ? 'Select ownership status' : 'Pilia ang kahimtang sa pagpanag-iya'}</option>
+              <option value="Owned">{language === 'en' ? 'Owned' : 'Gipanag-iya'}</option>
+              <option value="Mortgaged">{language === 'en' ? 'Mortgaged' : 'Naipang-utang'}</option>
+              <option value="Other">{language === 'en' ? 'Other' : 'Uban pa'}</option>
+            </select>
           </div>
         </div>
       </div>
