@@ -16,7 +16,9 @@
     "date": "^2.0.6",
     "date-fns": "^4.1.0",
     "emailjs-com": "^3.2.0",
+    "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
+    "jspdf": "^3.0.2",
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.542.0",
@@ -31,6 +33,7 @@
     "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-leaflet": "^5.0.0",
+    "react-to-print": "^3.1.1",
     "swiper": "^11.2.8"
   },
   "devDependencies": {
