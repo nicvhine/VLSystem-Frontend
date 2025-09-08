@@ -188,7 +188,7 @@ return (
             <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
               <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}</h3>
             </div>
-            <div className="p-4 h-48 overflow-y-auto">
+            <div className="p-4">
               <div className="space-y-3">
                 <ul className="space-y-3 text-sm">
                   {loanProcessSteps.map((step, index) => (
