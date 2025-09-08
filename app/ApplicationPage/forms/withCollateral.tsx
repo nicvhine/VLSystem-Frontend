@@ -151,7 +151,6 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         //2x2 upload state
         const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
-  
         const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
           if (e.target.files) {
             const files = Array.from(e.target.files);
