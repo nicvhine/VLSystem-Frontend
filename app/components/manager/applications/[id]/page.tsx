@@ -293,16 +293,7 @@ const handleDenyFromCleared = async () => {
                 </div>
               </div>
               <div className="flex space-x-3">
-                {application?.status === "Applied" && (
-                  <>
-                    <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium">
-                      SET SCHEDULE
-                    </button>
-                    <button onClick={handleDenyApplication} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                      DISMISS
-                    </button>
-                  </>
-                )}
+             
 
                 {/* IF STATUS IS CLEARED */}
                 {application?.status === "Cleared" && (

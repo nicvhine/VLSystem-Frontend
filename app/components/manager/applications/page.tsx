@@ -199,7 +199,7 @@ const handleCreateAccount = async () => {
 
 
   const filteredApplications = applications
-  .filter((application) => !['Pending', 'Denied by LO'].includes(application.status))
+  .filter((application) => !['Pending', 'Denied by LO', 'Applied'].includes(application.status))
   .map((application) => ({
     ...application,
     displayStatus: application.status === 'Endorsed' ? 'Pending' : application.status,
@@ -359,7 +359,7 @@ const handleCreateAccount = async () => {
 
                   <td className="px-6 py-4 space-x-2">
 
-                  {(application.status === 'Cleared' || application.status === 'Denied') && (
+                  {application.status != 'Disbursed'  && (
                     <Link
                       href={`/components/manager/applications/${application.applicationId}`}
                       className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
