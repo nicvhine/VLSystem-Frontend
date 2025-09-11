@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -28,6 +28,28 @@ export default function CreateUserModal({
     role: "head" as const,
     status: "Active" as const,
   });
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      // Small delay to trigger entrance animation
+      setTimeout(() => setIsAnimating(true), 10);
+    } else {
+      setIsAnimating(false);
+      // Wait for exit animation to complete before hiding
+      setTimeout(() => setIsVisible(false), 150);
+    }
+  }, [isOpen]);
+
+  const handleModalClose = () => {
+    setIsAnimating(false);
+    setTimeout(() => {
+      onClose();
+      setIsVisible(false);
+    }, 150);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -54,15 +76,25 @@ export default function CreateUserModal({
       return;
     }
     onCreate(newUser);
-    onClose();
+    handleModalClose();
     setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
   };
 
-  if (!isOpen) return null;
+  if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-      <div className="bg-white p-6 text-black rounded-lg shadow-lg w-96 max-w-full">
+    <div 
+      className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+        isAnimating ? 'opacity-100' : 'opacity-0'
+      }`}
+      onClick={handleModalClose}
+    >
+      <div 
+        className={`bg-white p-6 text-black rounded-lg shadow-lg w-96 max-w-full transition-all duration-150 ${
+          isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <h2 className="text-xl font-semibold mb-4">Create New User</h2>
         <form onSubmit={handleSubmit}>
           <input
@@ -106,7 +138,7 @@ export default function CreateUserModal({
           <div className="flex justify-end gap-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleModalClose}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
             >
               Cancel

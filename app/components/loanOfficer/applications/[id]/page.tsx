@@ -624,9 +624,11 @@
               <div className="p-6 space-y-6">
                 {/* Loan Details */}
                 <div className="space-y-3">
-                  <div className="flex justify-between">
+                  <div className="flex flex-col space-y-1">
                     <span className="text-sm font-medium text-gray-500">Loan Purpose</span>
-                    <span className="text-gray-900">{application?.appLoanPurpose || '—'}</span>
+                    <span className="text-gray-900 break-words text-sm leading-relaxed">
+                      {application?.appLoanPurpose || '—'}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm font-medium text-gray-500">Loan Amount</span>
