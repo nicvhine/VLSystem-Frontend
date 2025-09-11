@@ -114,9 +114,9 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
       : "—";
 
   const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
-    <div className="flex flex-col">
-      <span className="text-sm text-gray-400">{label}</span>
-      <div className="font-medium text-gray-800">{value}</div>
+    <div className="flex flex-col py-1">
+      <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
+      <div className="font-semibold text-gray-800 text-sm">{value}</div>
     </div>
   );
 
@@ -124,9 +124,9 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     <Manager>
       <div className="min-h-screen bg-gray-50 text-gray-900">
         {/* Header */}
-        <div className="bg-white shadow py-8 mb-8">
-          <div className="max-w-6xl mx-auto px-6 flex items-center space-x-6">
-            <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-red-600 flex-shrink-0 shadow">
+        <div className="bg-white shadow-sm py-6 mb-6">
+          <div className="max-w-6xl mx-auto px-6 flex items-center space-x-4">
+            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0 shadow-sm">
               <img
                 src={
                   client.profilePic
@@ -138,23 +138,23 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">{client.name}</h1>
-              <p className="text-sm text-gray-500 mt-1">{client.borrowersId}</p>
+              <h1 className="text-3xl font-bold text-gray-900">{client.name}</h1>
+              <p className="text-gray-500 text-sm font-medium">{client.borrowersId}</p>
             </div>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-6 pb-12">
+        <div className="max-w-6xl mx-auto px-6 pb-8">
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-8">
+          <div className="flex border-b border-gray-200 mb-6 bg-white rounded-t-lg shadow-sm">
             {["personal", "loan"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-6 py-3 font-medium text-lg ${
+                className={`flex-1 px-6 py-3 font-semibold text-base transition-all ${
                   activeTab === tab
-                    ? "border-b-2 border-red-600 text-red-600"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-red-600 text-white border-b-2 border-red-600 rounded-t-lg shadow-md"
+                    : "text-gray-600 hover:text-red-600 hover:bg-gray-50"
                 }`}
               >
                 {tab === "personal" ? "Personal Information" : "Loan Information"}
@@ -164,11 +164,14 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
 
           {/* PERSONAL TAB */}
           {activeTab === "personal" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* General Info */}
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
-                <h3 className="text-xl font-semibold mb-4 border-b pb-2">General Information</h3>
-                <div className="space-y-3">
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+                  <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                  General Information
+                </h3>
+                <div className="space-y-2">
                   <DetailRow label="Address" value={client.address || "—"} />
                   <DetailRow label="Date of Birth" value={client.dateOfBirth || "—"} />
                   <DetailRow label="Marital Status" value={client.maritalStatus || "—"} />
@@ -183,18 +186,24 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               </div>
 
               {/* Contact Info */}
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
-                <h3 className="text-xl font-semibold mb-4 border-b pb-2">Contact Information</h3>
-                <div className="space-y-3">
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                  Contact Information
+                </h3>
+                <div className="space-y-2">
                   <DetailRow label="Contact Number" value={client.contactNumber || "—"} />
                   <DetailRow label="Email Address" value={client.emailAddress || "—"} />
                 </div>
               </div>
 
               {/* Income Info */}
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
-                <h3 className="text-xl font-semibold mb-4 border-b pb-2">Income Information</h3>
-                <div className="space-y-3">
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all">
+                <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                  Income Information
+                </h3>
+                <div className="space-y-2">
                   <DetailRow label="Source of Income" value={capitalizeWords(client.incomeSource)} />
                   {client.incomeSource === "business" && (
                     <>
@@ -212,20 +221,25 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                 </div>
               </div>
 
-              {/* Character References */}
-              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
-                <h3 className="text-xl font-semibold mb-4 border-b pb-2">Character References</h3>
-                <div className="space-y-3">
+              {/* Character References - Now Horizontal and Full Width */}
+              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all md:col-span-2 lg:col-span-3">
+                <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+                  <span className="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
+                  Character References
+                </h3>
+                <div className="space-y-2">
                   {client.characterReferences?.length ? (
-                    client.characterReferences.map((ref, i) => (
-                      <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <p className="font-medium text-gray-700">{ref.name}</p>
-                        <p className="text-sm text-gray-500">Contact: {ref.contact}</p>
-                        {ref.relation && <p className="text-sm text-gray-500">Relationship: {ref.relation}</p>}
-                      </div>
-                    ))
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {client.characterReferences.map((ref, i) => (
+                        <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
+                          <p className="font-semibold text-gray-800">{ref.name}</p>
+                          <p className="text-sm text-gray-600">📞 {ref.contact}</p>
+                          {ref.relation && <p className="text-sm text-gray-500">👥 {ref.relation}</p>}
+                        </div>
+                      ))}
+                    </div>
                   ) : (
-                    <p className="text-gray-400">No character references provided</p>
+                    <p className="text-gray-400 text-center py-4">No character references provided</p>
                   )}
                 </div>
               </div>
@@ -233,9 +247,12 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               {/* Collateral Info */}
               {(client.loanType === "Regular Loan With Collateral" ||
                 client.loanType === "Open-Term Loan") && (
-                <div className="bg-white rounded-xl shadow-md p-6 border border-gray-200 hover:shadow-lg transition">
-                  <h3 className="text-xl font-semibold mb-4 border-b pb-2">Collateral Information</h3>
-                  <div className="space-y-3">
+                <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all">
+                  <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+                    <span className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></span>
+                    Collateral Information
+                  </h3>
+                  <div className="space-y-2">
                     <DetailRow label="Collateral Type" value={capitalizeWords(client.collateralType)} />
                     <DetailRow label="Collateral Value" value={capitalizeWords(client.collateralValue)} />
                     <DetailRow label="Collateral Description" value={capitalizeWords(client.collateralDescription)} />
@@ -248,33 +265,36 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
 
           {/* LOAN TAB */}
 {activeTab === "loan" && (
-  <div className="space-y-8">
+  <div className="space-y-6">
     {/* Loan Summary */}
-    <section className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-      <h2 className="text-2xl font-bold mb-6 text-gray-900">Loan Summary</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+      <h2 className="text-xl font-bold mb-4 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+        <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+        Loan Summary
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Total Loans */}
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-5 text-center shadow hover:shadow-lg transition transform hover:-translate-y-1">
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 text-center shadow hover:shadow-md transition-all">
           <span className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Total Loans</span>
-          <p className="text-3xl font-bold text-blue-700 mt-2">{client.numberOfLoans}</p>
+          <p className="text-2xl font-bold text-blue-700 mt-1">{client.numberOfLoans}</p>
         </div>
 
         {/* Borrower Status */}
         <div
           className={`${
-            client.activeLoan === "Yes" ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-yellow-50 to-yellow-100"
-          } rounded-xl p-5 text-center shadow hover:shadow-lg transition transform hover:-translate-y-1`}
+            client.activeLoan === "Yes" ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-gray-50 to-gray-100"
+          } rounded-lg p-4 text-center shadow hover:shadow-md transition-all`}
         >
           <span
             className={`text-sm font-semibold uppercase tracking-wide ${
-              client.activeLoan === "Yes" ? "text-green-600" : "text-yellow-600"
+              client.activeLoan === "Yes" ? "text-green-600" : "text-gray-600"
             }`}
           >
             Borrower Status
           </span>
           <p
-            className={`text-3xl font-bold mt-2 ${
-              client.activeLoan === "Yes" ? "text-green-700" : "text-yellow-700"
+            className={`text-2xl font-bold mt-1 ${
+              client.activeLoan === "Yes" ? "text-green-700" : "text-gray-700"
             }`}
           >
             {client.activeLoan === "Yes" ? "Active" : "Inactive"}
@@ -282,20 +302,20 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
         </div>
 
         {/* Credit Score */}
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-5 text-center shadow hover:shadow-lg transition transform hover:-translate-y-1">
+        <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 text-center shadow hover:shadow-md transition-all">
           <span className="text-sm text-purple-600 font-semibold uppercase tracking-wide">Credit Score</span>
-          <p className="text-3xl font-bold text-purple-700 mt-2">{client.score}</p>
+          <p className="text-2xl font-bold text-purple-700 mt-1">{client.score}</p>
         </div>
       </div>
     </section>
 
     {/* Loan Sub-Tabs */}
-    <div className="flex border-b border-gray-200">
+    <div className="flex border-b border-gray-200 bg-white rounded-t-lg shadow-sm">
       {["active", "past"].map((tab) => (
         <button
           key={tab}
-          className={`px-6 py-3 font-medium ${
-            loanSubTab === tab ? "border-b-2 border-red-600 text-red-600" : "text-gray-500 hover:text-gray-700"
+          className={`flex-1 px-6 py-3 font-semibold transition-all ${
+            loanSubTab === tab ? "bg-red-600 text-white rounded-t-lg" : "text-gray-600 hover:text-red-600 hover:bg-gray-50"
           }`}
           onClick={() => setLoanSubTab(tab)}
         >
@@ -306,9 +326,12 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
 
     {/* Active Loan */}
     {loanSubTab === "active" && client.currentLoan && (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition transform hover:-translate-y-1">
-          <h3 className="text-xl font-semibold mb-4 border-b pb-2 text-gray-900">Current Loan</h3>
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <h3 className="text-lg font-bold mb-4 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+          <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+          Current Loan Details
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <DetailRow label="Loan Type" value={client.currentLoan.type} />
           <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
           <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
@@ -323,24 +346,29 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
 
     {/* Past Loans */}
     {loanSubTab === "past" && (
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">Loan History</h2>
+      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <h2 className="text-lg font-bold mb-4 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+          <span className="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+          Loan History
+        </h2>
         {client.previousLoans?.length ? (
-          <ul className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {client.previousLoans.map((loan, idx) => (
-              <li
+              <div
                 key={idx}
-                className="bg-white p-4 rounded-2xl shadow hover:shadow-lg border border-gray-200 transition transform hover:-translate-y-1"
+                className="bg-gray-50 p-4 rounded-lg shadow hover:shadow-md border border-gray-100 transition-all"
               >
-                <p className="font-medium text-gray-800">{loan.type}</p>
-                <p className="text-sm text-gray-500">Amount: {formatCurrency(loan.amount)}</p>
-                <p className="text-sm text-gray-500">Released: {formatDate(loan.dateDisbursed)}</p>
-                <p className="text-sm text-gray-500">Status: {loan.status}</p>
-              </li>
+                <p className="font-semibold text-gray-800 mb-2">{loan.type}</p>
+                <div className="space-y-1 text-sm">
+                  <p className="text-gray-600">Amount: <span className="font-medium">{formatCurrency(loan.amount)}</span></p>
+                  <p className="text-gray-600">Released: <span className="font-medium">{formatDate(loan.dateDisbursed)}</span></p>
+                  <p className="text-gray-600">Status: <span className="font-medium text-blue-600">{loan.status}</span></p>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <p className="text-gray-400">No previous loans available</p>
+          <p className="text-gray-400 text-center py-8">No previous loans available</p>
         )}
       </div>
     )}

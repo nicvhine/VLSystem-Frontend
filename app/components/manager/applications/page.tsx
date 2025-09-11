@@ -74,11 +74,38 @@ export default function ApplicationsPage() {
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>('');
   const [tempPassword, setTempPassword] = useState('');
+  
+  // Animation states
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalAnimating, setIsModalAnimating] = useState(false);
+
+  // Modal animation effect
+  useEffect(() => {
+    if (showModal) {
+      setIsModalVisible(true);
+      // Small delay to trigger entrance animation
+      setTimeout(() => setIsModalAnimating(true), 10);
+    } else {
+      setIsModalAnimating(false);
+      // Wait for exit animation to complete before hiding
+      setTimeout(() => setIsModalVisible(false), 150);
+    }
+  }, [showModal]);
 
   const generateUsername = (fullName: string) => {
     const parts = fullName.trim().toLowerCase().split(' ');
     if (parts.length < 2) return ''; 
     return parts[0].slice(0, 3) + parts[parts.length - 1];
+  };
+
+  const handleModalClose = () => {
+    setIsModalAnimating(false);
+    setTimeout(() => {
+      setShowModal(false);
+      setIsModalVisible(false);
+      setSelectedApp(null);
+      setSelectedCollector('');
+    }, 150);
   };
 
   async function authFetch(url: string, options: RequestInit = {}) {
@@ -244,7 +271,7 @@ const handleCreateAccount = async () => {
 
 
   return (
-    <Manager>
+    <Manager isNavbarBlurred={isModalVisible}>
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
@@ -464,20 +491,30 @@ const handleCreateAccount = async () => {
           </table>
 
                   {/* Modal */}
-        {showModal && selectedApp && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md shadow-lg">
-              <h2 className="text-xl font-semibold mb-4">Create Account</h2>
-              <p className="mb-2"><strong>Name:</strong> {selectedApp.appName}</p>
-              <p className="mb-4">
+        {isModalVisible && selectedApp && (
+          <div 
+            className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
+              isModalAnimating ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={handleModalClose}
+          >
+            <div 
+              className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 ${
+                isModalAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-semibold mb-4 text-black">Create Account</h2>
+              <p className="mb-2 text-black"><strong>Name:</strong> {selectedApp.appName}</p>
+              <p className="mb-4 text-black">
                 <strong>Generated Username:</strong>{" "}
-                <span className="text-blue-600">{generatedUsername}</span>
+                <span className="text-red-600">{generatedUsername}</span>
               </p>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Assign Collector:</label>
+              <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
               <select
                 value={selectedCollector}
                 onChange={(e) => setSelectedCollector(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black"
               >
                 <option value="">Select a collector</option>
                 {collectors.map((name) => (
@@ -487,13 +524,13 @@ const handleCreateAccount = async () => {
 
               <div className="flex justify-end gap-3 mt-4">
                 <button
-                  className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
-                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+                  onClick={handleModalClose}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
                   onClick={handleCreateAccount}
                 >
                   Create Account
