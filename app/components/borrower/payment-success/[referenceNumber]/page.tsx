@@ -9,7 +9,7 @@ export default function PaymentSuccess({ params }: { params: { referenceNumber: 
   useEffect(() => {
     async function markPaid() {
       try {
-        const res = await fetch(`http://localhost:3001/payment/${referenceNumber}/paymongo/success`, {
+        const res = await fetch(`http://localhost:3001/payments/${referenceNumber}/paymongo/success`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
         });

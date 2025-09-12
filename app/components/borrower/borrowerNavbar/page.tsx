@@ -258,13 +258,7 @@ const {
                 className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
                 onClick={toggleDropdown}
               >
-                <Image
-                  src={previewPic || profilePic || '/idPic.jpg'}
-                  alt="Profile"
-                  width={36}
-                  height={36}
-                  className="object-cover w-full h-full"
-                />
+               
               </div>
 
               {isDropdownOpen && (
@@ -273,8 +267,6 @@ const {
               email={email}       
               phoneNumber={phoneNumber}       
               username={username}
-              darkMode={darkMode}
-              setDarkMode={setDarkMode}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleLogout={handleLogout}

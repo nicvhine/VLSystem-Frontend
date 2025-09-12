@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Manager from "../../page";
+import { FiFileText } from "react-icons/fi"; 
+import LedgerModal from "./ledgerModal";
 
 const API_URL = "http://localhost:3001/loans";
 
@@ -87,6 +89,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
   const [loanSubTab, setLoanSubTab] = useState("active");
   const [client, setClient] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showLedger, setShowLedger] = useState(false);
 
   useEffect(() => {
     const fetchLoanDetails = async () => {
@@ -327,12 +330,22 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     {/* Active Loan */}
     {loanSubTab === "active" && client.currentLoan && (
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-        <h3 className="text-lg font-bold mb-4 text-gray-700 flex items-center border-b border-gray-100 pb-2">
-          <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-          Current Loan Details
-        </h3>
+          <h3 className="text-lg font-bold mb-4 text-gray-700 flex items-center justify-between border-b border-gray-100 pb-2">
+            <div className="flex items-center">
+              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+              Current Loan Details
+            </div>
+            <button
+              onClick={() => setShowLedger(true)}
+              className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+            >
+              <FiFileText className="w-5 h-5" />
+              View Ledger
+            </button>
+          </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <DetailRow label="Loan Type" value={client.currentLoan.type} />
+          <DetailRow label="Loan ID" value={client.loanId} />
           <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
           <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
           <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
@@ -376,7 +389,17 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
 )}
 
         </div>
+
+        <LedgerModal
+          isOpen={showLedger}
+          onClose={() => setShowLedger(false)}
+          loanId={client.loanId || null}
+          totalPayable={client.currentLoan?.totalPayable || 0}
+        />
+
+
       </div>
+
     </Manager>
   );
 }

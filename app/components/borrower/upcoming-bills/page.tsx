@@ -71,7 +71,7 @@ export default function UpcomingBillsPage() {
     if (!activeLoan) return;
 
     try {
-      const res = await fetch(`http://localhost:3001/payment/paymongo/gcash`, {
+      const res = await fetch(`http://localhost:3001/payments/paymongo/gcash`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
