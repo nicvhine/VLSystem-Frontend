@@ -67,13 +67,21 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
-  const [activeFilter, setActiveFilter] = useState('Pending');
   const [showModal, setShowModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [generatedUsername, setGeneratedUsername] = useState('');
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>('');
   const [tempPassword, setTempPassword] = useState('');
+
+const [activeFilter, setActiveFilter] = useState<string>(() => {
+  return localStorage.getItem("activeFilter") || "Cleared";
+});
+
+useEffect(() => {
+  localStorage.setItem("activeFilter", activeFilter);
+}, [activeFilter]);
+
   
   // Animation states
   const [isModalVisible, setIsModalVisible] = useState(false);
