@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Navbar from "./navbar";
+import CollectorNavbar from "./collectorNavbar/page";
 import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "../changePasswordInternal/forceChange";
 import CollectionsPage from "./collectionsPage";
@@ -20,7 +20,7 @@ useEffect(() => {
 
     return(
         <div className="min-h-screen bg-white">
-            < Navbar/>
+            < CollectorNavbar/>
             < CollectionsPage />
 
         {showChangePasswordModal && (

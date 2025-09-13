@@ -96,7 +96,6 @@ export default function LedgerModal({
                 <tr>
                   <th className="p-2 text-left">Date</th>
                   <th className="p-2 text-left">Reference #</th>
-                  <th className="p-2 text-left">Collector</th>
                   <th className="p-2 text-left">Credit</th>
                   <th className="p-2 text-left">Debit</th>
                   <th className="p-2 text-left">Balance</th>
@@ -113,7 +112,6 @@ export default function LedgerModal({
                         {new Date(p.datePaid).toLocaleDateString()}
                       </td>
                       <td className="p-2">{p.referenceNumber}</td>
-                      <td className="p-2">{p.collector || "—"}</td>
                       <td className="p-2 text-green-600">
                         {formatCurrency(creditBefore)}
                       </td>

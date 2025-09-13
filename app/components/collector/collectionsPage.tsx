@@ -26,6 +26,7 @@ interface Collection {
   collector: string;
   note?: string;
   collectionNumber: number;
+  mode?: string; 
 }
 
 
@@ -134,9 +135,23 @@ const overallTargetAchieved = overallTotalTarget > 0
   const handleConfirmPayment = async () => {
     if (!selectedCollection) return;
   
+    const previousCollections = collections.filter(
+      col =>
+        col.loanId === selectedCollection.loanId &&
+        col.collectionNumber < selectedCollection.collectionNumber &&
+        col.status !== 'Paid'
+    );
+  
+    if (previousCollections.length > 0) {
+      alert(
+        `Cannot make payment for this month. Previous collection(s) are unpaid.`
+      );
+      return;
+    }
+  
     try {
       const response = await fetch(
-        `http://localhost:3001/collections/${selectedCollection.referenceNumber}/pay`,
+        `http://localhost:3001/payments/${selectedCollection.referenceNumber}/cash`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -146,35 +161,36 @@ const overallTargetAchieved = overallTotalTarget > 0
   
       if (!response.ok) throw new Error("Failed to post payment");
   
-      // Update paidAmount immediately for this schedule
+      // Update collections locally
       setCollections((prev) =>
         prev.map((col) => {
-          if (col.referenceNumber === selectedCollection.referenceNumber) {
-            const newPaid = (col.paidAmount || 0) + paymentAmount;
-            const newBal = Math.max((col.periodAmount || 0) - newPaid, 0);
-            return {
-              ...col,
-              paidAmount: newPaid,
-              balance: newBal,
-              status: newBal === 0 ? "Paid" : "Partial",
-            };
+          if (col.loanId !== selectedCollection.loanId) return col;
+  
+          // Cumulative logic
+          let newPaidAmount = col.paidAmount || 0;
+          let newTotalPayment = col.totalPayment || 0;
+          let newLoanBalance = col.loanBalance || col.periodAmount;
+  
+          if (col.collectionNumber >= selectedCollection.collectionNumber) {
+            newPaidAmount = col.collectionNumber === selectedCollection.collectionNumber
+              ? (col.paidAmount || 0) + paymentAmount
+              : col.paidAmount || 0;
+  
+            newTotalPayment += paymentAmount;
+            newLoanBalance -= paymentAmount;
           }
   
-          // Apply forward to next month
-          if (
-            col.loanId === selectedCollection.loanId &&
-            col.collectionNumber === selectedCollection.collectionNumber + 1
-          ) {
-            const newTotal = (col.totalPayment || 0) + paymentAmount;
-            const newBal = (col.loanBalance || col.periodAmount) - paymentAmount;
-            return {
-              ...col,
-              totalPayment: newTotal,
-              loanBalance: newBal,
-            };
-          }
+          const newBalance = Math.max((col.periodAmount || 0) - newPaidAmount, 0);
+          const newStatus = newBalance === 0 ? "Paid" : newBalance < (col.periodAmount || 0) ? "Partial" : "Unpaid";
   
-          return col;
+          return {
+            ...col,
+            paidAmount: newPaidAmount,
+            totalPayment: newTotalPayment,
+            loanBalance: newLoanBalance,
+            balance: newBalance,
+            status: newStatus,
+          };
         })
       );
     } catch (err) {
@@ -186,6 +202,8 @@ const overallTargetAchieved = overallTotalTarget > 0
       setPaymentAmount(0);
     }
   };
+  
+  
   
 
   return (
@@ -308,6 +326,7 @@ const overallTargetAchieved = overallTotalTarget > 0
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Mode</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Action</th>
@@ -330,6 +349,7 @@ const overallTargetAchieved = overallTotalTarget > 0
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.mode}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                           col.status === 'Paid' ? 'bg-green-100 text-green-800'
@@ -379,8 +399,8 @@ const overallTargetAchieved = overallTotalTarget > 0
               value={paymentAmount}
               onChange={(e) => setPaymentAmount(parseFloat(e.target.value))}
               min={0}
-              max={selectedCollection.periodAmount}
-            />
+              max={selectedCollection.periodAmount - selectedCollection.paidAmount + 100000} 
+              />
             <div className="flex justify-end gap-3">
               <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded" onClick={() => setShowModal(false)}>Cancel</button>
               <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={handleConfirmPayment}>Confirm</button>
