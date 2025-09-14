@@ -67,34 +67,54 @@ export default function UpcomingBillsPage() {
   }, [activeLoan, borrowersId]);
 
   // PayMongo handler
-  async function handlePay(collection: Collection) {
-    if (!activeLoan) return;
+async function handlePay(collection: Collection) {
+  if (!activeLoan) return;
 
-    try {
-      const res = await fetch(`http://localhost:3001/payments/paymongo/gcash`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: collection.periodAmount,
-          collectionNumber: collection.collectionNumber,
-          referenceNumber: collection.referenceNumber,
-          borrowersId: activeLoan.borrowersId
-        })
-        
-        
-      });
+  const amountToPay = collection.periodAmount ?? 0;
 
-      const data = await res.json();
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url;
-      } else {
-        alert('Failed to create payment.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error connecting to payment gateway.');
-    }
+  if (amountToPay <= 0) {
+    alert('This collection has no amount due.');
+    return;
   }
+
+  try {
+    console.log('Paying collection:', {
+      amount: amountToPay,
+      collectionNumber: collection.collectionNumber,
+      referenceNumber: collection.referenceNumber,
+      borrowersId: activeLoan.borrowersId
+    });
+
+    const res = await fetch(`http://localhost:3001/payments/paymongo/gcash`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: amountToPay,
+        collectionNumber: collection.collectionNumber,
+        referenceNumber: collection.referenceNumber,
+        borrowersId: activeLoan.borrowersId
+      })
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error('Backend error:', errorData);
+      alert(`Payment failed: ${errorData.error || 'Unknown error'}`);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.checkout_url) {
+      window.location.href = data.checkout_url;
+    } else {
+      alert('Failed to create payment.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error connecting to payment gateway.');
+  }
+}
+
 
   if (loading) return <p className="text-center mt-8">Loading...</p>;
   if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
@@ -123,7 +143,9 @@ export default function UpcomingBillsPage() {
                   <p className="text-gray-500 mb-1">
                     Due: {new Date(c.dueDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
-                  <p className="text-gray-800 font-medium">₱{c.periodAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+                  <p className="text-gray-800 font-medium">
+                    ₱{(c.periodAmount ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
               ))}
             </div>

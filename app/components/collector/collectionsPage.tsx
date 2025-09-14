@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, Suspense } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { useState, useEffect, useRef, Suspense } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import {
   FiSearch,
   FiChevronDown,
@@ -10,7 +10,7 @@ import {
   FiCalendar,
   FiDollarSign,
   FiCheckCircle,
-} from 'react-icons/fi';
+} from "react-icons/fi";
 
 interface Collection {
   loanId: string;
@@ -20,17 +20,16 @@ interface Collection {
   dueDate: string;
   periodAmount: number;
   paidAmount: number;
-  totalPayment: number,
+  totalPayment: number;
   loanBalance: number;
-  status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
+  balance: number;
+  status: "Paid" | "Partial" | "Unpaid" | "Overdue";
   collector: string;
   note?: string;
   collectionNumber: number;
-  mode?: string; 
+  mode?: string;
+  totalPayable: number;
 }
-
-
-
 
 function LoadingSpinner() {
   return (
@@ -41,8 +40,8 @@ function LoadingSpinner() {
 }
 
 export default function CollectionsPage() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +49,10 @@ export default function CollectionsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteText, setNoteText] = useState(""); 
+
+  const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const storedCollector = localStorage.getItem("collectorName");
@@ -67,7 +70,11 @@ export default function CollectionsPage() {
       }
 
       try {
-        const response = await fetch(`http://localhost:3001/collections?collector=${encodeURIComponent(storedCollector)}`);
+        const response = await fetch(
+          `http://localhost:3001/collections?collector=${encodeURIComponent(
+            storedCollector
+          )}`
+        );
         const data = await response.json();
         setCollections(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -81,12 +88,10 @@ export default function CollectionsPage() {
     fetchCollections();
   }, []);
 
- 
-
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-PH', {
-      style: 'currency',
-      currency: 'PHP',
+    return new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
     }).format(amount);
   };
 
@@ -104,27 +109,48 @@ export default function CollectionsPage() {
     return matchesCollector && matchesSearch && sameDate;
   });
 
-const overallCollections = collections.filter(col => col.collector === currentCollector);
+  const overallCollections = collections.filter(
+    (col) => col.collector === currentCollector
+  );
 
-const overallTotalPayments = overallCollections.length;
-const overallCompletedPayments = overallCollections.filter(col => col.status === 'Paid').length;
-const overallCollectionRate = overallTotalPayments > 0
-  ? Math.round((overallCompletedPayments / overallTotalPayments) * 100)
-  : 0;
+  const overallTotalPayments = overallCollections.length;
+  const overallCompletedPayments = overallCollections.filter(
+    (col) => col.status === "Paid"
+  ).length;
+  const overallCollectionRate =
+    overallTotalPayments > 0
+      ? Math.round((overallCompletedPayments / overallTotalPayments) * 100)
+      : 0;
 
-const overallTotalCollected = overallCollections.reduce((sum, col) => sum + col.paidAmount, 0);
-const overallTotalTarget = overallCollections.reduce((sum, col) => sum + col.periodAmount, 0);
-const overallTargetAchieved = overallTotalTarget > 0
-  ? Math.round((overallTotalCollected / overallTotalTarget) * 100)
-  : 0;
-
+  const overallTotalCollected = overallCollections.reduce(
+    (sum, col) => sum + col.paidAmount,
+    0
+  );
+  const overallTotalTarget = overallCollections.reduce(
+    (sum, col) => sum + col.periodAmount,
+    0
+  );
+  const overallTargetAchieved =
+    overallTotalTarget > 0
+      ? Math.round((overallTotalCollected / overallTotalTarget) * 100)
+      : 0;
 
   const totalPayments = filteredCollections.length;
-  const completedPayments = filteredCollections.filter(col => col.status === 'Paid').length;
-  const collectionRate = totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0;
-  const totalCollected = filteredCollections.reduce((sum, col) => sum + col.paidAmount, 0);
-  const totalTarget = filteredCollections.reduce((sum, col) => sum + col.periodAmount, 0);
-  const targetAchieved = totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
+  const completedPayments = filteredCollections.filter(
+    (col) => col.status === "Paid"
+  ).length;
+  const collectionRate =
+    totalPayments > 0 ? Math.round((completedPayments / totalPayments) * 100) : 0;
+  const totalCollected = filteredCollections.reduce(
+    (sum, col) => sum + col.paidAmount,
+    0
+  );
+  const totalTarget = filteredCollections.reduce(
+    (sum, col) => sum + col.periodAmount,
+    0
+  );
+  const targetAchieved =
+    totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
 
   const handleMakePayment = (collection: Collection) => {
     setSelectedCollection(collection);
@@ -132,23 +158,49 @@ const overallTargetAchieved = overallTotalTarget > 0
     setShowModal(true);
   };
 
-  const handleConfirmPayment = async () => {
+  const handleAddNote = (collection: Collection) => {
+    setSelectedCollection(collection);
+    setNoteText(collection.note || "");
+    setShowNoteModal(true);
+  };
+
+  const handleSaveNote = async () => {
     if (!selectedCollection) return;
   
-    const previousCollections = collections.filter(
-      col =>
-        col.loanId === selectedCollection.loanId &&
-        col.collectionNumber < selectedCollection.collectionNumber &&
-        col.status !== 'Paid'
-    );
-  
-    if (previousCollections.length > 0) {
-      alert(
-        `Cannot make payment for this month. Previous collection(s) are unpaid.`
+    try {
+      const response = await fetch(
+        `http://localhost:3001/collections/${selectedCollection.referenceNumber}/note`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ note: noteText }),
+        }
       );
-      return;
-    }
   
+      if (!response.ok) throw new Error("Failed to save note");
+  
+      const updatedCollection = await response.json(); 
+  
+      setCollections(prev =>
+        prev.map(col =>
+          col.referenceNumber === updatedCollection.referenceNumber
+            ? updatedCollection
+            : col
+        )
+      );
+    } catch (err) {
+      console.error("Saving note failed:", err);
+      alert("Failed to save note.");
+    } finally {
+      setShowNoteModal(false);
+      setSelectedCollection(null);
+      setNoteText("");
+    }
+  };
+  
+  const handleConfirmPayment = async () => {
+    if (!selectedCollection) return;
+
     try {
       const response = await fetch(
         `http://localhost:3001/payments/${selectedCollection.referenceNumber}/cash`,
@@ -158,40 +210,17 @@ const overallTargetAchieved = overallTotalTarget > 0
           body: JSON.stringify({ amount: paymentAmount }),
         }
       );
-  
+
       if (!response.ok) throw new Error("Failed to post payment");
-  
-      // Update collections locally
+
+      const updatedCollection = await response.json(); // backend returns updated collection
+
       setCollections((prev) =>
-        prev.map((col) => {
-          if (col.loanId !== selectedCollection.loanId) return col;
-  
-          // Cumulative logic
-          let newPaidAmount = col.paidAmount || 0;
-          let newTotalPayment = col.totalPayment || 0;
-          let newLoanBalance = col.loanBalance || col.periodAmount;
-  
-          if (col.collectionNumber >= selectedCollection.collectionNumber) {
-            newPaidAmount = col.collectionNumber === selectedCollection.collectionNumber
-              ? (col.paidAmount || 0) + paymentAmount
-              : col.paidAmount || 0;
-  
-            newTotalPayment += paymentAmount;
-            newLoanBalance -= paymentAmount;
-          }
-  
-          const newBalance = Math.max((col.periodAmount || 0) - newPaidAmount, 0);
-          const newStatus = newBalance === 0 ? "Paid" : newBalance < (col.periodAmount || 0) ? "Partial" : "Unpaid";
-  
-          return {
-            ...col,
-            paidAmount: newPaidAmount,
-            totalPayment: newTotalPayment,
-            loanBalance: newLoanBalance,
-            balance: newBalance,
-            status: newStatus,
-          };
-        })
+        prev.map((col) =>
+          col.referenceNumber === updatedCollection.referenceNumber
+            ? updatedCollection
+            : col
+        )
       );
     } catch (err) {
       console.error("Payment failed:", err);
@@ -202,9 +231,40 @@ const overallTargetAchieved = overallTotalTarget > 0
       setPaymentAmount(0);
     }
   };
+
+  const handlePrint = () => {
+    if (!tableRef.current) return;
   
+    const tableClone = tableRef.current.cloneNode(true) as HTMLElement;
   
+    const headers = tableClone.querySelectorAll('thead th');
+    if (headers.length > 0) headers[headers.length - 1].remove();
   
+    const rows = tableClone.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length > 0) cells[cells.length - 1].remove();
+    });
+  
+    const printContents = tableClone.innerHTML; 
+    const originalContents = document.body.innerHTML;
+  
+    const formattedDate = `${selectedDate.getMonth() + 1}/${selectedDate.getDate()}/${selectedDate.getFullYear()}`;
+  
+    document.body.innerHTML = `
+      <div style="padding:20px;">
+        <h2 style="text-align:center; margin-bottom:20px;">
+          Collection Sheet for ${formattedDate}
+        </h2>
+        <table style="width:100%; border-collapse: collapse;">${printContents}</table>
+      </div>
+    `;
+  
+    window.print();
+    document.body.innerHTML = originalContents;
+  };
+  
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -222,63 +282,67 @@ const overallTargetAchieved = overallTotalTarget > 0
                 onChange={(date: Date | null) => date && setSelectedDate(date)}
                 inline
               />
-              <div className="text-blue-600 font-medium">
-                {selectedDate.toDateString()}
-              </div>
+              <div className="text-blue-600 font-medium">{selectedDate.toDateString()}</div>
             </div>
           </div>
 
-<div className="col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-  {/* Daily Collection Progress */}
-  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
-    <div className="bg-blue-100 p-4 rounded-full shadow-sm">
-      <FiCheckCircle className="text-blue-600 w-6 h-6" />
-    </div>
-    <div>
-      <p className="text-gray-500 text-sm">Daily Progress</p>
-      <h3 className="text-3xl font-bold text-gray-800">{collectionRate}%</h3>
-      <p className="text-sm text-gray-400">{completedPayments} of {totalPayments} payments</p>
-    </div>
-  </div>
+          <div className="col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {/* Daily Collection Progress */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+              <div className="bg-blue-100 p-4 rounded-full shadow-sm">
+                <FiCheckCircle className="text-blue-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Daily Progress</p>
+                <h3 className="text-3xl font-bold text-gray-800">{collectionRate}%</h3>
+                <p className="text-sm text-gray-400">
+                  {completedPayments} of {totalPayments} payments
+                </p>
+              </div>
+            </div>
 
-  {/* Daily Amount Collected */}
-  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
-    <div className="bg-green-100 p-4 rounded-full shadow-sm">
-      <FiDollarSign className="text-green-600 w-6 h-6" />
-    </div>
-    <div>
-      <p className="text-gray-500 text-sm">Daily Collection</p>
-      <h3 className="text-3xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
-      <p className="text-sm text-gray-400">of {formatCurrency(totalTarget)} ({targetAchieved}%)</p>
-    </div>
-  </div>
+            {/* Daily Amount Collected */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+              <div className="bg-green-100 p-4 rounded-full shadow-sm">
+                <FiDollarSign className="text-green-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Daily Collection</p>
+                <h3 className="text-3xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
+                <p className="text-sm text-gray-400">
+                  of {formatCurrency(totalTarget)} ({targetAchieved}%)
+                </p>
+              </div>
+            </div>
 
-  {/* Overall Progress */}
-  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
-    <div className="bg-purple-100 p-4 rounded-full shadow-sm">
-      <FiCheckCircle className="text-purple-600 w-6 h-6" />
-    </div>
-    <div>
-      <p className="text-gray-500 text-sm">Overall Progress</p>
-      <h3 className="text-3xl font-bold text-gray-800">{overallCollectionRate}%</h3>
-      <p className="text-sm text-gray-400">{overallCompletedPayments} of {overallTotalPayments} payments</p>
-    </div>
-  </div>
+            {/* Overall Progress */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+              <div className="bg-purple-100 p-4 rounded-full shadow-sm">
+                <FiCheckCircle className="text-purple-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Overall Progress</p>
+                <h3 className="text-3xl font-bold text-gray-800">{overallCollectionRate}%</h3>
+                <p className="text-sm text-gray-400">
+                  {overallCompletedPayments} of {overallTotalPayments} payments
+                </p>
+              </div>
+            </div>
 
-  {/* Overall Amount Collected */}
-  <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
-    <div className="bg-indigo-100 p-4 rounded-full shadow-sm">
-      <FiDollarSign className="text-indigo-600 w-6 h-6" />
-    </div>
-    <div>
-      <p className="text-gray-500 text-sm">Overall Collection</p>
-      <h3 className="text-3xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
-      <p className="text-sm text-gray-400">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
-    </div>
-  </div>
-</div>
-
-
+            {/* Overall Amount Collected */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg transition hover:shadow-xl flex items-center gap-4">
+              <div className="bg-indigo-100 p-4 rounded-full shadow-sm">
+                <FiDollarSign className="text-indigo-600 w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-gray-500 text-sm">Overall Collection</p>
+                <h3 className="text-3xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
+                <p className="text-sm text-gray-400">
+                  of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Filters */}
@@ -313,8 +377,18 @@ const overallTargetAchieved = overallTotalTarget > 0
           </div>
         </div>
 
+        {/* Print Button */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handlePrint}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+          >
+            Print Collection Sheet
+          </button>
+        </div>
+
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div ref={tableRef} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <Suspense fallback={<LoadingSpinner />}>
             <table className="min-w-full divide-y divide-gray-200">
               <thead>
@@ -322,10 +396,10 @@ const overallTargetAchieved = overallTotalTarget > 0
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Total Payment</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Balance</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Mode</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
@@ -334,10 +408,14 @@ const overallTargetAchieved = overallTotalTarget > 0
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
-                  <tr><td colSpan={9}><LoadingSpinner /></td></tr>
+                  <tr>
+                    <td colSpan={11}><LoadingSpinner /></td>
+                  </tr>
                 ) : filteredCollections.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="text-center py-6 text-gray-500">No collections found.</td>
+                    <td colSpan={11} className="text-center py-6 text-gray-500">
+                      No collections found.
+                    </td>
                   </tr>
                 ) : (
                   filteredCollections.map((col) => (
@@ -345,23 +423,23 @@ const overallTargetAchieved = overallTotalTarget > 0
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
                       <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.totalPayment)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{col.mode}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                          col.status === 'Paid' ? 'bg-green-100 text-green-800'
-                          : col.status === 'Partial' ? 'bg-yellow-100 text-yellow-800'
-                          : col.status === 'Overdue' ? 'bg-red-100 text-red-800'
-                          : 'bg-gray-100 text-gray-600'}`}>
+                          col.status === "Paid" ? "bg-green-100 text-green-800" :
+                          col.status === "Partial" ? "bg-yellow-100 text-yellow-800" :
+                          col.status === "Overdue" ? "bg-red-100 text-red-800" :
+                          "bg-gray-100 text-gray-600"}`}>
                           {col.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{col.note || '-'}</td>
-                      <td className="px-6 py-4">
-                        {col.status !== 'Paid' ? (
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.note}</td>
+                      <td className="px-6 py-4 flex flex-col gap-1">
+                        {col.balance > 0 ? (
                           <button
                             onClick={() => handleMakePayment(col)}
                             className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium"
@@ -371,6 +449,12 @@ const overallTargetAchieved = overallTotalTarget > 0
                         ) : (
                           <span className="text-green-600 text-xs">Paid</span>
                         )}
+                        <button
+                          onClick={() => handleAddNote(col)}
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs font-medium"
+                        >
+                          {col.note && col.note.trim() !== "" ? "Edit Note" : "Add Note"}
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -379,35 +463,74 @@ const overallTargetAchieved = overallTotalTarget > 0
             </table>
           </Suspense>
         </div>
-      </div>
 
-      {/* Payment Modal */}
-      {showModal && selectedCollection && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
-            <h2 className="text-lg font-semibold mb-4">Make Payment for {selectedCollection.name}</h2>
-            <p className="text-sm text-gray-600 mb-2">
-              Due Date: {new Date(selectedCollection.dueDate).toDateString()}
-            </p>
-            <p className="text-sm text-gray-600 mb-4">
-              Period Amount: {formatCurrency(selectedCollection.periodAmount)}
-            </p>
-            <label className="block text-sm text-gray-700 mb-1">Enter Amount</label>
-            <input
-              type="number"
-              className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
-              value={paymentAmount}
-              onChange={(e) => setPaymentAmount(parseFloat(e.target.value))}
-              min={0}
-              max={selectedCollection.periodAmount - selectedCollection.paidAmount + 100000} 
+        {/* Payment Modal */}
+        {showModal && selectedCollection && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
+              <h2 className="text-lg font-semibold mb-4">Make Payment for {selectedCollection.name}</h2>
+              <p className="text-sm text-gray-600 mb-2">
+                Due Date: {new Date(selectedCollection.dueDate).toDateString()}
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Period Amount: {formatCurrency(selectedCollection.periodAmount)}
+              </p>
+              <label className="block text-sm text-gray-700 mb-1">Enter Amount</label>
+              <input
+                type="number"
+                className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(parseFloat(e.target.value))}
+                min={0}
+                max={selectedCollection.periodAmount - selectedCollection.paidAmount + 100000}
               />
-            <div className="flex justify-end gap-3">
-              <button className="px-4 py-2 bg-gray-300 text-gray-700 rounded" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={handleConfirmPayment}>Confirm</button>
+              <div className="flex justify-end gap-3">
+                <button
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+                  onClick={() => setShowModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  onClick={handleConfirmPayment}
+                  >
+                    Confirm
+                  </button>
+                </div>
+              </div>
             </div>
+          )}
+        </div>
+        {/* Note Modal */}
+    {showNoteModal && selectedCollection && (
+      <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
+          <h2 className="text-lg font-semibold mb-4">Add/Edit Note for {selectedCollection.name}</h2>
+          <textarea
+            className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
+            rows={4}
+            value={noteText}
+            onChange={(e) => setNoteText(e.target.value)}
+          />
+          <div className="flex justify-end gap-3">
+            <button
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+              onClick={() => setShowNoteModal(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+              onClick={handleSaveNote}
+            >
+              Save
+            </button>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
+      </div>
+    )}
+
+      </div>
+    );
+  }

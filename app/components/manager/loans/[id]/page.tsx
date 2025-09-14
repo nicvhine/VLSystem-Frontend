@@ -48,8 +48,14 @@ interface LoanDetails {
   emailAddress?: string;
   address?: string;
   incomeSource?: string;
+  //employed
   employmentStatus?: string;
   occupation?: string;
+  //business
+  businessType: string;
+  dateStarted: string;
+  businessLocation: string;
+
   monthlyIncome?: number;
   score?: number;
   activeLoan?: "Yes" | "No";
@@ -201,28 +207,36 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               </div>
 
               {/* Income Info */}
-              <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all">
-                <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
-                  <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                  Income Information
-                </h3>
-                <div className="space-y-2">
-                  <DetailRow label="Source of Income" value={capitalizeWords(client.incomeSource)} />
-                  {client.incomeSource === "business" && (
-                    <>
-                      <DetailRow label="Business Type" value={client.spouseName || "—"} />
-                      <DetailRow label="Spouse Occupation" value={client.spouseOccupation || "—"} />
-                    </>
-                  )}
-                  {client.incomeSource === "employed" && (
-                    <>
-                      <DetailRow label="Occupation" value={capitalizeWords(client.occupation)} />
-                      <DetailRow label="Employment Status" value={capitalizeWords(client.employmentStatus)} />
-                    </>
-                  )}
-                  <DetailRow label="Monthly Income" value={formatCurrency(client.monthlyIncome)} />
-                </div>
+            <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all">
+              <h3 className="text-lg font-bold mb-3 text-gray-700 flex items-center border-b border-gray-100 pb-2">
+                <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                Income Information
+              </h3>
+              <div className="space-y-2">
+                <DetailRow
+                  label="Source of Income"
+                  value={capitalizeWords(client.incomeSource)}
+                />
+
+                {client.incomeSource?.toLowerCase() === "business" && (
+                  <>
+                    <DetailRow label="Business Type" value={capitalizeWords(client.businessType)} />
+                    <DetailRow label="Date Started" value={formatDate(client.dateStarted)} />
+                    <DetailRow label="Location" value={capitalizeWords(client.businessLocation)} />
+                  </>
+                )}
+
+                {client.incomeSource?.toLowerCase() === "employed" && (
+                  <>
+                    <DetailRow label="Occupation" value={capitalizeWords(client.occupation)} />
+                    <DetailRow label="Employment Status" value={capitalizeWords(client.employmentStatus)} />
+                  </>
+                )}
+
+                <DetailRow label="Monthly Income" value={formatCurrency(client.monthlyIncome)} />
               </div>
+            </div>
+
 
               {/* Character References - Now Horizontal and Full Width */}
               <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 hover:shadow-md transition-all md:col-span-2 lg:col-span-3">
@@ -328,8 +342,9 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     </div>
 
     {/* Active Loan */}
-    {loanSubTab === "active" && client.currentLoan && (
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+    {loanSubTab === "active" && (
+      client.currentLoan ? (
+        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
           <h3 className="text-lg font-bold mb-4 text-gray-700 flex items-center justify-between border-b border-gray-100 pb-2">
             <div className="flex items-center">
               <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
@@ -343,19 +358,25 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               View Ledger
             </button>
           </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <DetailRow label="Loan Type" value={client.currentLoan.type} />
-          <DetailRow label="Loan ID" value={client.loanId} />
-          <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
-          <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
-          <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
-          <DetailRow label="Loan Term" value={`${client.currentLoan.terms} months`} />
-          <DetailRow label="Total Payable" value={formatCurrency(client.currentLoan.totalPayable)} />
-          <DetailRow label="Paid Amount" value={formatCurrency(client.currentLoan.paidAmount)} />
-          <DetailRow label="Remaining Balance" value={formatCurrency(client.currentLoan.remainingBalance)} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <DetailRow label="Loan Type" value={client.currentLoan.type} />
+            <DetailRow label="Loan ID" value={client.loanId} />
+            <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
+            <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
+            <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
+            <DetailRow label="Loan Term" value={`${client.currentLoan.terms} months`} />
+            <DetailRow label="Total Payable" value={formatCurrency(client.currentLoan.totalPayable)} />
+            <DetailRow label="Paid Amount" value={formatCurrency(client.currentLoan.paidAmount)} />
+            <DetailRow label="Remaining Balance" value={formatCurrency(client.currentLoan.remainingBalance)} />
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 text-gray-500 text-center">
+          No active loan available
+        </div>
+      )
     )}
+
 
     {/* Past Loans */}
     {loanSubTab === "past" && (
