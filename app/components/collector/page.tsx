@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "../changePasswordInternal/forceChange";
 import CollectionsPage from "./collectionsPage";
 
-export default function Head(){
+export default function Collector(){
 const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+const [isModalOpen, setIsModalOpen] = useState(false);
 
 useEffect(() => {
   const mustChange = localStorage.getItem('forcePasswordChange');
@@ -20,8 +21,8 @@ useEffect(() => {
 
     return(
         <div className="min-h-screen bg-white">
-            < CollectorNavbar/>
-            < CollectionsPage />
+            < CollectorNavbar isBlurred={isModalOpen || showChangePasswordModal}/>
+            < CollectionsPage onModalStateChange={setIsModalOpen} />
 
         {showChangePasswordModal && (
           <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
