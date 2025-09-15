@@ -11,7 +11,7 @@ import MobileMenu from './mobileMenu';
 import ProfileDropdown from './dropdown';
 import { Bell } from 'lucide-react';
 
-export default function CollectorNavbar() {
+export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -159,7 +159,7 @@ export default function CollectorNavbar() {
   };
 
   return (
-    <div className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <div className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${isBlurred ? 'relative z-40' : 'sticky top-0 z-50'} ${isBlurred ? 'blur-sm' : ''} transition-all duration-150`}>
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link

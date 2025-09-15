@@ -39,7 +39,7 @@ function LoadingSpinner() {
   );
 }
 
-export default function CollectionsPage() {
+export default function CollectionsPage({ onModalStateChange }: { onModalStateChange?: (isOpen: boolean) => void }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -51,6 +51,14 @@ export default function CollectionsPage() {
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState(""); 
+
+  // Animation states for Payment Modal
+  const [isPaymentModalVisible, setIsPaymentModalVisible] = useState(false);
+  const [isPaymentModalAnimating, setIsPaymentModalAnimating] = useState(false);
+
+  // Animation states for Note Modal
+  const [isNoteModalVisible, setIsNoteModalVisible] = useState(false);
+  const [isNoteModalAnimating, setIsNoteModalAnimating] = useState(false); 
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +95,35 @@ export default function CollectionsPage() {
 
     fetchCollections();
   }, []);
+
+  // Payment Modal Animation Control
+  useEffect(() => {
+    if (showModal) {
+      setIsPaymentModalVisible(true);
+      setTimeout(() => setIsPaymentModalAnimating(true), 10);
+    } else {
+      setIsPaymentModalAnimating(false);
+      setTimeout(() => setIsPaymentModalVisible(false), 150);
+    }
+  }, [showModal]);
+
+  // Note Modal Animation Control
+  useEffect(() => {
+    if (showNoteModal) {
+      setIsNoteModalVisible(true);
+      setTimeout(() => setIsNoteModalAnimating(true), 10);
+    } else {
+      setIsNoteModalAnimating(false);
+      setTimeout(() => setIsNoteModalVisible(false), 150);
+    }
+  }, [showNoteModal]);
+
+  // Notify parent component about modal state changes
+  useEffect(() => {
+    if (onModalStateChange) {
+      onModalStateChange(isPaymentModalVisible || isNoteModalVisible);
+    }
+  }, [isPaymentModalVisible, isNoteModalVisible, onModalStateChange]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-PH", {
@@ -164,6 +201,27 @@ export default function CollectionsPage() {
     setShowNoteModal(true);
   };
 
+  // Animated close functions
+  const handlePaymentModalClose = () => {
+    setIsPaymentModalAnimating(false);
+    setTimeout(() => {
+      setShowModal(false);
+      setIsPaymentModalVisible(false);
+      setSelectedCollection(null);
+      setPaymentAmount(0);
+    }, 150);
+  };
+
+  const handleNoteModalClose = () => {
+    setIsNoteModalAnimating(false);
+    setTimeout(() => {
+      setShowNoteModal(false);
+      setIsNoteModalVisible(false);
+      setSelectedCollection(null);
+      setNoteText("");
+    }, 150);
+  };
+
   const handleSaveNote = async () => {
     if (!selectedCollection) return;
   
@@ -192,9 +250,7 @@ export default function CollectionsPage() {
       console.error("Saving note failed:", err);
       alert("Failed to save note.");
     } finally {
-      setShowNoteModal(false);
-      setSelectedCollection(null);
-      setNoteText("");
+      handleNoteModalClose();
     }
   };
   
@@ -226,9 +282,7 @@ export default function CollectionsPage() {
       console.error("Payment failed:", err);
       alert("Payment failed.");
     } finally {
-      setShowModal(false);
-      setSelectedCollection(null);
-      setPaymentAmount(0);
+      handlePaymentModalClose();
     }
   };
 
@@ -465,17 +519,27 @@ export default function CollectionsPage() {
         </div>
 
         {/* Payment Modal */}
-        {showModal && selectedCollection && (
-          <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
-              <h2 className="text-lg font-semibold mb-4">Make Payment for {selectedCollection.name}</h2>
-              <p className="text-sm text-gray-600 mb-2">
+        {isPaymentModalVisible && selectedCollection && (
+          <div 
+            className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-150 ${
+              isPaymentModalAnimating ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={handlePaymentModalClose}
+          >
+            <div 
+              className={`bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative transition-all duration-150 ${
+                isPaymentModalAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-lg font-semibold mb-4 text-black">Make Payment for {selectedCollection.name}</h2>
+              <p className="text-sm text-black mb-2">
                 Due Date: {new Date(selectedCollection.dueDate).toDateString()}
               </p>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-black mb-4">
                 Period Amount: {formatCurrency(selectedCollection.periodAmount)}
               </p>
-              <label className="block text-sm text-gray-700 mb-1">Enter Amount</label>
+              <label className="block text-sm text-black mb-1">Enter Amount</label>
               <input
                 type="number"
                 className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
@@ -486,8 +550,8 @@ export default function CollectionsPage() {
               />
               <div className="flex justify-end gap-3">
                 <button
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
-                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 bg-gray-300 text-black rounded"
+                  onClick={handlePaymentModalClose}
                 >
                   Cancel
                 </button>
@@ -503,20 +567,30 @@ export default function CollectionsPage() {
           )}
         </div>
         {/* Note Modal */}
-    {showNoteModal && selectedCollection && (
-      <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative">
-          <h2 className="text-lg font-semibold mb-4">Add/Edit Note for {selectedCollection.name}</h2>
+    {isNoteModalVisible && selectedCollection && (
+      <div 
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-150 ${
+          isNoteModalAnimating ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={handleNoteModalClose}
+      >
+        <div 
+          className={`bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative transition-all duration-150 ${
+            isNoteModalAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-lg font-semibold mb-4 text-black">Add/Edit Note for {selectedCollection.name}</h2>
           <textarea
-            className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
+            className="w-full border border-gray-300 px-3 py-2 rounded mb-4 text-black"
             rows={4}
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
           />
           <div className="flex justify-end gap-3">
             <button
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
-              onClick={() => setShowNoteModal(false)}
+              className="px-4 py-2 bg-gray-300 text-black rounded"
+              onClick={handleNoteModalClose}
             >
               Cancel
             </button>
