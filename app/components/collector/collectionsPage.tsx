@@ -435,7 +435,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
         <div className="flex justify-end mb-4">
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
           >
             Print Collection Sheet
           </button>
@@ -496,7 +496,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                         {col.balance > 0 ? (
                           <button
                             onClick={() => handleMakePayment(col)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium"
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
                           >
                             Make Payment
                           </button>
@@ -550,13 +550,13 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
               />
               <div className="flex justify-end gap-3">
                 <button
-                  className="px-4 py-2 bg-gray-300 text-black rounded"
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
                   onClick={handlePaymentModalClose}
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
                   onClick={handleConfirmPayment}
                   >
                     Confirm
@@ -589,13 +589,13 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
           />
           <div className="flex justify-end gap-3">
             <button
-              className="px-4 py-2 bg-gray-300 text-black rounded"
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
               onClick={handleNoteModalClose}
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 bg-blue-600 text-white rounded"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
               onClick={handleSaveNote}
             >
               Save
