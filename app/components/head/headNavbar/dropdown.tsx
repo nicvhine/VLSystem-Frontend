@@ -162,48 +162,62 @@ const handleSetDarkMode = (value: boolean) => {
             </button>
 
             {isEditing && (
-              <ProfileSettingsPanel
-                username={username}
-                email={email}
-                phoneNumber={phoneNumber}
-                editingEmail={editingEmail}
-                setEditingEmail={setEditingEmail}
-                isEditingEmailField={isEditingEmailField}
-                setIsEditingEmailField={setIsEditingEmailField}
-                editingPhone={editingPhone}
-                setEditingPhone={setEditingPhone}
-                isEditingPhoneField={isEditingPhoneField}
-                setIsEditingPhoneField={setIsEditingPhoneField}
-                isEditingPasswordField={isEditingPasswordField}
-                setIsEditingPasswordField={setIsEditingPasswordField}
-                currentPassword={currentPassword}
-                setCurrentPassword={setCurrentPassword}
-                newPassword={newPassword}
-                setNewPassword={setNewPassword}
-                confirmPassword={confirmPassword}
-                setConfirmPassword={setConfirmPassword}
-                activeSettingsTab={activeSettingsTab}
-                setActiveSettingsTab={setActiveSettingsTab}
-                passwordError={passwordError}
-                setPasswordError={setPasswordError}
-                phoneError={phoneError}
-                setPhoneError={setPhoneError}
-                settingsSuccess={settingsSuccess}
-                setSettingsSuccess={setSettingsSuccess}
-                notificationPreferences={notificationPreferences}
-                handleNotificationToggle={handleNotificationToggle}
-                handleAccountSettingsUpdate={handleAccountSettingsUpdate}
-                emailVerificationSent={emailVerificationSent}
-                userEnteredCode={userEnteredCode}
-                setUserEnteredCode={setUserEnteredCode}
-                sendVerificationCode={sendVerificationCode}
-                verifyEmailCode={verifyEmailCode}
-                smsVerificationSent={smsVerificationSent}
-                sendSmsVerificationCode={sendSmsVerificationCode}
-                verifySmsCode={verifySmsCode}
-                darkMode={darkMode}
-                setDarkMode={handleSetDarkMode}
-              />
+              <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative text-black">
+                  <button
+                    onClick={toggleEdit}
+                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition"
+                    aria-label="Close"
+                  >
+                    ✖
+                  </button>
+                  <h2 className="text-lg font-semibold text-gray-800 text-center">Account Settings</h2>
+                  <p className="text-xs text-gray-500 text-center mb-4">Manage your email, phone, and password</p>
+                  <div className="h-px w-full bg-gray-200 mb-4" />
+                  <ProfileSettingsPanel
+                    username={username}
+                    email={email}
+                    phoneNumber={phoneNumber}
+                    editingEmail={editingEmail}
+                    setEditingEmail={setEditingEmail}
+                    isEditingEmailField={isEditingEmailField}
+                    setIsEditingEmailField={setIsEditingEmailField}
+                    editingPhone={editingPhone}
+                    setEditingPhone={setEditingPhone}
+                    isEditingPhoneField={isEditingPhoneField}
+                    setIsEditingPhoneField={setIsEditingPhoneField}
+                    isEditingPasswordField={isEditingPasswordField}
+                    setIsEditingPasswordField={setIsEditingPasswordField}
+                    currentPassword={currentPassword}
+                    setCurrentPassword={setCurrentPassword}
+                    newPassword={newPassword}
+                    setNewPassword={setNewPassword}
+                    confirmPassword={confirmPassword}
+                    setConfirmPassword={setConfirmPassword}
+                    activeSettingsTab={activeSettingsTab}
+                    setActiveSettingsTab={setActiveSettingsTab}
+                    passwordError={passwordError}
+                    setPasswordError={setPasswordError}
+                    phoneError={phoneError}
+                    setPhoneError={setPhoneError}
+                    settingsSuccess={settingsSuccess}
+                    setSettingsSuccess={setSettingsSuccess}
+                    notificationPreferences={notificationPreferences}
+                    handleNotificationToggle={handleNotificationToggle}
+                    handleAccountSettingsUpdate={handleAccountSettingsUpdate}
+                    emailVerificationSent={emailVerificationSent}
+                    userEnteredCode={userEnteredCode}
+                    setUserEnteredCode={setUserEnteredCode}
+                    sendVerificationCode={sendVerificationCode}
+                    verifyEmailCode={verifyEmailCode}
+                    smsVerificationSent={smsVerificationSent}
+                    sendSmsVerificationCode={sendSmsVerificationCode}
+                    verifySmsCode={verifySmsCode}
+                    darkMode={darkMode}
+                    setDarkMode={handleSetDarkMode}
+                  />
+                </div>
+              </div>
             )}
 
             {/* Logout */}

@@ -149,7 +149,7 @@ export default function ProfileSettingsPanel({
               <div className="text-base text-gray-900">{username}</div>
             </div>
 
-            <div>
+            <div className="rounded-lg border border-gray-200 p-3 hover:border-gray-300 transition bg-white/60">
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Email Address</span>
                 <button
@@ -214,7 +214,7 @@ export default function ProfileSettingsPanel({
               )}
             </div>
 
-            <div>
+            <div className="rounded-lg border border-gray-200 p-3 hover:border-gray-300 transition bg-white/60">
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Phone Number</span>
                 <button
@@ -277,7 +277,7 @@ export default function ProfileSettingsPanel({
               )}
             </div>
 
-            <div>
+            <div className="rounded-lg border border-gray-200 p-3 hover:border-gray-300 transition bg-white/60">
               <div className="flex justify-between mb-1">
                 <span className="text-sm text-gray-700">Password</span>
                 <button
@@ -300,6 +300,9 @@ export default function ProfileSettingsPanel({
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    onPaste={(e) => e.preventDefault()}
+                    onCopy={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     placeholder="New password"
                   />
@@ -307,6 +310,9 @@ export default function ProfileSettingsPanel({
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    onPaste={(e) => e.preventDefault()}
+                    onCopy={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     placeholder="Confirm password"
                   />
