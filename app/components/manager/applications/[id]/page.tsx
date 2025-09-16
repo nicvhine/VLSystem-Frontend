@@ -532,7 +532,7 @@ const handleDenyFromCleared = async () => {
                           <div className="flex items-center space-x-3">
                             <FiFileText className="w-5 h-5 text-red-600" />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{doc.fileName}</p>
+                              <p className="text-sm font-medium text-gray-900 max-w-[180px] break-all whitespace-normal">{doc.fileName}</p>
                               <p className="text-xs text-gray-500">12.3kb</p>
                             </div>
                           </div>

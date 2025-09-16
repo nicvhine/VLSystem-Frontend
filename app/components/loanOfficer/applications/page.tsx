@@ -247,7 +247,7 @@ export default function ApplicationsPage() {
                       {app.status === 'Applied' && (
                         <Link
                           href={`/components/loanOfficer/applications/${app.applicationId}`}
-                          className="bg-indigo-600 text-white px-3 py-1 rounded-md text-xs hover:bg-indigo-700 inline-block"
+                          className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700 inline-block"
                         >
                           Schedule
                         </Link>

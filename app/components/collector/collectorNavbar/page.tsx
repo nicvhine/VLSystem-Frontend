@@ -119,7 +119,12 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
     }
   }, []);
 
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => {
+      if (!prev) setShowNotifs(false);
+      return !prev;
+    });
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -227,7 +232,12 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
             <div className="relative">
             <button
               className="relative p-2 rounded-full hover:bg-gray-100"
-              onClick={() => setShowNotifs(prev => !prev)}
+              onClick={() => {
+                setShowNotifs(prev => {
+                  if (!prev) setIsDropdownOpen(false);
+                  return !prev;
+                });
+              }}
             >
               <Bell className="h-5 w-5 text-gray-700" />
               {notifications.filter(n => !n.read).length > 0 && (

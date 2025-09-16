@@ -321,7 +321,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+  <div className="min-h-screen bg-gray-50">
       <div className="mx-auto px-6 py-8">
         {/* Calendar and Stats */}
         <div className="grid grid-cols-12 gap-6 mb-6">
@@ -580,7 +580,9 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-lg font-semibold mb-4 text-black">Add/Edit Note for {selectedCollection.name}</h2>
+          <h2 className="text-lg font-semibold mb-4 text-black">
+            {selectedCollection.note && selectedCollection.note.trim() !== "" ? "Edit Note" : "Add Note"} for {selectedCollection.name}
+          </h2>
           <textarea
             className="w-full border border-gray-300 px-3 py-2 rounded mb-4 text-black"
             rows={4}

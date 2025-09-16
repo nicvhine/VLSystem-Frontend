@@ -71,6 +71,22 @@
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [interviewDate, setInterviewDate] = useState('');
     const [interviewTime, setInterviewTime] = useState('');
+    // Modal animation state
+    const [showModal, setShowModal] = useState(false);
+    const [animateIn, setAnimateIn] = useState(false);
+
+    // Handle animation timing for schedule modal
+    useEffect(() => {
+      if (isModalOpen) {
+        setShowModal(true);
+        const timer = setTimeout(() => setAnimateIn(true), 10);
+        return () => clearTimeout(timer);
+      } else {
+        setAnimateIn(false);
+        const timer = setTimeout(() => setShowModal(false), 300);
+        return () => clearTimeout(timer);
+      }
+    }, [isModalOpen]);
 
     const application = applications.find(app => app.applicationId === params.id);
 
@@ -581,7 +597,7 @@
                           <div className="flex items-center space-x-3">
                             <FiFileText className="w-5 h-5 text-red-600" />
                             <div>
-                              <p className="text-sm font-medium text-gray-900">{doc.fileName}</p>
+                              <p className="text-sm font-medium text-gray-900 max-w-[180px] break-all whitespace-normal">{doc.fileName}</p>
                               <p className="text-xs text-gray-500">12.3kb</p>
                             </div>
                           </div>
@@ -680,16 +696,15 @@
         </div>
 
         {/* Professional Schedule Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 text-black p-4">
-            <div className="bg-white rounded-lg shadow-2xl p-6 w-full max-w-md">
+        {showModal && (
+          <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 text-black p-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`bg-white rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
               <div className="flex items-center mb-6">
                 <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
                   <FiFileText className="w-5 h-5 text-red-600" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">Schedule Interview</h2>
               </div>
-              
               <div className="space-y-4">
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Interview Date</label>
@@ -700,7 +715,6 @@
                     onChange={(e) => setInterviewDate(e.target.value)} 
                   />
                 </div>
-                
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">Interview Time</label>
                   <input 
@@ -711,7 +725,6 @@
                   />
                 </div>
               </div>
-              
               <div className="flex justify-end gap-3 mt-6">
                 <button 
                   onClick={() => setIsModalOpen(false)} 
@@ -721,7 +734,7 @@
                 </button>
                 <button 
                   onClick={handleScheduleInterview} 
-                  className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
                 >
                   Schedule Interview
                 </button>
@@ -733,7 +746,7 @@
       <LoanAgreementModal
         isOpen={isAgreementOpen}
         onClose={() => setIsAgreementOpen(false)}
-        application={application}
+        application={application ?? null}
       />
       </div>
     );
