@@ -1,8 +1,8 @@
- import LandingPage from "./userPage/publicPage/page";
-import Image from "next/image"; 
+// app/MainPage/page.tsx
+import LandingPage from "./userPage/publicPage/page";
+
+
 
 export default function MainPage() {
-  return (
-    <LandingPage />
-  );
+  return <LandingPage />;
 }
