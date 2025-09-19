@@ -80,7 +80,7 @@ export async function loginHandler({ username, password, onClose, router }: Logi
   onClose();
 
   const redirectMap: Record<string, string> = {
-    head: '/components/head/dashboard',
+    head: '/headPage/dashboard',
     manager: '/components/manager/dashboard',
     'loan officer': '/components/loanOfficer/dashboard', 
     collector: '/components/collector',

@@ -1,8 +1,8 @@
- import Home from "./components/landing/home"
+ import LandingPage from "./publicPage/page";
 import Image from "next/image"; 
 
 export default function MainPage() {
   return (
-    <Home />
+    <LandingPage />
   );
 }

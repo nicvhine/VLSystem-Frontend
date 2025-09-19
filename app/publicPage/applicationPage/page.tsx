@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import Navbar from "../ApplicationPage/navbar";
+import Navbar from "./navbar";
 import WithCollateralLoanForm from "./forms/withCollateral";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
@@ -9,7 +9,7 @@ import WithoutCollateralLoanForm from "./forms/withoutCollateral";
 import OpenTermLoanForm from "./forms/openTerm";
 import axios from "axios";
 import Common from "./forms/common";
-import LoginModal from "../components/landing/LoginModal/page";
+import LoginModal from "../loginForm/page";
 
 
 export default function ApplicationPage() {

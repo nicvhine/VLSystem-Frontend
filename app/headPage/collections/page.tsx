@@ -11,7 +11,7 @@ import {
   FiDollarSign,
   FiCheckCircle,
 } from 'react-icons/fi';
-import HeadNavbar from '../headNavbar/page';
+import HeadNavbar from '../navbar/page';
 
 interface Collection {
   loanId: string;
