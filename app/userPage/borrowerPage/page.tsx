@@ -1,0 +1,56 @@
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import useInactivityLogout from "@/app/commonComponents/modals/inactivity/modal";
+import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
+import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
+import BorrowerNavbar from "./navbar/page";
+
+export default function Borrower({ children }: {children?: React.ReactNode }) {
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+    const router = useRouter();
+
+    const {showModal, countdown, stayLoggedIn, logout} = useInactivityLogout();
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const mustChange = localStorage.getItem('forcePasswordChange');
+
+        if (!token) {
+            router.push('/');
+            return;
+        }
+
+        if (mustChange === 'true') {
+            setShowChangePasswordModal(true);
+        }
+
+        setIsCheckingAuth(false);
+    }, [router]);
+
+    if (isCheckingAuth) {
+        return <div className="min-h-screen bg-white"></div>;
+    }
+
+    return (
+        <div className="min-h-screen bg-white">
+            <BorrowerNavbar />
+            
+            {showChangePasswordModal && (
+                <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+            )}
+
+            {children}
+
+            {showModal && (
+                <AreYouStillThereModal
+                    countdown={countdown}
+                    onStay={stayLoggedIn}
+                    onLogout={logout}
+                />
+            )}
+        </div>
+    );
+}

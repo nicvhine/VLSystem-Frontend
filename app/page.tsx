@@ -1,4 +1,4 @@
- import LandingPage from "./publicPage/page";
+ import LandingPage from "./userPage/publicPage/page";
 import Image from "next/image"; 
 
 export default function MainPage() {
