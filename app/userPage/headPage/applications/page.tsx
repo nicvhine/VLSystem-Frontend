@@ -180,12 +180,12 @@ export default function ApplicationsPage() {
           </div>
         </div>
 
-        {/* Responsive Table */}
+        {/* Applications Table */}
         <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
           <table className="min-w-full">
             <thead>
               <tr>
-                {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Collectable Amount', 'Status'].map((heading) => (
+                {['ID', 'Name', 'Loan Type', 'Application Date', 'Principal Amount', 'Interest Rate', 'Collectable Amount', 'Status', 'Action'].map((heading) => (
                   <th
                     key={heading}
                     className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -202,9 +202,7 @@ export default function ApplicationsPage() {
                   className="hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   <td className="px-6 py-4">
-                    <Link href={`/components/manager/applications/${application.applicationId}`} className="text-blue-600 hover:text-blue-700 font-medium">
-                      {application.applicationId}
-                    </Link>
+                    <div className="text-sm font-medium text-gray-900">{application.applicationId}</div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">{application.appName}</div>
@@ -215,22 +213,19 @@ export default function ApplicationsPage() {
                   <td className="px-6 py-4 text-sm text-gray-600">{formatDate(application.dateApplied)}</td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{formatCurrency(application.appLoanAmount)}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{application.appInterest}%</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                  {(application.loanType === 'Regular Loan With Collateral' || application.loanType === 'Regular Loan Without Collateral') 
-                    ? collectableAmount(application.appLoanAmount, application.appInterest, application.appLoanTerms)
-                    : '-'}
-                </td>
-
+                  <td className="px-6 py-4 text-sm text-gray-600">{collectableAmount(application.appLoanAmount, application.appInterest, application.appLoanTerms)}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      application.displayStatus === 'Accepted' ? 'bg-green-100 text-green-800' :
-                      application.displayStatus === 'Denied' ? 'bg-red-100 text-red-800' :
-                      application.displayStatus === 'Onhold' ? 'bg-orange-100 text-orange-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black`}>
                       {application.displayStatus === 'Onhold' ? 'On Hold' : application.displayStatus}
                     </span>
-
+                  </td>
+                  <td className="px-6 py-4 space-x-2">
+                    <Link
+                      href={`/headPage/applications/${application.applicationId}`}
+                      className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                    >
+                      View
+                    </Link>
                   </td>
                 </tr>
               ))}

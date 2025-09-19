@@ -162,6 +162,20 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
     }
   };
 
+  // Add new toggle functions to ensure only one dropdown is open at a time
+  const handleToggleNotifs = () => {
+    setShowNotifs((prev) => {
+      if (!prev) setIsDropdownOpen(false);
+      return !prev;
+    });
+  };
+  const handleToggleDropdown = () => {
+    setIsDropdownOpen((prev) => {
+      if (!prev) setShowNotifs(false);
+      return !prev;
+    });
+  };
+
   return (
     <div className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${isBlurred ? 'relative z-40' : 'sticky top-0 z-50'} ${isBlurred ? 'blur-sm' : ''} transition-all duration-150`}>
       <div className="w-full px-6 py-3">
@@ -211,12 +225,7 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
             <div className="relative">
             <button
               className="relative p-2 rounded-full hover:bg-gray-100"
-              onClick={() => {
-                setShowNotifs(prev => {
-                  if (!prev) setIsDropdownOpen(false);
-                  return !prev;
-                });
-              }}
+              onClick={handleToggleNotifs}
             >
               <Bell className="h-5 w-5 text-gray-700" />
               {notifications.filter(n => !n.read).length > 0 && (
@@ -315,7 +324,7 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
             <div className="relative">
               <div
                 className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
-                onClick={toggleDropdown}
+                onClick={handleToggleDropdown}
               >
                 <Image
                   src={previewPic || profilePic || '/idPic.jpg'}
