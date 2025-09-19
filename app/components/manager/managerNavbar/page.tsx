@@ -345,7 +345,6 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                   username={username}
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
-                  handleLogout={handleLogout}
                   isDropdownOpen={isDropdownOpen}
                   setIsDropdownOpen={setIsDropdownOpen}
                   profilePic={profilePic || ''}

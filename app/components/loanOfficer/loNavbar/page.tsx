@@ -119,7 +119,12 @@ export default function LoanOfficerNavbar() {
     }
   }, []);
 
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => {
+      if (!prev) setShowNotifs(false);
+      return !prev;
+    });
+  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -212,8 +217,8 @@ export default function LoanOfficerNavbar() {
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all 
                         ${
                           isActive
-                            ? 'text-blue-600 bg-blue-50 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                            ? 'bg-red-600/90 text-white shadow-sm'
+                            : 'text-gray-600 hover:text-white hover:bg-red-600/70'
                         }`}
                     >
                       {item.name}
@@ -227,7 +232,12 @@ export default function LoanOfficerNavbar() {
             <div className="relative">
             <button
               className="relative p-2 rounded-full hover:bg-gray-100"
-              onClick={() => setShowNotifs(prev => !prev)}
+              onClick={() => {
+                setShowNotifs(prev => {
+                  if (!prev) setIsDropdownOpen(false);
+                  return !prev;
+                });
+              }}
             >
               <Bell className="h-5 w-5 text-gray-700" />
               {notifications.filter(n => !n.read).length > 0 && (

@@ -45,13 +45,31 @@ function addMonthsSafe(date: Date, months: number) {
   return d;
 }
 
+import { useState, useEffect } from "react";
+
 export default function AgreementModal({ isOpen, onClose, application }: AgreementModalProps) {
-  if (!isOpen || !application) return null;
+  // Animation state
+  const [showModal, setShowModal] = useState(false);
+  const [animateIn, setAnimateIn] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowModal(true);
+      const timer = setTimeout(() => setAnimateIn(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setAnimateIn(false);
+      const timer = setTimeout(() => setShowModal(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  if (!showModal || !application) return null;
 
   const handlePrint = () => setTimeout(() => window.print(), 100);
 
   const modalContent = (
-    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
+    <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
      <style jsx global>{`
     @media print {
       body * {
@@ -90,7 +108,7 @@ export default function AgreementModal({ isOpen, onClose, application }: Agreeme
     }
   `}</style>
 
-    <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col print:w-[216mm] print:h-[356mm] print:rounded-none print:shadow-none">
+  <div className={`bg-white rounded-lg shadow-xl w-full max-w-6xl h-[90vh] flex flex-col print:w-[216mm] print:h-[356mm] print:rounded-none print:shadow-none transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}> 
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b no-print">
           <h2 className="text-xl font-semibold text-gray-600">Loan Agreement</h2>

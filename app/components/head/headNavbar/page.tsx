@@ -219,7 +219,7 @@ const {
                     <Link
                       href={item.href}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isActive ? 'text-blue-600 bg-blue-50 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        isActive ? 'bg-red-600/80 text-white shadow-sm' : 'text-gray-600 hover:text-white hover:bg-red-600/70'
                       }`}
                     >
                       {item.name}

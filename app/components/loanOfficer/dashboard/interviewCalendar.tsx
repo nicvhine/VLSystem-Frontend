@@ -113,7 +113,7 @@ export default function InterviewCalendar() {
   return (
     <div className="p-4">
       <div className="bg-white p-4 rounded shadow text-black">
-        <h2 className="text-xl font-semibold mb-4">Scheduled Interviews</h2>
+  <h2 className="text-xl font-semibold mb-4 text-black">Scheduled Interviews</h2>
         <RBC
   localizer={localizer}
   events={events}

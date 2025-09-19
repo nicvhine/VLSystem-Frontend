@@ -1,3 +1,8 @@
+/* Make the calendar month/year header bold and red-600 */
+.rbc-toolbar-label {
+  font-weight: bold !important;
+  color: #dc2626 !important; /* Tailwind red-600 */
+}
 .pending-interview {
     background-color: #3b82f6; 
     color: white;

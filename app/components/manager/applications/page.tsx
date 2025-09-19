@@ -434,7 +434,7 @@ const handleCreateAccount = async () => {
 
                   {application.displayStatus === 'Disbursed' && !application.isReloan && (
                     <button
-                      className="bg-green-600 text-white px-3 py-1 rounded-md text-xs hover:bg-green-700"
+                      className="text-white px-3 py-1 rounded-md text-xs hover:bg-red-700 bg-red-600"
                       onClick={() => {
                         setSelectedApp(application);
                         setGeneratedUsername(generateUsername(application.appName));
