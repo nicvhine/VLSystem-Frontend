@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import ChangePasswordModal from "../changePasswordInternal/forceChange";
-import HeadNavbar from "./headNavbar/page";
-import useInactivityLogout from '../inactivity/logic';
-import AreYouStillThereModal from '../inactivity/modal';
+import ChangePasswordModal from "../components/changePasswordInternal/forceChange";
+import HeadNavbar from "./navbar/page";
+import useInactivityLogout from '../components/inactivity/logic';
+import AreYouStillThereModal from '../components/inactivity/modal';
 
 export default function Head({ children, isNavbarBlurred = false }: { children?: React.ReactNode; isNavbarBlurred?: boolean }) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);

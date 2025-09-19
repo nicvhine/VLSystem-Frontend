@@ -13,7 +13,7 @@ import {
   FiDollarSign,
   FiCheckCircle,
 } from 'react-icons/fi';
-import ManagerNavbar from '../managerNavbar/page';
+import ManagerNavbar from '../navbar/page';
 import Manager from '../page';
 
 interface Collection {
