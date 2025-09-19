@@ -1,0 +1,129 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import ReceiptModal from '../modals/receipt';
+import PaymentProgress from './sections/paymentProgress';
+import translations from '../components/translation';
+import Borrower from '../page';
+import CreditScore from './sections/creditScore';
+import LoanDetails from './sections/loanDetails';
+
+import PaymentTable from './sections/paymentTable';
+import { useBorrowerDashboard } from '../components/handlers';
+
+
+export default function BorrowerDashboard() {
+  const router = useRouter();
+
+  const {
+    language,
+    setLanguage,
+    loanInfo,
+    allLoans,
+    loading,
+    showChangePasswordModal,
+    payments,
+    showReceipt,
+    selectedReceipt,
+    setShowReceipt,
+    setSelectedReceipt,
+    currentLoanIndex,
+    handleNextLoan,
+    handlePreviousLoan,
+    handleLogout,
+    handleReloan,
+    calculatePaymentProgress,
+    formatCurrency,
+    formatDate,
+  } = useBorrowerDashboard();
+
+  const paymentProgress = calculatePaymentProgress();
+
+
+  if (loading)
+    return <div className="p-6 text-center">{translations[language].loading}</div>;
+
+  if (!loanInfo)
+    return (
+      <div className="p-6 text-center text-red-500">
+        {translations[language].noActiveLoanFound}
+      </div>
+    );
+
+  const {
+    loanId,
+    name,
+    interestRate,
+    dateDisbursed,
+    principal,
+    startDate,
+    endDate,
+    termsInMonths,
+    numberOfPeriods,
+    monthlyDue,
+    totalPayable,
+    status,
+    balance,
+    paidAmount,
+    creditScore,
+    paymentHistory,
+  } = loanInfo;
+
+  return (
+    <Borrower>
+      <div className="min-h-screen bg-gray-50 relative">
+        <main className="max-w-10xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 sm:mb-6">
+            {translations[language].welcome},{' '}
+            <span className="text-red-600">{name}</span>!
+          </h1>
+
+          <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch mt-6">
+            <div className="flex-1 bg-white rounded-2xl shadow p-8 h-full flex flex-col justify-center">
+              <CreditScore
+                creditScore={creditScore}
+                translations={translations}
+                language={language}
+              />
+            </div>
+
+            <div className="flex-1 bg-white rounded-2xl shadow p-8 h-full flex flex-col justify-center">
+              <LoanDetails
+                translations={translations}
+                language={language}
+                loanInfo={loanInfo}
+              />
+            </div>
+
+            <div className="flex-1 bg-white rounded-2xl shadow p-8 h-full flex flex-col justify-center">
+              <PaymentProgress
+                progress={paymentProgress}
+                canReloan={paymentProgress >= 0}
+                onReloanClick={handleReloan}
+                translations={translations}
+                language={language}
+              />
+            </div>
+          </div>
+
+          <PaymentTable
+            payments={payments}
+            loanId={loanId}
+            monthlyDue={monthlyDue}
+            balance={balance}
+            translations={translations}
+            language={language}
+          />
+
+          {showReceipt && selectedReceipt && (
+            <ReceiptModal
+              isOpen={showReceipt}
+              onClose={() => setShowReceipt(false)}
+              payment={selectedReceipt}
+            />
+          )}
+        </main>
+      </div>
+    </Borrower>
+  );
+}
