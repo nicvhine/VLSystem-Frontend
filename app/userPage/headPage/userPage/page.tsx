@@ -223,8 +223,8 @@ export default function Page() {
                               {user.role}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right relative" style={{overflow: 'visible'}}>
-                            <div className="flex justify-center items-center relative" style={{overflow: 'visible'}}>
+                          <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                            <div className="flex justify-center items-center">
                               <button
                                 ref={el => {
                                   buttonRefs.current[user.userId] = el;
@@ -234,17 +234,23 @@ export default function Page() {
                               >
                                 <FiMoreVertical className="w-5 h-5 text-gray-500" />
                               </button>
-                              {openMenuId === user.userId && (
-                                <div
-                                  ref={el => { menuRefs.current[user.userId] = el; }}
-                                  className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 animate-fade-in"
-                                >
+                            </div>
+                            {openMenuId === user.userId && (
+                              <div
+                                ref={el => { menuRefs.current[user.userId] = el; }}
+                                className="fixed w-20 border border-gray-300 rounded-lg shadow-2xl z-[9999]"
+                                style={{
+                                  top: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().bottom || 0) + 8}px`,
+                                  left: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().left || 0) - 20}px`,
+                                  backgroundColor: '#d4d4d4'
+                                }}
+                              >
                                   <button
                                     onClick={() => {
                                       handleEditClick(user);
                                       setOpenMenuId(null);
                                     }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 rounded-t-lg"
                                   >
                                     Edit
                                   </button>
@@ -253,13 +259,12 @@ export default function Page() {
                                       handleDeleteUser(user.userId);
                                       setOpenMenuId(null);
                                     }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-300 rounded-b-lg"
                                   >
                                     Delete
                                   </button>
                                 </div>
                               )}
-                            </div>
                           </td>
                         </>
                       )}
