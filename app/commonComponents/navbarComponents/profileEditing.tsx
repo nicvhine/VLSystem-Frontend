@@ -166,12 +166,6 @@ export default function ProfileSettingsPanel({
                 </button>
               </div>
 
-              {/* Error message moved here - right after Email Address label */}
-              {passwordError && (
-                <p className="text-sm text-red-600 mb-2 text-right">{passwordError}</p>
-              )}
-      
-
               {!isEditingEmailField ? (
                 <span className="block text-base text-gray-900">{email || 'No email set'}</span>
               ) : (
@@ -285,6 +279,12 @@ export default function ProfileSettingsPanel({
                   {isEditingPasswordField ? 'Cancel' : 'Edit'}
                 </button>
               </div>
+              
+              {/* Password error message positioned above password fields */}
+              {passwordError && (
+                <p className="text-sm text-red-600 mb-2">{passwordError}</p>
+              )}
+              
               {isEditingPasswordField && (
                 <div className="space-y-2">
                   <input
