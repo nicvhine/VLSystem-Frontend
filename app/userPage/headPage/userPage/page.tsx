@@ -1,15 +1,13 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-  // Removed Floating UI imports
-import HeadNavbar from "../headNavbar/page";
 import { FiSearch, FiUserPlus, FiChevronDown, FiLoader, FiMoreVertical } from "react-icons/fi";
-import ErrorModal from "./errorModal";
 import Head from "../page";
 import { useUsersLogic } from "./logic";
 import type { User } from "./logic";
 import React from "react";
 import CreateUserModal from "./createUserModal";
+import DecisionModal from "./modal"; 
 
 function LoadingSpinner() {
   return (
@@ -30,21 +28,26 @@ export default function Page() {
     errorMessage,
     errorModalOpen,
     setErrorModalOpen,
-    handleDeleteUser,
     handleCreateUser,
+    decisionModalOpen,
+    setDecisionModalOpen,
+    decisionConfig,
+    setDecisionConfig,
+    handleDeleteUser,
+    handleSaveEdit,
+    setUsers,
+    editingUserId,  
+    setEditingUserId, 
+    editFormData,   
+    setEditFormData,
   } = useUsersLogic();
 
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<Partial<User>>({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Pure CSS/JS dropdown state for three-dot menu
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-
-  // No need for reference attachment with pure CSS/JS dropdown
-
-  // Close menu on outside click or Escape
+  
   useEffect(() => {
     if (!openMenuId) return;
     function handleClick(e: MouseEvent) {
@@ -69,8 +72,15 @@ export default function Page() {
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.userId);
-    setEditFormData({ ...user });
-  };
+    setEditFormData({
+      name: user.name,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      role: user.role,
+      status: user.status,
+      lastActive: user.lastActive
+    });    
+  };  
 
   const handleEditChange = (field: keyof User, value: string) => {
     setEditFormData((prev) => ({ ...prev, [field]: value }));
@@ -81,12 +91,13 @@ export default function Page() {
     setEditFormData({});
   };
 
-  const handleSaveEdit = () => {
-    // Implement save logic here (API call or update state)
-    setEditingUserId(null);
-    setEditFormData({});
-  };
-
+  function capitalizeWords(str: string) {
+    return str
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+  
   return (
     <Head>
       <div className="min-h-screen bg-gray-50">
@@ -145,7 +156,7 @@ export default function Page() {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-red-600 text-white rounded-lg px-5 py-2 flex items-center gap-2 shadow-md cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105 font-semibold text-base w-full sm:w-72"
+              className="bg-red-600 text-white rounded-lg px-5 py-2 flex items-center gap-2 shadow-md cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105 font-semibold text-base w-full sm:w-45"
             >
               <FiUserPlus className="w-5 h-5" />
               <span>Create User</span>
@@ -193,10 +204,9 @@ export default function Page() {
                             </select>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right relative flex gap-2">
-                            <button
+                            <button   
                               onClick={handleSaveEdit}
-                              className="text-green-600 font-medium hover:underline"
-                            >
+                              className="text-green-600 font-medium hover:underline">
                               Save
                             </button>
                             <button
@@ -213,14 +223,20 @@ export default function Page() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                              ${user.role === 'manager' ? 'bg-green-100 text-green-800' :
-                                user.role === 'collector' ? 'bg-orange-100 text-orange-800' :
-                                user.role === 'loan officer' ? 'bg-yellow-100 text-yellow-800' :
-                                user.role === 'head' ? 'bg-blue-100 text-blue-800' :
-                                'bg-gray-100 text-gray-800'}
-                            `}>
-                              {user.role}
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                ${user.role === "manager"
+                                  ? "text-black"
+                                  : user.role === "collector"
+                                  ? "text-black"
+                                  : user.role === "loan officer"
+                                  ? "text-black"
+                                  : user.role === "head"
+                                  ? "text-black"
+                                  : "bg-gray-100 text-gray-800"}
+                              `}
+                            >
+                              {capitalizeWords(user.role)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right relative">
@@ -240,8 +256,8 @@ export default function Page() {
                                 ref={el => { menuRefs.current[user.userId] = el; }}
                                 className="fixed w-20 border border-gray-300 rounded-lg shadow-2xl z-[9999]"
                                 style={{
-                                  top: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().bottom || 0) + 8}px`,
-                                  left: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().left || 0) - 20}px`,
+                                  top: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().bottom ?? 0) + 8}px`,
+                                  left: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().left ?? 0) - 20}px`,
                                   backgroundColor: '#d4d4d4'
                                 }}
                               >
@@ -282,11 +298,21 @@ export default function Page() {
             )}
           </div>
           <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
-          {/* Error Modal */}
-          <ErrorModal isOpen={errorModalOpen} message={errorMessage} onClose={() => setErrorModalOpen(false)} />
         </div>
       </div>
-      {/* ...existing code... */}
+
+      {decisionConfig && (
+      <DecisionModal
+        isOpen={decisionModalOpen}
+        title={decisionConfig.title}
+        message={decisionConfig.message}
+        confirmText={decisionConfig.confirmText}
+        danger={decisionConfig.danger}
+        onConfirm={decisionConfig.onConfirm}
+        onCancel={() => setDecisionModalOpen(false)}
+      />
+    )}
+
     </Head>
   );
 }
