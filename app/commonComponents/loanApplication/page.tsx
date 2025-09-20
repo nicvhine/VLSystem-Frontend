@@ -12,7 +12,6 @@ import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
-// API URL
 const API_URL = "http://localhost:3001/loan-applications";
 
 // Application interface

@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Manager from "../../page";
 import { FiFileText } from "react-icons/fi"; 
 import LedgerModal from "./components/ledgerModal";
+
+// Role-based wrappers
+import Head from "@/app/userPage/headPage/page";
+import Manager from "@/app/userPage/managerPage/page";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 const API_URL = "http://localhost:3001/loans";
 
@@ -96,6 +100,12 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
   const [client, setClient] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLedger, setShowLedger] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
 
   useEffect(() => {
     const fetchLoanDetails = async () => {
@@ -129,8 +139,17 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 
+  let Wrapper;
+  if (role === "loan officer") {
+    Wrapper = LoanOfficer;
+  } else if (role === "head") {
+    Wrapper = Head;
+  } else {
+    Wrapper = Manager;
+  }
+
   return (
-    <Manager>
+    <Wrapper>
       <div className="min-h-screen bg-gray-50 text-gray-900">
         {/* Header */}
         <div className="bg-white shadow-sm py-6 mb-6">
@@ -421,6 +440,6 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
 
       </div>
 
-    </Manager>
+    </Wrapper>
   );
 }
