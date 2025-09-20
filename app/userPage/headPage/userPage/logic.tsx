@@ -1,4 +1,3 @@
-// useUsersLogic.ts
 import { useEffect, useState } from "react";
 import emailjs from "emailjs-com";
 
@@ -22,6 +21,18 @@ export function useUsersLogic() {
   const [roleFilter, setRoleFilter] = useState<"" | User["role"]>("");
   const [errorMessage, setErrorMessage] = useState("");
   const [errorModalOpen, setErrorModalOpen] = useState(false);
+  
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<User>>({});
+
+  const [decisionModalOpen, setDecisionModalOpen] = useState(false);
+  const [decisionConfig, setDecisionConfig] = useState<{
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+    danger?: boolean;
+  } | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -44,23 +55,6 @@ export function useUsersLogic() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_URL}/${userId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error("Failed to delete user.");
-      setUsers((prev) => prev.filter((user) => user.userId !== userId));
-    } catch (error: any) {
-      setErrorMessage(error.message || "Failed to delete user.");
-      setErrorModalOpen(true);
-    }
-  };
 
   const sendEmail = async (
     {
@@ -142,6 +136,99 @@ export function useUsersLogic() {
     }
   };
 
+  const handleDeleteUser = (userId: string) => {
+    setDecisionConfig({
+      title: "Delete User?",
+      message: "This action cannot be undone. Do you want to continue?",
+      confirmText: "Delete",
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`http://localhost:3001/users/${userId}`, {  
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+  
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || "Failed to delete user");
+          }
+  
+          setUsers((prev) => prev.filter((u) => u.userId !== userId));
+          setDecisionModalOpen(false);
+        } catch (err: any) {
+          console.error("Error deleting user:", err);
+          setErrorMessage(err.message || "Failed to delete user");
+          setErrorModalOpen(true);
+        }
+      },
+    });
+    setDecisionModalOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+  setDecisionConfig({
+    title: "Save Changes?",
+    message: "Are you sure you want to save the changes to this user?",
+    confirmText: "Save",
+    onConfirm: async () => {
+      if (!editingUserId) return;
+      try {
+        const payload: Partial<User> = {
+          ...(editFormData.name && { name: editFormData.name }),
+          ...(editFormData.email && { email: editFormData.email }),
+          ...(editFormData.phoneNumber && { phoneNumber: editFormData.phoneNumber }),
+          ...(editFormData.role && { role: editFormData.role }),
+        };
+
+        const response = await fetch(`http://localhost:3001/users/${editingUserId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          // Show API error in modal
+          setErrorMessage(data.message || "Failed to save user");
+          setErrorModalOpen(true);
+          setDecisionModalOpen(false);
+          return;
+        }
+
+        const updatedUser = data.user;
+
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.userId === updatedUser.userId ? { ...u, ...updatedUser } : u
+          )
+        );
+
+        setEditFormData({});
+        setEditingUserId(null);
+        setDecisionModalOpen(false);
+      } catch (err: any) {
+        console.error("Error saving user:", err);
+        setErrorMessage(err.message || "Failed to save user");
+        setErrorModalOpen(true);
+        setDecisionModalOpen(false);
+      }
+    },
+  });
+  setDecisionModalOpen(true);
+};
+
+  
+ 
+
+
   const filteredUsers = users
     .filter((user) =>
       Object.values(user).some((value) =>
@@ -156,6 +243,7 @@ export function useUsersLogic() {
 
   return {
     users,
+    setUsers, 
     loading,
     searchQuery,
     setSearchQuery,
@@ -168,8 +256,17 @@ export function useUsersLogic() {
     setErrorModalOpen,
     setErrorMessage,
     sortedUsers,
-    handleDeleteUser,
     handleCreateUser,
+    handleDeleteUser,
+    handleSaveEdit,
     fetchUsers,
+    decisionModalOpen,
+    setDecisionModalOpen,
+    decisionConfig,
+    setDecisionConfig,
+    editingUserId,  
+    setEditingUserId, 
+    editFormData,   
+    setEditFormData,
   };
 }
