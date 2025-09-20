@@ -56,6 +56,14 @@ export default function AgreementModal({
 }: AgreementModalProps) {
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedRole = localStorage.getItem("role");
+      setRole(storedRole);
+    }
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -125,12 +133,14 @@ export default function AgreementModal({
             Loan Agreement
           </h2>
           <div className="flex gap-3">
-            <button
-              onClick={handlePrint}
-              className="flex items-center bg-gray-700 text-white px-3 py-1 rounded-md hover:bg-gray-800"
-            >
-              <FiPrinter className="mr-2" /> Print
-            </button>
+            {role !== "head" && (
+              <button
+                onClick={handlePrint}
+                className="flex items-center bg-gray-700 text-white px-3 py-1 rounded-md hover:bg-gray-800"
+              >
+                <FiPrinter className="mr-2" /> Print
+              </button>
+            )}
             <button
               onClick={onClose}
               className="text-gray-600 hover:text-gray-800"
@@ -138,6 +148,7 @@ export default function AgreementModal({
               <FiX size={20} />
             </button>
           </div>
+
         </div>
 
         {/* Scrollable content */}

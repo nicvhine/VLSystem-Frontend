@@ -192,7 +192,7 @@ export default function LoansPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-blue-600">
                       <Link
-                        href={`/headPage/loans/${loan.loanId}`}
+                        href={`/userPage/headPage/loans/${loan.loanId}`}
                         className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                       >
                         View

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import HeadNavbar from '../../headNavbar/page';
+import HeadNavbar from '../../navbar/page';
 import Head from '../../page';
 
 const API_URL = "http://localhost:3001/loans";
@@ -28,35 +28,30 @@ interface CurrentLoan {
 interface LoanDetails {
   loanId: string;
   name: string;
-  interestRate: number;
   principal: number;
+  interestRate: number;
   termsInMonths: number;
   totalPayable: number;
   balance: number;
   status: string;
   dateReleased: string;
-
-  id?: string;
-  dateOfBirth?: string;
-  maritalStatus?: string;
-  numberOfChildren?: number;
+  
+  // borrower info
   contactNumber?: string;
   emailAddress?: string;
   address?: string;
-  barangay?: string;
-  municipality?: string;
-  province?: string;
-  houseStatus?: string;
-  sourceOfIncome?: string;
+  incomeSource?: string;
   occupation?: string;
   monthlyIncome?: number;
-  score?: number;
-  activeLoan?: "Yes" | "No";
+  profilePic?: string;
+
+  // loan history
+  currentLoan?: any;
   numberOfLoans?: number;
-  characterReferences?: CharacterReference[];
-  currentLoan?: CurrentLoan;
-  imageUrl?: string;
+  activeLoan?: "Yes" | "No";
+  score?: number;
 }
+
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-PH', {
@@ -103,7 +98,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
         <div className="max-w-6xl mx-auto px-4 flex items-center">
           <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-red-600 flex-shrink-0">
             <img
-              src={client.imageUrl || "/default-avatar.png"}
+              src={client.profilePic || "/default-avatar.png"}
               alt="Client"
               className="w-full h-full object-cover"
             />
