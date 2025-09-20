@@ -303,14 +303,16 @@ export default function Page() {
 
       {decisionConfig && (
       <DecisionModal
-        isOpen={decisionModalOpen}
-        title={decisionConfig.title}
-        message={decisionConfig.message}
-        confirmText={decisionConfig.confirmText}
-        danger={decisionConfig.danger}
-        onConfirm={decisionConfig.onConfirm}
-        onCancel={() => setDecisionModalOpen(false)}
-      />
+      isOpen={decisionModalOpen}
+      title={decisionConfig?.title || ""}
+      message={decisionConfig?.message || ""}
+      confirmText={decisionConfig?.confirmText}
+      danger={decisionConfig?.danger}
+      error={decisionConfig?.error} 
+      onConfirm={decisionConfig?.onConfirm || (() => {})}
+      onCancel={() => setDecisionModalOpen(false)}
+    />
+    
     )}
 
     </Head>

@@ -32,7 +32,9 @@ export function useUsersLogic() {
     onConfirm: () => void;
     confirmText?: string;
     danger?: boolean;
+    error?: string;
   } | null>(null);
+  
 
   const fetchUsers = async () => {
     try {
@@ -170,60 +172,61 @@ export function useUsersLogic() {
   };
 
   const handleSaveEdit = () => {
-  setDecisionConfig({
-    title: "Save Changes?",
-    message: "Are you sure you want to save the changes to this user?",
-    confirmText: "Save",
-    onConfirm: async () => {
-      if (!editingUserId) return;
-      try {
-        const payload: Partial<User> = {
-          ...(editFormData.name && { name: editFormData.name }),
-          ...(editFormData.email && { email: editFormData.email }),
-          ...(editFormData.phoneNumber && { phoneNumber: editFormData.phoneNumber }),
-          ...(editFormData.role && { role: editFormData.role }),
-        };
-
-        const response = await fetch(`http://localhost:3001/users/${editingUserId}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          // Show API error in modal
-          setErrorMessage(data.message || "Failed to save user");
+    if (!editingUserId) return;
+  
+    setDecisionConfig({
+      title: "Save Changes?",
+      message: "Are you sure you want to save the changes to this user?",
+      confirmText: "Save",
+      onConfirm: async () => {
+        try {
+          const payload: Partial<User> = {
+            name: editFormData.name,
+            email: editFormData.email,
+            phoneNumber: editFormData.phoneNumber,
+            role: editFormData.role, 
+            status: editFormData.status ?? "Active",
+          };
+  
+          const token = localStorage.getItem("token");
+          const response = await fetch(`http://localhost:3001/users/${editingUserId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
+  
+          const data = await response.json();
+  
+          if (!response.ok) {
+            const errorMsg = data.message || "Failed to save user";
+            setDecisionConfig(prev => prev ? { ...prev, error: errorMsg } : prev);
+            return;
+          }          
+  
+          const updatedUser = data.user;
+  
+          setUsers((prev) =>
+            prev.map((u) => (u.userId === updatedUser.userId ? updatedUser : u))
+          );
+  
+          setEditFormData({});
+          setEditingUserId(null);
+          setDecisionModalOpen(false);
+        } catch (err: any) {
+          console.error("Error saving user:", err);
+          setErrorMessage(err.message || "Failed to save user");
           setErrorModalOpen(true);
           setDecisionModalOpen(false);
-          return;
         }
-
-        const updatedUser = data.user;
-
-        setUsers((prev) =>
-          prev.map((u) =>
-            u.userId === updatedUser.userId ? { ...u, ...updatedUser } : u
-          )
-        );
-
-        setEditFormData({});
-        setEditingUserId(null);
-        setDecisionModalOpen(false);
-      } catch (err: any) {
-        console.error("Error saving user:", err);
-        setErrorMessage(err.message || "Failed to save user");
-        setErrorModalOpen(true);
-        setDecisionModalOpen(false);
-      }
-    },
-  });
-  setDecisionModalOpen(true);
-};
+      },
+    });
+  
+    setDecisionModalOpen(true);
+  };
+  
 
   
  

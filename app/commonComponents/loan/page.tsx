@@ -103,21 +103,6 @@ export default function LoansPage() {
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "active":
-        return "text-green-600";
-      case "overdue":
-        return "text-red-600";
-      case "pending":
-        return "text-yellow-600";
-      case "closed":
-        return "text-gray-600";
-      default:
-        return "text-gray-600";
-    }
-  };
-
   if (loading) return <LoadingSpinner />;
 
   let Wrapper;
@@ -138,14 +123,16 @@ export default function LoansPage() {
           </div>
 
           {/* Filter Tabs */}
-          <div className="hidden sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm mb-6">
+          <div className="hidden sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-auto">
             {["All", "Active", "Overdue", "Closed"].map((status) => (
               <button
                 key={status}
                 onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeFilter === status ? getStatusColor(status) : "text-gray-600 hover:bg-gray-100"
-                }`}
+                  activeFilter === status
+                      ? "bg-blue-50 text-blue-600 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 {status}
               </button>
@@ -153,7 +140,7 @@ export default function LoansPage() {
           </div>
 
           {/* Search and Sort */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 mt-6">
             <div className="relative w-full">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
@@ -202,7 +189,7 @@ export default function LoansPage() {
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.principal)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.balance)}</td>
                     <td className="px-6 py-4">
-                      <span className={`text-sm font-medium ${getStatusColor(loan.status)}`}>
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
                         {loan.status}
                       </span>
                     </td>
