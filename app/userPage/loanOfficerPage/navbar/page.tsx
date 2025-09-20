@@ -234,7 +234,7 @@ const {
                     <Link
                       href={item.href}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        isActive ? 'text-blue-600 bg-blue-50 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                        isActive ? 'text-white bg-red-600 hover:bg-red-700 shadow-sm' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       {item.name}

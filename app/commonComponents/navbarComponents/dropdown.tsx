@@ -23,6 +23,7 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown(props: ProfileDropdownProps) {
+  // Destructure props first
   const {
     name,
     email,
@@ -40,9 +41,8 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     handleCancelUpload,
   } = props;
 
+  // Get dropdown logic
   const {
-    currentPassword,
-    setCurrentPassword,
     editingEmail,
     setEditingEmail,
     editingPhone,
@@ -53,6 +53,8 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     setIsEditingPhoneField,
     isEditingPasswordField,
     setIsEditingPasswordField,
+    currentPassword,
+    setCurrentPassword,
     newPassword,
     setNewPassword,
     confirmPassword,
@@ -79,161 +81,131 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     smsVerificationSent,
     sendSmsVerificationCode,
     verifySmsCode,
+  // darkMode,
+  // handleSetDarkMode,
   } = useProfileDropdownLogic(setIsEditing);
-
-const [darkMode, setDarkMode] = useState(() => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('darkMode') === 'true';
-  }
-  return false;
-});
-
-const handleSetDarkMode = (value: boolean) => {
-  setDarkMode(value); 
-  localStorage.setItem('darkMode', value.toString());
-};
-
 
   return (
     <div className="relative">
-      {isDropdownOpen && (
       <div
-      className="bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative"
-      style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
-    >
-
+        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative transition-all duration-300 ease-out transform
+          ${isDropdownOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
+        style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
+        aria-hidden={!isDropdownOpen}
+      >
         {/* Connector Arrow */}
-    <div className="absolute -top-2 left-87 w-4 h-4 bg-white border-l border-t border-gray-200 rotate-45"></div>
-
-          {/* Profile Header */}
-          <div className="flex flex-col items-center py-6">
-            <div
-              className="relative group w-16 h-16 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer"
-              onClick={() => document.getElementById('profileUpload')?.click()}
-            >
-              <Image
-                src={previewPic || profilePic || '/idPic.jpg'}
-                alt="Profile"
-                width={64}
-                height={64}
-                className="w-full h-full object-cover rounded-full"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
-                Change
+  {/* Arrow removed as requested */}
+        {/* Profile Header */}
+  <div className="flex flex-col items-center pt-7 pb-4 gap-1">
+          <div
+            className="relative group w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer hover:ring-4 transition-all"
+            onClick={() => document.getElementById('profileUpload')?.click()}
+          >
+            <Image
+              src={previewPic || profilePic || '/idPic.jpg'}
+              alt="Profile"
+              width={80}
+              height={80}
+              className="w-full h-full object-cover rounded-full"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">Change</div>
+            <input
+              type="file"
+              id="profileUpload"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+          <div className="font-semibold text-lg text-center">{name}</div>
+          <div className="text-gray-400 text-sm text-center m-0">{email}</div>
+          {isUploadingPic && (
+            <div className="flex gap-2 mt-3">
+              <button
+                onClick={handleSaveProfilePic}
+                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
+              >Save</button>
+              <button
+                onClick={handleCancelUpload}
+                className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded hover:bg-gray-300 transition"
+              >Cancel</button>
+            </div>
+          )}
+        </div>
+        {/* Action Buttons */}
+  <div className="flex flex-col gap-0.5 px-6 pb-2">
+          {/* Settings Toggle */}
+          <button
+            className="flex items-center w-full px-2 py-3 font-medium text-left hover:bg-gray-100 hover:text-black transition rounded-lg"
+            onClick={toggleEdit}
+          >
+            <span>Account Settings</span>
+          </button>
+          {/* Expandable Account Settings */}
+          <div
+            className={`transition-all duration-300 overflow-hidden bg-gray-50 rounded-lg ${isEditing ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0 pointer-events-none'}`}
+            style={{ transitionProperty: 'max-height, opacity, margin-top' }}
+          >
+            <div className="pt-3 pb-0 px-4">
+              <div className="mb-2 flex justify-center items-center pt-2">
+                <p className="text-xs text-gray-500 m-0 text-center w-full">Manage your email, phone, and password</p>
               </div>
-              <input
-                type="file"
-                id="profileUpload"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
+              <div className="h-px w-full bg-gray-200 mb-1" />
+              <ProfileSettingsPanel
+                username={username}
+                email={email}
+                phoneNumber={phoneNumber}
+                editingEmail={editingEmail}
+                setEditingEmail={setEditingEmail}
+                isEditingEmailField={isEditingEmailField}
+                setIsEditingEmailField={setIsEditingEmailField}
+                editingPhone={editingPhone}
+                setEditingPhone={setEditingPhone}
+                isEditingPhoneField={isEditingPhoneField}
+                setIsEditingPhoneField={setIsEditingPhoneField}
+                isEditingPasswordField={isEditingPasswordField}
+                setIsEditingPasswordField={setIsEditingPasswordField}
+                currentPassword={currentPassword}
+                setCurrentPassword={setCurrentPassword}
+                newPassword={newPassword}
+                setNewPassword={setNewPassword}
+                confirmPassword={confirmPassword}
+                setConfirmPassword={setConfirmPassword}
+                activeSettingsTab={activeSettingsTab}
+                setActiveSettingsTab={setActiveSettingsTab}
+                passwordError={passwordError}
+                setPasswordError={setPasswordError}
+                phoneError={phoneError}
+                setPhoneError={setPhoneError}
+                settingsSuccess={settingsSuccess}
+                setSettingsSuccess={setSettingsSuccess}
+                notificationPreferences={notificationPreferences}
+                handleNotificationToggle={handleNotificationToggle}
+                handleAccountSettingsUpdate={handleAccountSettingsUpdate}
+                emailVerificationSent={emailVerificationSent}
+                userEnteredCode={userEnteredCode}
+                setUserEnteredCode={setUserEnteredCode}
+                sendVerificationCode={sendVerificationCode}
+                verifyEmailCode={verifyEmailCode}
+                smsVerificationSent={smsVerificationSent}
+                sendSmsVerificationCode={sendSmsVerificationCode}
+                verifySmsCode={verifySmsCode}
+                // darkMode and setDarkMode not available from logic, removed
               />
             </div>
-
-            <div className="font-semibold text-lg mt-2">{name}</div>
-            <div className="text-gray-400 text-sm">{email}</div>
-
-            {isUploadingPic && (
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={handleSaveProfilePic}
-                  className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
-                >
-                  Save
-                </button>
-                <button
-                  onClick={handleCancelUpload}
-                  className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col">
-            {/* Settings Toggle */}
-            <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 hover:text-black transition"
-              onClick={toggleEdit}
-            >
-              Account Settings
-            </button>
-
-            {isEditing && (
-              <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4">
-                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative text-black">
-                  <button
-                    onClick={toggleEdit}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition"
-                    aria-label="Close"
-                  >
-                    ✖
-                  </button>
-                  <h2 className="text-lg font-semibold text-gray-800 text-center">Account Settings</h2>
-                  <p className="text-xs text-gray-500 text-center mb-4">Manage your email, phone, and password</p>
-                  <div className="h-px w-full bg-gray-200 mb-4" />
-                  <ProfileSettingsPanel
-                    username={username}
-                    email={email}
-                    phoneNumber={phoneNumber}
-                    editingEmail={editingEmail}
-                    setEditingEmail={setEditingEmail}
-                    isEditingEmailField={isEditingEmailField}
-                    setIsEditingEmailField={setIsEditingEmailField}
-                    editingPhone={editingPhone}
-                    setEditingPhone={setEditingPhone}
-                    isEditingPhoneField={isEditingPhoneField}
-                    setIsEditingPhoneField={setIsEditingPhoneField}
-                    isEditingPasswordField={isEditingPasswordField}
-                    setIsEditingPasswordField={setIsEditingPasswordField}
-                    currentPassword={currentPassword}
-                    setCurrentPassword={setCurrentPassword}
-                    newPassword={newPassword}
-                    setNewPassword={setNewPassword}
-                    confirmPassword={confirmPassword}
-                    setConfirmPassword={setConfirmPassword}
-                    activeSettingsTab={activeSettingsTab}
-                    setActiveSettingsTab={setActiveSettingsTab}
-                    passwordError={passwordError}
-                    setPasswordError={setPasswordError}
-                    phoneError={phoneError}
-                    setPhoneError={setPhoneError}
-                    settingsSuccess={settingsSuccess}
-                    setSettingsSuccess={setSettingsSuccess}
-                    notificationPreferences={notificationPreferences}
-                    handleNotificationToggle={handleNotificationToggle}
-                    handleAccountSettingsUpdate={handleAccountSettingsUpdate}
-                    emailVerificationSent={emailVerificationSent}
-                    userEnteredCode={userEnteredCode}
-                    setUserEnteredCode={setUserEnteredCode}
-                    sendVerificationCode={sendVerificationCode}
-                    verifyEmailCode={verifyEmailCode}
-                    smsVerificationSent={smsVerificationSent}
-                    sendSmsVerificationCode={sendSmsVerificationCode}
-                    verifySmsCode={verifySmsCode}
-                    darkMode={darkMode}
-                    setDarkMode={handleSetDarkMode}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Logout */}
-            <button
-              className="flex items-center px-6 py-3 hover:bg-gray-100 transition text-red-600"
-              onClick={handleLogout}
-            >
-              Log Out
-            </button>
-          </div>
-
-          <div className="text-xs text-center text-gray-400 py-2">
-            Privacy Policy · Terms of Service
-          </div>
+          {/* Logout */}
+          <button
+            className="flex items-center w-full px-2 py-3 text-red-600 hover:bg-gray-100 transition rounded-lg"
+            onClick={handleLogout}
+          >
+            Log Out
+          </button>
         </div>
-      )}
+  <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-100 mt-0.5">
+          Privacy Policy · Terms of Service
+        </div>
+      </div>
     </div>
   );
 }
