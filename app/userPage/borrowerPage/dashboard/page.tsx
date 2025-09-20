@@ -1,16 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import ReceiptModal from '../modals/receipt';
-import PaymentProgress from './sections/paymentProgress';
-import translations from '../components/translation';
+import React, { useState, useEffect } from 'react';
+import { FiMaximize } from 'react-icons/fi';
 import Borrower from '../page';
-import CreditScore from './sections/creditScore';
-import LoanDetails from './sections/loanDetails';
-import PaymentTable from './sections/paymentTable';
-import RecentActivityFeed from './sections/recentActivityFeed';
-import { useBorrowerDashboard } from '../components/handlers';
 
 interface Collection {
   collectionNumber: number;
@@ -18,440 +10,361 @@ interface Collection {
   periodAmount: number;
   status: string;
   referenceNumber: string;
+  borrowersId: string;
+  loanId: string;
+}
+
+interface Loan {
+  loanId: string;
+  dateDisbursed?: string;
+  totalPayable?: number;
+  borrowersId: string;
+  paymentProgress?: number;
+  principal: number;
+  interestRate: number;
 }
 
 export default function BorrowerDashboard() {
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
-  const router = useRouter();
+  const [activeLoan, setActiveLoan] = useState<Loan | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
-  const {
-    language,
-    setLanguage,
-    loanInfo,
-    allLoans,
-    loading,
-    showChangePasswordModal,
-    payments,
-    showReceipt,
-    selectedReceipt,
-    setShowReceipt,
-    setSelectedReceipt,
-    currentLoanIndex,
-    handleNextLoan,
-    handlePreviousLoan,
-    handleLogout,
-    handleReloan,
-    calculatePaymentProgress,
-    formatCurrency,
-    formatDate,
-  } = useBorrowerDashboard();
-  const paymentProgress = calculatePaymentProgress();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [paymentProgress, setPaymentProgress] = useState(0);
 
-  // Fetch collections for the payment history section
+
+  const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
+
+  // Fetch active loan
   useEffect(() => {
-    if (!loanInfo || !loanInfo.loanId) return;
-    const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
     if (!borrowersId) return;
-    async function fetchCollections() {
+    async function fetchActiveLoan() {
+      setLoading(true);
+      setError('');
       try {
-        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${loanInfo.loanId}`);
-        const contentType = res.headers.get('content-type');
-        if (!res.ok) {
-          let errorText = await res.text();
-          console.error('Fetch failed:', errorText);
-          throw new Error('Failed to fetch collections');
-        }
-        if (!contentType || !contentType.includes('application/json')) {
-          const text = await res.text();
-          console.error('Expected JSON, got:', text);
-          throw new Error('Response is not JSON');
-        }
+        const res = await fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`);
+        if (!res.ok) throw new Error('No active loan found');
+        const data: Loan = await res.json();
+        setActiveLoan(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error fetching active loan');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchActiveLoan();
+  }, [borrowersId]);
+
+   // Fetch collections
+   useEffect(() => {
+    if (!activeLoan?.loanId || !borrowersId) return; 
+    async function fetchCollections() {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`);
+        if (!res.ok) throw new Error('Failed to fetch collections');
         const data: Collection[] = await res.json();
         setCollections(data);
       } catch (err) {
-        console.error('Error fetching collections:', err);
+        setError(err instanceof Error ? err.message : 'Error fetching collections');
+      } finally {
+        setLoading(false);
       }
     }
     fetchCollections();
-  }, [loanInfo]);
+  }, [activeLoan, borrowersId]);
 
-  // PayMongo handler for collections
-  async function handlePay(collection: Collection) {
-    const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
-    if (!borrowersId) return;
-    const amountToPay = collection.periodAmount ?? 0;
-    if (amountToPay <= 0) {
-      alert('This collection has no amount due.');
-      return;
+  useEffect(() => {
+    if (!activeLoan) return;
+  
+    if (collections.length > 0) {
+      const totalAmount = collections.reduce((sum, c) => sum + c.periodAmount, 0);
+      const paidAmount = collections
+        .filter(c => c.status === 'Paid')
+        .reduce((sum, c) => sum + c.periodAmount, 0);
+  
+      const progress = totalAmount > 0 ? (paidAmount / totalAmount) * 100 : 0;
+      setPaymentProgress(Math.round(progress));
+    } else {
+      setPaymentProgress(0);
     }
-    try {
-      const res = await fetch(`http://localhost:3001/payments/paymongo/gcash`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: amountToPay,
-          collectionNumber: collection.collectionNumber,
-          referenceNumber: collection.referenceNumber,
-          borrowersId: borrowersId
-        })
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        alert(`Payment failed: ${errorData.error || 'Unknown error'}`);
-        return;
-      }
-      const data = await res.json();
-      if (data.checkout_url) {
-        window.location.href = data.checkout_url;
-      } else {
-        alert('Failed to create payment.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error connecting to payment gateway.');
-    }
+  }, [activeLoan, collections]);
+
+    // PayMongo handler
+async function handlePay(collection: Collection) {
+  if (!activeLoan) return;
+
+  const amountToPay = collection.periodAmount ?? 0;
+
+  if (amountToPay <= 0) {
+    alert('This collection has no amount due.');
+    return;
   }
 
-  if (loading)
-    return <div className="p-6 text-center">{translations[language].loading}</div>;
+  try {
+    console.log('Paying collection:', {
+      amount: amountToPay,
+      collectionNumber: collection.collectionNumber,
+      referenceNumber: collection.referenceNumber,
+      borrowersId: activeLoan.borrowersId
+    });
 
-  if (!loanInfo)
-    return (
-      <div className="p-6 text-center text-red-500">
-        {translations[language].noActiveLoanFound}
-      </div>
-    );
+    const res = await fetch(`http://localhost:3001/payments/paymongo/gcash`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: amountToPay,
+        collectionNumber: collection.collectionNumber,
+        referenceNumber: collection.referenceNumber,
+        borrowersId: activeLoan.borrowersId
+      })
+    });
 
-  const {
-    loanId,
-    name,
-    interestRate,
-    dateDisbursed,
-    principal,
-    startDate,
-    endDate,
-    termsInMonths,
-    numberOfPeriods,
-    monthlyDue,
-    totalPayable,
-    status,
-    balance,
-    paidAmount,
-    creditScore,
-    paymentHistory,
-  } = loanInfo;
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error('Backend error:', errorData);
+      alert(`Payment failed: ${errorData.error || 'Unknown error'}`);
+      return;
+    }
+
+    const data = await res.json();
+    if (data.checkout_url) {
+      window.location.href = data.checkout_url;
+    } else {
+      alert('Failed to create payment.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error connecting to payment gateway.');
+  }
+}
+
+
+  if (loading) return <p className="text-center mt-8">Loading...</p>;
+  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
 
   return (
     <Borrower>
-      <div className="min-h-screen bg-gray-50">
-        <div className="flex">
-          {/* Left Sidebar - User Profile */}
-          <div className="w-80 bg-gray-100 text-gray-800 p-6 min-h-screen">
-            {/* User Profile Header */}
-            <div className="text-center mb-8">
-              <div className="w-24 h-24 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <span className="text-blue-500 text-2xl font-bold">
-                  {name ? name.charAt(0).toUpperCase() : 'U'}
+      <div className="min-h-screen bg-gray-50 flex p-6 gap-6 text-black">
+        {/* Left side */}
+        <div className="w-1/2 flex flex-col gap-6">
+          {/* Top box */}
+          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Loan Details</h2>
+
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600">Loan ID</span>
+                <span className="text-gray-900">{activeLoan?.loanId || 'N/A'}</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600">Date Disbursed</span>
+                <span className="text-gray-900">
+                  {activeLoan?.dateDisbursed ? new Date(activeLoan.dateDisbursed).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
-              <h2 className="text-xl font-semibold mb-1">{name || 'User'}</h2>
-              <p className="text-gray-600 text-sm">
-                {new Date().toLocaleDateString('en-PH', { 
-                  day: '2-digit',
-                  month: '2-digit', 
-                  year: 'numeric'
-                })}
-              </p>
-            </div>
 
-            {/* Additional Info */}
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">ID number:</span>
-                <span className="font-mono">{loanId?.slice(-8) || '--------'}</span>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600">Principal Amount</span>
+                <span className="text-gray-900">₱{activeLoan?.principal?.toLocaleString() ?? '0'}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Status:</span>
-                <span className="text-green-600">Active</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Credit Score:</span>
-                <span className="font-semibold">{creditScore}/850</span>
-              </div>
-            </div>
 
-            {/* Loan Information Section */}
-            <div className="mt-6 pt-4 border-t border-gray-300">
-              <h3 className="text-sm font-semibold text-gray-800 mb-3">Loan Information</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Loan Amount:</span>
-                  <span className="font-semibold">₱{((loanInfo?.paidAmount || 0) + (loanInfo?.balance || 0)).toLocaleString('en-PH')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Monthly Due:</span>
-                  <span className="font-semibold">₱{(loanInfo?.monthlyDue || 0).toLocaleString('en-PH')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Outstanding:</span>
-                  <span className="font-semibold text-red-600">₱{(loanInfo?.balance || 0).toLocaleString('en-PH')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Amount Paid:</span>
-                  <span className="font-semibold text-green-600">₱{(loanInfo?.paidAmount || 0).toLocaleString('en-PH')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Interest Rate:</span>
-                  <span className="font-semibold">{loanInfo?.interestRate || 5}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Terms:</span>
-                  <span className="font-semibold">Monthly</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Loan Type:</span>
-                  <span className="font-semibold">Personal Loan</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Start Date:</span>
-                  <span className="font-semibold">
-                    {loanInfo?.startDate 
-                      ? new Date(loanInfo.startDate).toLocaleDateString('en-PH')
-                      : new Date().toLocaleDateString('en-PH')
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Due Date:</span>
-                  <span className="font-semibold">
-                    {loanInfo?.endDate 
-                      ? new Date(loanInfo.endDate).toLocaleDateString('en-PH')
-                      : 'TBD'
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Progress:</span>
-                  <span className="font-semibold text-orange-600">{paymentProgress}%</span>
-                </div>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600">Total Payable</span>
+                <span className="text-gray-900">₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</span>
               </div>
-            </div>
 
-            <div className="mt-8 pt-4 border-t border-gray-300">
-              <p className="text-xs text-gray-500">
-                Last updated on {new Date().toLocaleDateString('en-PH', { 
-                  month: 'short',
-                  day: 'numeric', 
-                  year: 'numeric'
-                })} at {new Date().toLocaleTimeString('en-PH', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600">Interest Rate</span>
+                <span className="text-gray-900">{activeLoan?.interestRate ?? 0}%</span>
+              </div>
+
+              <div className="flex flex-col">
+                <span className="font-medium text-gray-600">Due Date</span>
+                <span className="text-gray-900">
+                  {activeLoan?.dateDisbursed
+                    ? new Date(activeLoan.dateDisbursed).toLocaleDateString()
+                    : 'N/A'}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* Main Content Area */}
-          <div className="flex-1 p-6">
-            {/* Header */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-gray-900 mb-2">Loan Dashboard</h1>
-            </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-              {/* Loan Stats */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Loan Progress</h3>
-                <div className="flex items-center justify-center mb-4">
-                  <div className="relative w-24 h-24">
-                    <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        stroke="#e5e7eb"
-                        strokeWidth="8"
-                        fill="none"
-                      />
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="40"
-                        stroke="#10b981"
-                        strokeWidth="8"
-                        fill="none"
-                        strokeDasharray={`${paymentProgress * 2.51} 251`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-lg font-semibold text-gray-900">{paymentProgress}%</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Completed:</span>
-                    <span className="font-medium">{Math.round(paymentProgress)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Remaining:</span>
-                    <span className="font-medium">{100 - Math.round(paymentProgress)}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Status:</span>
-                    <span className="font-medium text-green-600">Active</span>
-                  </div>
-                </div>
+
+          {/* Bottom section */}
+          <div className="flex gap-6">
+            {/* Left large box: Payment History */}
+            <div className="flex-1 bg-white p-6 rounded-lg shadow relative">
+              <div className="flex justify-between items-center">
+              <h2 className="font-semibold text-m mb-4">Payment History</h2>
+                <FiMaximize
+                  className="cursor-pointer text-gray-600 hover:text-gray-900"
+                  size={20}
+                  onClick={() => setIsPaymentModalOpen(true)}
+                />
               </div>
 
-              {/* Current Balance */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Outstanding Balance</h3>
-                <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-red-600 mb-1">
-                    ₱{(loanInfo?.balance || 0).toLocaleString('en-PH')}
-                  </div>
-                  <div className="text-sm text-gray-500">Remaining Amount</div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Monthly Due:</span>
-                    <span className="font-medium">₱{(loanInfo?.monthlyDue || 0).toLocaleString('en-PH')}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Next Payment:</span>
-                    <span className="font-medium text-orange-600">Due Soon</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Summary */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Payment Summary</h3>
-                <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-green-600 mb-1">
-                    ₱{(loanInfo?.paidAmount || 0).toLocaleString('en-PH')}
-                  </div>
-                  <div className="text-sm text-gray-500">Total Paid</div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Payments Made:</span>
-                    <span className="font-medium">{payments?.length || 0}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• On Time:</span>
-                    <span className="font-medium text-green-600">100%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Loan Details */}
-              <div className="bg-white rounded-lg p-6 shadow-sm border">
-                <h3 className="text-sm font-medium text-gray-700 mb-4">Loan Details</h3>
-                <div className="text-center mb-4">
-                  <div className="text-3xl font-bold text-blue-600 mb-1">
-                    ₱{((loanInfo?.paidAmount || 0) + (loanInfo?.balance || 0)).toLocaleString('en-PH')}
-                  </div>
-                  <div className="text-sm text-gray-500">Original Amount</div>
-                </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Interest Rate:</span>
-                    <span className="font-medium">{loanInfo?.interestRate || 5}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">• Term:</span>
-                    <span className="font-medium">12 months</span>
-                  </div>
-                </div>
+              {/* Small content preview */}
+              <div className="mt-4">
               </div>
             </div>
 
-            {/* Content Area */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              {/* Payment History - Takes 2 columns */}
-              <div className="xl:col-span-2 bg-white rounded-lg shadow-sm border">
-                <div className="p-4 border-b border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium text-gray-900">Upcoming Bills</h3>
-                    <button 
-                      onClick={() => window.location.href = "/userPage/borrowerPage/pages/upcoming-bills"}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
-                    >
-                      View All
-                    </button>
-                  </div>
-                </div>
-                <div className="p-4">
-                  {collections.length > 0 ? (
-                    <div className="space-y-3">
-                      {collections.slice(0, 3).map((c) => (
-                        <div
-                          key={c.referenceNumber}
-                          className={`group p-4 rounded-xl border transition cursor-pointer relative overflow-hidden ${
-                            c.status === 'Paid' ? 'bg-gray-50 border-gray-200' : 'bg-white hover:bg-green-50 border-green-200'
-                          }`}
-                          onClick={() => c.status !== 'Paid' && handlePay(c)}
-                        >
-                          <div className="flex justify-between items-center mb-2">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-gray-800 text-base">Collection {c.collectionNumber}</span>
-                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${c.status === 'Paid' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>{c.status}</span>
-                            </div>
-                          </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                            <span className="text-gray-500 text-sm">Due: {new Date(c.dueDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                            <span className="text-gray-900 font-bold text-lg">₱{(c.periodAmount ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
-                          </div>
-                          {c.status !== 'Paid' && (
-                            <span className="absolute top-0 right-0 m-3 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">Pay now</span>
-                          )}
-                        </div>
-                      ))}
-                      {collections.length > 3 && (
-                        <div className="text-center pt-2">
-                          <span className="text-gray-500 text-sm">Showing 3 of {collections.length} bills</span>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500">No upcoming bills available</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Right two small boxes */}
+            <div className="flex flex-col gap-6 w-1/2">
+            <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center relative">
+              <h2 className="font-semibold text-lg text-gray-800 mb-6">Loan Progress</h2>
 
-              {/* Activity Feed - Takes 1 column */}
-              <div className="bg-white rounded-lg shadow-sm border">
-                <div className="p-4 border-b border-gray-200">
-                  <h3 className="text-lg font-medium text-gray-900">Payment History</h3>
-                </div>
-                <div className="p-4">
-                  <PaymentTable
-                    payments={payments}
-                    loanId={loanId}
-                    monthlyDue={monthlyDue}
-                    balance={balance}
-                    translations={translations}
-                    language={language}
+              <div className="relative w-40 h-40">
+                <svg className="w-40 h-40 transform -rotate-90">
+                  {/* Background circle */}
+                  <circle
+                    cx="50%"
+                    cy="50%"
+                    r="60"
+                    stroke="#e5e7eb"
+                    strokeWidth="12"
+                    fill="none"
                   />
+                  {/* Progress circle */}
+                  <circle
+                    cx="50%"
+                    cy="50%"
+                    r="60"
+                    stroke="#10b981"
+                    strokeWidth="12"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 60}`} 
+                    strokeDashoffset={`${2 * Math.PI * 60 * (1 - paymentProgress / 100)}`}
+                    strokeLinecap="round"
+                    className="transition-all duration-700 ease-out"
+                  />
+                </svg>
+
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold text-gray-900">{paymentProgress}%</span>
+                  <span className="text-sm text-gray-500 mt-1">Completed</span>
                 </div>
+              </div>
+
+              <div className="mt-6 w-full flex justify-around text-sm text-gray-600">
+                <div className="flex flex-col items-center">
+                  <span className="font-semibold">{collections.filter(c => c.status === 'Paid').length}</span>
+                  <span>Paid</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="font-semibold">{collections.filter(c => c.status !== 'Paid').length}</span>
+                  <span>Remaining</span>
+                </div>
+              </div>
+            </div>
+
+
+              <div className="bg-white p-6 rounded-lg shadow h-20">
+              <h2 className="font-semibold text-m mb-4">Credit Score</h2>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Receipt Modal */}
-        {showReceipt && selectedReceipt && (
-          <ReceiptModal
-            isOpen={showReceipt}
-            onClose={() => setShowReceipt(false)}
-            payment={selectedReceipt}
-          />
+        {/* Right side */}
+        <div className="flex-1 bg-gray-50 p-6 rounded-lg shadow flex flex-col gap-4 overflow-y-auto max-h-[100vh]">
+          <h3 className="font-semibold text-xl mb-4">Upcoming Bills</h3>
+
+          {activeLoan ? (
+            (() => {
+              const upcoming = collections.filter(
+                c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status !== 'Paid'
+              );
+              const paid = collections.filter(
+                c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status === 'Paid'
+              );
+
+              return (
+                <div className="flex flex-col gap-4">
+                  {/* Upcoming bills */}
+                  {upcoming.length > 0 ? upcoming.map(collection => (
+                    <div
+                      key={collection.collectionNumber}
+                      onClick={() => handlePay(collection)}
+                      className="cursor-pointer p-4 rounded-xl shadow-md bg-white hover:bg-red-600 transition-colors duration-200"
+                    >
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="font-semibold text-lg text-gray-900 group-hover:text-white">
+                          Collection #{collection.collectionNumber}
+                        </p>
+                        <span className={`text-sm font-medium text-red-600 group-hover:text-white`}>
+                          {collection.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-gray-700 group-hover:text-white">
+                        <p className="text-sm">
+                          <span className="font-medium">Due:</span> {new Date(collection.dueDate).toLocaleDateString('en-PH')}
+                        </p>
+                        <p className="font-semibold text-lg">
+                          ₱{collection.periodAmount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  )) : <p className="text-gray-500">No upcoming bills.</p>}
+
+                  {/* Paid bills */}
+                  {paid.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="text-md font-semibold text-gray-700 mb-2">Paid Collections</h4>
+                      <div className="flex flex-col gap-2">
+                        {paid.map(collection => (
+                          <div
+                            key={collection.collectionNumber}
+                            className="p-4 rounded-xl shadow bg-gray-100 cursor-not-allowed"
+                          >
+                            <div className="flex justify-between items-center mb-2">
+                              <p className="font-semibold text-lg text-gray-600">
+                                Collection #{collection.collectionNumber}
+                              </p>
+                              <span className="text-sm font-medium text-green-700">
+                                Paid
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center text-gray-500">
+                              <p className="text-sm">
+                                <span className="font-medium">Due:</span> {new Date(collection.dueDate).toLocaleDateString('en-PH')}
+                              </p>
+                              <p className="font-semibold text-lg">
+                                ₱{collection.periodAmount.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()
+          ) : (
+            <p className="text-gray-500">No active loan found.</p>
+          )}
+        </div>
+
+        {/* Payment History Modal */}
+        {isPaymentModalOpen && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-6 w-3/4 max-w-2xl relative">
+              <button
+                className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+                onClick={() => setIsPaymentModalOpen(false)}
+              >
+                ✕
+              </button>
+              <h2 className="text-xl font-semibold mb-4">Payment History</h2>
+              <div className="space-y-2">
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </Borrower>
