@@ -11,12 +11,10 @@ interface Props {
   setEditingEmail: (v: string) => void;
   isEditingEmailField: boolean;
   setIsEditingEmailField: (v: boolean) => void;
-
   editingPhone: string;
   setEditingPhone: (v: string) => void;
   isEditingPhoneField: boolean;
   setIsEditingPhoneField: (v: boolean) => void;
-
   isEditingPasswordField: boolean;
   setIsEditingPasswordField: (v: boolean) => void;
   currentPassword: string;
@@ -25,38 +23,30 @@ interface Props {
   setNewPassword: (v: string) => void;
   confirmPassword: string;
   setConfirmPassword: (v: string) => void;
-
   activeSettingsTab: string;
   setActiveSettingsTab: (v: 'account' | 'notifications') => void;
-
-
-  
   passwordError: string;
   setPasswordError: (v: string) => void; 
   phoneError: string;
   setPhoneError: (v: string) => void;
   settingsSuccess: string;
-  setSettingsSuccess: (v: string) => void;
-  notificationPreferences: {
-    email: boolean;
-    sms: boolean;
-  };
-  handleNotificationToggle: (type: 'sms' | 'email') => void;
+    setSettingsSuccess: (v: string) => void;
+    notificationPreferences: {
+      email: boolean;
+      sms: boolean;
+    };
+    handleNotificationToggle: (type: 'sms' | 'email') => void;
 
-  handleAccountSettingsUpdate: () => void;
+    handleAccountSettingsUpdate: () => void;
 
-  emailVerificationSent: boolean;
-  userEnteredCode: string;
-  setUserEnteredCode: (v: string) => void;
-  sendVerificationCode: () => void;
-  verifyEmailCode: () => void;
-  sendSmsVerificationCode: () => void;
-  verifySmsCode: () => void;
-  smsVerificationSent: boolean;
-
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
-
+    emailVerificationSent: boolean;
+    userEnteredCode: string;
+    setUserEnteredCode: (v: string) => void;
+    sendVerificationCode: () => void;
+    verifyEmailCode: () => void;
+    sendSmsVerificationCode: () => void;
+    verifySmsCode: () => void;
+    smsVerificationSent: boolean;
 }
 
 export default function ProfileSettingsPanel({
@@ -98,14 +88,12 @@ export default function ProfileSettingsPanel({
   sendSmsVerificationCode,
   verifySmsCode,
   smsVerificationSent,
-  darkMode,
-  setDarkMode,
 }: Props) {
   
   return (
      <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300`}>
     {/* Tab switch buttons */}
-      <div className="flex mb-4 bg-white rounded-lg p-1 relative">
+      <div className="flex mb-4 bg-white rounded-lg p-1 relative overflow-hidden">
         <div
           className={`absolute top-1 h-8 bg-red-600 rounded-md transition-all duration-300 ease-in-out ${ 
             activeSettingsTab === 'account'
@@ -115,7 +103,7 @@ export default function ProfileSettingsPanel({
         />
         <button
           onClick={() => setActiveSettingsTab('account')}
-          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 ${
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 transition-colors duration-300 ${
             activeSettingsTab === 'account' ? 'text-white' : 'text-gray-600'
           }`}
         >
@@ -123,7 +111,7 @@ export default function ProfileSettingsPanel({
         </button>
         <button
           onClick={() => setActiveSettingsTab('notifications')}
-          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 ${
+          className={`flex-1 py-2 px-3 rounded-md text-sm font-medium relative z-10 transition-colors duration-300 ${
             activeSettingsTab === 'notifications' ? 'text-white' : 'text-gray-600'
           }`}
         >
