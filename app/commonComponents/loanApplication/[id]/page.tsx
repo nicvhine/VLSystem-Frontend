@@ -1,9 +1,10 @@
 'use client';
 
   import { useState, useEffect } from 'react';
+  import { useRouter } from "next/navigation";
   import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from 'react-icons/fi';
   import Link from 'next/link';
-  import LoanOfficerNavbar from "../../navbar/page";
+  import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
   import emailjs from "emailjs-com";
 
   import WithCollateral from './withCollateral';
@@ -63,6 +64,8 @@
   
 
   export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
+    const router = useRouter();
+
     const [applications, setApplications] = useState<Application[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('income'); // New state for tabs
@@ -74,6 +77,14 @@
     // Modal animation state
     const [showModal, setShowModal] = useState(false);
     const [animateIn, setAnimateIn] = useState(false);
+
+    const [role, setRole] = useState<string | null>(null);
+
+    useEffect(() => {
+    const storedRole = localStorage.getItem("role"); 
+    setRole(storedRole);
+    }, []);
+
 
     // Handle animation timing for schedule modal
     useEffect(() => {
@@ -277,6 +288,53 @@
       }
     };
 
+    //STATUS "CLEARED"
+    const handleApproveApplication = async () => {
+      try {
+        const id = application?.applicationId;
+        if (!id) throw new Error("Missing application id");
+
+        const response = await authFetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Approved" }),
+        });
+        if (!response.ok) throw new Error("Failed to update status");
+
+        setApplications(prev =>
+          prev.map(app => (app.applicationId === id ? { ...app, status: "Approved" } : app))
+        );
+
+        alert("Application approved.");
+      } catch (error) {
+        console.error("Failed to approve application:", error);
+        alert("Could not approve application. Try again.");
+      }
+    };
+
+    const handleDenyFromCleared = async () => {
+      try {
+        const id = application?.applicationId;
+        if (!id) throw new Error("Missing application id");
+
+        const response = await authFetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Denied by LO" }),
+        });
+        if (!response.ok) throw new Error("Failed to update status");
+
+        setApplications(prev =>
+          prev.map(app => (app.applicationId === id ? { ...app, status: "Denied by LO" } : app))
+        );
+
+        alert("Application denied.");
+      } catch (error) {
+        console.error("Failed to deny application:", error);
+        alert("Could not deny application. Try again.");
+      }
+    };
+
     const formatCurrency = (amount?: number | string) => {
       if (!amount) return "₱0.00";
       return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(amount));
@@ -310,9 +368,21 @@
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Link href="/userPage/loanOfficerPage/applications" className="text-gray-400 hover:text-gray-600">
-                  <FiArrowLeft className="w-5 h-5" />
-                </Link>
+              <button
+                onClick={() => {
+                if (role === "head") {
+                    router.push("/commonComponents/loanApplication");
+                } else if (role === "manager") {
+                    router.push("/commonComponents/loanApplication")
+                }
+                else {
+                    router.push("/commonComponents/loanApplication");
+                }
+                }}
+                className="text-gray-400 hover:text-gray-600"
+            >
+                <FiArrowLeft className="w-5 h-5" />
+            </button>
                 <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Applicant profile | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
@@ -332,7 +402,7 @@
                 </div>
               </div>
               <div className="flex space-x-3">
-                {application?.status === "Applied" && (
+                {application?.status === "Applied" && role === "loan officer" && (
                   <>
                     <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium">
                       SET SCHEDULE
@@ -342,7 +412,7 @@
                     </button>
                   </>
                 )}
-                {application?.status === "Pending" && (
+                {application?.status === "Pending" && role === "loan officer" &&(
                   <>
                     <button onClick={handleClearedLoan} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                       CLEAR
@@ -352,7 +422,18 @@
                     </button>
                   </>
                 )}
-                {application?.status === "Approved" && (
+
+                {application?.status === "Cleared" && role === "manager" &&(
+                  <>
+                    <button onClick={handleApproveApplication} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                      APPROVE
+                    </button>
+                    <button onClick={handleDenyFromCleared} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                      DENY
+                    </button>
+                  </>
+                )}
+                {application?.status === "Approved" && role === "loan officer" && (
                   <button
                     onClick={handleDisburse}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"

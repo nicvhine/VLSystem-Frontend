@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, Suspense, useEffect } from 'react';
-import { FiSearch, FiChevronDown, FiFilter, FiLoader, FiMoreVertical, FiPlus } from 'react-icons/fi';
-import Link from 'next/link';
-import Head from '../page';
+import { useState, useEffect } from "react";
+import { FiSearch, FiChevronDown, FiLoader } from "react-icons/fi";
+import Link from "next/link";
+
+// Role-based wrappers
+import Head from "@/app/userPage/headPage/page";
+import Manager from "@/app/userPage/managerPage/page";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+
 const API_URL = "http://localhost:3001/loans";
 
 interface LoanDetails {
@@ -17,7 +22,6 @@ interface LoanDetails {
   status: string;
   dateReleased: string; 
 }
-
 
 function LoadingSpinner() {
   return (
@@ -33,6 +37,14 @@ export default function LoansPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [loans, setLoans] = useState<LoanDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+
+
   // Pagination state
   const ITEMS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,6 +76,7 @@ export default function LoansPage() {
       v?.toString().toLowerCase().includes(searchQuery.toLowerCase())
     );
     if (!matchesSearch) return false;
+
     if (activeFilter === "Active") return loan.status.toLowerCase() === "active";
     if (activeFilter === "Overdue") return loan.status.toLowerCase() === "overdue";
     if (activeFilter === "Closed") return loan.status.toLowerCase() === "closed";
@@ -107,8 +120,17 @@ export default function LoansPage() {
 
   if (loading) return <LoadingSpinner />;
 
+  let Wrapper;
+  if (role === "loan officer") {
+    Wrapper = LoanOfficer;
+  } else if (role === "head") {
+    Wrapper = Head;
+  } else {
+    Wrapper = Manager;
+  }
+
   return (
-    <Head>
+    <Wrapper>
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
@@ -122,15 +144,7 @@ export default function LoansPage() {
                 key={status}
                 onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeFilter === status
-                    ? (status === "Active"
-                        ? "text-green-600"
-                        : status === "Overdue"
-                        ? "text-red-600"
-                        : status === "Closed"
-                        ? "text-gray-600"
-                        : "text-blue-600")
-                    : "text-gray-600 hover:bg-gray-100"
+                  activeFilter === status ? getStatusColor(status) : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
                 {status}
@@ -188,15 +202,17 @@ export default function LoansPage() {
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.principal)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.balance)}</td>
                     <td className="px-6 py-4">
-                      <span className={`text-sm font-medium ${getStatusColor(loan.status)}`}>{loan.status}</span>
+                      <span className={`text-sm font-medium ${getStatusColor(loan.status)}`}>
+                        {loan.status}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-blue-600">
-                      <Link
-                        href={`/headPage/loans/${loan.loanId}`}
-                        className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
-                      >
-                        View
-                      </Link>
+                    <Link
+                          href={`/commonComponents/loan/${loan.loanId}`}
+                          className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                        >
+                          View
+                        </Link>
                     </td>
                   </tr>
                 ))}
@@ -226,6 +242,6 @@ export default function LoansPage() {
           </div>
         </div>
       </div>
-    </Head>
+    </Wrapper>
   );
 }
