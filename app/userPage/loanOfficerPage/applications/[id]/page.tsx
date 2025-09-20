@@ -310,7 +310,7 @@
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Link href="/components/loanOfficer/applications" className="text-gray-400 hover:text-gray-600">
+                <Link href="/userPage/loanOfficerPage/applications" className="text-gray-400 hover:text-gray-600">
                   <FiArrowLeft className="w-5 h-5" />
                 </Link>
                 <div>

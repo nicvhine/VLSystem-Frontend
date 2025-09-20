@@ -3,164 +3,62 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import useProfilePic from '@/app/commonComponents/navbarComponents/profilePic';
-import useAccountSettings from '@/app/commonComponents/navbarComponents/accountSettings';
-import MobileMenu from '@/app/commonComponents/navbarComponents/mobileMenu';
-import ProfileDropdown from '@/app/commonComponents/navbarComponents/profileEditing';
-import { Bell } from 'lucide-react';
+import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
+import useProfilePic from '../../../commonComponents/navbarComponents/profilePic';
+import axios from 'axios';
 
-export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
+export default function BorrowerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-  const pathname = usePathname();
-  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+
+  // User state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
+  const [borrowersId, setBorrowersId] = useState('');
 
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [showNotifs, setShowNotifs] = useState(false);
-
+  // Profile pic state/hooks
   const {
     profilePic,
-    setProfilePic,
     previewPic,
-    setPreviewPic,
-    originalPic,
-    setOriginalPic,
     isUploadingPic,
-    setIsUploadingPic,
     handleFileChange,
     handleSaveProfilePic,
     handleCancelUpload,
+    setProfilePic
   } = useProfilePic();
 
-  const {
-    editingEmail,
-    setEditingEmail,
-    editingPhone,
-    setEditingPhone,
-    isEditingEmailField,
-    setIsEditingEmailField,
-    isEditingPhoneField,
-    setIsEditingPhoneField,
-    isEditingPasswordField,
-    setIsEditingPasswordField,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
-    notificationPreferences,
-    setNotificationPreferences,
-    passwordError,
-    setPasswordError,
-    settingsSuccess,
-    setSettingsSuccess,
-    activeSettingsTab,
-    setActiveSettingsTab,
-  } = useAccountSettings();
-
-  // Load user info + notifications
-  useEffect(() => {
-    const storedName = localStorage.getItem('fullName');
-    const storedEmail = localStorage.getItem('email');
-    const storedPhoneNumber = localStorage.getItem('phoneNumber');
-    const storedUsername = localStorage.getItem('username');
-    const storedPic = localStorage.getItem('profilePic');
-    const storedNotifications = localStorage.getItem('notificationPreferences');
-
-    if (storedName) setName(storedName);
-    if (storedEmail) {
-      setEmail(storedEmail);
-      setEditingEmail(storedEmail);
-    }
-    if (storedPhoneNumber) {
-      setPhoneNumber(storedPhoneNumber);
-      setEditingPhone(storedPhoneNumber);
-    }
-    if (storedUsername) setUsername(storedUsername);
-    if (storedPic) {
-      setProfilePic(storedPic);
-      setOriginalPic(storedPic);
-    }
-    if (storedNotifications) {
-      const parsed = JSON.parse(storedNotifications);
-      if (parsed.both) {
-        setNotificationPreferences({ sms: true, email: true });
-      } else {
-        setNotificationPreferences({
-          sms: parsed.sms || false,
-          email: parsed.email !== undefined ? parsed.email : true,
-        });
-      }
-    }
- 
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch(`http://localhost:3001/notifications/loan-officer`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then(res => res.json())
-        .then(data => {
-          const normalized = (data || []).map((n: any) => ({
-            ...n,
-            read: n.read ?? n.viewed ?? false,
-          }));
-          setNotifications(normalized);
-        })
-        .catch(err => console.error("Failed to load notifications:", err));
-    }
-  }, []);
-
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => {
-      if (!prev) setShowNotifs(false);
-      return !prev;
-    });
-  };
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   const handleLogout = () => {
     localStorage.clear();
-    router.push('/');
+    window.location.href = '/';
   };
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
+  useEffect(() => {
+    const storedId = localStorage.getItem('borrowersId');
+    const token = localStorage.getItem('token');
 
-  // Mark all as read
-  const handleMarkAllRead = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:3001/notifications/loan-officer/read-all', {
-        method: 'PUT',
+    if (!storedId || !token) return;
+
+    axios
+      .get(`http://localhost:3001/borrowers/${storedId}`, {
         headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        const user = res.data;
+        setName(user.fullName || '');
+        setEmail(user.email || '');
+        setPhoneNumber(user.contactNumber || '');
+        setUsername(user.username || '');
+        setBorrowersId(user.borrowersId || '');
+        if (user.profilePic) setProfilePic(user.profilePic);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch borrower info:', err);
       });
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    } catch (err) {
-      console.error('Failed to mark all as read:', err);
-    }
-  };
-
-  // Mark single notif as read
-  const handleMarkOneRead = async (id: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3001/notifications/${id}/read`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
-      );
-    } catch (err) {
-      console.error('Failed to mark one as read:', err);
-    }
-  };
+  }, [setProfilePic]);
 
   // Add new toggle functions to ensure only one dropdown is open at a time
   const handleToggleNotifs = () => {
@@ -177,30 +75,26 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
   };
 
   return (
-    <div className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${isBlurred ? 'relative z-40' : 'sticky top-0 z-50'} ${isBlurred ? 'blur-sm' : ''} transition-all duration-150`}>
-      <div className="w-full px-6 py-3">
-        <div className="flex items-center justify-between">
-          <Link
-            href="/components/collector"
-            className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
-          >
-            <span>VLSystem</span>
-          </Link>
+    <div
+      className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${
+        isBlurred ? 'relative z-40 blur-sm' : 'sticky top-0 z-50'
+      } transition-all duration-150`}
+    >
+      <div className="w-full px-6 py-3 flex items-center justify-between">
+        <Link
+          href="/userPage/borrowerPage/dashboard"
+          className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
+        >
+          <span>VLSystem</span>
+        </Link>
 
-          {/* Mobile menu button */}
-          <button
-            className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="h-6 w-6 text-gray-700"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
+        <div className="hidden md:flex items-center space-x-8">
+          <div className="relative">
+            <div
+              className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
+              onClick={toggleDropdown}
             >
+
               {isMobileMenuOpen ? (
                 <path
                   strokeLinecap="round"
@@ -357,14 +251,6 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
             </div>
           </div>
         </div>
-
-        {isMobileMenuOpen && (
-          <MobileMenu
-            navItems={navItems}
-            language={language}
-            setLanguage={setLanguage}
-          />
-        )}
       </div>
     </div>
   );

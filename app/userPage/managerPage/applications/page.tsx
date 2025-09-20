@@ -396,7 +396,7 @@ const handleCreateAccount = async () => {
 
                   {application.status != 'Disbursed'  && (
                     <Link
-                      href={`/managerPage/applications/${application.applicationId}`}
+                      href={`/userPage/managerPage/applications/${application.applicationId}`}
                       className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                     >
                       View 
