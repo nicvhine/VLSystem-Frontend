@@ -57,6 +57,7 @@ export default function DecisionModal({
           </button>
         </div>
       </div>
+      
     </div>
   );
 }

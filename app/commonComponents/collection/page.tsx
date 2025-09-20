@@ -11,7 +11,10 @@ import {
   FiDollarSign,
   FiCheckCircle,
 } from 'react-icons/fi';
-import HeadNavbar from '../navbar/page';
+
+// Role-based wrappers
+import Head from "@/app/userPage/headPage/page";
+import Manager from "@/app/userPage/managerPage/page";
 
 interface Collection {
   loanId: string;
@@ -44,6 +47,13 @@ export default function CollectionsPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentCollector, setCurrentCollector] = useState<string | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+  }, []);
+
 
 useEffect(() => {
   const fetchCollections = async () => {
@@ -129,9 +139,16 @@ const overallTargetAchieved = overallTotalTarget > 0
   const totalTarget = filteredCollections.reduce((sum, col) => sum + col.periodAmount, 0);
   const targetAchieved = totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
 
+  let Wrapper;
+  if (role === "head") {
+    Wrapper = Head;
+  } else {
+    Wrapper = Manager;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <HeadNavbar />
+      <Wrapper>
+      <div className="min-h-screen bg-gray-50">
       <div className="mx-auto px-6 py-8">
         <h1 className="text-2xl font-semibold text-gray-800 mb-8">Collections</h1>
 
@@ -161,12 +178,24 @@ const overallTargetAchieved = overallTotalTarget > 0
               <h2 className="text-lg font-semibold text-gray-800">Collection Calendar</h2>
             </div>
             <div className="flex flex-col items-center gap-4">
-              <DatePicker
-                selected={selectedDate}
-                onChange={(date: Date | null) => date && setSelectedDate(date)}
-                inline
-                className="rounded-md"
-              />
+            <DatePicker
+              selected={selectedDate}
+              onChange={(date: Date | null) => date && setSelectedDate(date)}
+              inline
+              className="rounded-md"
+              dayClassName={(date) => {
+                const hasCollection = collections.some((col) => {
+                  const colDate = new Date(col.dueDate);
+                  return (
+                    colDate.getFullYear() === date.getFullYear() &&
+                    colDate.getMonth() === date.getMonth() &&
+                    colDate.getDate() === date.getDate()
+                  );
+                });
+
+                  return hasCollection ? 'relative has-collection' : '';
+              }}
+            />
               <div className="text-blue-600 font-medium">
                 {selectedDate.toDateString()}
               </div>
@@ -324,7 +353,9 @@ const overallTargetAchieved = overallTotalTarget > 0
             </table>
           </Suspense>
         </div>
-      </div>
-    </div>
+        </div>
+        </div>
+    </Wrapper>
+    
   );
 }
