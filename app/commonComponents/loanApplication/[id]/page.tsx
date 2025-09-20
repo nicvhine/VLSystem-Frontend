@@ -12,6 +12,12 @@
 
   import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
 
+  // Role-based wrappers
+  import Head from "@/app/userPage/headPage/page";
+  import Manager from "@/app/userPage/managerPage/page";
+  import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+
+
   const API_URL = "http://localhost:3001/loan-applications";
 
   interface Application {
@@ -359,10 +365,19 @@
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(" ");
     };
+
+    let Wrapper;
+    if (role === "loan officer") {
+      Wrapper = LoanOfficer;
+    } else if (role === "head") {
+      Wrapper = Head;
+    } else {
+      Wrapper = Manager;
+    }
+  
     return (
-      <div className="min-h-screen bg-gray-50">
-        <LoanOfficerNavbar />
-        
+        <Wrapper>
+        <div className="min-h-screen bg-gray-50">
         {/* Header Section - Similar to Patient Profile */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -830,5 +845,6 @@
         application={application ?? null}
       />
       </div>
+      </Wrapper>
     );
   } 
