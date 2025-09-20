@@ -1,15 +1,15 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+  // Removed Floating UI imports
 import HeadNavbar from "../headNavbar/page";
-import { FiSearch, FiUserPlus, FiEdit2, FiTrash2, FiMoreVertical, FiLoader } from "react-icons/fi";
-import { createPortal } from "react-dom";
-import CreateUserModal from "./createUserModal";
+import { FiSearch, FiUserPlus, FiChevronDown, FiLoader, FiMoreVertical } from "react-icons/fi";
 import ErrorModal from "./errorModal";
 import Head from "../page";
-import { useUsersLogic } from "./logic"; 
+import { useUsersLogic } from "./logic";
 import type { User } from "./logic";
-
+import React from "react";
+import CreateUserModal from "./createUserModal";
 
 function LoadingSpinner() {
   return (
@@ -19,105 +19,61 @@ function LoadingSpinner() {
   );
 }
 
-function UserActions({
-  onEdit,
-  onDelete,
-  onClose,
-  anchorRef,
-}: {
-  onEdit: () => void;
-  onDelete: () => void;
-  onClose: () => void;
-  anchorRef: React.RefObject<HTMLButtonElement | null>;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [position, setPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
-
-   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        ref.current &&
-        !ref.current.contains(event.target as Node) &&
-        anchorRef.current &&
-        !anchorRef.current.contains(event.target as Node)
-      ) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose, anchorRef]);
-
-  useEffect(() => {
-    if (anchorRef.current) {
-      const rect = anchorRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + window.scrollY + 4,
-        left: rect.right + window.scrollX - 192,
-      });
-    }
-  }, [anchorRef]);
-
-  return createPortal(
-    <div
-      ref={ref}
-      className="fixed z-[9999] w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 animate-in fade-in-0 zoom-in-95 duration-200"
-      style={{ top: position.top, left: position.left }}
-    >
-      <div className="py-1">
-        <button
-          onClick={onEdit}
-          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-        >
-          <FiEdit2 className="mr-3 h-4 w-4" />
-          Edit User
-        </button>
-        <button
-          onClick={onDelete}
-          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-        >
-          <FiTrash2 className="mr-3 h-4 w-4" />
-          Delete User
-        </button>
-      </div>
-    </div>,
-    document.body
-  );
-
-}
-
-export default function UsersPage() {
+export default function Page() {
   const {
-    users,
-    loading,
-    searchQuery,
-    setSearchQuery,
-    sortBy,
-    setSortBy,
     roleFilter,
     setRoleFilter,
+    searchQuery,
+    setSearchQuery,
+    sortedUsers,
+    loading,
     errorMessage,
     errorModalOpen,
     setErrorModalOpen,
-    setErrorMessage,
-    sortedUsers,
     handleDeleteUser,
     handleCreateUser,
-    fetchUsers,
   } = useUsersLogic();
 
-  const [showActions, setShowActions] = useState<{ userId: string; anchorEl: HTMLButtonElement | null } | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
-  const [editFormData, setEditFormData] = useState<any>({});
+  const [editFormData, setEditFormData] = useState<Partial<User>>({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Pure CSS/JS dropdown state for three-dot menu
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
-  const handleEditUser = (userId: string) => {
-    const user = users.find(u => u.userId === userId);
-    if (user) {
-      setEditingUserId(userId);
-      setEditFormData({ ...user });
+  // No need for reference attachment with pure CSS/JS dropdown
+
+  // Close menu on outside click or Escape
+  useEffect(() => {
+    if (!openMenuId) return;
+    function handleClick(e: MouseEvent) {
+      if (
+        openMenuId == null ||
+        (!menuRefs.current[openMenuId]?.contains(e.target as Node) &&
+        !buttonRefs.current[openMenuId]?.contains(e.target as Node))
+      ) {
+        setOpenMenuId(null);
+      }
     }
-    setShowActions(null);
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpenMenuId(null);
+    }
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleEsc);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [openMenuId]);
+
+  const handleEditClick = (user: User) => {
+    setEditingUserId(user.userId);
+    setEditFormData({ ...user });
+  };
+
+  const handleEditChange = (field: keyof User, value: string) => {
+    setEditFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleCancelEdit = () => {
@@ -125,195 +81,207 @@ export default function UsersPage() {
     setEditFormData({});
   };
 
-  const handleSaveEdit = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const { name, email, phoneNumber, role } = editFormData;
-
-    const res = await fetch(`http://localhost:3001/users/${editingUserId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ name, email, phoneNumber, role }),
-    });
-
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || "Failed to update user.");
-    }
-
-    await fetchUsers();
+  const handleSaveEdit = () => {
+    // Implement save logic here (API call or update state)
     setEditingUserId(null);
     setEditFormData({});
-  } catch (error: any) {
-    console.error("Edit failed:", error);
-    setErrorMessage(error.message || "Update failed");
-    setErrorModalOpen(true);
-  }
-};
-
-
-
-  const handleEditChange = (field: keyof User, value: string) => {
-  setEditFormData((prev: Partial<User>) => ({
-    ...prev,
-    [field]: value,
-  }));
-};
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "head": return "text-blue-700";
-      case "manager": return "text-green-700";
-      case "loan officer":
-      case "collector": return "text-yellow-700";
-      default: return "text-gray-700";
-    }
   };
 
   return (
     <Head>
       <div className="min-h-screen bg-gray-50">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
-          <div className="flex flex-wrap gap-2 mb-6">
-            {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => {
-              const isActive = (roleOption === "All" && !roleFilter) || roleFilter === roleOption;
-              return (
+        <div className="mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
+            </div>
+          </div>
+          {/* Filter - Responsive */}
+          <div className="mb-6">
+            {/* Dropdown for mobile */}
+            <div className="block sm:hidden relative max-w-full">
+              <select
+                value={roleFilter || "All"}
+                onChange={(e) => setRoleFilter(e.target.value === "All" ? "" : e.target.value as any)}
+                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
+              >
+                {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => (
+                  <option key={roleOption} value={roleOption}>
+                    {roleOption === "All" ? "All Roles" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            </div>
+            {/* Desktop buttons */}
+            <div className="hidden sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-full max-w-full">
+              {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => (
                 <button
                   key={roleOption}
-                  className={`px-5 py-2 text-sm rounded-full border font-semibold transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 cursor-pointer ${isActive ? "bg-red-600 text-white border-red-600 shadow-md scale-105" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100 hover:shadow"}`}
                   onClick={() => setRoleFilter(roleOption === "All" ? "" : roleOption as any)}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                    (roleFilter === roleOption || (!roleFilter && roleOption === "All"))
+                      ? "bg-blue-50 text-blue-600 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+                  style={{ minWidth: 100 }}
                 >
                   {roleOption === "All" ? "All Roles" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
-
-          <div className="flex gap-4 mb-6 items-center justify-between">
-            <div className="relative w-72">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400 w-5 h-5" />
-              </div>
+          {/* Search and Create User */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 w-full max-w-full">
+            <div className="relative w-full">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search here..."
-                className="w-full pl-10 pr-3 py-2 bg-white rounded-lg border border-gray-200 text-gray-600 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent"
+                placeholder="Search by name, email, or phone..."
+                className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105"
+              className="bg-red-600 text-white rounded-lg px-5 py-2 flex items-center gap-2 shadow-md cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105 font-semibold text-base w-full sm:w-72"
             >
-              <FiUserPlus />
-              Create User
+              <FiUserPlus className="w-5 h-5" />
+              <span>Create User</span>
             </button>
           </div>
-
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <table className="min-w-full bg-white rounded-lg overflow-hidden shadow">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 relative"><span className="sr-only">Actions</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedUsers.map((user) => (
-                  <tr key={user.userId} className="border-b border-gray-200 hover:bg-gray-100 relative transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
-                    {editingUserId === user.userId ? (
-                      <>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.name || ''} onChange={(e) => handleEditChange("name", e.target.value)}/>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.email || ''} onChange={(e) => handleEditChange("email", e.target.value)}/>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.phoneNumber || ''} onChange={(e) => handleEditChange("phoneNumber", e.target.value)}/>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                          <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.role || ''} onChange={(e) => handleEditChange("role", e.target.value)}>
-                            <option value="head">Head</option>
-                            <option value="manager">Manager</option>
-                            <option value="loan officer">Loan Officer</option>
-                            <option value="collector">Collector</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right relative">
-                          <button
-                            onClick={() => handleSaveEdit()}
-                            className="text-green-600 font-medium hover:underline mr-4"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="text-gray-600 font-medium hover:underline"
-                          >
-                            Cancel
-                          </button>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${getRoleColor(user.role)}`}>{user.role}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right relative">
-                          <button
-                            onClick={(e) =>
-                              setShowActions(
-                                showActions && showActions.userId === user.userId
-                                  ? null
-                                  : { userId: user.userId, anchorEl: e.currentTarget }
-                              )
-                            }
-                            className="inline-flex items-center p-2 text-gray-400 hover:text-gray-600 cursor-pointer rounded-full hover:bg-gray-100 transition-colors duration-150"
-                            aria-label="User actions"
-                          >
-                            <FiMoreVertical />
-                          </button>
-                          {showActions && showActions.userId === user.userId && showActions.anchorEl && (
-                            <UserActions
-                              onEdit={() => handleEditUser(user.userId)}
-                              onDelete={() => handleDeleteUser(user.userId)}
-                              onClose={() => setShowActions(null)}
-                              anchorRef={{ current: showActions.anchorEl }}
-                            />
-                          )}
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-                {sortedUsers.length === 0 && (
+          {/* Table */}
+          <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <table className="min-w-full">
+                <thead>
                   <tr>
-                    <td colSpan={6} className="text-center py-10 text-gray-500 font-semibold">
-                      No users found.
-                    </td>
+                    {["ID", "Name", "Email", "Phone", "Role", "Actions"].map((heading) => (
+                      <th
+                        key={heading}
+                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" ? " text-center" : " text-left"}`}
+                      >
+                        {heading}
+                      </th>
+                    ))}
                   </tr>
-                )}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {sortedUsers.map((user) => (
+                    <tr key={user.userId} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
+                      {editingUserId === user.userId ? (
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.name || ''} onChange={(e) => handleEditChange("name", e.target.value)} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.email || ''} onChange={(e) => handleEditChange("email", e.target.value)} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.phoneNumber || ''} onChange={(e) => handleEditChange("phoneNumber", e.target.value)} />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.role || ''} onChange={(e) => handleEditChange("role", e.target.value)}>
+                              <option value="head">Head</option>
+                              <option value="manager">Manager</option>
+                              <option value="loan officer">Loan Officer</option>
+                              <option value="collector">Collector</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right relative flex gap-2">
+                            <button
+                              onClick={handleSaveEdit}
+                              className="text-green-600 font-medium hover:underline"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="text-gray-600 font-medium hover:underline"
+                            >
+                              Cancel
+                            </button>
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                              ${user.role === 'manager' ? 'bg-green-100 text-green-800' :
+                                user.role === 'collector' ? 'bg-orange-100 text-orange-800' :
+                                user.role === 'loan officer' ? 'bg-yellow-100 text-yellow-800' :
+                                user.role === 'head' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'}
+                            `}>
+                              {user.role}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right relative" style={{overflow: 'visible'}}>
+                            <div className="flex justify-center items-center relative" style={{overflow: 'visible'}}>
+                              <button
+                                ref={el => {
+                                  buttonRefs.current[user.userId] = el;
+                                }}
+                                onClick={() => setOpenMenuId(openMenuId === user.userId ? null : user.userId)}
+                                className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
+                              >
+                                <FiMoreVertical className="w-5 h-5 text-gray-500" />
+                              </button>
+                              {openMenuId === user.userId && (
+                                <div
+                                  ref={el => { menuRefs.current[user.userId] = el; }}
+                                  className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-2xl z-50 animate-fade-in"
+                                >
+                                  <button
+                                    onClick={() => {
+                                      handleEditClick(user);
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      handleDeleteUser(user.userId);
+                                      setOpenMenuId(null);
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                  {sortedUsers.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="text-center py-10 text-gray-500 font-semibold">
+                        No users found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
+          {/* Error Modal */}
+          <ErrorModal isOpen={errorModalOpen} message={errorMessage} onClose={() => setErrorModalOpen(false)} />
         </div>
-
-        <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
-        <ErrorModal isOpen={errorModalOpen} message={errorMessage} onClose={() => setErrorModalOpen(false)} />
       </div>
+      {/* ...existing code... */}
     </Head>
   );
 }

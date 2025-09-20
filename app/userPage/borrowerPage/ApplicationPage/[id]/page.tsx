@@ -124,17 +124,19 @@ export default function ApplicationPage() {
   return null;
 }
 
-const handleGoBack = () => {
-    router.push('/components/borrower');
+
+  // Go back to borrower's dashboard
+  const handleGoBack = () => {
+    router.push('/userPage/borrowerPage/dashboard');
   };
 
 return (
 <Borrower>
 <div className="min-h-screen bg-gray-50 text-black">
+  {/* ...existing code... */}
   <div className="flex min-h-screen">
-       
-{/* Left Sidebar */}
-<div className="w-80 bg-white shadow-sm p-6 space-y-6">
+    {/* Left Sidebar */}
+    <div className="w-80 bg-white shadow-sm p-6 space-y-6">
 
 {/* Type of Loan Section */}
 <div className="bg-white rounded-lg shadow-sm border border-gray-100">

@@ -122,48 +122,55 @@ async function handlePay(collection: Collection) {
   return (
     <div className="min-h-screen bg-gray-50">
       <BorrowerNavbar />
-      <main className="max-w-3xl mx-auto p-6">
-        <h2 className="text-2xl font-bold mb-6 text-red-600">Upcoming Bills</h2>
+      <main className="max-w-2xl mx-auto px-4 sm:px-8 py-8">
+        <div className="flex items-center gap-2 mb-8">
+          <button
+            onClick={() => window.location.href = "/userPage/borrowerPage/dashboard"}
+            className="mr-2 p-2 rounded-full hover:bg-gray-200 focus:outline-none border border-gray-200"
+            aria-label="Go back"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-gray-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Upcoming Bills</h2>
+        </div>
 
         {activeLoan ? (
           collections.length > 0 ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               {collections.map((c) => (
                 <div
                   key={c.referenceNumber}
-                  className={`p-5 rounded-xl shadow-md border transition cursor-pointer ${
-                    c.status === 'Paid' ? 'bg-gray-100 border-gray-300' : 'bg-white hover:bg-green-50 border-green-200'
+                  className={`group p-6 rounded-2xl border shadow-sm transition cursor-pointer relative overflow-hidden ${
+                    c.status === 'Paid' ? 'bg-gray-50 border-gray-200' : 'bg-white hover:bg-green-50 border-green-200'
                   }`}
                   onClick={() => handlePay(c)}
                 >
                   <div className="flex justify-between items-center mb-2">
-                    <p className="font-semibold text-gray-800">Collection {c.collectionNumber}</p>
-                    <p className={`font-semibold ${c.status === 'Paid' ? 'text-green-600' : 'text-red-600'}`}>{c.status}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-800 text-base sm:text-lg">Collection {c.collectionNumber}</span>
+                      <span className={`ml-2 px-3 py-1 rounded-full text-xs font-bold tracking-wide border ${c.status === 'Paid' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>{c.status}</span>
+                    </div>
                   </div>
-                  <p className="text-gray-500 mb-1">
-                    Due: {new Date(c.dueDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}
-                  </p>
-                  <p className="text-gray-800 font-medium">
-                    ₱{(c.periodAmount ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                  </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <span className="text-gray-500 text-sm">Due: {new Date(c.dueDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    <span className="text-gray-900 font-bold text-lg">₱{(c.periodAmount ?? 0).toLocaleString('en-PH', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  {c.status !== 'Paid' && (
+                    <span className="absolute top-0 right-0 m-3 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity">Pay now</span>
+                  )}
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">No upcoming collections for this loan.</p>
+            <p className="text-gray-500 text-center mt-10">No upcoming collections for this loan.</p>
           )
         ) : (
-          <p className="text-gray-600">You have no active loans.</p>
+          <p className="text-gray-500 text-center mt-10">You have no active loans.</p>
         )}
 
-        <div className="mt-8 flex justify-center">
-          <button
-            className="bg-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-600 transition"
-            onClick={() => window.location.href = "/borrower/dashboard"}
-          >
-            Back to Dashboard
-          </button>
-        </div>
+        {/* Removed Back to Dashboard button, replaced by top left arrow */}
       </main>
     </div>
   );

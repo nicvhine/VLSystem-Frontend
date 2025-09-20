@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { Calendar as RBC, dateFnsLocalizer } from "react-big-calendar";
+import { Calendar as RBC, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
-import enUS from "date-fns/locale/en-US";
+import { enUS } from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 
@@ -114,15 +114,21 @@ export default function InterviewCalendar() {
     <div className="p-4">
       <div className="bg-white p-4 rounded shadow text-black">
   <h2 className="text-xl font-semibold mb-4 text-black">Scheduled Interviews</h2>
-        <RBC
+  {/* @ts-ignore: react-big-calendar type incompatibility with React 18+ */}
+  <RBC
   localizer={localizer}
   events={events}
   startAccessor="start"
   endAccessor="end"
   selectable
-  views={["month", "week", "day", "agenda"]}
+  views={['month', 'week', 'day', 'agenda']}
   view={view}
-  onView={(newView) => setView(newView)}
+  onView={(newView) => {
+    // Only allow supported views
+    if (['month', 'week', 'day', 'agenda'].includes(newView)) {
+      setView(newView as typeof view);
+    }
+  }}
   date={date}
   onNavigate={(newDate) => setDate(newDate)}
   popup
@@ -130,21 +136,48 @@ export default function InterviewCalendar() {
   onSelectEvent={handleSelectEvent}
   eventPropGetter={(event: InterviewEvent) => {
     const app = applications.find(a => a.applicationId === event.applicationId);
-    if (!app) return { className: "" };
-
+    let baseClass = "";
     const now = new Date();
-    const isPending = app.status?.trim().toLowerCase() === "pending";
-
-    const interviewDateTime = app.interviewDate && app.interviewTime 
+    const isPending = app?.status?.trim().toLowerCase() === "pending";
+    const interviewDateTime = app?.interviewDate && app?.interviewTime 
       ? new Date(`${app.interviewDate}T${app.interviewTime}`) 
       : null;
-
     if (isPending && interviewDateTime && interviewDateTime < now) {
-      return { className: "overdue-interview" }; 
+      baseClass = "overdue-interview";
     } else if (isPending) {
-      return { className: "pending-interview" };
+      baseClass = "pending-interview";
     } else {
-      return { className: "completed-interview" };
+      baseClass = "completed-interview";
+    }
+    return {
+      className: baseClass,
+      style: {
+        padding: "2px 6px",
+        borderRadius: 6,
+        background: "#a0a7b4", // fallback if needed
+        cursor: "pointer"
+      }
+    };
+  }}
+  components={{
+    event: ({ event }: { event: InterviewEvent }) => {
+      // Truncate to 12 chars, show tooltip, but let bar fill cell
+      const display = event.title.length > 12 ? event.title.slice(0, 12) + "..." : event.title;
+      return (
+        <span
+          title={event.title}
+          style={{
+            display: "inline-block",
+            width: "100%",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            verticalAlign: "middle"
+          }}
+        >
+          {display}
+        </span>
+      );
     }
   }}
 />
