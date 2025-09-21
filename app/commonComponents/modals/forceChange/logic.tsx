@@ -13,7 +13,7 @@ export function useChangePassword(
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : '';
-  const usersId = typeof window !== 'undefined' ? localStorage.getItem('usersId') : '';
+  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
 
 
   const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -45,7 +45,7 @@ export function useChangePassword(
       const endpoint =
         role === 'borrower'
           ? `http://localhost:3001/borrowers/${borrowersId}/change-password`
-          : `http://localhost:3001/users/${usersId}/change-password`;
+          : `http://localhost:3001/users/${userId}/change-password`;
 
       const res = await fetch(endpoint, {
         method: 'PUT',
