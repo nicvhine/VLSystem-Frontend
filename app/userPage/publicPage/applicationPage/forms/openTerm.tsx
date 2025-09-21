@@ -101,6 +101,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
   const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
   const [appAddress, setAppAddress] = useState("");
   const [appTypeBusiness, setAppTypeBusiness] = useState("");
+  const [appBusinessName, setAppBusinessName] = useState("");
   const [appDateStarted, setAppDateStarted] = useState("");
   const [appBusinessLoc, setAppBusinessLoc] = useState("");
   const [appMonthlyIncome, setAppMonthlyIncome] = useState<number>(0);
@@ -211,6 +212,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
       formData.append("appSpouseOccupation", appSpouseOccupation);
       formData.append("appAddress", appAddress);
       formData.append("appTypeBusiness", appTypeBusiness);
+      formData.append("appBusinessName", appBusinessName);
       formData.append("appDateStarted", appDateStarted);
       formData.append("appBusinessLoc", appBusinessLoc);
       formData.append("appMonthlyIncome", String(appMonthlyIncome));
@@ -295,6 +297,8 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         setAppAddress={setAppAddress}
         appTypeBusiness={appTypeBusiness}
         setAppTypeBusiness={setAppTypeBusiness}
+        appBusinessName={appBusinessName}
+        setAppBusinessName={setAppBusinessName}
         appDateStarted={appDateStarted}
         setAppDateStarted={setAppDateStarted}
           appReferences={appReferences}
