@@ -87,6 +87,7 @@ export default function LandingPage() {
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
+        language={language}
       />
       <SimulatorModal
         isOpen={isCalculationOpen}
@@ -96,6 +97,7 @@ export default function LandingPage() {
       <TrackModal
         isOpen={isTrackOpen}
         onClose={() => setIsTrackOpen(false)}
+        language={language}
       />
     </>
   );

@@ -24,6 +24,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
   const [username, setUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [role, setRole] = useState('');
 
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -75,6 +76,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
     const storedUsername = localStorage.getItem('username');
     const storedPic = localStorage.getItem('profilePic');
     const storedNotifications = localStorage.getItem('notificationPreferences');
+    const storedRole = localStorage.getItem('role');
 
     if (storedName) setName(storedName);
     if (storedEmail) {
@@ -90,6 +92,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
       setProfilePic(storedPic);
       setOriginalPic(storedPic);
     }
+    if (storedRole) setRole(storedRole);
     if (storedNotifications) {
       const parsed = JSON.parse(storedNotifications);
       if (parsed.both) {
@@ -357,6 +360,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                   email={email}
                   phoneNumber={phoneNumber}
                   username={username}
+                  role={role}
                   isEditing={isEditing}
                   setIsEditing={setIsEditing}
                   isDropdownOpen={isDropdownOpen}

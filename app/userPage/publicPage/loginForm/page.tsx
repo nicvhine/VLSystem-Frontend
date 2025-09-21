@@ -8,9 +8,10 @@ import ForgotPasswordModal from './forgotPassword';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  language?: 'en' | 'ceb';
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginModalProps) {
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotRole, setForgotRole] = useState<'borrower' | 'staff' | ''>('');
   const [showModal, setShowModal] = useState(false);
@@ -59,6 +60,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             router={router}
             setShowForgotModal={setShowForgotModal}
             setForgotRole={setForgotRole}
+            language={language}
           />
         )}
       </div>
