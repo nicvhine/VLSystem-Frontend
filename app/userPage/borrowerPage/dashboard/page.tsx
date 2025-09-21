@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, act } from 'react';
 import { FiMaximize } from 'react-icons/fi';
 import Borrower from '../page';
 
@@ -22,6 +22,18 @@ interface Loan {
   paymentProgress?: number;
   principal: number;
   interestRate: number;
+  termsInMonths: number;
+  loanType: string;
+  interestAmount: string; 
+  totalInterest: string;
+  monthlyDue: string;
+}
+
+interface Payments {
+  referenceNumber: string;
+  datePaid: string;
+  amount: number;
+  mode: string;
 }
 
 export default function BorrowerDashboard() {
@@ -33,6 +45,7 @@ export default function BorrowerDashboard() {
   const [error, setError] = useState('');
   const [paymentProgress, setPaymentProgress] = useState(0);
 
+  const [paidPayments, setPaidPayments] = useState<any[]>([]);
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
 
@@ -55,6 +68,38 @@ export default function BorrowerDashboard() {
     }
     fetchActiveLoan();
   }, [borrowersId]);
+  
+// Fetch all payments for the borrower
+useEffect(() => {
+  if (!borrowersId) return;
+
+  async function fetchPayments() {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`http://localhost:3001/payments/${borrowersId}`);
+      if (!res.ok) throw new Error('Failed to fetch payments');
+
+      const data: Payments[] = await res.json();
+
+      // Remove duplicates based on referenceNumber
+      const uniquePayments = data.filter(
+        (payment, index, self) =>
+          index === self.findIndex(p => p.referenceNumber === payment.referenceNumber)
+      );
+
+      setPaidPayments(uniquePayments);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error fetching payments');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  fetchPayments();
+}, [borrowersId]);
+
+
 
    // Fetch collections
    useEffect(() => {
@@ -91,6 +136,8 @@ export default function BorrowerDashboard() {
       setPaymentProgress(0);
     }
   }, [activeLoan, collections]);
+
+  
 
     // PayMongo handler
 async function handlePay(collection: Collection) {
@@ -145,62 +192,50 @@ async function handlePay(collection: Collection) {
   if (loading) return <p className="text-center mt-8">Loading...</p>;
   if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
 
+  const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
   return (
     <Borrower>
       <div className="min-h-screen bg-gray-50 flex p-6 gap-6 text-black">
         {/* Left side */}
         <div className="w-1/2 flex flex-col gap-6">
           {/* Top box */}
-          <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-4">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Loan Details</h2>
+         {/* Loan Details Card */}
+        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-6">
+          <h2 className="font-semibold text-xl text-gray-800 mb-2">Loan Details</h2>
+          <div className="grid grid-cols-2 gap-6 text-gray-700">
+            {/* Left Column */}
+            <div className="flex flex-col gap-3">
+              <div><span className="font-medium text-gray-500">Loan ID</span><p>{activeLoan?.loanId || 'N/A'}</p></div>
+              <div><span className="font-medium text-gray-500">Loan Type</span><p>{activeLoan?.loanType || 'N/A'}</p></div>
+              <div><span className="font-medium text-gray-500">Date Disbursed</span><p>{formatDate(activeLoan?.dateDisbursed)}</p></div>
+              <div><span className="font-medium text-gray-500">Interest Rate</span><p>{activeLoan?.interestRate}%</p></div>
+            </div>
 
-            <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-600">Loan ID</span>
-                <span className="text-gray-900">{activeLoan?.loanId || 'N/A'}</span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-600">Date Disbursed</span>
-                <span className="text-gray-900">
-                  {activeLoan?.dateDisbursed ? new Date(activeLoan.dateDisbursed).toLocaleDateString() : 'N/A'}
-                </span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-600">Principal Amount</span>
-                <span className="text-gray-900">₱{activeLoan?.principal?.toLocaleString() ?? '0'}</span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-600">Total Payable</span>
-                <span className="text-gray-900">₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-600">Interest Rate</span>
-                <span className="text-gray-900">{activeLoan?.interestRate ?? 0}%</span>
-              </div>
-
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-600">Due Date</span>
-                <span className="text-gray-900">
-                  {activeLoan?.dateDisbursed
-                    ? new Date(activeLoan.dateDisbursed).toLocaleDateString()
-                    : 'N/A'}
-                </span>
-              </div>
+            {/* Right Column */}
+            <div className="flex flex-col gap-3">
+              <div><span className="font-medium text-gray-500">Principal</span><p>₱{activeLoan?.principal?.toLocaleString() ?? '0'}</p></div>
+              <div><span className="font-medium text-gray-500">Interest Amount</span><p>₱{activeLoan?.interestAmount?.toLocaleString() ?? '0'}</p></div>
+              <div><span className="font-medium text-gray-500">Total Interest</span><p>₱{activeLoan?.totalInterest?.toLocaleString() ?? '0'}</p></div>
+              <div><span className="font-medium text-gray-500">Total Payable</span><p>₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</p></div>
+              <div><span className="font-medium text-gray-500">Monthly Due</span><p>₱{activeLoan?.monthlyDue?.toLocaleString() ?? '0'}</p></div>
             </div>
           </div>
+        </div>
 
-
-
-          {/* Bottom section */}
+        {/* Bottom section */}
           <div className="flex gap-6">
             {/* Left large box: Payment History */}
             <div className="flex-1 bg-white p-6 rounded-lg shadow relative">
               <div className="flex justify-between items-center">
-              <h2 className="font-semibold text-m mb-4">Payment History</h2>
+                <h2 className="font-semibold text-m mb-4">Payment History</h2>
                 <FiMaximize
                   className="cursor-pointer text-gray-600 hover:text-gray-900"
                   size={20}
@@ -209,14 +244,41 @@ async function handlePay(collection: Collection) {
               </div>
 
               {/* Small content preview */}
-              <div className="mt-4">
+              <div className="mt-2 flex flex-col gap-2 max-h-48 overflow-y-auto">
+                {paidPayments.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No payments made yet.</p>
+                ) : (
+                  paidPayments
+                    .slice(0, 3) 
+                    .map((payment, index) => (
+                      <div
+                        key={payment._id || index}
+                        className="flex justify-between items-center px-4 py-2 rounded-lg bg-green-50 hover:bg-green-100 transition"
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-gray-800 text-sm truncate">{payment.referenceNumber}</span>
+                          <span className="text-gray-500 text-xs">{payment.datePaid ? new Date(payment.datePaid).toLocaleDateString('en-PH') : '-'}</span>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-gray-800 font-semibold text-sm">₱{payment.amount?.toLocaleString() ?? '0'}</span>
+                          <span className="text-green-700 text-xs font-medium">{payment.mode}</span>
+                        </div>
+                      </div>
+                    ))
+                )}
+
+                {paidPayments.length > 3 && (
+                  <p className="text-gray-400 text-xs mt-1 text-center cursor-pointer" onClick={() => setIsPaymentModalOpen(true)}>
+                    View all payments
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Right two small boxes */}
             <div className="flex flex-col gap-6 w-1/2">
             <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center justify-center relative">
-              <h2 className="font-semibold text-lg text-gray-800 mb-6">Loan Progress</h2>
+              <h2 className="font-semibold text-lg text-gray-800 mb-6">Payment Progress</h2>
 
               <div className="relative w-40 h-40">
                 <svg className="w-40 h-40 transform -rotate-90">
@@ -272,100 +334,136 @@ async function handlePay(collection: Collection) {
 
         {/* Right side */}
         <div className="flex-1 bg-gray-50 p-6 rounded-lg shadow flex flex-col gap-4 overflow-y-auto max-h-[100vh]">
-          <h3 className="font-semibold text-xl mb-4">Upcoming Bills</h3>
+          <h3 className="font-semibold text-2xl mb-6 text-gray-800">Upcoming Bills</h3>
 
-          {activeLoan ? (
-            (() => {
-              const upcoming = collections.filter(
-                c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status !== 'Paid'
-              );
-              const paid = collections.filter(
-                c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status === 'Paid'
-              );
+          {activeLoan ? (() => {
+            const upcoming = collections.filter(
+              c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status !== 'Paid'
+            );
+            const paid = collections.filter(
+              c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status === 'Paid'
+            );
 
-              return (
-                <div className="flex flex-col gap-4">
-                  {/* Upcoming bills */}
-                  {upcoming.length > 0 ? upcoming.map(collection => (
+            return (
+              <div className="flex flex-col gap-5">
+
+                {/* Upcoming bills */}
+                {upcoming.length > 0 ? upcoming.map((collection, index) => {
+                  const canPay = index === 0 || upcoming[index - 1].status === "Paid";
+
+                  return (
                     <div
                       key={collection.collectionNumber}
-                      onClick={() => handlePay(collection)}
-                      className="cursor-pointer p-4 rounded-xl shadow-md bg-white hover:bg-red-600 transition-colors duration-200"
+                      onClick={() => canPay && handlePay(collection)}
+                      className={`transition-all duration-200 rounded-xl shadow-md p-5 flex flex-col gap-3
+                        ${canPay ? "bg-white hover:bg-red-50 cursor-pointer" : "bg-gray-100 cursor-not-allowed opacity-70"}`}
                     >
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="font-semibold text-lg text-gray-900 group-hover:text-white">
+                      <div className="flex justify-between items-center">
+                        <p className={`font-semibold text-lg ${canPay ? "text-gray-900" : "text-gray-500"}`}>
                           Collection #{collection.collectionNumber}
                         </p>
-                        <span className={`text-sm font-medium text-red-600 group-hover:text-white`}>
+                        <span className={`px-2 py-1 text-sm font-medium rounded-full 
+                          ${canPay ? " text-red-600" : " text-gray-500"}`}>
                           {collection.status}
                         </span>
                       </div>
-                      <div className="flex justify-between items-center text-gray-700 group-hover:text-white">
+
+                      <div className="flex justify-between items-center text-gray-700">
                         <p className="text-sm">
                           <span className="font-medium">Due:</span> {new Date(collection.dueDate).toLocaleDateString('en-PH')}
                         </p>
-                        <p className="font-semibold text-lg">
-                          ₱{collection.periodAmount.toLocaleString()}
-                        </p>
+                        <p className="font-semibold text-lg">₱{collection.periodAmount.toLocaleString()}</p>
                       </div>
                     </div>
-                  )) : <p className="text-gray-500">No upcoming bills.</p>}
+                  );
+                }) : (
+                  <p className="text-gray-500">No upcoming bills.</p>
+                )}
 
-                  {/* Paid bills */}
-                  {paid.length > 0 && (
-                    <div className="mt-6">
-                      <h4 className="text-md font-semibold text-gray-700 mb-2">Paid Collections</h4>
-                      <div className="flex flex-col gap-2">
-                        {paid.map(collection => (
-                          <div
-                            key={collection.collectionNumber}
-                            className="p-4 rounded-xl shadow bg-gray-100 cursor-not-allowed"
-                          >
-                            <div className="flex justify-between items-center mb-2">
-                              <p className="font-semibold text-lg text-gray-600">
-                                Collection #{collection.collectionNumber}
-                              </p>
-                              <span className="text-sm font-medium text-green-700">
-                                Paid
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-gray-500">
-                              <p className="text-sm">
-                                <span className="font-medium">Due:</span> {new Date(collection.dueDate).toLocaleDateString('en-PH')}
-                              </p>
-                              <p className="font-semibold text-lg">
-                                ₱{collection.periodAmount.toLocaleString()}
-                              </p>
-                            </div>
+                {/* Paid bills */}
+                {paid.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-lg font-semibold text-gray-700 mb-3">Paid Collections</h4>
+                    <div className="flex flex-col gap-3">
+                      {paid.map(collection => (
+                        <div
+                          key={collection.collectionNumber}
+                          className="p-4 rounded-xl shadow bg-gray-100 flex justify-between items-center opacity-80 cursor-not-allowed"
+                        >
+                          <div>
+                            <p className="font-semibold text-gray-600">
+                              Collection #{collection.collectionNumber}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              <span className="font-medium">Due:</span> {new Date(collection.dueDate).toLocaleDateString('en-PH')}
+                            </p>
                           </div>
-                        ))}
-                      </div>
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold text-gray-800">₱{collection.periodAmount.toLocaleString()}</span>
+                            <span className="text-sm font-medium text-green-700 px-2 py-1 rounded-full mt-1">Paid</span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
-                </div>
-              );
-            })()
-          ) : (
+                  </div>
+                )}
+              </div>
+            );
+          })() : (
             <p className="text-gray-500">No active loan found.</p>
           )}
         </div>
 
+
         {/* Payment History Modal */}
-        {isPaymentModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-3/4 max-w-2xl relative">
-              <button
-                className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-                onClick={() => setIsPaymentModalOpen(false)}
-              >
-                ✕
-              </button>
-              <h2 className="text-xl font-semibold mb-4">Payment History</h2>
-              <div className="space-y-2">
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-3xl relative overflow-y-auto max-h-[80vh]">
+            <button
+              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-lg font-bold"
+              onClick={() => setIsPaymentModalOpen(false)}
+            >
+              ✕
+            </button>
+            {paidPayments.length === 0 ? (
+              <p className="text-gray-500 text-center py-6">No paid payments yet.</p>
+            ) : (
+              <div className="overflow-x-auto mt-6">
+                <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Reference Number</th>
+                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Payment Date</th>
+                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Amount Paid</th>
+                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Mode</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paidPayments.map((payment, index) => (
+                      <tr
+                        key={payment._id || index}
+                        className={`transition-colors ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-green-50'
+                        } hover:bg-green-100`}
+                      >
+                        <td className="px-4 py-3 border-b text-gray-800">{payment.referenceNumber}</td>
+                        <td className="px-4 py-3 border-b text-gray-700">
+                          {payment.datePaid ? new Date(payment.datePaid).toLocaleDateString('en-PH') : '-'}
+                        </td>
+                        <td className="px-4 py-3 border-b text-gray-800 font-semibold">₱{payment.amount?.toLocaleString() ?? '0'}</td>
+                        <td className="px-4 py-3 border-b text-green-700 font-medium">{payment.mode}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
+      )}
+
+
+
       </div>
     </Borrower>
   );

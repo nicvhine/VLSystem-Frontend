@@ -96,6 +96,7 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
   const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
   const [appAddress, setAppAddress] = useState("");
   const [appTypeBusiness, setAppTypeBusiness] = useState("");
+  const [appBusinessName, setAppBusinessName] = useState("");
   const [appDateStarted, setAppDateStarted] = useState("");
   const [appBusinessLoc, setAppBusinessLoc] = useState("");
   const [appMonthlyIncome, setAppMonthlyIncome] = useState<number>(0);
@@ -181,6 +182,7 @@ const closeModal = () => {
   
     
     const handleSubmit = async () => {
+      
       if (!appLoanPurpose || !selectedLoan) {
         alert(language === 'en'
           ? "Please fill in all required fields."
@@ -217,6 +219,7 @@ const closeModal = () => {
         formData.append("appSpouseOccupation", appSpouseOccupation);
         formData.append("appAddress", appAddress);
         formData.append("appTypeBusiness", appTypeBusiness);
+        formData.append("appBusinessName", appBusinessName);
         formData.append("appDateStarted", appDateStarted);
         formData.append("appBusinessLoc", appBusinessLoc);
         formData.append("appMonthlyIncome", String(appMonthlyIncome));
@@ -291,6 +294,8 @@ const closeModal = () => {
         setAppAddress={setAppAddress}
         appTypeBusiness={appTypeBusiness}
         setAppTypeBusiness={setAppTypeBusiness}
+        appBusinessName={appBusinessName}
+        setAppBusinessName={setAppBusinessName}
         appDateStarted={appDateStarted}
         appReferences={appReferences}
         setAppReferences={setAppReferences}

@@ -38,6 +38,7 @@
     appAddress?: string;
     sourceOfIncome?: string;
     appTypeBusiness?: string;
+    appBusinessName?: string;
     appDateStarted?: string;
     appBusinessLoc?: string;
     appMonthlyIncome?: number;
@@ -60,6 +61,7 @@
     openTermConditions?: string;
     paymentSchedule?: string;
     characterReferences?: CharacterReference[];
+    profilePic: string;
   }
 
   interface CharacterReference {
@@ -482,20 +484,22 @@
                 <div className="p-6 text-center">
                   {/* Profile Image */}
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100 mb-4 border-4 border-white shadow-lg">
-                    {application?.documents?.find(doc => doc.mimeType?.startsWith("image/")) ? (
-                      <img
-                        src={`http://localhost:3001/${
-                          application.documents.find(doc => doc.mimeType?.startsWith("image/"))?.filePath
-                        }`}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <FiUser className="w-16 h-16 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
+  {application?.profilePic?.filePath ? (
+    <img
+      src={`http://localhost:3001/${application.profilePic.filePath}`}
+      alt="Profile"
+      className="w-full h-full object-cover"
+      onError={(e) => {
+        (e.target as HTMLImageElement).src = "/default-profile.png";
+      }}
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center">
+      <FiUser className="w-16 h-16 text-gray-400" />
+    </div>
+  )}
+</div>
+
                   
                   {/* Name and Contact */}
                   <h2 className="text-xl font-bold text-gray-900 mb-1">{application?.appName || '—'}</h2>
@@ -618,6 +622,10 @@
                           <div>
                             <p className="text-sm font-medium text-gray-500">Business Type:</p>
                             <p className="text-gray-900">{application?.appTypeBusiness || '—'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-500">Business Name:</p>
+                            <p className="text-gray-900">{application?.appBusinessName || '—'}</p>
                           </div>
                           <div>
                             <p className="text-sm font-medium text-gray-500">Date Started:</p>
