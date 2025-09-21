@@ -249,7 +249,6 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
 
   return (
     <>
-
       <Common
         appName={appName}
         setAppName={setAppName}

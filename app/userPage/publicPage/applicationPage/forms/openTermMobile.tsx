@@ -249,19 +249,6 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
 
   return (
     <>
-      {/* Loan Requirements */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-4">
-        <h2 className="text-lg font-semibold mb-2 text-center">Loan Requirements</h2>
-        <div className="text-red-600 font-semibold mb-1">Regular Loan With Collateral</div>
-        <ul className="list-disc pl-5 text-sm">
-          <li className="text-red-500">Valid Government-issued ID</li>
-          <li className="text-red-500">Proof of Income</li>
-          <li className="text-red-500">Certificate of Employment / Business Permit</li>
-          <li className="text-red-500">Proof of Billing</li>
-          <li className="text-red-500">Collateral Document</li>
-          <li className="text-red-500">Appraisal Report of Collateral</li>
-        </ul>
-      </div>
       <Common
         appName={appName}
         setAppName={setAppName}
@@ -444,7 +431,11 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
           {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
         </h4>
         <div>
-        <label className="block text-sm mb-3 text-gray-500">{language === 'en' ? 'Refer to the sidebar for the list of required documents.' : 'Tan-awa ang sidebar para sa listahan sa mga kinahanglan nga dokumento.'}</label>
+        <label className="block text-sm mb-3 text-gray-500">
+          {language === 'en'
+            ? 'Required Documents: Valid ID, Proof of Billing, Proof of Income, 2x2 Photo, Collateral Document, Appraisal Report of Collateral.'
+            : 'Mga Kinahanglanon: Valid ID, Proof of Billing, Proof of Income, 2x2 nga Litrato, Dokumento sa Kolateral, Appraisal Report sa Kolateral.'}
+        </label>
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
             <input
               type="file"
