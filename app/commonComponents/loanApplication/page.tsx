@@ -262,54 +262,37 @@ export default function ApplicationsPage() {
     }
   };
 
-  // Filters
-  const filteredApplications = applications
-    .filter(
-      (application) =>
-        !["Pending", "Denied by LO", "Applied"].includes(application.status)
-    )
-    .map((application) => ({
+ // Filters
+const filteredApplications = applications
+  .map((application) => ({
+    ...application,
+    displayStatus:
+      application.status === "Endorsed" ? "Pending" : application.status,
+  }))
+  .filter((application) => {
+    const matchesSearch = Object.values({
       ...application,
-      displayStatus:
-        application.status === "Endorsed" ? "Pending" : application.status,
-    }))
-    .filter((application) => {
-      const matchesSearch = Object.values({
-        ...application,
-        status: application.displayStatus,
-      }).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      status: application.displayStatus,
+    }).some((value) =>
+      value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-      if (!matchesSearch) return false;
-      if (activeFilter === "All") return true;
+    if (!matchesSearch) return false;
+    if (activeFilter === "All") return true;
 
-      return application.displayStatus === activeFilter;
-    });
+    return application.displayStatus === activeFilter;
+  });
 
-  const managerFilters = [
-    "All",
-    "Cleared",
-    "Approved",
-    "Disbursed",
-    "Denied",
+  const filterOptions = [
+      "All",
+      "Applied",
+      "Pending",
+      "Cleared",
+      "Approved",
+      "Disbursed",
+      "Denied",
   ];
-  const officerHeadFilters = [
-    "All",
-    "Applied",
-    "Pending",
-    "Cleared",
-    "Approved",
-    "Disbursed",
-    "Denied",
-  ];
-
-  const filterOptions =
-    role === "manager"
-      ? managerFilters
-      : role === "loan officer" || role === "head"
-      ? officerHeadFilters
-      : ["All"];
+    
 
   let Wrapper;
   if (role === "loan officer") {
@@ -534,7 +517,7 @@ export default function ApplicationsPage() {
                       )}
 
                       {/* Create Account */}
-                      {application.displayStatus === "Disbursed" &&
+                      {application.displayStatus === "Disbursed" && role === "manager" &&
                         !application.isReloan && (
                           <button
                             className="text-white px-3 py-1 rounded-md text-xs hover:bg-red-700 bg-red-600"
