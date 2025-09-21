@@ -23,6 +23,7 @@ export default function CollectorNavbar({ isBlurred = false }: { isBlurred?: boo
   const [username, setUsername] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [role, setRole] = useState('');
 
 
 
@@ -73,6 +74,7 @@ const {
     const storedUsername = localStorage.getItem('username');
     const storedPic = localStorage.getItem('profilePic');
     const storedNotifications = localStorage.getItem('notificationPreferences');
+    const storedRole = localStorage.getItem('role');
 
     if (storedName) setName(storedName);
     if (storedEmail) {
@@ -90,6 +92,7 @@ const {
       setProfilePic(storedPic);
       setOriginalPic(storedPic);
     }
+    if (storedRole) setRole(storedRole);
     if (storedNotifications) {
       const parsed = JSON.parse(storedNotifications);
       // Handle migration from old format
@@ -248,9 +251,9 @@ const {
               email={email}       
               phoneNumber={phoneNumber}       
               username={username}
+              role={role}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
-              handleLogout={handleLogout}
               isDropdownOpen={isDropdownOpen}
               setIsDropdownOpen={setIsDropdownOpen}
               profilePic={profilePic || ''}

@@ -46,14 +46,23 @@ export default function HeroSection({
             >
               👋
             </motion.span>
-            <span className="text-red-600 font-semibold">Welcome to Vistula Lending Corporation</span>            
+            <span className="text-red-600 font-semibold">
+              {language === 'en' ? 'Welcome to Vistula Lending Corporation' : 'Maayong Pag-abot sa Vistula Lending Corporation'}
+            </span>            
           </p>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-4 select-none">
-            Empowering Lives <br /> Through Better Lending
+            {language === 'en' ? (
+              <>Empowering Lives <br /> Through Better Lending</>
+            ) : (
+              <>Paghatag Kusog sa Kinabuhi <br /> Pinaagi sa Mas Maayong Pahulam</>
+            )}
           </h1>
           <p className="text-xl text-gray-700 select-none">
-            Experience seamless lending with our cutting-edge platform — fast, secure, and tailored to your needs.
+            {language === 'en' 
+              ? 'Experience seamless lending with our cutting-edge platform — fast, secure, and tailored to your needs.'
+              : 'Masinati ang walay kalisod nga pahulam sa among modernong plataporma — dali, luwas, ug gidisenyo alang sa imong panginahanglan.'
+            }
           </p>
 
           <div className="flex flex-col mt-10 sm:flex-row items-center justify-center md:justify-start gap-4">
@@ -61,14 +70,14 @@ export default function HeroSection({
               href="/userPage/publicPage/applicationPage"
               className="bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition focus:outline-none active:bg-red-600"
             >
-              Apply Now
+              {language === 'en' ? 'Apply Now' : 'Mag-aplay Karon'}
             </Link>
 
             <button
               onClick={() => setIsTrackOpen(true)}
               className="bg-gray-600 text-white px-6 py-3 rounded-full font-medium hover:bg-gray-700 transition focus:outline-none active:bg-gray-800"
             >
-              Track Application
+              {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
             </button>
           </div>
         </div>

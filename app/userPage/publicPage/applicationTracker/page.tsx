@@ -5,11 +5,15 @@ import { useEffect, useState } from "react";
 interface TrackModalProps {
   isOpen: boolean;
   onClose: () => void;
+  language?: 'en' | 'ceb';
 }
 
-const progressSteps = ["Pending", "Endorsed",  "Accepted"];
+const progressSteps = {
+  en: ["Pending", "Endorsed", "Accepted"],
+  ceb: ["Nagahulat", "Gipadala", "Gidawat"]
+};
 
-export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
+export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackModalProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +62,7 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
 
   const handleTrack = async () => {
     if (!applicationId.trim()) {
-      setError("Please enter a valid Application ID.");
+      setError(language === 'en' ? "Please enter a valid Application ID." : "Palihug isulod ang balidong Application ID.");
       return;
     }
 
@@ -66,7 +70,7 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
       const res = await fetch(`http://localhost:3001/loan-applications/${applicationId}`);
       if (!res.ok) {
         setStatus(null);
-        setError("Application not found.");
+        setError(language === 'en' ? "Application not found." : "Wala makita ang aplikasyon.");
         return;
       }
 
@@ -75,7 +79,7 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
       setError(null);
     } catch (err) {
       console.error(err);
-      setError("Something went wrong. Please try again later.");
+      setError(language === 'en' ? "Something went wrong. Please try again later." : "Adunay problema. Palihug sulayi pag-usab.");
     }
   };
 
@@ -112,11 +116,18 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
         >
           ✖
         </button>
-        <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">Track Application</h2>
-        <p className="text-sm text-gray-600 mb-4">Enter your Application ID to track your loan application status</p>
+        <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
+          {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
+        </h2>
+        <p className="text-sm text-gray-600 mb-4">
+          {language === 'en' 
+            ? 'Enter your Application ID to track your loan application status'
+            : 'Isulod ang imong Application ID aron masubay ang status sa imong aplikasyon sa pahulam'
+          }
+        </p>
         <input
           type="text"
-          placeholder="APPLICATION ID"
+          placeholder={language === 'en' ? 'APPLICATION ID' : 'APPLICATION ID'}
           className="w-full p-3 border border-gray-300 rounded-lg mb-4 uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
           value={applicationId}
           onChange={(e) => setApplicationId(e.target.value.toUpperCase())}
@@ -126,7 +137,7 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
             onClick={handleTrack}
             className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
           >
-            Track Application
+            {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
           </button>
         </div>
 
@@ -135,13 +146,13 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
         {status && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
-              Application Status
+              {language === 'en' ? 'Application Status' : 'Status sa Aplikasyon'}
             </h3>
             <p className="text-center mb-6">
-              Current Status: <span className="text-red-600 font-semibold">{status}</span>
+              {language === 'en' ? 'Current Status:' : 'Kasamtangang Status:'} <span className="text-red-600 font-semibold">{status}</span>
             </p>
             <div className="flex items-center justify-between gap-2">
-              {progressSteps.map((step, index) => (
+              {progressSteps[language].map((step, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center relative">
                   <div
                     className={`w-10 h-10 flex items-center justify-center rounded-full font-semibold text-sm transition-all duration-300 ${
@@ -157,7 +168,7 @@ export default function TrackModal({ isOpen, onClose }: TrackModalProps) {
                   }`}>
                     {step}
                   </span>
-                  {index < progressSteps.length - 1 && (
+                  {index < progressSteps[language].length - 1 && (
                     <div className="absolute top-5 left-full w-full h-0.5 bg-gray-300 z-[-1]">
                       <div
                         className={`h-0.5 bg-red-600 transition-all duration-500 ${

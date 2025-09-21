@@ -8,9 +8,10 @@ interface Props {
   router: any;
   setShowForgotModal: (show: boolean) => void;
   setForgotRole: (role: 'borrower' | 'staff' | '') => void;
+  language?: 'en' | 'ceb';
 }
 
-export default function LoginForm({ onClose, router, setShowForgotModal, setForgotRole }: Props) {
+export default function LoginForm({ onClose, router, setShowForgotModal, setForgotRole, language = 'en' }: Props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -22,12 +23,16 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
 
   return (
     <>
-      <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">Welcome Back</h2>
-      <p className="text-sm text-gray-600 text-center mb-4">Login to your VLSystem account</p>
+      <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
+        {language === 'en' ? 'Welcome Back' : 'Maayong Pagbalik'}
+      </h2>
+      <p className="text-sm text-gray-600 text-center mb-4">
+        {language === 'en' ? 'Login to your VLSystem account' : 'Sulod sa imong VLSystem account'}
+      </p>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Username"
+          placeholder={language === 'en' ? 'Username' : 'Username'}
           className="w-full px-4 py-2 border border-gray-300 rounded-md mb-3 focus:outline-none text-black focus:ring-2 focus:ring-red-500"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -35,7 +40,7 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
         <div className="relative mb-4">
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
+            placeholder={language === 'en' ? 'Password' : 'Password'}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -45,7 +50,10 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
             className="absolute right-3 top-2.5 text-sm text-gray-600"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {showPassword ? 'Hide' : 'Show'}
+            {language === 'en' 
+              ? (showPassword ? 'Hide' : 'Show')
+              : (showPassword ? 'Tago' : 'Ipakita')
+            }
           </button>
         </div>
         <p
@@ -55,14 +63,14 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
             setForgotRole('');
           }}
         >
-          Forgot Password or Username?
+          {language === 'en' ? 'Forgot Password or Username?' : 'Nakalimot sa Password o Username?'}
         </p>
         <div className="flex justify-center">
           <button
             type="submit"
             className="w-20 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
           >
-            Login
+            {language === 'en' ? 'Login' : 'Sulod'}
           </button>
         </div>
       </form>

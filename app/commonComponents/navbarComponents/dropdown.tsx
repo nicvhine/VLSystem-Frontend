@@ -10,6 +10,7 @@ interface ProfileDropdownProps {
   email: string;
   phoneNumber: string;
   username: string;
+  role: string;
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
   isDropdownOpen: boolean;
@@ -29,6 +30,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     email,
     phoneNumber,
     username,
+    role,
     isEditing,
     setIsEditing,
     isDropdownOpen,
@@ -119,6 +121,13 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           </div>
           <div className="font-semibold text-lg text-center">{name}</div>
           <div className="text-gray-400 text-sm text-center m-0">{email}</div>
+          <div className="text-red-600 text-xs font-medium text-center mt-1 uppercase tracking-wide">
+            {role === 'borrower' ? 'Borrower' : 
+             role === 'head' ? 'Head' :
+             role === 'manager' ? 'Manager' :
+             role === 'loan officer' ? 'Loan Officer' :
+             role === 'collector' ? 'Collector' : role}
+          </div>
           {isUploadingPic && (
             <div className="flex gap-2 mt-3">
               <button
