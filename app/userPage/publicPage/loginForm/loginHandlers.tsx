@@ -88,7 +88,7 @@ export async function loginHandler({ username, password, onClose, router }: Logi
     head: '/userPage/headPage/dashboard',
     manager: '/userPage/managerPage/dashboard',
     'loan officer': '/userPage/loanOfficerPage/dashboard', 
-    collector: 'userPage/collectorPage',
+    collector: '/commonComponents/collection',
   };
 
   router.push(redirectMap[user.role?.toLowerCase()] || '/');

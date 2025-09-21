@@ -69,6 +69,16 @@ textarea::placeholder {
   color: #6b7280; 
 }
 
+/* Custom styles for react-datepicker */
+.react-datepicker {
+  font-family: 'Inter', sans-serif;
+}
+
+.react-datepicker__day:hover {
+  background-color: #bfdbfe; /* Tailwind blue-200 */
+  border-radius: 9999px;
+}
+
 .has-collection::after {
   content: '';
   position: absolute;
@@ -77,6 +87,6 @@ textarea::placeholder {
   transform: translateX(-50%);
   width: 6px;
   height: 6px;
+  background-color: #780101; /* Tailwind blue-500 */
   border-radius: 9999px;
-  background-color: #8c0404; 
 }

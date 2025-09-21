@@ -1,32 +1,56 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
-import CollectorNavbar from "./navbar/page";
 import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
-import CollectionsPage from "./collectionsPage";
+import HeadNavbar from "./navbar/page";
+import useInactivityLogout from '@/app/commonComponents/modals/inactivity/logic';
+import AreYouStillThereModal from '@/app/commonComponents/modals/inactivity/modal';
+import CollectorNavbar from "./navbar/page";
 
-export default function Collector(){
-const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-const [isModalOpen, setIsModalOpen] = useState(false);
+export default function Collector({ children, isNavbarBlurred = false }: { children?: React.ReactNode; isNavbarBlurred?: boolean }) {
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const router = useRouter();
 
-useEffect(() => {
-  const mustChange = localStorage.getItem('forcePasswordChange');
-  if (mustChange === 'true') {
-    setShowChangePasswordModal(true);
+  const { showModal, countdown, stayLoggedIn, logout } = useInactivityLogout();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const mustChange = localStorage.getItem('forcePasswordChange');
+
+    if (!token) {
+      router.push('/');
+      return;
+    }
+
+    if (mustChange === 'true') {
+      setShowChangePasswordModal(true);
+    }
+
+    setIsCheckingAuth(false); 
+  }, [router]);
+
+  if (isCheckingAuth) {
+    return <div className="min-h-screen bg-white"></div>; 
   }
-  
-  
-}, []);
 
-    return(
-        <div className="min-h-screen bg-white">
-            < CollectorNavbar isBlurred={isModalOpen || showChangePasswordModal}/>
-            < CollectionsPage onModalStateChange={setIsModalOpen} />
+  return (
+    <div className="min-h-screen bg-white">
+      <CollectorNavbar isBlurred={isNavbarBlurred} />
+      {showChangePasswordModal && (
+        <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+      )}
 
-        {showChangePasswordModal && (
-          <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
-        )}
-        </div>
-    )
+      {children}
+      
+      {showModal && (
+        <AreYouStillThereModal
+          countdown={countdown}
+          onStay={stayLoggedIn}
+          onLogout={logout}
+        />
+      )}
+    </div>
+  );
 }
