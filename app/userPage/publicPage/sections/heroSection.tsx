@@ -74,7 +74,8 @@ export default function HeroSection({
         </div>
 
         {/* IMAGE SLIDER */}
-        <div className="md:w-2/6 relative">
+        <div className="w-full md:w-2/6 relative">
+        <div className="relative w-full h-64 sm:h-80 md:h-[400px] lg:h-[450px]">
           <Swiper
             modules={[Navigation, Autoplay, EffectFade]}
             effect="fade"
@@ -91,7 +92,7 @@ export default function HeroSection({
                 <img
                   src={slide.img}
                   alt={slide.alt}
-                  className="w-full h-[400px] object-cover select-none"
+                  className="w-full h-64 sm:h-80 md:h-96 lg:h-[400px] object-cover select-none"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
               </SwiperSlide>
@@ -105,16 +106,6 @@ export default function HeroSection({
           <div className="custom-next absolute top-1/2 right-3 -translate-y-1/2 z-10 cursor-pointer backdrop-blur-md bg-white/40 hover:bg-white/60 p-3 rounded-full shadow-lg transition">
             ▶
           </div>
-
-          {/* PROGRESS AUTOPLAY BAR */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-2/3 h-[4px] bg-white/30 rounded-full overflow-hidden">
-            <motion.div
-              key={isTrackOpen ? 'reset' : 'progress'}
-              initial={{ width: '0%' }}
-              animate={{ width: '100%' }}
-              transition={{ duration: 4, repeat: Infinity }}
-              className="h-full bg-red-600"
-            />
           </div>
         </div>
       </div>

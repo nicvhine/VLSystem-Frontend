@@ -1,9 +1,8 @@
-
 'use client';
 
-// Animated Success Modal Component
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
+
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
 function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
   const [animateIn, setAnimateIn] = useState(false);
@@ -59,24 +58,26 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     </div>
   );
 }
+import Common from "../common/common";
 
-import Common from "./common/common";
-
-const API_URL = "http://localhost:3001/loan-applications/open-term";
+const API_URL = "http://localhost:3001/loan-applications/with";
 
 type LoanOption = {
   amount: number;
+  months: number;
   interest: number;
 };
 
 const loanOptions: LoanOption[] = [
-  { amount: 50000, interest: 6 },
-  { amount: 100000, interest: 5 },
-  { amount: 200000, interest: 4 },
-  { amount: 500000, interest: 3 },
+  { amount: 20000, months: 8, interest: 7 },
+  { amount: 50000, months: 10, interest: 5 },
+  { amount: 100000, months: 18, interest: 4 },
+  { amount: 200000, months: 24, interest: 3 },
+  { amount: 300000, months: 36, interest: 2 },
+  { amount: 500000, months: 60, interest: 1.5 },
 ];
 
-interface OpenTermLoanFormProps {
+interface WithCollateralFormProps {
   language: 'en' | 'ceb';
   maritalStatus?: string;
   setMaritalStatus?: any;
@@ -88,7 +89,7 @@ interface OpenTermLoanFormProps {
   setEmploymentStatus?: any;
 }
 
-export default function OpenTermForm(props: OpenTermLoanFormProps) { 
+export default function WithCollateralForm(props: WithCollateralFormProps) {
   const { language = 'en', ...rest } = props;
   // Common form states
   const [appName, setAppName] = useState("");
@@ -114,17 +115,15 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" }
   ]);
-
-  // Open-term specific states
+  // Loan specific states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
- 
+
   // Collateral specific states
   const [collateralType, setCollateralType] = useState("");
   const [collateralValue, setCollateralValue] = useState<number>(0);
   const [collateralDescription, setCollateralDescription] = useState("");
   const [ownershipStatus, setOwnershipStatus] = useState("");
-
 
   // Success Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -136,45 +135,62 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
     setLoanId(null);
   };
 
-   // File upload state
-   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  // File upload state
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-  
-      if (uploadedFiles.length + files.length > 6) {
-        alert(language === "en"
-          ? "You must upload exactly 6 documents."
-          : "Kinahanglan nga 6 ra gyud ka dokumento ang i-upload."
-        );
-        return;
-      }
-  
       setUploadedFiles((prev) => [...prev, ...files]);
     }
   };
-  
 
-   const removeFile = (index: number) => {
+  const removeFile = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-  }; 
+  };  
 
-  //2x2 upload state
-  const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+        //2x2 upload state
+        const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
- 
-  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const files = Array.from(e.target.files);
-      setPhoto2x2((prev) => [...prev, ...files]);
-    }
-  };
+        const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+          if (e.target.files) {
+            const files = Array.from(e.target.files);
+        
+            files.forEach((file) => {
+              const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+              if (!validTypes.includes(file.type)) {
+                alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+                return;
+              }
+        
+              if (file.size > 2 * 1024 * 1024) {
+                alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+                return;
+              }
+        
+              const img = new Image();
+              img.onload = () => {
+                const { width, height } = img;
+                const aspectRatio = width / height;
+        
+                if (aspectRatio < 0.9 || aspectRatio > 1.1) {
+                  alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+                  return;
+                }
+        
+                setPhoto2x2((prev) => [...prev, file]);
+              };
+              img.src = URL.createObjectURL(file);
+            });
+          }
+        };
+        
+    
+        const removeProfile = (index: number) => {
+          setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
+        };
 
-  const removeProfile = (index: number) => {
-    setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
-  };
-  
+        
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
       alert(language === 'en'
@@ -191,7 +207,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
       );
       return;
     }
-  
+
     if (photo2x2.length === 0) {
       alert(language === "en"
         ? "Please upload your 2x2 photo."
@@ -220,21 +236,27 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
       formData.append("appEmploymentStatus", appEmploymentStatus);
       formData.append("appCompanyName", appCompanyName);
       formData.append("sourceOfIncome", sourceOfIncome);
+  
       formData.append("appLoanAmount", String(selectedLoan.amount));
+      formData.append("appLoanTerms", String(selectedLoan.months));
       formData.append("appInterest", String(selectedLoan.interest));
       formData.append("appLoanPurpose", appLoanPurpose);
+  
       formData.append("collateralType", collateralType);
       formData.append("collateralValue", String(collateralValue));
       formData.append("collateralDescription", collateralDescription);
       formData.append("ownershipStatus", ownershipStatus);
-      formData.append("appReferences", JSON.stringify(appReferences));
   
-      // Append multiple document files
+      appReferences.forEach((ref, i) => {
+        formData.append(`appReferences[${i}][name]`, ref.name);
+        formData.append(`appReferences[${i}][contact]`, ref.contact);
+        formData.append(`appReferences[${i}][relation]`, ref.relation);
+      });
+
       uploadedFiles.forEach(file => {
         formData.append("documents", file);
       });
-  
-      // Append profile picture (2x2 photo) correctly
+
       if (photo2x2[0]) {
         formData.append("profilePic", photo2x2[0]);
       }
@@ -243,10 +265,10 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
   
       if (res.ok) {
         const data = await res.json();
+
         setLoanId(data.application?.applicationId);
         setShowSuccessModal(true);
-  
-        // Reset form
+        
         setAppLoanPurpose("");
         setSelectedLoan(null);
         setCollateralType("");
@@ -301,7 +323,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         setAppBusinessName={setAppBusinessName}
         appDateStarted={appDateStarted}
         setAppDateStarted={setAppDateStarted}
-          appReferences={appReferences}
+        appReferences={appReferences}
         setAppReferences={setAppReferences}
         appBusinessLoc={appBusinessLoc}
         setAppBusinessLoc={setAppBusinessLoc}
@@ -373,13 +395,12 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         </div>
       </div>
 
-      {/* Open-Term Loan Specific Details */}
+      {/* Loan Details */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          {language === 'en' ? 'Open-Term Loan Details' : 'Detalye sa Open-Term nga Pahulam'}
+          {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
-        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Purpose:' : 'Katuyoan sa Pahulam:'}</label>
@@ -390,7 +411,6 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
               placeholder={language === 'en' ? 'Enter Loan Purpose' : 'Isulod ang Katuyoan sa Pahulam'} 
             />
           </div>
-
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
             <select
@@ -409,9 +429,16 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
               ))}
             </select>
           </div>
-
           <div>
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Interest Rate (%):' : 'Interest Rate (%):'}</label>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Terms (months):' : 'Panahon sa Pahulam (buwan):'}</label>
+            <input 
+              className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
+              value={selectedLoan?.months || ""} 
+              readOnly 
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Interest Rate (%):' : 'Bulan nga Interest Rate (%):'}</label>
             <input 
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
               value={selectedLoan?.interest || ""} 
@@ -421,8 +448,9 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         </div>
       </div>
 
-      {/* 2x2 Upload */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+
+       {/* 2x2 Upload */}
+       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
@@ -462,7 +490,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
           {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
         </h4>
         <div>
-        <label className="block text-sm mb-3 text-gray-500">{language === 'en' ? 'Refer to the sidebar for the list of required documents.' : 'Tan-awa ang sidebar para sa listahan sa mga kinahanglan nga dokumento.'}</label>
+          <label className="block text-sm mb-3 text-gray-500">{language === 'en' ? 'Refer to the sidebar for the list of required documents.' : 'Tan-awa ang sidebar para sa listahan sa mga kinahanglan nga dokumento.'}</label>
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
             <input
               type="file"
@@ -511,7 +539,7 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
 
-       {/* Success Modal */}
+        {/* Success Modal */}
 {showSuccessModal && (
   <SuccessModalWithAnimation
     language={language}
@@ -519,9 +547,6 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
     onClose={closeModal}
   />
 )}
-
     </>
-
-    
   );
 }

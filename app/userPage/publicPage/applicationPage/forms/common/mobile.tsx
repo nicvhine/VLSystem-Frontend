@@ -1,0 +1,637 @@
+"use client";
+
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import React, { useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import axios from "axios";
+
+const customIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
+  shadowSize: [41, 41],
+});
+
+interface CommonProps {
+  appName: string;
+  setAppName: React.Dispatch<React.SetStateAction<string>>;
+  appDob: string;
+  setAppDob: React.Dispatch<React.SetStateAction<string>>;
+  appContact: string;
+  setAppContact: React.Dispatch<React.SetStateAction<string>>;
+  appEmail: string;
+  setAppEmail: React.Dispatch<React.SetStateAction<string>>;
+  appMarital: string;
+  setAppMarital: React.Dispatch<React.SetStateAction<string>>;
+  appChildren: number;
+  setAppChildren: React.Dispatch<React.SetStateAction<number>>;
+  appSpouseName: string;
+  setAppSpouseName: React.Dispatch<React.SetStateAction<string>>;
+  appSpouseOccupation: string;
+  setAppSpouseOccupation: React.Dispatch<React.SetStateAction<string>>;
+  appAddress: string;
+  setAppAddress: React.Dispatch<React.SetStateAction<string>>;
+  appTypeBusiness: string;
+  setAppTypeBusiness: React.Dispatch<React.SetStateAction<string>>;
+  appBusinessName: string;
+  setAppBusinessName: React.Dispatch<React.SetStateAction<string>>;
+  appDateStarted: string;
+  setAppDateStarted: React.Dispatch<React.SetStateAction<string>>;
+  appBusinessLoc: string;
+  setAppBusinessLoc: React.Dispatch<React.SetStateAction<string>>;
+  appMonthlyIncome: number;
+  setAppMonthlyIncome: React.Dispatch<React.SetStateAction<number>>;
+  appOccupation: string;
+  setAppOccupation: React.Dispatch<React.SetStateAction<string>>;
+  appReferences: { name: string; contact: string; relation: string }[];
+  setAppReferences: React.Dispatch<React.SetStateAction<{ name: string; contact: string; relation: string }[]>>;
+  appEmploymentStatus: string;
+  setAppEmploymentStatus: React.Dispatch<React.SetStateAction<string>>;
+  appCompanyName: string;
+  setAppCompanyName: React.Dispatch<React.SetStateAction<string>>;
+  sourceOfIncome: string;
+  setSourceOfIncome: React.Dispatch<React.SetStateAction<string>>;
+  language: 'en' | 'ceb';
+}
+
+function MapComponent({
+  address,
+  setAddress,
+  markerPosition,
+  setMarkerPosition,
+}: {
+  address: string;
+  setAddress: (address: string) => void;
+  markerPosition: [number, number] | null;
+  setMarkerPosition: (pos: [number, number]) => void;
+}) {
+  useMapEvents({
+    click: async (e) => {
+      const { lat, lng } = e.latlng;
+      setMarkerPosition([lat, lng]);
+      try {
+        const response = await axios.get("https://nominatim.openstreetmap.org/reverse", {
+          params: { lat, lon: lng, format: "json" },
+        });
+        setAddress(response.data.display_name || `${lat}, ${lng}`);
+      } catch {
+        setAddress(`${lat}, ${lng}`);
+      }
+    },
+  });
+
+  return markerPosition ? (
+    <Marker position={markerPosition} icon={customIcon}>
+      <Popup>{address}</Popup>
+    </Marker>
+  ) : null;
+}
+
+export default function Common(props: CommonProps) {
+  const {
+    appName, setAppName,
+    appDob, setAppDob,
+    appContact, setAppContact,
+    appEmail, setAppEmail,
+    appMarital, setAppMarital,
+    appChildren, setAppChildren,
+    appSpouseName, setAppSpouseName,
+    appSpouseOccupation, setAppSpouseOccupation,
+    appAddress, setAppAddress,
+    appTypeBusiness, setAppTypeBusiness,
+    appBusinessName, setAppBusinessName,
+    appDateStarted, setAppDateStarted,
+    appBusinessLoc, setAppBusinessLoc,
+    appMonthlyIncome, setAppMonthlyIncome,
+    appOccupation, setAppOccupation,
+    appEmploymentStatus, setAppEmploymentStatus,
+    appCompanyName, setAppCompanyName,
+    sourceOfIncome, setSourceOfIncome,
+    appReferences, setAppReferences,
+    language,
+  } = props;
+
+  const [error, setError] = useState("");
+  const [occupationError, setOccupationError] = useState(false);
+  const [nameError, setNameError] = useState<string[]>(["", "", ""]);
+  const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
+  const [refErrors, setRefErrors] = useState<string[]>(["", "", ""]);
+
+  function validateReferenceUniqueness(
+    refs: { name: string; contact: string; relation: string }[],
+    applicantContact: string
+  ) {
+    const errors = ["", "", ""];
+    const nameMap = new Map<string, number[]>();
+    const numberMap = new Map<string, number[]>();
+
+    refs.forEach((r, idx) => {
+      const nameKey = (r.name || "").trim().toLowerCase();
+      const numKey = (r.contact || "").trim();
+      if (nameKey) nameMap.set(nameKey, [...(nameMap.get(nameKey) || []), idx]);
+      if (numKey) numberMap.set(numKey, [...(numberMap.get(numKey) || []), idx]);
+    });
+
+    nameMap.forEach((indices) => {
+      if (indices.length > 1) indices.forEach((i) => { errors[i] += errors[i] ? " • Duplicate name" : "Duplicate name"; });
+    });
+    numberMap.forEach((indices) => {
+      if (indices.length > 1) indices.forEach((i) => { errors[i] += errors[i] ? " • Duplicate contact number" : "Duplicate contact number"; });
+    });
+
+    refs.forEach((r, idx) => {
+      if (r.contact === appContact) errors[idx] += errors[idx] ? " • Cannot be same as applicant’s contact" : "Cannot be same as applicant’s contact";
+      if (r.name === appName) errors[idx] += errors[idx] ? " • Cannot be same as applicant’s name" : "Cannot be same as applicant’s name";
+    });
+
+    setRefErrors(errors);
+    return errors.every((e) => !e);
+  }
+
+  const handleReferenceChange = (index: number, field: "name" | "contact" | "relation", value: string) => {
+    const updated = [...props.appReferences];
+    if (!updated[index]) updated[index] = { name: "", contact: "", relation: "" };
+    updated[index][field] = value;
+    setAppReferences(updated);
+    validateReferenceUniqueness(updated, appContact);
+  };
+
+  const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAppAddress(e.target.value);
+    try {
+      const response = await axios.get("https://nominatim.openstreetmap.org/search", {
+        params: { q: e.target.value, format: "json", limit: 1 },
+      });
+      if (response.data.length) {
+        const { lat, lon } = response.data[0];
+        setMarkerPosition([parseFloat(lat), parseFloat(lon)]);
+      }
+    } catch {}
+  };
+
+  return (
+    <div className="p-4 space-y-6 max-w-lg mx-auto">
+      
+      {/* Basic Information */}
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
+        </h4>
+
+        {/* Name */}
+        <div className="space-y-4 mb-6">
+        <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Name:" : "Ngalan:"}</label>
+          <input
+            type="text"
+            value={appName}
+            onChange={(e) => { if (/^[A-Za-zñÑ.\-\s]*$/.test(e.target.value)) setAppName(e.target.value); }}
+            className="w-full border p-3 rounded-lg focus:ring-2 focus:ring-red-500"
+            placeholder={language === "en" ? "Enter your full name" : "Isulod ang imong tibuok ngalan"}
+          />
+        </div>
+
+        {/* DOB */}
+        <div className="space-y-4 mb-6">
+          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Date of Birth:" : "Petsa sa Pagkatawo:"}</label>
+          <input
+            type="date"
+            value={appDob}
+            onChange={(e) => setAppDob(e.target.value)}
+            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split("T")[0]}
+            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Contact */}
+        <div className="space-y-4 mb-6">
+          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Contact Number:" : "Numero sa Kontak:"}</label>
+          <input
+            type="text"
+            value={appContact}
+            onChange={(e) => { if (/^\d*$/.test(e.target.value) && e.target.value.length <= 11) { setAppContact(e.target.value); setError(""); } }}
+            onBlur={() => { if (!/^09\d{9}$/.test(appContact)) setError(language === "en" ? "Invalid mobile format." : "Ang numero sa kontak dapat magsugod sa 09 ug 11 ka numero."); else setError(""); }}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${error ? "border-red-500" : "border-gray-200"}`}
+            placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
+          />
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        </div>
+
+        {/* Email */}
+        <div className="space-y-4 mb-6">
+          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Email Address:" : "Email Address:"}</label>
+          <div className="flex">
+            <input
+              type="text"
+              value={appEmail.replace("@gmail.com", "")}
+              onChange={(e) => setAppEmail(e.target.value.replace(/@.*/, "") + "@gmail.com")}
+              className="w-full border border-gray-200 p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
+            />
+            <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">@gmail.com</span>
+          </div>
+        </div>
+
+       {/* Marital Status */}
+    <div className="space-y-4 mb-6">
+    <label className="block font-medium mb-2 text-gray-700">
+        {language === "en" ? "Marital Status:" : "Sibil nga Kahimtang:"}
+    </label>
+    <select
+        value={appMarital}
+        onChange={(e) => setAppMarital(e.target.value)}
+        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+    >
+        <option value="">
+        {language === "en" ? "Select Status" : "Pilia ang Kahimtang"}
+        </option>
+        <option value="Single">
+        {language === "en" ? "Single" : "Walay Bana/Asawa"}
+        </option>
+        <option value="Married">
+        {language === "en" ? "Married" : "Minyo"}
+        </option>
+    </select>
+    </div>
+
+{/* Number of Children */}
+<div className="space-y-4 mb-6">
+  <label className="block font-medium mb-2 text-gray-700">
+    {language === "en" ? "Number of Children:" : "Ilang Anak:"}
+  </label>
+  <input
+    type="number"
+    value={appChildren}
+    min={0}
+    onChange={(e) => setAppChildren(parseInt(e.target.value))}
+    className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+    placeholder={
+      language === "en"
+        ? "Enter number of children"
+        : "Isulod ang ihap sa anak"
+    }
+  />
+</div>
+
+{/* Married: Spouse Info */}
+{appMarital === "Married" && (
+  <>
+    {/* Spouse Name */}
+    <div className="space-y-4 mb-6">
+      <label className="block font-medium mb-2 text-gray-700">
+        {language === "en" ? "Spouse Name:" : "Ngalan sa Bana/Asawa:"}
+      </label>
+      <input
+        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        placeholder={
+          language === "en"
+            ? "Enter spouse name"
+            : "Isulod ang ngalan sa bana/asawa"
+        }
+        value={appSpouseName}
+        onChange={(e) => setAppSpouseName(e.target.value)}
+      />
+    </div>
+
+            {/* Spouse Occupation */}
+            <div className="space-y-4 mb-6">
+              <label className="block font-medium mb-2 text-gray-700">
+                {language === "en" ? "Spouse Occupation:" : "Trabaho sa Bana/Asawa:"}
+              </label>
+              <input
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder={
+                  language === "en"
+                    ? "Enter spouse occupation"
+                    : "Isulod ang trabaho sa bana/asawa"
+                }
+                value={appSpouseOccupation}
+                onChange={(e) => setAppSpouseOccupation(e.target.value)}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Address & Map */}
+        <div className="mb-4">
+          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Home Address:" : "Address sa Panimalay:"}</label>
+          <input
+            type="text"
+            value={appAddress}
+            onChange={handleAddressChange}
+            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            placeholder={language === "en" ? "Click on the map or type here" : "I-klik ang mapa o isulat dinhi"}
+          />
+        </div>
+
+        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200" style={{ height: 300 }}>
+          <MapContainer
+            center={markerPosition || [12.8797, 121.774]}
+            zoom={6}
+            style={{ height: "100%", width: "100%", zIndex: 1 }}
+            className="map-container"
+          >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <MapComponent
+              address={appAddress}
+              setAddress={setAppAddress}
+              markerPosition={markerPosition}
+              setMarkerPosition={setMarkerPosition}
+            />
+          </MapContainer>
+        </div>
+        </div>
+
+        {/* Source of Income */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+            {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
+        </h4>
+
+        {/* Radio Buttons */}
+        <div className="flex gap-6 mb-6">
+            {[
+            { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
+            { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
+            ].map(({ value, label }) => (
+            <label key={value} className="flex items-center">
+                <input
+                type="radio"
+                name="employmentType"
+                value={value}
+                checked={sourceOfIncome === value}
+                onChange={(e) => setSourceOfIncome(e.target.value)}
+                className="mr-2 text-red-600 focus:ring-red-500"
+                />
+                <span className="text-gray-700">{label}</span>
+            </label>
+            ))}
+        </div>
+
+        {/* Conditional Inputs */}
+        {sourceOfIncome === 'business' && (
+            <div className="space-y-6">
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Business:' : 'Matang sa Negosyo:'}</label>
+                <input
+                type="text"
+                value={appTypeBusiness}
+                onChange={(e) => setAppTypeBusiness(e.target.value)}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Business Name:' : 'Pangalan sa Negosyo:'}</label>
+                <input
+                type="text"
+                value={appBusinessName}
+                onChange={(e) => setAppBusinessName(e.target.value)}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Date Started:' : 'Petsa sa Pagsimula:'}</label>
+                <input
+                type="date"
+                value={appDateStarted}
+                onChange={(e) => {
+                    const selectedDate = e.target.value;
+                    const today = new Date().toISOString().split("T")[0]; 
+                    if (selectedDate > today) {
+                    alert(
+                        language === "en"
+                        ? "Date cannot be in the future."
+                        : "Ang petsa dili mahimong sa umaabot."
+                    );
+                    setAppDateStarted("");
+                    } else {
+                    setAppDateStarted(selectedDate);
+                    }
+                }}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                max={new Date().toISOString().split("T")[0]} 
+                />
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Business Location:' : 'Lokasyon sa Negosyo:'}</label>
+                <input
+                type="text"
+                value={appBusinessLoc}
+                onChange={(e) => setAppBusinessLoc(e.target.value)}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Income:' : 'Buwanang Kita:'}</label>
+                <input
+                type="number"
+                min={0}
+                value={appMonthlyIncome}
+                onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder={language === 'en' ? 'Enter your monthly income' : 'Isulod ang buwanang kita'}
+                />
+            </div>
+            </div>
+        )}
+
+        {sourceOfIncome === 'employed' && (
+            <div className="space-y-6">
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Occupation:' : 'Trabaho:'}</label>
+                <input
+                type="text"
+                value={appOccupation}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
+                    setAppOccupation(value);
+                    setOccupationError(wordCount > 5);
+                }}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder={language === 'en' ? 'Enter occupation' : 'Isulod ang trabaho'}
+                />
+                {occupationError && (
+                <p className="text-sm text-red-600 mt-1">
+                    {language === 'en' ? 'Maximum 5 words allowed.' : 'Limitado sa 5 ka pulong.'}
+                </p>
+                )}
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Employment Status:' : 'Kahimtang sa Trabaho:'}</label>
+                <select
+                value={appEmploymentStatus}
+                onChange={(e) => setAppEmploymentStatus(e.target.value)}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                <option value="">{language === 'en' ? 'Select Employment status' : 'Pili ang status ng trabaho'}</option>
+                <option value="regular">{language === 'en' ? 'Regular' : 'Regular'}</option>
+                <option value="irregular">{language === 'en' ? 'Irregular' : 'Dili Regular'}</option>
+                </select>
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Company Name:' : 'Ngalan sa Kompanya:'}</label>
+                <input
+                type="text"
+                value={appCompanyName}
+                onChange={(e) => setAppCompanyName(e.target.value)}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                />
+            </div>
+
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Income:' : 'Buwanang Kita:'}</label>
+                <input
+                type="number"
+                min={0}
+                value={appMonthlyIncome}
+                onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder={language === 'en' ? 'Enter your monthly income' : 'Isulod ang buwanang kita'}
+                />
+            </div>
+            </div>
+        )}
+        </div>
+
+        {/* References Section */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+            <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+            {language === "en" ? "Character References" : "Mga Tigi-uyonanan"}
+        </h4>
+
+        {[1, 2, 3].map((i) => (
+            <div key={i} className="space-y-4 mb-6">
+            {/* Reference Name */}
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">
+                {language === "en"
+                    ? `Reference ${i} Name:`
+                    : `Pangalan sa Tig-uyon ${i}:`}
+                </label>
+                <input
+                type="text"
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                    nameError[i - 1] ? "border-red-400" : "border-gray-200"
+                }`}
+                placeholder={language === "en" ? "Full name" : "Buong pangalan"}
+                value={props.appReferences[i - 1]?.name || ""}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^[A-Za-zñÑ.\- ]*$/.test(value)) {
+                    handleReferenceChange(i - 1, "name", value);
+                    const updatedErrors = [...nameError];
+                    updatedErrors[i - 1] = "";
+                    setNameError(updatedErrors);
+                    } else {
+                    const updatedErrors = [...nameError];
+                    updatedErrors[i - 1] =
+                        language === "en"
+                        ? "Invalid name format."
+                        : "Sayop ang porma sa ngalan.";
+                    setNameError(updatedErrors);
+                    }
+                }}
+                />
+                {(nameError[i - 1] ||
+                (refErrors[i - 1] &&
+                    refErrors[i - 1].toLowerCase().match(/duplicate name|applicant’s name/))) && (
+                <p className="text-sm text-red-600 mt-1">
+                    {nameError[i - 1] ||
+                    refErrors[i - 1]
+                        .split("•")
+                        .filter(
+                        (err) =>
+                            err.toLowerCase().includes("duplicate name") ||
+                            err.toLowerCase().includes("applicant’s name")
+                        )
+                        .join(" • ")}
+                </p>
+                )}
+            </div>
+
+            {/* Reference Contact */}
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">
+                {language === "en" ? "Contact Number:" : "Numero ng Telepono:"}
+                </label>
+                <input
+                type="text"
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                    refErrors[i - 1] &&
+                    refErrors[i - 1].toLowerCase().includes("contact")
+                    ? "border-red-400"
+                    : "border-gray-200"
+                }`}
+                placeholder="09XXXXXXXXX"
+                value={props.appReferences[i - 1]?.contact || ""}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value) && value.length <= 11) {
+                    handleReferenceChange(i - 1, "contact", value);
+                    }
+                }}
+                onBlur={(e) => {
+                    const v = e.target.value.trim();
+                    const next = [...refErrors];
+                    if (v && !/^09\d{9}$/.test(v)) {
+                    next[i - 1] = "Invalid mobile format";
+                    } else {
+                    next[i - 1] = ""; 
+                    validateReferenceUniqueness(props.appReferences, appContact);
+                    }
+                    setRefErrors(next);
+                }}
+                aria-invalid={
+                    !!refErrors[i - 1] &&
+                    refErrors[i - 1].toLowerCase().includes("contact")
+                }
+                />
+                {refErrors[i - 1] &&
+                refErrors[i - 1].toLowerCase().match(/contact|mobile|digits/) && (
+                    <p className="text-sm text-red-600 mt-1">
+                    {refErrors[i - 1]}
+                    </p>
+                )}
+            </div>
+
+            {/* Reference Relationship */}
+            <div>
+                <label className="block font-medium mb-2 text-gray-700">
+                {language === "en" ? "Relationship:" : "Relasyon:"}
+                </label>
+                <input
+                type="text"
+                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                placeholder={
+                    language === "en"
+                    ? "e.g., Friend, Sibling"
+                    : "hal. Higala, Igsoon"
+                }
+                value={props.appReferences[i - 1]?.relation || ""}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    const wordCount = value.trim().split(/\s+/).length;
+                    if (wordCount <= 3) {
+                    handleReferenceChange(i - 1, "relation", value);
+                    }
+                }}
+                />
+            </div>
+            </div>
+        ))}
+        </div>
+      </div>
+  );
+}
