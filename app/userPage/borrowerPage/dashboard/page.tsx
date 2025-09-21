@@ -1,5 +1,78 @@
 'use client';
 
+
+
+// PaymentHistoryModal component for animation control
+type Payment = {
+  _id?: string;
+  referenceNumber: string;
+  datePaid?: string;
+  amount?: number;
+  mode: string;
+};
+
+interface PaymentHistoryModalProps {
+  isOpen: boolean;
+  animateIn: boolean;
+  onClose: () => void;
+  paidPayments: Payment[];
+}
+
+function PaymentHistoryModal({ isOpen, animateIn, onClose, paidPayments }: PaymentHistoryModalProps) {
+  const [shouldRender, setShouldRender] = React.useState(isOpen);
+  React.useEffect(() => {
+    if (isOpen) setShouldRender(true);
+    else {
+      const timeout = setTimeout(() => setShouldRender(false), 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+  if (!shouldRender) return null;
+  return (
+    <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-3xl p-6 relative text-black transform transition-all duration-300 ease-out overflow-y-auto max-h-[80vh] ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+        <button
+          className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-lg font-bold"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+        {paidPayments.length === 0 ? (
+          <p className="text-gray-500 text-center py-6">No paid payments yet.</p>
+        ) : (
+          <div className="overflow-x-auto mt-6">
+            <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-gray-700 font-medium">Reference Number</th>
+                  <th className="px-4 py-3 text-left text-gray-700 font-medium">Payment Date</th>
+                  <th className="px-4 py-3 text-left text-gray-700 font-medium">Amount Paid</th>
+                  <th className="px-4 py-3 text-left text-gray-700 font-medium">Mode</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paidPayments.map((payment: Payment, index: number) => (
+                  <tr
+                    key={payment._id || index}
+                    className="bg-white transition-colors"
+                  >
+                    <td className="px-4 py-3 border-b border-gray-200 text-gray-800">{payment.referenceNumber}</td>
+                    <td className="px-4 py-3 border-b border-gray-200 text-gray-700">
+                      {payment.datePaid ? new Date(payment.datePaid).toLocaleDateString('en-PH') : '-'}
+                    </td>
+                    <td className="px-4 py-3 border-b border-gray-200 text-gray-800">₱{payment.amount?.toLocaleString() ?? '0'}</td>
+                    <td className="px-4 py-3 border-b border-gray-200 text-green-700 font-medium">{payment.mode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 import React, { useState, useEffect, act } from 'react';
 import { FiMaximize } from 'react-icons/fi';
 import Borrower from '../page';
@@ -38,6 +111,7 @@ interface Payments {
 
 export default function BorrowerDashboard() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentModalAnimateIn, setPaymentModalAnimateIn] = useState(false);
 
   const [activeLoan, setActiveLoan] = useState<Loan | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -108,7 +182,8 @@ useEffect(() => {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`);
+  if (!activeLoan) return;
+  const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`);
         if (!res.ok) throw new Error('Failed to fetch collections');
         const data: Collection[] = await res.json();
         setCollections(data);
@@ -189,8 +264,16 @@ async function handlePay(collection: Collection) {
 }
 
 
-  if (loading) return <p className="text-center mt-8">Loading...</p>;
-  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
+  // Animate Payment Modal like Login Modal
+  useEffect(() => {
+    if (isPaymentModalOpen) {
+      setPaymentModalAnimateIn(false);
+      const timer = setTimeout(() => setPaymentModalAnimateIn(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setPaymentModalAnimateIn(false);
+    }
+  }, [isPaymentModalOpen]);
 
   const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return "-";
@@ -201,6 +284,9 @@ async function handlePay(collection: Collection) {
     });
   };
 
+  if (loading) return <p className="text-center mt-8">Loading...</p>;
+  if (error) return <p className="text-center mt-8 text-red-600">{error}</p>;
+
   return (
     <Borrower>
       <div className="min-h-screen bg-gray-50 flex p-6 gap-6 text-black">
@@ -208,24 +294,55 @@ async function handlePay(collection: Collection) {
         <div className="w-1/2 flex flex-col gap-6">
           {/* Top box */}
          {/* Loan Details Card */}
-        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-6">
-          <h2 className="font-semibold text-xl text-gray-800 mb-2">Loan Details</h2>
-          <div className="grid grid-cols-2 gap-6 text-gray-700">
+        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-6 border border-red-100 relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, #fff 60%, #ffe5e5 100%)', opacity: 0.18}}></div>
+          <h2 className="font-semibold text-xl text-gray-800 mb-4 flex items-center gap-2 z-10">
+            <span className="text-red-600"><svg className="w-6 h-6 inline-block align-middle" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 0V4m0 7v9m0 0H7m5 0h5"/></svg></span>
+            <span>Loan Details</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-6 text-gray-700 z-10">
             {/* Left Column */}
-            <div className="flex flex-col gap-3">
-              <div><span className="font-medium text-gray-500">Loan ID</span><p>{activeLoan?.loanId || 'N/A'}</p></div>
-              <div><span className="font-medium text-gray-500">Loan Type</span><p>{activeLoan?.loanType || 'N/A'}</p></div>
-              <div><span className="font-medium text-gray-500">Date Disbursed</span><p>{formatDate(activeLoan?.dateDisbursed)}</p></div>
-              <div><span className="font-medium text-gray-500">Interest Rate</span><p>{activeLoan?.interestRate}%</p></div>
+            <div className="flex flex-col gap-4 pr-4 border-r border-gray-200">
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Loan ID</span>
+                <span className="ml-auto font-semibold text-gray-800">{activeLoan?.loanId || 'N/A'}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Loan Type</span>
+                <span className="ml-auto font-semibold text-gray-800">{activeLoan?.loanType || 'N/A'}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Date Disbursed</span>
+                <span className="ml-auto font-semibold text-gray-800">{formatDate(activeLoan?.dateDisbursed)}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Interest Rate</span>
+                <span className="ml-auto font-semibold text-gray-800">{activeLoan?.interestRate}%</span>
+              </div>
             </div>
 
             {/* Right Column */}
-            <div className="flex flex-col gap-3">
-              <div><span className="font-medium text-gray-500">Principal</span><p>₱{activeLoan?.principal?.toLocaleString() ?? '0'}</p></div>
-              <div><span className="font-medium text-gray-500">Interest Amount</span><p>₱{activeLoan?.interestAmount?.toLocaleString() ?? '0'}</p></div>
-              <div><span className="font-medium text-gray-500">Total Interest</span><p>₱{activeLoan?.totalInterest?.toLocaleString() ?? '0'}</p></div>
-              <div><span className="font-medium text-gray-500">Total Payable</span><p>₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</p></div>
-              <div><span className="font-medium text-gray-500">Monthly Due</span><p>₱{activeLoan?.monthlyDue?.toLocaleString() ?? '0'}</p></div>
+            <div className="flex flex-col gap-4 pl-4">
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Principal</span>
+                <span className="ml-auto font-bold text-gray-800 text-lg">₱{activeLoan?.principal?.toLocaleString() ?? '0'}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Interest Amount</span>
+                <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.interestAmount?.toLocaleString() ?? '0'}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Total Interest</span>
+                <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.totalInterest?.toLocaleString() ?? '0'}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Total Payable</span>
+                <span className="ml-auto font-bold text-gray-800 text-lg">₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</span>
+              </div>
+              <div className="flex items-center group transition">
+                <span className="font-medium text-gray-500">Monthly Due</span>
+                <span className="ml-auto font-bold text-gray-800 text-lg">₱{activeLoan?.monthlyDue?.toLocaleString() ?? '0'}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -416,51 +533,13 @@ async function handlePay(collection: Collection) {
 
 
         {/* Payment History Modal */}
-      {isPaymentModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-3xl relative overflow-y-auto max-h-[80vh]">
-            <button
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-lg font-bold"
-              onClick={() => setIsPaymentModalOpen(false)}
-            >
-              ✕
-            </button>
-            {paidPayments.length === 0 ? (
-              <p className="text-gray-500 text-center py-6">No paid payments yet.</p>
-            ) : (
-              <div className="overflow-x-auto mt-6">
-                <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Reference Number</th>
-                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Payment Date</th>
-                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Amount Paid</th>
-                      <th className="px-4 py-3 text-left text-gray-700 font-medium">Mode</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paidPayments.map((payment, index) => (
-                      <tr
-                        key={payment._id || index}
-                        className={`transition-colors ${
-                          index % 2 === 0 ? 'bg-white' : 'bg-green-50'
-                        } hover:bg-green-100`}
-                      >
-                        <td className="px-4 py-3 border-b text-gray-800">{payment.referenceNumber}</td>
-                        <td className="px-4 py-3 border-b text-gray-700">
-                          {payment.datePaid ? new Date(payment.datePaid).toLocaleDateString('en-PH') : '-'}
-                        </td>
-                        <td className="px-4 py-3 border-b text-gray-800 font-semibold">₱{payment.amount?.toLocaleString() ?? '0'}</td>
-                        <td className="px-4 py-3 border-b text-green-700 font-medium">{payment.mode}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Payment History Modal with closing animation */}
+      <PaymentHistoryModal
+        isOpen={isPaymentModalOpen}
+        animateIn={paymentModalAnimateIn}
+        onClose={() => setIsPaymentModalOpen(false)}
+        paidPayments={paidPayments}
+      />
 
 
 
