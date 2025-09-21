@@ -1,5 +1,6 @@
 'use client';
 
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useChangePassword } from './logic';
 
 export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
@@ -58,7 +59,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowNew(!showNew)}
               >
-                {showNew ? '🙈' : '👁️'}
+                {showNew ? <FiEyeOff size={18} /> : <FiEye size={18} />}
               </button>
             </div>
           </div>
@@ -92,7 +93,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowConfirm(!showConfirm)}
               >
-                {showConfirm ? '🙈' : '👁️'}
+                {showConfirm ? <FiEyeOff size={18} /> : <FiEye size={18} />}
               </button>
             </div>
           </div>
