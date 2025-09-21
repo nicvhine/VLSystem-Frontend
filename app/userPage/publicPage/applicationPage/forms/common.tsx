@@ -2,7 +2,7 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import axios from "axios";
 
@@ -38,6 +38,8 @@ interface CommonProps {
   setAppAddress: React.Dispatch<React.SetStateAction<string>>;
   appTypeBusiness: string;
   setAppTypeBusiness: React.Dispatch<React.SetStateAction<string>>;
+  appBusinessName: string;
+  setAppBusinessName: React.Dispatch<React.SetStateAction<string>>;
   appDateStarted: string;
   setAppDateStarted: React.Dispatch<React.SetStateAction<string>>;
   appBusinessLoc: string;
@@ -104,6 +106,7 @@ function MapComponent({
     appSpouseOccupation, setAppSpouseOccupation,
     appAddress, setAppAddress,
     appTypeBusiness, setAppTypeBusiness,
+    appBusinessName, setAppBusinessName,
     appDateStarted, setAppDateStarted,
     appBusinessLoc, setAppBusinessLoc,
     appMonthlyIncome, setAppMonthlyIncome,
@@ -123,6 +126,8 @@ function MapComponent({
 
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [refErrors, setRefErrors] = useState<string[]>(["", "", ""]);
+
+
 
   function validateReferenceUniqueness(
     refs: { name: string; contact: string; relation: string }[],
@@ -153,7 +158,7 @@ function MapComponent({
         });
       }
     });
-  
+
     numberMap.forEach((indices) => {
       if (indices.length > 1) {
         indices.forEach((i) => {
@@ -185,6 +190,7 @@ function MapComponent({
     setRefErrors(errors);
     return errors.every((e) => !e);
   }
+
   
 
   const handleReferenceChange = (
@@ -443,6 +449,15 @@ function MapComponent({
           type="text"
           value={appTypeBusiness}
           onChange={(e) => setAppTypeBusiness(e.target.value)}
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Business Name:' : 'Pangalan sa Negosyo:'}</label>
+        <input
+          type="text"
+          value={appBusinessName}
+          onChange={(e) => setAppBusinessName(e.target.value)}
           className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         />
       </div>

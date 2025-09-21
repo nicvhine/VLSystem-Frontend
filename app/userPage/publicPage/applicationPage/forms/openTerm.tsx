@@ -139,11 +139,21 @@ export default function OpenTermForm(props: OpenTermLoanFormProps) {
    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-     if (e.target.files) {
-       const files = Array.from(e.target.files);
-       setUploadedFiles((prev) => [...prev, ...files]);
-     }
-   };
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+  
+      if (uploadedFiles.length + files.length > 6) {
+        alert(language === "en"
+          ? "You must upload exactly 6 documents."
+          : "Kinahanglan nga 6 ra gyud ka dokumento ang i-upload."
+        );
+        return;
+      }
+  
+      setUploadedFiles((prev) => [...prev, ...files]);
+    }
+  };
+  
 
    const removeFile = (index: number) => {
     setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
