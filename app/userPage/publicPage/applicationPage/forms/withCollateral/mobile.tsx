@@ -58,7 +58,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     </div>
   );
 }
-import Common from "./common";
+import Common from "../common/common";
 
 const API_URL = "http://localhost:3001/loan-applications/with";
 
@@ -297,7 +297,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
   ];
 
   return (
-    <>
+    <div className="p-4 space-y-6 max-w-md mx-auto">
       <Common {...rest} language={language}
         appName={appName}
         setAppName={setAppName}
@@ -340,13 +340,13 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       />
 
       {/* Collateral Information */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+      <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral'}
         </h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+
+        <div className="space-y-4 mb-6">
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Collateral Type:' : 'Klase sa Kolateral:'}</label>
             <select 
               value={collateralType}
@@ -358,7 +358,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
               ))}
             </select>
           </div>
-          <div>
+          <div className="space-y-4 mb-6">
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Estimated Value:' : 'Gibanabanang Kantidad:'}</label>
             <input 
               type="number" 
@@ -368,7 +368,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
               placeholder={language === 'en' ? 'Enter estimated value' : 'Isulod ang gibanabanang kantidad'} 
             />
           </div>
-          <div className="col-span-2">
+          <div className="space-y-4 mb-6">
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Collateral Description:' : 'Deskripsyon sa Kolateral:'}</label>
             <textarea 
               value={collateralDescription}
@@ -392,17 +392,16 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
               <option value="Other">{language === 'en' ? 'Other' : 'Uban pa'}</option>
             </select>
           </div>
-        </div>
       </div>
 
       {/* Loan Details */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+      <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
+
+        <div className="space-y-4 mb-6">
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Purpose:' : 'Katuyoan sa Pahulam:'}</label>
             <input 
               value={appLoanPurpose}
@@ -411,7 +410,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
               placeholder={language === 'en' ? 'Enter Loan Purpose' : 'Isulod ang Katuyoan sa Pahulam'} 
             />
           </div>
-          <div>
+
+          <div className="space-y-4 mb-6">
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
             <select
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -429,7 +429,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
               ))}
             </select>
           </div>
-          <div>
+          <div className="space-y-4 mb-6">
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Terms (months):' : 'Panahon sa Pahulam (buwan):'}</label>
             <input 
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50" 
@@ -446,7 +446,6 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
             />
           </div>
         </div>
-      </div>
 
 
        {/* 2x2 Upload */}
@@ -547,6 +546,6 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
     onClose={closeModal}
   />
 )}
-    </>
+    </div>
   );
 }

@@ -60,7 +60,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
   );
 }
 
-import Common from "./common";
+import Common from "../common/common";
 
 const API_URL = "http://localhost:3001/loan-applications/without";
 
