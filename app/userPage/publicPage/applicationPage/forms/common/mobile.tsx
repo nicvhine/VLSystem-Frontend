@@ -173,10 +173,8 @@ export default function Common(props: CommonProps) {
   };
 
   return (
-    <div className="p-4 space-y-6 max-w-lg mx-auto">
-      
-      {/* Basic Information */}
-      <div className="bg-white p-4 rounded-lg shadow-sm">
+  
+    <div className="bg-white p-4 rounded-lg shadow-sm w-full">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
@@ -184,7 +182,7 @@ export default function Common(props: CommonProps) {
 
         {/* Name */}
         <div className="space-y-4 mb-6">
-        <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Name:" : "Ngalan:"}</label>
+          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Name:" : "Ngalan:"}</label>
           <input
             type="text"
             value={appName}
@@ -343,22 +341,20 @@ export default function Common(props: CommonProps) {
             />
           </MapContainer>
         </div>
-        </div>
-
         {/* Source of Income */}
         <div className="bg-white p-4 rounded-lg shadow-sm">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
             <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
             {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
-        </h4>
+          </h4>
 
-        {/* Radio Buttons */}
-        <div className="flex gap-6 mb-6">
+          {/* Radio Buttons */}
+          <div className="flex gap-6 mb-6">
             {[
-            { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
-            { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
+              { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
+              { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
             ].map(({ value, label }) => (
-            <label key={value} className="flex items-center">
+              <label key={value} className="flex items-center">
                 <input
                 type="radio"
                 name="employmentType"
@@ -374,15 +370,15 @@ export default function Common(props: CommonProps) {
 
         {/* Conditional Inputs */}
         {sourceOfIncome === 'business' && (
-            <div className="space-y-6">
+          <div className="space-y-6">
             <div>
-                <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Business:' : 'Matang sa Negosyo:'}</label>
-                <input
+              <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Business:' : 'Klase sa Negosyo:'}</label>
+              <input
                 type="text"
                 value={appTypeBusiness}
                 onChange={(e) => setAppTypeBusiness(e.target.value)}
                 className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                />
+              />
             </div>
 
             <div>
@@ -632,6 +628,6 @@ export default function Common(props: CommonProps) {
             </div>
         ))}
         </div>
-      </div>
-  );
+        </div>
+    );
 }
