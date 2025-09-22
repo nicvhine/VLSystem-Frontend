@@ -297,7 +297,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
   ];
 
   return (
-    <div className="p-4 space-y-6 max-w-md mx-auto">
+  <div className="max-w-md mx-auto w-full">
       <Common {...rest} language={language}
         appName={appName}
         setAppName={setAppName}
@@ -340,8 +340,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       />
 
       {/* Collateral Information */}
-      <div className="bg-white p-4 rounded-lg shadow-sm">
-      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+      <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
+      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center mb-4">
       <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral'}
         </h4>
@@ -395,8 +395,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       </div>
 
       {/* Loan Details */}
-      <div className="bg-white p-4 rounded-lg shadow-sm">
-      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+  <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
+  <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center mb-4">
       <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
@@ -449,8 +449,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
 
 
        {/* 2x2 Upload */}
-       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto mt-6">
+    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center mb-4">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
         </h4>
@@ -483,7 +483,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
 
 
       {/* Document Upload */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}

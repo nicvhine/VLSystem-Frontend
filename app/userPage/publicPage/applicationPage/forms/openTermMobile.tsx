@@ -1,8 +1,8 @@
 
 'use client';
-
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
+import Common from "./common/common";
 
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
 function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
@@ -16,7 +16,6 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     onClose();
     router.push('/');
   };
-  
   return (
     <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-8 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
@@ -61,34 +60,29 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
   );
 }
 
-import Common from "../common/common";
-
-const API_URL = "http://localhost:3001/loan-applications/without";
+const API_URL = "http://localhost:3001/loan-applications/open-term";
 
 type LoanOption = {
   amount: number;
-  months: number;
   interest: number;
 };
 
 const loanOptions: LoanOption[] = [
-  { amount: 10000, months: 5, interest: 10 },
-  { amount: 15000, months: 6, interest: 10 },
-  { amount: 20000, months: 8, interest: 10 },
-  { amount: 30000, months: 10, interest: 10 },
+  { amount: 50000, interest: 6 },
+  { amount: 100000, interest: 5 },
+  { amount: 200000, interest: 4 },
+  { amount: 500000, interest: 3 },
 ];
 
-interface WithoutCollateralFormProps {
+interface OpenTermMobileProps {
   language: 'en' | 'ceb';
   onLanguageChange?: (lang: 'en' | 'ceb') => void;
 }
 
-export default function WithoutCollateralForm({ language, onLanguageChange }: WithoutCollateralFormProps) {
+export default function OpenTermMobile({ language, onLanguageChange }: OpenTermMobileProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
-  // Allowed image types for 2x2 photo
   const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-  // Business name state
   const [appBusinessName, setAppBusinessName] = useState("");
 
   const [appName, setAppName] = useState("");
@@ -112,165 +106,149 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" }
-  ]); 
+  ]);
+
+  // Collateral specific states
+  const [collateralType, setCollateralType] = useState("");
+  const [collateralValue, setCollateralValue] = useState<number>(0);
+  const [collateralDescription, setCollateralDescription] = useState("");
+  const [ownershipStatus, setOwnershipStatus] = useState("");
 
   // Success Modal State
-const [showSuccessModal, setShowSuccessModal] = useState(false);
-const [loanId, setLoanId] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [loanId, setLoanId] = useState<string | null>(null);
 
-// Close Modal Function
-const closeModal = () => {
-  setShowSuccessModal(false);
-  setLoanId(null);
-};
-
-  // Translations for select options
-  const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
-
+  // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
+  // Handlers
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       setUploadedFiles((prev) => [...prev, ...files]);
     }
   };
-
-    // Remove file by index
-    const removeFile = (index: number) => {
-      setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-    };  
-
-      //2x2 upload state
-    const [photo2x2, setPhoto2x2] = useState<File[]>([]);
-
-  
-    const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (e.target.files) {
-        const files = Array.from(e.target.files);
-        files.forEach((file) => {
-          if (!validTypes.includes(file.type)) {
-            alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+  const removeFile = (index: number) => {
+    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      files.forEach((file) => {
+        if (!validTypes.includes(file.type)) {
+          alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+          return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+          alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+          return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          const { width, height } = img;
+          const aspectRatio = width / height;
+          if (aspectRatio < 0.9 || aspectRatio > 1.1) {
+            alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
             return;
           }
-          if (file.size > 2 * 1024 * 1024) {
-            alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
-            return;
-          }
-          const img = new Image();
-          img.onload = () => {
-            const { width, height } = img;
-            const aspectRatio = width / height;
-            if (aspectRatio < 0.9 || aspectRatio > 1.1) {
-              alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
-              return;
-            }
-            setPhoto2x2((prev) => [...prev, file]);
-          };
-          img.src = URL.createObjectURL(file);
-        });
-      }
-    };
-    
+          setPhoto2x2((prev) => [...prev, file]);
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
+  };
+  const removeProfile = (index: number) => {
+    setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
+  };
 
-    const removeProfile = (index: number) => {
-      setPhoto2x2((prev) => prev.filter((_, i) => i !== index));
-    };
-    
-  
-    
-    const handleSubmit = async () => {
-      
-      if (!appLoanPurpose || !selectedLoan) {
-        alert(language === 'en'
-          ? "Please fill in all required fields."
-          : "Palihug pun-a ang tanang kinahanglan nga field."
-        );
-        return;
+  const handleSubmit = async () => {
+    if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
+      alert(language === 'en'
+        ? "Please fill in all required fields including collateral information."
+        : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral."
+      );
+      return;
+    }
+    if (uploadedFiles.length === 0) {
+      alert(language === "en"
+        ? "Please upload at least one document."
+        : "Palihug i-upload ang usa ka dokumento."
+      );
+      return;
+    }
+    if (photo2x2.length === 0) {
+      alert(language === "en"
+        ? "Please upload your 2x2 photo."
+        : "Palihug i-upload ang imong 2x2 nga litrato."
+      );
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("appName", appName);
+      formData.append("appDob", appDob);
+      formData.append("appContact", appContact);
+      formData.append("appEmail", appEmail);
+      formData.append("appMarital", appMarital);
+      formData.append("appChildren", String(appChildren));
+      formData.append("appSpouseName", appSpouseName);
+      formData.append("appSpouseOccupation", appSpouseOccupation);
+      formData.append("appAddress", appAddress);
+      formData.append("appTypeBusiness", appTypeBusiness);
+      formData.append("appBusinessName", appBusinessName);
+      formData.append("appDateStarted", appDateStarted);
+      formData.append("appBusinessLoc", appBusinessLoc);
+      formData.append("appMonthlyIncome", String(appMonthlyIncome));
+      formData.append("appOccupation", appOccupation);
+      formData.append("appEmploymentStatus", appEmploymentStatus);
+      formData.append("appCompanyName", appCompanyName);
+      formData.append("sourceOfIncome", sourceOfIncome);
+      formData.append("appLoanAmount", String(selectedLoan.amount));
+      formData.append("appInterest", String(selectedLoan.interest));
+      formData.append("appLoanPurpose", appLoanPurpose);
+      // Collateral fields
+      formData.append("collateralType", collateralType);
+      formData.append("collateralValue", String(collateralValue));
+      formData.append("collateralDescription", collateralDescription);
+      formData.append("ownershipStatus", ownershipStatus);
+      appReferences.forEach((ref, i) => {
+        formData.append(`appReferences[${i}][name]`, ref.name);
+        formData.append(`appReferences[${i}][contact]`, ref.contact);
+        formData.append(`appReferences[${i}][relation]`, ref.relation);
+      });
+      uploadedFiles.forEach(file => {
+        formData.append("documents", file);
+      });
+      if (photo2x2[0]) {
+        formData.append("profilePic", photo2x2[0]);
       }
+      const res = await fetch(API_URL, { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setLoanId(data.application?.applicationId);
+        setShowSuccessModal(true);
+        setAppLoanPurpose("");
+        setSelectedLoan(null);
+        setUploadedFiles([]);
+        setPhoto2x2([]);
+        setCollateralType("");
+        setCollateralValue(0);
+        setCollateralDescription("");
+        setOwnershipStatus("");
+      } else {
+        const errorText = await res.text();
+        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+      }
+    } catch (error) {
+      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+    }
+  };
 
-      if (uploadedFiles.length === 0) {
-        alert(language === 'en'
-          ? "Please upload at least one document."
-          : "Palihug i-upload ang usa ka dokumento."
-        );
-        return;
-      }
-
-      if (photo2x2.length === 0) {
-        alert(language === "en"
-          ? "Please upload your 2x2 photo."
-          : "Palihug i-upload ang imong 2x2 nga litrato."
-        );
-        return;
-      }
-    
-      try {
-        const formData = new FormData();
-        formData.append("appName", appName);
-        formData.append("appDob", appDob);
-        formData.append("appContact", appContact);
-        formData.append("appEmail", appEmail);
-        formData.append("appMarital", appMarital);
-        formData.append("appChildren", String(appChildren));
-        formData.append("appSpouseName", appSpouseName);
-        formData.append("appSpouseOccupation", appSpouseOccupation);
-        formData.append("appAddress", appAddress);
-        formData.append("appTypeBusiness", appTypeBusiness);
-        formData.append("appBusinessName", appBusinessName);
-        formData.append("appDateStarted", appDateStarted);
-        formData.append("appBusinessLoc", appBusinessLoc);
-        formData.append("appMonthlyIncome", String(appMonthlyIncome));
-        formData.append("appOccupation", appOccupation);
-        formData.append("appEmploymentStatus", appEmploymentStatus);
-        formData.append("appCompanyName", appCompanyName);
-        formData.append("sourceOfIncome", sourceOfIncome);
-        formData.append("appLoanAmount", String(selectedLoan.amount));
-        formData.append("appLoanTerms", String(selectedLoan.months));
-        formData.append("appInterest", String(selectedLoan.interest));
-        formData.append("appLoanPurpose", appLoanPurpose);
-        appReferences.forEach((ref, i) => {
-          formData.append(`appReferences[${i}][name]`, ref.name);
-          formData.append(`appReferences[${i}][contact]`, ref.contact);
-          formData.append(`appReferences[${i}][relation]`, ref.relation);
-        });
-        
-    
-        // Append multiple document files
-        uploadedFiles.forEach(file => {
-          formData.append("documents", file);
-        });
-    
-        // Append profile picture (2x2 photo) correctly
-        if (photo2x2[0]) {
-          formData.append("profilePic", photo2x2[0]);
-        }
-    
-        const res = await fetch(API_URL, { method: "POST", body: formData });
-    
-        if (res.ok) {
-          const data = await res.json();
-          setLoanId(data.application?.applicationId);
-          setShowSuccessModal(true);
-    
-          // Reset form
-          setAppLoanPurpose("");
-          setSelectedLoan(null);
-          setUploadedFiles([]);
-          setPhoto2x2([]);
-        } else {
-          const errorText = await res.text();
-          alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
-        }
-      } catch (error) {
-        alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
-      }
-    };
-    
-
+  const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
   return (
-  <div className="max-w-md mx-auto w-full">
+    <>
       <Common
         appName={appName}
         setAppName={setAppName}
@@ -295,8 +273,6 @@ const closeModal = () => {
         appBusinessName={appBusinessName}
         setAppBusinessName={setAppBusinessName}
         appDateStarted={appDateStarted}
-        appReferences={appReferences}
-        setAppReferences={setAppReferences}
         setAppDateStarted={setAppDateStarted}
         appBusinessLoc={appBusinessLoc}
         setAppBusinessLoc={setAppBusinessLoc}
@@ -310,19 +286,21 @@ const closeModal = () => {
         setAppCompanyName={setAppCompanyName}
         sourceOfIncome={sourceOfIncome}
         setSourceOfIncome={setSourceOfIncome}
+        appReferences={appReferences}
+        setAppReferences={setAppReferences}
         language={language}
       />
 
-
       {/* Loan Details */}
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-6 mt-6">
-    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center mb-4">
-        <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
         </h4>
 
-        <div className="space-y-4 mb-6">
-        <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Name:" : "Ngalan:"}</label>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Purpose:' : 'Katuyoan sa Pahulam:'}</label>
             <input
               value={appLoanPurpose}
               onChange={(e) => setAppLoanPurpose(e.target.value)}
@@ -331,8 +309,8 @@ const closeModal = () => {
             />
           </div>
 
-          <div className="space-y-4 mb-6">
-          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Date of Birth:" : "Petsa sa Pagkatawo:"}</label>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
             <select
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               onChange={(e) => {
@@ -351,15 +329,6 @@ const closeModal = () => {
           </div>
 
           <div>
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Terms (months):' : 'Panahon sa Pahulam (buwan):'}</label>
-            <input
-              className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
-              value={selectedLoan?.months || ""}
-              readOnly
-            />
-          </div>
-
-          <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Interest Rate (%):' : 'Bulan nga Interest Rate (%):'}</label>
             <input
               className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
@@ -367,11 +336,63 @@ const closeModal = () => {
               readOnly
             />
           </div>
-       
+        </div>
       </div>
 
-       {/* 2x2 Upload */}
-  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto">
+      {/* Collateral Information */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral'}
+        </h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Collateral:' : 'Klase sa Kolateral:'}</label>
+            <input
+              value={collateralType}
+              onChange={(e) => setCollateralType(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder={language === 'en' ? 'Enter Collateral Type' : 'Isulod ang Klase sa Kolateral'}
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Estimated Value:' : 'Gibanabanang Kantidad:'}</label>
+            <input
+              type="number"
+              value={collateralValue}
+              onChange={(e) => setCollateralValue(Number(e.target.value))}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder={language === 'en' ? 'Enter Value' : 'Isulod ang Kantidad'}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Description:' : 'Deskripsyon:'}</label>
+            <textarea
+              value={collateralDescription}
+              onChange={(e) => setCollateralDescription(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              placeholder={language === 'en' ? 'Describe the collateral' : 'Ilarawan ang kolateral'}
+              rows={2}
+            />
+          </div>
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Ownership Status:' : 'Kahimtang sa Pagpanag-iya:'}</label>
+            <select
+              value={ownershipStatus}
+              onChange={(e) => setOwnershipStatus(e.target.value)}
+              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            >
+              <option value="">{language === 'en' ? 'Select status' : 'Pilia ang kahimtang'}</option>
+              <option value="owned">{language === 'en' ? 'Owned' : 'Gipanag-iya'}</option>
+              <option value="mortgaged">{language === 'en' ? 'Mortgaged' : 'Naka-mortgage'}</option>
+              <option value="leased">{language === 'en' ? 'Leased' : 'Gipa-abang'}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* 2x2 Upload */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
@@ -403,14 +424,18 @@ const closeModal = () => {
         )}
       </div>
 
-       {/* Document Upload */}
-  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto">
+      {/* Document Upload */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'Iupload ang mga kinahanglanon nga dokumento'}
         </h4>
         <div>
-        <label className="block text-sm mb-3 text-gray-500">{language === 'en' ? 'Refer to the sidebar for the list of required documents.' : 'Tan-awa ang sidebar para sa listahan sa mga kinahanglan nga dokumento.'}</label>
+        <label className="block text-sm mb-3 text-gray-500">
+          {language === 'en'
+            ? 'Required Documents: Valid ID, Proof of Billing, Proof of Income, 2x2 Photo, Collateral Document, Appraisal Report of Collateral.'
+            : 'Mga Kinahanglanon: Valid ID, Proof of Billing, Proof of Income, 2x2 nga Litrato, Dokumento sa Kolateral, Appraisal Report sa Kolateral.'}
+        </label>
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
             <input
               type="file"
@@ -464,11 +489,10 @@ const closeModal = () => {
       <SuccessModalWithAnimation
         language={language}
         loanId={loanId}
-        onClose={closeModal}
+        onClose={() => setShowSuccessModal(false)}
       />
     )}
 
-
-    </div>
+    </>
   );
 }

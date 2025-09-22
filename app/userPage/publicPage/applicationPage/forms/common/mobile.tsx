@@ -174,7 +174,7 @@ export default function Common(props: CommonProps) {
 
   return (
   
-    <div className="bg-white p-4 rounded-lg shadow-sm w-full">
+  <div className="bg-white p-4 rounded-lg shadow-sm w-full max-w-md mx-auto">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
@@ -325,7 +325,7 @@ export default function Common(props: CommonProps) {
           />
         </div>
 
-        <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200" style={{ height: 300 }}>
+  <div className="rounded-lg overflow-hidden shadow-sm border border-gray-200 mb-6" style={{ height: 300 }}>
           <MapContainer
             center={markerPosition || [12.8797, 121.774]}
             zoom={6}
@@ -342,7 +342,7 @@ export default function Common(props: CommonProps) {
           </MapContainer>
         </div>
         {/* Source of Income */}
-        <div className="bg-white p-4 rounded-lg shadow-sm">
+  <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
           <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
             <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
             {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
@@ -501,7 +501,7 @@ export default function Common(props: CommonProps) {
         </div>
 
         {/* References Section */}
-        <div className="bg-white p-4 rounded-lg shadow-sm">
+  <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
             <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
             {language === "en" ? "Character References" : "Mga Tigi-uyonanan"}
