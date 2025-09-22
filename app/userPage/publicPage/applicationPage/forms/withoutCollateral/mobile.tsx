@@ -49,6 +49,11 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
               <p className="text-lg font-semibold text-red-600">{loanId}</p>
             </div>
           )}
+          <span className="block text-xs text-gray-500 mb-6">
+            {language === 'en'
+              ? 'We will soon notify you for the next step of your application through your provided contact details. Stay tuned for the updates.'
+              : 'Amo kang pahibaw-an sa sunod nga lakang sa imong aplikasyon pinaagi sa imong gihatag nga contact details. Pabilin sa pagpaminaw para sa mga update.'}
+          </span>
           <button
             onClick={handleClose}
             className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
