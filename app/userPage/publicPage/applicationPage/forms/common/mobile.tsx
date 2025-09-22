@@ -342,31 +342,31 @@ export default function Common(props: CommonProps) {
           </MapContainer>
         </div>
         {/* Source of Income */}
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-            <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-            {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
-          </h4>
 
-          {/* Radio Buttons */}
-          <div className="flex gap-6 mb-6">
-            {[
-              { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
-              { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
-            ].map(({ value, label }) => (
-              <label key={value} className="flex items-center">
-                <input
-                type="radio"
-                name="employmentType"
-                value={value}
-                checked={sourceOfIncome === value}
-                onChange={(e) => setSourceOfIncome(e.target.value)}
-                className="mr-2 text-red-600 focus:ring-red-500"
-                />
-                <span className="text-gray-700">{label}</span>
-            </label>
-            ))}
-        </div>
+  <div className="mb-6">
+    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+      <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+      {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
+    </h4>
+    {/* Radio Buttons */}
+    <div className="flex gap-6 mb-6">
+      {[
+        { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
+        { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
+      ].map(({ value, label }) => (
+        <label key={value} className="flex items-center">
+          <input
+            type="radio"
+            name="employmentType"
+            value={value}
+            checked={sourceOfIncome === value}
+            onChange={(e) => setSourceOfIncome(e.target.value)}
+            className="mr-2 text-red-600 focus:ring-red-500"
+          />
+          <span className="text-gray-700">{label}</span>
+        </label>
+      ))}
+    </div>
 
         {/* Conditional Inputs */}
         {sourceOfIncome === 'business' && (
@@ -501,133 +501,126 @@ export default function Common(props: CommonProps) {
         </div>
 
         {/* References Section */}
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-            <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-            {language === "en" ? "Character References" : "Mga Tigi-uyonanan"}
-        </h4>
+  <div className="mb-6">
+    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+      <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+      {language === "en" ? "Character References" : "Mga Tigi-uyonanan"}
+    </h4>
+    {[1, 2, 3].map((i) => (
+      <React.Fragment key={i}>
+        {/* Reference Name */}
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === "en"
+            ? `Reference ${i} Name:`
+            : `Pangalan sa Tig-uyon ${i}:`}
+        </label>
+        <input
+          type="text"
+          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+            nameError[i - 1] ? "border-red-400" : "border-gray-200"
+          }`}
+          placeholder={language === "en" ? "Full name" : "Buong pangalan"}
+          value={props.appReferences[i - 1]?.name || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^[A-Za-zñÑ.\- ]*$/.test(value)) {
+              handleReferenceChange(i - 1, "name", value);
+              const updatedErrors = [...nameError];
+              updatedErrors[i - 1] = "";
+              setNameError(updatedErrors);
+            } else {
+              const updatedErrors = [...nameError];
+              updatedErrors[i - 1] =
+                language === "en"
+                  ? "Invalid name format."
+                  : "Sayop ang porma sa ngalan.";
+              setNameError(updatedErrors);
+            }
+          }}
+        />
+        {(nameError[i - 1] ||
+          (refErrors[i - 1] &&
+            refErrors[i - 1].toLowerCase().match(/duplicate name|applicant’s name/))) && (
+          <p className="text-sm text-red-600 mt-1">
+            {nameError[i - 1] ||
+              refErrors[i - 1]
+                .split("•")
+                .filter(
+                  (err) =>
+                    err.toLowerCase().includes("duplicate name") ||
+                    err.toLowerCase().includes("applicant’s name")
+                )
+                .join(" • ")}
+          </p>
+        )}
 
-        {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-4 mb-6">
-            {/* Reference Name */}
-            <div>
-                <label className="block font-medium mb-2 text-gray-700">
-                {language === "en"
-                    ? `Reference ${i} Name:`
-                    : `Pangalan sa Tig-uyon ${i}:`}
-                </label>
-                <input
-                type="text"
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    nameError[i - 1] ? "border-red-400" : "border-gray-200"
-                }`}
-                placeholder={language === "en" ? "Full name" : "Buong pangalan"}
-                value={props.appReferences[i - 1]?.name || ""}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^[A-Za-zñÑ.\- ]*$/.test(value)) {
-                    handleReferenceChange(i - 1, "name", value);
-                    const updatedErrors = [...nameError];
-                    updatedErrors[i - 1] = "";
-                    setNameError(updatedErrors);
-                    } else {
-                    const updatedErrors = [...nameError];
-                    updatedErrors[i - 1] =
-                        language === "en"
-                        ? "Invalid name format."
-                        : "Sayop ang porma sa ngalan.";
-                    setNameError(updatedErrors);
-                    }
-                }}
-                />
-                {(nameError[i - 1] ||
-                (refErrors[i - 1] &&
-                    refErrors[i - 1].toLowerCase().match(/duplicate name|applicant’s name/))) && (
-                <p className="text-sm text-red-600 mt-1">
-                    {nameError[i - 1] ||
-                    refErrors[i - 1]
-                        .split("•")
-                        .filter(
-                        (err) =>
-                            err.toLowerCase().includes("duplicate name") ||
-                            err.toLowerCase().includes("applicant’s name")
-                        )
-                        .join(" • ")}
-                </p>
-                )}
-            </div>
+        {/* Reference Contact */}
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === "en" ? "Contact Number:" : "Numero ng Telepono:"}
+        </label>
+        <input
+          type="text"
+          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+            refErrors[i - 1] &&
+            refErrors[i - 1].toLowerCase().includes("contact")
+              ? "border-red-400"
+              : "border-gray-200"
+          }`}
+          placeholder="09XXXXXXXXX"
+          value={props.appReferences[i - 1]?.contact || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value) && value.length <= 11) {
+              handleReferenceChange(i - 1, "contact", value);
+            }
+          }}
+          onBlur={(e) => {
+            const v = e.target.value.trim();
+            const next = [...refErrors];
+            if (v && !/^09\d{9}$/.test(v)) {
+              next[i - 1] = "Invalid mobile format";
+            } else {
+              next[i - 1] = "";
+              validateReferenceUniqueness(props.appReferences, appContact);
+            }
+            setRefErrors(next);
+          }}
+          aria-invalid={
+            !!refErrors[i - 1] &&
+            refErrors[i - 1].toLowerCase().includes("contact")
+          }
+        />
+        {refErrors[i - 1] &&
+          refErrors[i - 1].toLowerCase().match(/contact|mobile|digits/) && (
+            <p className="text-sm text-red-600 mt-1">
+              {refErrors[i - 1]}
+            </p>
+          )}
 
-            {/* Reference Contact */}
-            <div>
-                <label className="block font-medium mb-2 text-gray-700">
-                {language === "en" ? "Contact Number:" : "Numero ng Telepono:"}
-                </label>
-                <input
-                type="text"
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    refErrors[i - 1] &&
-                    refErrors[i - 1].toLowerCase().includes("contact")
-                    ? "border-red-400"
-                    : "border-gray-200"
-                }`}
-                placeholder="09XXXXXXXXX"
-                value={props.appReferences[i - 1]?.contact || ""}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^\d*$/.test(value) && value.length <= 11) {
-                    handleReferenceChange(i - 1, "contact", value);
-                    }
-                }}
-                onBlur={(e) => {
-                    const v = e.target.value.trim();
-                    const next = [...refErrors];
-                    if (v && !/^09\d{9}$/.test(v)) {
-                    next[i - 1] = "Invalid mobile format";
-                    } else {
-                    next[i - 1] = ""; 
-                    validateReferenceUniqueness(props.appReferences, appContact);
-                    }
-                    setRefErrors(next);
-                }}
-                aria-invalid={
-                    !!refErrors[i - 1] &&
-                    refErrors[i - 1].toLowerCase().includes("contact")
-                }
-                />
-                {refErrors[i - 1] &&
-                refErrors[i - 1].toLowerCase().match(/contact|mobile|digits/) && (
-                    <p className="text-sm text-red-600 mt-1">
-                    {refErrors[i - 1]}
-                    </p>
-                )}
-            </div>
-
-            {/* Reference Relationship */}
-            <div>
-                <label className="block font-medium mb-2 text-gray-700">
-                {language === "en" ? "Relationship:" : "Relasyon:"}
-                </label>
-                <input
-                type="text"
-                className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                placeholder={
-                    language === "en"
-                    ? "e.g., Friend, Sibling"
-                    : "hal. Higala, Igsoon"
-                }
-                value={props.appReferences[i - 1]?.relation || ""}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    const wordCount = value.trim().split(/\s+/).length;
-                    if (wordCount <= 3) {
-                    handleReferenceChange(i - 1, "relation", value);
-                    }
-                }}
-                />
-            </div>
-            </div>
-        ))}
-        </div>
+        {/* Reference Relationship */}
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === "en" ? "Relationship:" : "Relasyon:"}
+        </label>
+        <input
+          type="text"
+          className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          placeholder={
+            language === "en"
+              ? "e.g., Friend, Sibling"
+              : "hal. Higala, Igsoon"
+          }
+          value={props.appReferences[i - 1]?.relation || ""}
+          onChange={(e) => {
+            const value = e.target.value;
+            const wordCount = value.trim().split(/\s+/).length;
+            if (wordCount <= 3) {
+              handleReferenceChange(i - 1, "relation", value);
+            }
+          }}
+        />
+      </React.Fragment>
+    ))}
+  </div>
         </div>
     );
 }
