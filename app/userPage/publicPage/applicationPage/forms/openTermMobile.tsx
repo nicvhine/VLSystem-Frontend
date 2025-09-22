@@ -48,6 +48,11 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
               <p className="text-lg font-semibold text-red-600">{loanId}</p>
             </div>
           )}
+          <span className="block text-xs text-gray-500 mb-6">
+            {language === 'en'
+              ? 'We will soon notify you for the next step of your application through your provided contact details. Stay tuned for the updates.'
+              : 'Amo kang pahibaw-an sa sunod nga lakang sa imong aplikasyon pinaagi sa imong gihatag nga contact details. Pabilin sa pagpaminaw para sa mga update.'}
+          </span>
           <button
             onClick={handleClose}
             className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
@@ -246,6 +251,7 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
   };
 
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
+
 
   return (
     <>
@@ -461,12 +467,17 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
             {uploadedFiles.map((file, index) => (
               <li
                 key={index}
-                className="flex justify-between items-center gap-4 py-1"
+                className="flex justify-between items-center gap-2 py-1"
               >
-                <span>{file.name}</span>
+                <span
+                  className="truncate max-w-[140px] sm:max-w-[220px] block"
+                  title={file.name}
+                >
+                  {file.name.length > 28 ? file.name.slice(0, 12) + '...' + file.name.slice(-12) : file.name}
+                </span>
                 <button
                   onClick={() => removeFile(index)}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                  className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600 flex-shrink-0"
                 >
                   {language === 'en' ? 'Remove' : 'Tangtangon'}
                 </button>

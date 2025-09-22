@@ -58,6 +58,8 @@ export default function ApplicationPage() {
           language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
           language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
           language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
+          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
+          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
         ];
       default: return [];
     }
