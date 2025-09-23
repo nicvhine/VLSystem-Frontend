@@ -294,10 +294,8 @@ async function handlePay(collection: Collection) {
         <div className="w-1/2 flex flex-col gap-6">
           {/* Top box */}
          {/* Loan Details Card */}
-        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-6 border border-red-100 relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(120deg, #fff 60%, #ffe5e5 100%)', opacity: 0.18}}></div>
+        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-6   relative overflow-hidden">
           <h2 className="font-semibold text-xl text-gray-800 mb-4 flex items-center gap-2 z-10">
-            <span className="text-red-600"><svg className="w-6 h-6 inline-block align-middle" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 0V4m0 7v9m0 0H7m5 0h5"/></svg></span>
             <span>Loan Details</span>
           </h2>
           <div className="grid grid-cols-2 gap-6 text-gray-700 z-10">
