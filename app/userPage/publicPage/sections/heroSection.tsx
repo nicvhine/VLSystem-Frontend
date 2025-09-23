@@ -55,7 +55,7 @@ export default function HeroSection({
             {language === 'en' ? (
               <>Empowering Lives <br /> Through Better Lending</>
             ) : (
-              <>Paghatag Kusog sa Kinabuhi <br /> Pinaagi sa Mas Maayong Pahulam</>
+              <>Paghatag Kusog sa Kinabuhi Pinaagi sa Mas Maayong Pahulam</>
             )}
           </h1>
           <p className="text-xl text-gray-700 select-none">

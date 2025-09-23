@@ -3,20 +3,21 @@
   import { useState, useEffect } from 'react';
   import { useRouter } from "next/navigation";
   import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from 'react-icons/fi';
-  import Link from 'next/link';
   import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
-  import emailjs from "emailjs-com";
 
-  import WithCollateral from './withCollateral';
-  import OpenTerm from './openTerm';
+  import WithCollateral from './customization/withCollateral';
+  import OpenTerm from './customization/openTerm';
 
   import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
+  import SetScheduleModal from "../modals/scheduleModal";
 
   // Role-based wrappers
   import Head from "@/app/userPage/headPage/page";
   import Manager from "@/app/userPage/managerPage/page";
   import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
+  import {handleClearedLoan, handleDisburse, handleDenyApplication, handleApproveApplication, handleDenyFromCleared} from "../handlers/statusHandler";
+  
 
   const API_URL = "http://localhost:3001/loan-applications";
 
@@ -78,14 +79,7 @@
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('income'); // New state for tabs
 
-    // Schedule modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [interviewDate, setInterviewDate] = useState('');
-    const [interviewTime, setInterviewTime] = useState('');
-    // Modal animation state
-    const [showModal, setShowModal] = useState(false);
-    const [animateIn, setAnimateIn] = useState(false);
-
     const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {
@@ -93,24 +87,9 @@
     setRole(storedRole);
     }, []);
 
-
-    // Handle animation timing for schedule modal
-    useEffect(() => {
-      if (isModalOpen) {
-        setShowModal(true);
-        const timer = setTimeout(() => setAnimateIn(true), 10);
-        return () => clearTimeout(timer);
-      } else {
-        setAnimateIn(false);
-        const timer = setTimeout(() => setShowModal(false), 300);
-        return () => clearTimeout(timer);
-      }
-    }, [isModalOpen]);
-
     const application = applications.find(app => app.applicationId === params.id);
 
     const [isAgreementOpen, setIsAgreementOpen] = useState(false);
-
 
     // Fetch applications
     useEffect(() => {
@@ -148,200 +127,6 @@
         headers: { ...options.headers, Authorization: `Bearer ${token}` },
       });
     }
-
-    function formatTimeTo12Hour(time: string) {
-      const [hourStr, minute] = time.split(":");
-      let hour = parseInt(hourStr, 10);
-      const ampm = hour >= 12 ? "PM" : "AM";
-      hour = hour % 12 || 12; 
-      return `${hour}:${minute} ${ampm}`;
-    }
-
-    const handleScheduleInterview = async () => {
-      if (!interviewDate || !interviewTime) {
-        alert("Please select both date and time.");
-        return;
-      }
-      try {
-        const id = application?.applicationId;
-        if (!id) throw new Error("Missing application id");
-    
-        // Save schedule
-        const scheduleRes = await authFetch(`${API_URL}/${id}/schedule-interview`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ interviewDate, interviewTime }),
-        });
-        if (!scheduleRes.ok) throw new Error("Failed to save schedule");
-    
-        await authFetch(`${API_URL}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Pending" }),
-        });
-    
-        setApplications(prev =>
-          prev.map(app =>
-            app.applicationId === id
-              ? { ...app, interviewDate, interviewTime, status: "Pending" }
-              : app
-          )
-        );
-        setIsModalOpen(false);
-
-        console.log({
-          email: application.appEmail,
-          to_name: application.appName,
-          address: application.appAddress,
-          interviewDate,
-          interviewTime,
-        });
-        
-    
-        if (application?.appEmail) {
-          try {
-
-            const formattedTime = formatTimeTo12Hour(interviewTime);
-            
-            await emailjs.send(
-              "service_xmh62vd",   
-              "template_u19oksn",  
-              {
-                email: application.appEmail,
-                to_name: application.appName,
-                address: application.appAddress,
-                interviewDate: interviewDate,
-                interviewTime: interviewTime,
-              },
-              "oXk6jvK9nrgWsbn_o"    
-            );
-            alert("Interview scheduled. Email sent to applicant.");
-          } catch (err) {
-            console.error("EmailJS error:", err);
-            alert("Interview scheduled but failed to send email.");
-          }
-        } else {
-          alert("Interview scheduled, but applicant has no email.");
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Could not schedule interview. Try again.");
-      }
-    };
-    
-
-    const handleClearedLoan = async () => {
-      try {
-        const id = application?.applicationId;
-        if (!id) throw new Error("Missing application id");
-
-        await authFetch(`${API_URL}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Cleared" }),
-        });
-
-        setApplications(prev =>
-          prev.map(app => app.applicationId === id ? { ...app, status: "Cleared" } : app)
-        );
-        alert("Loan status has been set to Cleared.");
-      } catch (error) {
-        console.error(error);
-        alert("Something went wrong.");
-      }
-    };
-
-    const handleDisburse = async () => {
-      try {
-        const id = application?.applicationId;
-        if (!id) throw new Error("Missing application id");
-    
-        await authFetch(`${API_URL}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Disbursed" }),
-        });
-    
-        setApplications(prev =>
-          prev.map(app => app.applicationId === id ? { ...app, status: "Disbursed" } : app)
-        );
-    
-        setIsAgreementOpen(true);
-    
-      } catch (error) {
-        console.error(error);
-        alert("Something went wrong while disbursing the loan.");
-      }
-    };
-    
-
-    const handleDenyApplication = async () => {
-      try {
-        const id = application?.applicationId;
-        if (!id) throw new Error("Missing application id");
-
-        await authFetch(`${API_URL}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Denied" }),
-        });
-
-        setApplications(prev =>
-          prev.map(app => app.applicationId === id ? { ...app, status: "Denied" } : app)
-        );
-        alert("Loan status changed to 'Denied'.");
-      } catch (error) {
-        console.error(error);
-        alert("Something went wrong.");
-      }
-    };
-
-    //STATUS "CLEARED"
-    const handleApproveApplication = async () => {
-      try {
-        const id = application?.applicationId;
-        if (!id) throw new Error("Missing application id");
-
-        const response = await authFetch(`${API_URL}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Approved" }),
-        });
-        if (!response.ok) throw new Error("Failed to update status");
-
-        setApplications(prev =>
-          prev.map(app => (app.applicationId === id ? { ...app, status: "Approved" } : app))
-        );
-
-        alert("Application approved.");
-      } catch (error) {
-        console.error("Failed to approve application:", error);
-        alert("Could not approve application. Try again.");
-      }
-    };
-
-    const handleDenyFromCleared = async () => {
-      try {
-        const id = application?.applicationId;
-        if (!id) throw new Error("Missing application id");
-
-        const response = await authFetch(`${API_URL}/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Denied by LO" }),
-        });
-        if (!response.ok) throw new Error("Failed to update status");
-
-        setApplications(prev =>
-          prev.map(app => (app.applicationId === id ? { ...app, status: "Denied by LO" } : app))
-        );
-
-        alert("Application denied.");
-      } catch (error) {
-        console.error("Failed to deny application:", error);
-        alert("Could not deny application. Try again.");
-      }
-    };
 
     const formatCurrency = (amount?: number | string) => {
       if (!amount) return "₱0.00";
@@ -424,17 +209,17 @@
                     <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium">
                       SET SCHEDULE
                     </button>
-                    <button onClick={handleDenyApplication} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    <button onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL)}  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
                       DISMISS
                     </button>
                   </>
                 )}
                 {application?.status === "Pending" && role === "loan officer" &&(
                   <>
-                    <button onClick={handleClearedLoan} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                    <button onClick={() => handleClearedLoan(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                       CLEAR
                     </button>
-                    <button onClick={handleDenyApplication} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    <button onClick={() => handleDenyFromCleared(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
                       DISMISS
                     </button>
                   </>
@@ -442,17 +227,17 @@
 
                 {application?.status === "Cleared" && role === "manager" &&(
                   <>
-                    <button onClick={handleApproveApplication} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                    <button onClick={() => handleApproveApplication(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
                       APPROVE
                     </button>
-                    <button onClick={handleDenyFromCleared} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+                    <button onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
                       DENY
                     </button>
                   </>
                 )}
                 {application?.status === "Approved" && role === "loan officer" && (
                   <button
-                    onClick={handleDisburse}
+                    onClick={() => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen)}
                     className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
                   >
                     Disburse
@@ -799,59 +584,20 @@
           </div>
         </div>
 
-        {/* Professional Schedule Modal */}
-        {showModal && (
-          <div className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 text-black p-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-            <div className={`bg-white rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-                  <FiFileText className="w-5 h-5 text-red-600" />
-                </div>
-                <h2 className="text-xl font-semibold text-gray-900">Schedule Interview</h2>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Interview Date</label>
-                  <input 
-                    type="date" 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
-                    value={interviewDate} 
-                    onChange={(e) => setInterviewDate(e.target.value)} 
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-700">Interview Time</label>
-                  <input 
-                    type="time" 
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors" 
-                    value={interviewTime} 
-                    onChange={(e) => setInterviewTime(e.target.value)} 
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-3 mt-6">
-                <button 
-                  onClick={() => setIsModalOpen(false)} 
-                  className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleScheduleInterview} 
-                  className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-                >
-                  Schedule Interview
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+{/* MODALS */}
+  <SetScheduleModal
+    isOpen={isModalOpen}
+    onClose={() => setIsModalOpen(false)}
+    application={application}
+    setApplications={setApplications}
+    authFetch={authFetch}
+  />
 
-      <LoanAgreementModal
-        isOpen={isAgreementOpen}
-        onClose={() => setIsAgreementOpen(false)}
-        application={application ?? null}
-      />
+  <LoanAgreementModal
+    isOpen={isAgreementOpen}
+    onClose={() => setIsAgreementOpen(false)}
+    application={application ?? null}
+  />
       </div>
       </Wrapper>
     );
