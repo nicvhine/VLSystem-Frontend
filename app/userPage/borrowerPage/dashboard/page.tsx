@@ -1,8 +1,5 @@
 'use client';
 
-
-
-// PaymentHistoryModal component for animation control
 type Payment = {
   _id?: string;
   referenceNumber: string;
@@ -130,7 +127,7 @@ export default function BorrowerDashboard() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`);
+        const res = await fetch(`http://localhost:3001/loans/borrower-loans-details/${borrowersId}`);
         if (!res.ok) throw new Error('No active loan found');
         const data: Loan = await res.json();
         setActiveLoan(data);

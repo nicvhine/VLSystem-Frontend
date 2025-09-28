@@ -1,0 +1,199 @@
+'use client';
+
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import emailjs from "emailjs-com";
+
+const API_URL = "http://localhost:3001/loan-applications";
+
+interface Application {
+  applicationId: string;
+  appName: string;
+  appEmail?: string | null;
+  appLoanAmount?: number;
+  appInterest?: number;
+  appLoanTerms?: number;
+  status?: string;
+}
+
+//EMAIL WITH CREDENTIALS 
+const sendEmail = async ({
+  to_name,
+  email,
+  borrower_username,
+  borrower_password,
+}: {
+  to_name: string;
+  email?: string | null;
+  borrower_username: string;
+  borrower_password: string;
+}) => {
+  if (!email) return;
+  try {
+    const result = await emailjs.send(
+      "service_eph6uoe",
+      "template_tjkad0u",
+      { to_name, email, borrower_username, borrower_password },
+      "-PgL14MSf1VScXI94"
+    );
+    console.log("Email sent:", result?.text || result);
+  } catch (error: any) {
+    console.error("EmailJS error:", error);
+    alert("Email failed: " + (error?.text || error.message || "Unknown error"));
+  }
+};
+
+export default forwardRef(function AccountModal(_, ref) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [generatedUsername, setGeneratedUsername] = useState("");
+  const [collectors, setCollectors] = useState<string[]>([]);
+  const [selectedCollector, setSelectedCollector] = useState("");
+
+  useImperativeHandle(ref, () => ({
+    openModal(app: Application) {
+      setSelectedApp(app);
+      setGeneratedUsername(app.appName?.toLowerCase().replace(/\s+/g, "") + "123");
+      setIsVisible(true);
+      setTimeout(() => setIsAnimating(true), 10);
+    },
+  }));
+
+  const handleModalClose = () => {
+    setIsAnimating(false);
+    setTimeout(() => {
+      setIsVisible(false);
+      setSelectedApp(null);
+      setSelectedCollector("");
+    }, 150);
+  };
+
+  async function authFetch(url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token found in localStorage");
+    return fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } });
+  }
+
+  useEffect(() => {
+    const fetchCollectors = async () => {
+      try {
+        const res = await authFetch("http://localhost:3001/users/collectors");
+        if (!res.ok) throw new Error("Network response was not ok");
+        const data = await res.json();
+        setCollectors(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching collectors:", error);
+      }
+    };
+    fetchCollectors();
+  }, []);
+
+  const handleCreateAccount = async () => {
+    if (!selectedApp) return;
+    if (!selectedCollector) {
+      alert("Please select a collector.");
+      return;
+    }
+
+    try {
+      // Create borrower account
+      const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: generatedUsername,
+          name: selectedApp.appName,
+          role: "borrower",
+          applicationId: selectedApp.applicationId,
+          assignedCollector: selectedCollector,
+        }),
+      });
+      const borrowerData = await borrowerRes.json();
+      if (!borrowerRes.ok) throw new Error(borrowerData?.error);
+
+      // Update application status
+      await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Active" }),
+      });
+
+      // Generate loan
+      const loanResponse = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
+        method: "POST",
+      });
+      const loanData = await loanResponse.json();
+      if (!loanResponse.ok) throw new Error(loanData?.error);
+
+      // Send email
+      await sendEmail({
+        to_name: selectedApp.appName,
+        email: selectedApp.appEmail,
+        borrower_username: generatedUsername,
+        borrower_password: borrowerData.tempPassword,
+      });
+
+      alert("Account created and loan generated successfully.");
+      handleModalClose();
+    } catch (error: any) {
+      console.error(error);
+      alert(`Error: ${error.message}`);
+    }
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <div
+      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
+        isAnimating ? "opacity-100" : "opacity-0"
+      }`}
+      onClick={handleModalClose}
+    >
+      <div
+        className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 ${
+          isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-xl font-semibold mb-4 text-black">Create Account</h2>
+        <p className="mb-2 text-black">
+          <strong>Name:</strong> {selectedApp?.appName}
+        </p>
+        <p className="mb-4 text-black">
+          <strong>Generated Username:</strong>{" "}
+          <span className="text-red-600">{generatedUsername}</span>
+        </p>
+
+        <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
+        <select
+          value={selectedCollector}
+          onChange={(e) => setSelectedCollector(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black"
+        >
+          <option value="">Select a collector</option>
+          {collectors.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex justify-end gap-3 mt-4">
+          <button
+            className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+            onClick={handleModalClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            onClick={handleCreateAccount}
+          >
+            Create Account
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});

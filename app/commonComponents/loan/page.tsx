@@ -20,7 +20,7 @@ interface LoanDetails {
   totalPayable: number;
   balance: number;
   status: string;
-  dateReleased: string; 
+  dateDisbursed: string;
 }
 
 function LoadingSpinner() {
@@ -85,7 +85,7 @@ export default function LoansPage() {
 
   // Sort loans
   const sortedLoans = [...filteredLoans].sort((a, b) => {
-    if (sortBy === "date") return new Date(b.dateReleased).getTime() - new Date(a.dateReleased).getTime();
+    if (sortBy === "date") return new Date(b.dateDisbursed).getTime() - new Date(a.dateDisbursed).getTime();
     if (sortBy === "amount") return b.balance - a.balance;
     return 0;
   });
@@ -158,7 +158,7 @@ export default function LoansPage() {
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
                 <option value="">Sort by</option>
-                <option value="date">Release Date</option>
+                <option value="date">Disburse Date</option>
                 <option value="amount">Balance</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
@@ -170,7 +170,7 @@ export default function LoansPage() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {["ID", "Name", "Release Date", "Principal", "Balance", "Status", "Action"].map((heading) => (
+                  {["ID", "Name", "Disburse Date", "Principal", "Balance", "Status", "Action"].map((heading) => (
                     <th
                       key={heading}
                       className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -185,7 +185,7 @@ export default function LoansPage() {
                   <tr key={loan.loanId} className="hover:bg-blue-50/60 transition-colors">
                     <td className="px-6 py-4 text-sm text-gray-900">{loan.loanId}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{loan.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateReleased)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateDisbursed)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.principal)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.balance)}</td>
                     <td className="px-6 py-4">

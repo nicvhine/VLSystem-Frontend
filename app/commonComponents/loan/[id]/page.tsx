@@ -20,8 +20,8 @@ interface CharacterReference {
 interface CurrentLoan {
   purpose: string;
   type: string;
-  amount: number;
-  terms: number;
+  principal: number;
+  termsInMonths: number;
   interestRate: number;
   paymentSchedule: string;
   startDate: string;
@@ -59,6 +59,10 @@ interface LoanDetails {
   businessType: string;
   dateStarted: string;
   businessLocation: string;
+
+  //loan details
+  totalPayable: string;
+  principal: string;
 
   monthlyIncome?: number;
   score?: number;
@@ -381,9 +385,9 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
             <DetailRow label="Loan Type" value={client.currentLoan.type} />
             <DetailRow label="Loan ID" value={client.loanId} />
             <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
-            <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.amount)} />
+            <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.principal)} />
             <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
-            <DetailRow label="Loan Term" value={`${client.currentLoan.terms} months`} />
+            <DetailRow label="Loan Term" value={`${client.currentLoan.termsInMonths} months`} />
             <DetailRow label="Total Payable" value={formatCurrency(client.currentLoan.totalPayable)} />
             <DetailRow label="Paid Amount" value={formatCurrency(client.currentLoan.paidAmount)} />
             <DetailRow label="Remaining Balance" value={formatCurrency(client.currentLoan.remainingBalance)} />
