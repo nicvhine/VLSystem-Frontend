@@ -252,6 +252,17 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
 
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
+  //Loan Amount
+  const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
+
+  const validateLoanAmount = (amount: number) => {
+    const option = loanOptions.find((opt) => amount <= opt.amount);
+    if (option) {
+      setSelectedLoan({ ...option, amount });
+    } else {
+      setSelectedLoan(null);
+    }
+  };
 
   return (
     <>
@@ -317,21 +328,24 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
 
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Amount:' : 'Kantidad sa Pahulam:'}</label>
-            <select
+            <input
+              type="number"
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              value={customLoanAmount}
               onChange={(e) => {
-                const selected = loanOptions.find((opt) => opt.amount === parseInt(e.target.value));
-                setSelectedLoan(selected || null);
+                const value = e.target.value === "" ? "" : parseInt(e.target.value, 10);
+                setCustomLoanAmount(value);
+                if (value !== "") validateLoanAmount(value);
               }}
-              value={selectedLoan?.amount || ""}
-            >
-              <option value="">{loanAmountPlaceholder}</option>
-              {loanOptions.map((opt) => (
-                <option key={opt.amount} value={opt.amount}>
-                  ₱{opt.amount.toLocaleString()}
-                </option>
-              ))}
-            </select>
+              placeholder={language === "en" ? "Enter amount (₱50,000 - ₱500,000)" : "Isulod ang kantidad (₱50,000 - ₱500,000)"}
+            />
+            {selectedLoan === null && customLoanAmount !== "" && (
+              <p className="text-sm text-red-500 mt-1">
+                {language === "en"
+                  ? "Amount not within allowed range. Please enter between ₱50,000 - ₱500,000."
+                  : "Ang kantidad kinahanglan tali sa ₱50,000 - ₱500,000."}
+              </p>
+            )}
           </div>
 
           <div>
@@ -343,6 +357,49 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
             />
           </div>
         </div>
+         {/* Sample Calculation */}
+    {customLoanAmount && selectedLoan && (
+      <div className="mt-6 border-t pt-4 text-gray-100">
+        <h5 className="text-md font-semibold mb-3 text-gray-700">
+          {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
+        </h5>
+
+        {(() => {
+          const loanAmount = Number(customLoanAmount);
+          const interestRate = Number(selectedLoan.interest) / 100;
+          const serviceChargeRate = 0.05; // 5%
+
+          const monthlyInterest = loanAmount * interestRate;
+          const serviceCharge = loanAmount * serviceChargeRate;
+          const netProceeds = loanAmount - serviceCharge;
+
+          return (
+            <div className="space-y-2 text-gray-700">
+              <p>
+                <span className="font-medium">
+                  {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
+                </span>{" "}
+                ₱{loanAmount.toLocaleString()}
+              </p>
+              <p>
+                <span className="font-medium">
+                  {language === "en"
+                    ? "Service Charge (5%):"
+                    : "Serbisyo nga Bayad (5%):"}
+                </span>{" "}
+                ₱{serviceCharge.toFixed(2)}
+              </p>
+              <p className="text-green-700 font-semibold">
+                <span>
+                  {language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}
+                </span>{" "}
+                ₱{netProceeds.toFixed(2)}
+              </p>
+            </div>
+          );
+        })()}
+      </div>
+    )}
       </div>
 
       {/* Collateral Information */}

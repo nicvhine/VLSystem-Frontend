@@ -272,7 +272,19 @@ const closeModal = () => {
       }
     };
     
+  //Loan Amount
+  const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
 
+  // Validation function
+  const validateLoanAmount = (amount: number) => {
+    // find nearest matching option (range logic)
+    const option = loanOptions.find((opt) => amount <= opt.amount);
+    if (option) {
+      setSelectedLoan({ ...option, amount });
+    } else {
+      setSelectedLoan(null);
+    }
+  };
 
   return (
   <div className="max-w-md mx-auto w-full">
@@ -319,61 +331,138 @@ const closeModal = () => {
       />
 
 
-      {/* Loan Details */}
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-6 mt-6">
-    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center mb-4">
-        <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-          {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
-        </h4>
+  {/* Loan Details */}
+  <div className="bg-white p-4 rounded-lg shadow-sm mt-6">
+    <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+      <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+      {language === "en" ? "Loan Details" : "Detalye sa Pahulam"}
+    </h4>
 
-        <div className="space-y-4 mb-6">
-        <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Name:" : "Ngalan:"}</label>
-            <input
-              value={appLoanPurpose}
-              onChange={(e) => setAppLoanPurpose(e.target.value)}
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder={language === 'en' ? 'Enter Loan Purpose' : 'Isulod ang Katuyoan sa Pahulam'}
-            />
-          </div>
+    {/* Loan Purpose */}
+    <div className="space-y-4 mb-6">
+      <label className="block font-medium mb-2 text-gray-700">
+        {language === "en" ? "Loan Purpose:" : "Katuyoan sa Pahulam:"}
+      </label>
+      <input
+        value={appLoanPurpose}
+        onChange={(e) => setAppLoanPurpose(e.target.value)}
+        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        placeholder={
+          language === "en"
+            ? "Enter Loan Purpose"
+            : "Isulod ang Katuyoan sa Pahulam"
+        }
+      />
+    </div>
 
-          <div className="space-y-4 mb-6">
-          <label className="block font-medium mb-2 text-gray-700">{language === "en" ? "Date of Birth:" : "Petsa sa Pagkatawo:"}</label>
-            <select
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              onChange={(e) => {
-                const selected = loanOptions.find((opt) => opt.amount === parseInt(e.target.value));
-                setSelectedLoan(selected || null);
-              }}
-              value={selectedLoan?.amount || ""}
-            >
-              <option value="">{loanAmountPlaceholder}</option>
-              {loanOptions.map((opt) => (
-                <option key={opt.amount} value={opt.amount}>
-                  ₱{opt.amount.toLocaleString()}
-                </option>
-              ))}
-            </select>
-          </div>
+    {/* Loan Amount Input */}
+    <div className="space-y-4 mb-6">
+      <label className="block font-medium mb-2 text-gray-700">
+        {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
+      </label>
+      <input
+        type="number"
+        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        value={customLoanAmount}
+        onChange={(e) => {
+          const value = e.target.value === "" ? "" : parseInt(e.target.value, 10);
+          setCustomLoanAmount(value);
+          if (value !== "") validateLoanAmount(value);
+        }}
+        placeholder={
+          language === "en"
+            ? "Enter amount (₱10,000 - ₱30,000)"
+            : "Isulod ang kantidad (₱10,000 - ₱30,000)"
+        }
+      />
+      {selectedLoan === null && customLoanAmount !== "" && (
+        <p className="text-sm text-red-500 mt-1">
+          {language === "en"
+            ? "Amount not within allowed range. Please enter between ₱10,000 - ₱30,000."
+            : "Ang kantidad kinahanglan tali sa ₱10,000 - ₱30,000."}
+        </p>
+      )}
+    </div>
 
-          <div>
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Loan Terms (months):' : 'Panahon sa Pahulam (buwan):'}</label>
-            <input
-              className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
-              value={selectedLoan?.months || ""}
-              readOnly
-            />
-          </div>
+    {/* Loan Terms */}
+    <div className="space-y-4 mb-6">
+      <label className="block font-medium mb-2 text-gray-700">
+        {language === "en" ? "Loan Terms (months):" : "Panahon sa Pahulam (buwan):"}
+      </label>
+      <input
+        className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
+        value={selectedLoan?.months || ""}
+        readOnly
+      />
+    </div>
 
-          <div>
-            <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Monthly Interest Rate (%):' : 'Bulan nga Interest Rate (%):'}</label>
-            <input
-              className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
-              value={selectedLoan?.interest || ""}
-              readOnly
-            />
-          </div>
-       
+    {/* Interest */}
+    <div>
+      <label className="block font-medium mb-2 text-gray-700">
+        {language === "en"
+          ? "Monthly Interest Rate (%):"
+          : "Bulan nga Interest Rate (%):"}
+      </label>
+      <input
+        className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
+        value={selectedLoan?.interest || ""}
+        readOnly
+      />
+    </div>
+
+    {/* Sample Calculation */}
+    {customLoanAmount && selectedLoan && (
+      <div className="mt-6 border-t pt-4 text-gray-100">
+        <h5 className="text-md font-semibold mb-3 text-gray-700">
+          {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
+        </h5>
+
+        {(() => {
+          const loanAmount = Number(customLoanAmount);
+          const interestRate = Number(selectedLoan.interest) / 100;
+          const months = Number(selectedLoan.months);
+          const serviceChargeRate = 0.05; // 5%
+
+          const monthlyInterest = loanAmount * interestRate;
+          const monthlyPayment = loanAmount / months + monthlyInterest;
+          const serviceCharge = loanAmount * serviceChargeRate;
+          const netProceeds = loanAmount - serviceCharge;
+
+          return (
+            <div className="space-y-2 text-gray-700">
+              <p>
+                <span className="font-medium">
+                  {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
+                </span>{" "}
+                ₱{loanAmount.toLocaleString()}
+              </p>
+              <p>
+                <span className="font-medium">
+                  {language === "en" ? "Monthly Payment:" : "Bulan nga Bayad:"}
+                </span>{" "}
+                ₱{monthlyPayment.toFixed(2)}
+              </p>
+              <p>
+                <span className="font-medium">
+                  {language === "en"
+                    ? "Service Charge (5%):"
+                    : "Serbisyo nga Bayad (5%):"}
+                </span>{" "}
+                ₱{serviceCharge.toFixed(2)}
+              </p>
+              <p className="text-green-700 font-semibold">
+                <span>
+                  {language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}
+                </span>{" "}
+                ₱{netProceeds.toFixed(2)}
+              </p>
+            </div>
+          );
+        })()}
       </div>
+    )}
+  </div>
+
 
        {/* 2x2 Upload */}
   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto">
