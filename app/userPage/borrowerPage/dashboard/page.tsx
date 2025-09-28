@@ -120,37 +120,25 @@ export default function BorrowerDashboard() {
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
 
- // Fetch active loan or fallback to latest loan
-useEffect(() => {
-  if (!borrowersId) return;
-
-  async function fetchLoan() {
-    setLoading(true);
-    setError('');
-    try {
-      // Try active loan first
-      let res = await fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`);
-      
-      if (res.ok) {
+  // Fetch active loan
+  useEffect(() => {
+    if (!borrowersId) return;
+    async function fetchActiveLoan() {
+      setLoading(true);
+      setError('');
+      try {
+        const res = await fetch(`http://localhost:3001/loans/borrower-loans-details/${borrowersId}`);
+        if (!res.ok) throw new Error('No active loan found');
         const data: Loan = await res.json();
         setActiveLoan(data);
-      } else {
-        // If no active loan, fallback to latest loan
-        res = await fetch(`http://localhost:3001/loans/latest-loan/${borrowersId}`);
-        if (!res.ok) throw new Error('No loan found for this borrower');
-        const data: Loan = await res.json();
-        setActiveLoan(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Error fetching active loan');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching loan');
-    } finally {
-      setLoading(false);
     }
-  }
-
-  fetchLoan();
-}, [borrowersId]);
-
+    fetchActiveLoan();
+  }, [borrowersId]);
   
 // Fetch all payments for the borrower
 useEffect(() => {

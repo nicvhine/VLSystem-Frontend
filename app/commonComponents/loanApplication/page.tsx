@@ -3,9 +3,6 @@
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import Link from "next/link";
-import emailjs from "emailjs-com";
-
-import AccountModal from "./components/accountModal";
 
 // Role-based wrappers
 import Head from "@/app/userPage/headPage/page";
@@ -30,37 +27,6 @@ interface Application {
   borrowersId: string;
 }
 
-// EMAIL API
-const sendEmail = async ({
-  to_name,
-  email,
-  borrower_username,
-  borrower_password,
-}: {
-  to_name: string;
-  email: string;
-  borrower_username: string;
-  borrower_password: string;
-}) => {
-  try {
-    const result = await emailjs.send(
-      "service_eph6uoe",
-      "template_tjkad0u",
-      {
-        to_name,
-        email,
-        borrower_username,
-        borrower_password,
-      },
-      "-PgL14MSf1VScXI94"
-    );
-    console.log("Email sent:", result?.text || result);
-  } catch (error: any) {
-    console.error("EmailJS error:", error);
-    alert("Email failed: " + (error?.text || error.message || "Unknown error"));
-  }
-};
-
 // MAIN COMPONENT
 export default function ApplicationsPage() {
   // States
@@ -73,7 +39,6 @@ export default function ApplicationsPage() {
   const [generatedUsername, setGeneratedUsername] = useState("");
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>("");
-  const [tempPassword, setTempPassword] = useState("");
   const [role, setRole] = useState<string | null>(null);
 
   // Persisted active filter
@@ -96,16 +61,6 @@ export default function ApplicationsPage() {
   }, [activeFilter]);
 
   useEffect(() => {
-    if (showModal) {
-      setIsModalVisible(true);
-      setTimeout(() => setIsModalAnimating(true), 10);
-    } else {
-      setIsModalAnimating(false);
-      setTimeout(() => setIsModalVisible(false), 150);
-    }
-  }, [showModal]);
-
-  useEffect(() => {
     const fetchApplications = async () => {
       try {
         const response = await authFetch(API_URL);
@@ -118,24 +73,6 @@ export default function ApplicationsPage() {
       }
     };
     fetchApplications();
-  }, []);
-
-  useEffect(() => {
-    const fetchCollectors = async () => {
-      try {
-        const res = await authFetch("http://localhost:3001/users/collectors");
-        if (!res.ok) throw new Error("Network response was not ok");
-
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          throw new Error("Expected array but got: " + JSON.stringify(data));
-        }
-        setCollectors(data);
-      } catch (error) {
-        console.error("Error fetching collectors:", error);
-      }
-    };
-    fetchCollectors();
   }, []);
 
   // Helpers
@@ -151,22 +88,6 @@ export default function ApplicationsPage() {
       },
     });
   }
-
-  const generateUsername = (fullName: string) => {
-    const parts = fullName.trim().toLowerCase().split(" ");
-    if (parts.length < 2) return "";
-    return parts[0].slice(0, 3) + parts[parts.length - 1];
-  };
-
-  const handleModalClose = () => {
-    setIsModalAnimating(false);
-    setTimeout(() => {
-      setShowModal(false);
-      setIsModalVisible(false);
-      setSelectedApp(null);
-      setSelectedCollector("");
-    }, 150);
-  };
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-PH", {
@@ -194,94 +115,26 @@ export default function ApplicationsPage() {
     }).format(total);
   };
 
-  // Account Creation
-  const handleCreateAccount = async () => {
-    if (!selectedApp) return;
-    if (!selectedCollector) {
-      alert("Please select a collector.");
-      return;
-    }
-
-    try {
-      // Create borrower account
-      const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: generatedUsername,
-          name: selectedApp.appName,
-          role: "borrower",
-          applicationId: selectedApp.applicationId,
-          assignedCollector: selectedCollector,
-        }),
-      });
-      const borrowerData = await borrowerRes.json();
-      if (!borrowerRes.ok) throw new Error(borrowerData?.error);
-
-      // Update application
-      const updateRes = await authFetch(
-        `${API_URL}/${selectedApp.applicationId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Active" }),
-        }
-      );
-      const updatedApp = await updateRes.json();
-
-      // Generate loan
-      const loanResponse = await fetch(
-        `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
-        { method: "POST" }
-      );
-      const loanData = await loanResponse.json();
-      if (!loanResponse.ok) throw new Error(loanData?.error);
-
-      // Send email
-      await sendEmail({
-        to_name: selectedApp.appName,
-        email: selectedApp.appEmail,
-        borrower_username: generatedUsername,
-        borrower_password: borrowerData.tempPassword,
-      });
-
-      // Update local state
-      setApplications((prev) =>
-        prev.map((app) =>
-          app.applicationId === updatedApp.applicationId ? updatedApp : app
-        )
-      );
-
-      setShowModal(false);
-      setSelectedApp(null);
-      setSelectedCollector("");
-      alert("Account created and loan generated successfully.");
-    } catch (error: any) {
-      console.error(error);
-      alert(`Error: ${error.message}`);
-    }
-  };
-
- // Filters
-const filteredApplications = applications
-  .map((application) => ({
-    ...application,
-    displayStatus:
-      application.status === "Endorsed" ? "Pending" : application.status,
-  }))
-  .filter((application) => {
-    const matchesSearch = Object.values({
+  // Filters
+  const filteredApplications = applications
+    .map((application) => ({
       ...application,
-      status: application.displayStatus,
-    }).some((value) =>
-      value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-    );
+      displayStatus:
+        application.status === "Endorsed" ? "Pending" : application.status,
+    }))
+    .filter((application) => {
+      const matchesSearch = Object.values({
+        ...application,
+        status: application.displayStatus,
+      }).some((value) =>
+        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
-    if (!matchesSearch) return false;
-    if (activeFilter === "All") return true;
+      if (!matchesSearch) return false;
+      if (activeFilter === "All") return true;
 
-    return application.displayStatus === activeFilter;
-  });
+      return application.displayStatus === activeFilter;
+    });
 
   const filterOptions = [
       "All",
@@ -293,7 +146,6 @@ const filteredApplications = applications
       "Denied",
   ];
     
-
   let Wrapper;
   if (role === "loan officer") {
     Wrapper = LoanOfficer;
@@ -471,67 +323,12 @@ const filteredApplications = applications
                     {/* Action */}
                     <td className="px-6 py-4 space-x-2">
                       {/* View */}
-                      {application.status != "Disbursed" && (
                         <Link
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
                           View
                         </Link>
-                      )}
-
-                      {/* Approve */}
-                      {application.displayStatus === "Pending" && (
-                        <button
-                          className="bg-blue-600 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-700"
-                          onClick={async () => {
-                            try {
-                              const response = await authFetch(
-                                `${API_URL}/${application.applicationId}`,
-                                {
-                                  method: "PUT",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ status: "Approved" }),
-                                }
-                              );
-
-                              if (!response.ok)
-                                throw new Error("Failed to endorse application");
-
-                              const updated = await response.json();
-                              setApplications((prev) =>
-                                prev.map((app) =>
-                                  app.applicationId === updated.applicationId
-                                    ? updated
-                                    : app
-                                )
-                              );
-                            } catch (err) {
-                              console.error(err);
-                              alert("Failed to endorse for disbursement.");
-                            }
-                          }}
-                        >
-                          Approve
-                        </button>
-                      )}
-
-                      {/* Create Account */}
-                      {application.displayStatus === "Disbursed" && role === "manager" &&
-                        !application.isReloan && (
-                          <button
-                            className="text-white px-3 py-1 rounded-md text-xs hover:bg-red-700 bg-red-600"
-                            onClick={() => {
-                              setSelectedApp(application);
-                              setGeneratedUsername(
-                                generateUsername(application.appName)
-                              );
-                              setShowModal(true);
-                            }}
-                          >
-                            Create Account
-                          </button>
-                        )}
 
                       {/* Accept Reloan */}
                       {application.displayStatus === "Disbursed" &&
@@ -591,19 +388,6 @@ const filteredApplications = applications
                 ))}
               </tbody>
             </table>
-
-          
-            <AccountModal
-              isVisible={isModalVisible}
-              isAnimating={isModalAnimating}
-              selectedApp={selectedApp}
-              generatedUsername={generatedUsername}
-              collectors={collectors}
-              selectedCollector={selectedCollector}
-              setSelectedCollector={setSelectedCollector}
-              handleModalClose={handleModalClose}
-              handleCreateAccount={handleCreateAccount}
-            />
 
           </div>
         </div>

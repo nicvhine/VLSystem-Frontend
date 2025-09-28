@@ -1,175 +1,112 @@
 'use client';
 
-  import { useState, useEffect } from 'react';
-  import { useRouter } from "next/navigation";
-  import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from 'react-icons/fi';
-  import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from "react-icons/fi";
 
-  import WithCollateral from './customization/withCollateral';
-  import OpenTerm from './customization/openTerm';
+import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
 
-  import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
-  import SetScheduleModal from "../modals/scheduleModal";
+//CUSTOMIZATION
+import WithCollateral from './customization/withCollateral';
+import OpenTerm from './customization/openTerm';
 
-  // Role-based wrappers
-  import Head from "@/app/userPage/headPage/page";
-  import Manager from "@/app/userPage/managerPage/page";
-  import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+//MODALS
+import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
+import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
+import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal"; 
 
-  import {handleClearedLoan, handleDisburse, handleDenyApplication, handleApproveApplication, handleDenyFromCleared} from "../handlers/statusHandler";
-  
+//HOOKS
+import ApplicationButtons from "../hooks/applicationButtons";
+import { useApplications } from "../hooks/useApplication";
 
-  const API_URL = "http://localhost:3001/loan-applications";
+//ROLE-BASED
+import Head from "@/app/userPage/headPage/page";
+import Manager from "@/app/userPage/managerPage/page";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
-  interface Application {
-    applicationId: string;
-    loanType: string;
-    status: string;
-    interviewDate?: string;
-    interviewTime?: string;
-    documents?: { fileName: string; filePath: string; mimeType: string }[];
-    appName?: string;
-    appDob?: string;
-    appContact?: string;
-    appEmail?: string;
-    appMarital?: string;
-    appSpouseName?: string;
-    appSpouseOccupation?: string;
-    appChildren?: number;
-    appAddress?: string;
-    sourceOfIncome?: string;
-    appTypeBusiness?: string;
-    appBusinessName?: string;
-    appDateStarted?: string;
-    appBusinessLoc?: string;
-    appMonthlyIncome?: number;
-    appEmploymentStatus?: string;
-    appOccupation?: string;
-    appCompanyName?: string;
-    companyAddress?: string;
-    monthlyIncome?: number;
-    lengthOfService?: string;
-    otherIncome?: number;
-    appLoanPurpose?: string;
-    appLoanAmount?: string;
-    appLoanTerms?: string;
-    appInterest?: number;
-    collateralDescription?: string;
-    collateralValue?: number;
-    collateralType?: string;
-    ownershipStatys?: string;
-    unsecuredReason?: string;
-    openTermConditions?: string;
-    paymentSchedule?: string;
-    characterReferences?: CharacterReference[];
-    profilePic: string;
+const API_URL = "http://localhost:3001/loan-applications";
+
+export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
+  const { applications, setApplications, loading } = useApplications(API_URL);
+
+  const [activeTab, setActiveTab] = useState('income');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  const modalRef = useRef<any>(null);
+
+
+  async function authFetch(url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No token in localStorage");
+
+    return fetch(url, {
+      ...options,
+      headers: { ...options.headers, Authorization: `Bearer ${token}` },
+    });
   }
 
-  interface CharacterReference {
-    name: string;
-    contact: string;
-    relation: string;
-  }
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await authFetch(API_URL);
+        const data = await res.json();
+        setApplications(data); 
+      } catch (err) {
+        console.error("Failed to refresh applications:", err);
+      }
+    }, 5000); 
+  
+    return () => clearInterval(interval);
+  }, [setApplications]);
   
 
-  export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
-    const router = useRouter();
-
-    const [applications, setApplications] = useState<Application[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('income'); // New state for tabs
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [role, setRole] = useState<string | null>(null);
-
-    useEffect(() => {
+  useEffect(() => {
     const storedRole = localStorage.getItem("role"); 
     setRole(storedRole);
-    }, []);
+  }, []);
 
-    const application = applications.find(app => app.applicationId === params.id);
+  const application = applications.find(app => app.applicationId === params.id);
 
-    const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+  const formatCurrency = (amount?: number | string) => {
+    if (!amount) return "₱0.00";
+    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(amount));
+  };
 
-    // Fetch applications
-    useEffect(() => {
-      const fetchApplications = async () => {
-        try {
-          const response = await authFetch(API_URL);
-          if (!response.ok) throw new Error("Unautho  rized");
-          const data = await response.json();
-  
-          const mappedData = data.map((app: any) => ({
-            ...app,
-            characterReferences: app.appReferences?.map((ref: any) => ({
-              name: ref.name,
-              contact: ref.contact,
-              relation: ref.relation,
-            })) || []
-          }));
-  
-          setApplications(mappedData);
-        } catch (err) {
-          console.error("Failed to fetch applications:", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchApplications();
-    }, []);
+  const capitalizeWords = (text?: string) => {
+    if (!text) return "—";
+    return text
+      .toLowerCase()
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
-    async function authFetch(url: string, options: RequestInit = {}) {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("No token in localStorage");
-
-      return fetch(url, {
-        ...options,
-        headers: { ...options.headers, Authorization: `Bearer ${token}` },
-      });
-    }
-
-    const formatCurrency = (amount?: number | string) => {
-      if (!amount) return "₱0.00";
-      return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(amount));
-    };
-
-    if (!application && !loading) {
-      return (
-        <div className="min-h-screen bg-gray-50">
-          <LoanOfficerNavbar />
-          <div className="p-10 text-center text-gray-600 text-lg">
-            Application not found.
-          </div>
-        </div>
-      );
-    }
-
-    const capitalizeWords = (text?: string) => {
-      if (!text) return "—";
-      return text
-        .toLowerCase()
-        .split(" ")
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-    };
-
-    let Wrapper;
-    if (role === "loan officer") {
-      Wrapper = LoanOfficer;
-    } else if (role === "head") {
-      Wrapper = Head;
-    } else {
-      Wrapper = Manager;
-    }
-  
+  if (!application && !loading) {
     return (
-        <Wrapper>
-        <div className="min-h-screen bg-gray-50">
-        {/* Header Section - Similar to Patient Profile */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+      <div className="min-h-screen bg-gray-50">
+        <LoanOfficerNavbar />
+        <div className="p-10 text-center text-gray-600 text-lg">Application not found.</div>
+      </div>
+    );
+  }
+
+  let Wrapper;
+  if (role === "loan officer") Wrapper = LoanOfficer;
+  else if (role === "head") Wrapper = Head;
+  else Wrapper = Manager;
+  
+return (
+  <Wrapper>
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+
+              {/*BACK BUTTON LOGIC*/}
               <button
                 onClick={() => {
                 if (role === "head") {
@@ -182,9 +119,11 @@
                 }
                 }}
                 className="text-gray-400 hover:text-gray-600"
-            >
+                >
                 <FiArrowLeft className="w-5 h-5" />
-            </button>
+              </button>
+
+              {/*HEADER*/}
                 <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   Applicant profile | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
@@ -203,89 +142,52 @@
                   </div>
                 </div>
               </div>
+
+              {/*BUTTONS*/}
               <div className="flex space-x-3">
-                {application?.status === "Applied" && role === "loan officer" && (
-                  <>
-                    <button onClick={() => setIsModalOpen(true)} className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium">
-                      SET SCHEDULE
-                    </button>
-                    <button onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL)}  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                      DISMISS
-                    </button>
-                  </>
-                )}
-                {application?.status === "Pending" && role === "loan officer" &&(
-                  <>
-                    <button onClick={() => handleClearedLoan(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-                      CLEAR
-                    </button>
-                    <button onClick={() => handleDenyFromCleared(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                      DISMISS
-                    </button>
-                  </>
-                )}
-
-                {application?.status === "Cleared" && role === "manager" &&(
-                  <>
-                    <button onClick={() => handleApproveApplication(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
-                      APPROVE
-                    </button>
-                    <button onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL)} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-                      DENY
-                    </button>
-                  </>
-                )}
-                {application?.status === "Approved" && role === "loan officer" && (
-                  <button
-                    onClick={() => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                  >
-                    Disburse
-                  </button>
-                )}
-
-                {application?.status === "Disbursed" && (
-                  <button
-                    onClick={() => setIsAgreementOpen(true)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                  >
-                    Loan Agreement
-                  </button>
-                )}
-
-
+                <ApplicationButtons
+                  application={application!}
+                  role={role}
+                  setApplications={setApplications}
+                  authFetch={authFetch}
+                  API_URL={API_URL}
+                  setIsModalOpen={setIsModalOpen}
+                  setIsAgreementOpen={setIsAgreementOpen}
+                  modalRef={modalRef}
+                />
               </div>
+
             </div>
           </div>
         </div>
 
+        {/* MAIN CONTENT */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Left Column - Profile Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">    
+
+            {/* PROFILE SECTION */}
             <div className="lg:col-span-1 flex flex-col h-full">
-              {/* Basic Information Card */}
+
+              {/* FIRST CARD*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 flex-shrink-0">
                 <div className="p-6 text-center">
                   {/* Profile Image */}
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100 mb-4 border-4 border-white shadow-lg">
-  {application?.profilePic?.filePath ? (
-    <img
-      src={`http://localhost:3001/${application.profilePic.filePath}`}
-      alt="Profile"
-      className="w-full h-full object-cover"
-      onError={(e) => {
-        (e.target as HTMLImageElement).src = "/default-profile.png";
-      }}
-    />
-  ) : (
-    <div className="w-full h-full flex items-center justify-center">
-      <FiUser className="w-16 h-16 text-gray-400" />
-    </div>
-  )}
-</div>
-
-                  
+                    {application?.profilePic?.filePath ? (
+                      <img
+                        src={`http://localhost:3001/${application.profilePic.filePath}`}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "/default-profile.png";
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <FiUser className="w-16 h-16 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
                   {/* Name and Contact */}
                   <h2 className="text-xl font-bold text-gray-900 mb-1">{application?.appName || '—'}</h2>
                   <p className="text-red-600 font-medium mb-1">{application?.appContact || '—'}</p>
@@ -293,10 +195,10 @@
                 </div>
               </div>
 
-              {/* General Information Card */}
+              {/* BASIC INFORMATION CARD*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">General Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
                 </div>
                 <div className="p-6 space-y-4">
                   <div>
@@ -312,7 +214,7 @@
                     <p className="text-gray-900">{application?.appMarital || '—'}</p>
                   </div>
                   
-                  {/* Conditional Spouse Info */}
+                  {/* SPOUSE INFO */}
                   {application?.appMarital === "Married" && (
                     <>
                       <div>
@@ -334,9 +236,10 @@
               </div>
             </div>
 
-            {/* Middle Column - Tabbed Content */}
+            {/* MIDDLE */}
             <div className="lg:col-span-1 flex flex-col h-full">
-              {/* Tab Navigation and Content */}
+
+              {/* TAB NAVIGATION*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow flex flex-col">
                 <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
                   <div className="flex space-x-8">
@@ -375,9 +278,10 @@
                   </div>
                 </div>
 
-                {/* Tab Content */}
+                {/* TAB CONTENT */}
                 <div className="p-6 flex-grow overflow-y-auto">
-                  {/* Income Information Tab */}
+
+                  {/* INCOME INFORMATION */}
                   {activeTab === 'income' && (
                     <div className="space-y-4 h-full">
                       <div>
@@ -430,12 +334,12 @@
                     </div>
                   )}
 
-                  {/* Character References Tab */}
+                  {/* CHARACTER REFERENCES */}
                   {activeTab === 'references' && (
                     <div className="h-full">
-                      {application?.characterReferences && application.characterReferences.length > 0 ? (
+                      {application?.appReferences && application.appReferences.length > 0 ? (
                         <div className="space-y-4">
-                          {application.characterReferences.map((ref, i) => (
+                          {application.appReferences.map((ref, i) => (
                             <div key={i} className="p-4 bg-gray-50 rounded-lg">
                               <div className="flex items-center mb-2">
                                 <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
@@ -459,7 +363,7 @@
                     </div>
                   )}
 
-                  {/* Collateral Details Tab */}
+                  {/* COLLATERAL DETAILS*/}
                   {activeTab === 'collateral' && (
                     <div className="h-full">
                       {application?.loanType === "Regular Loan With Collateral" && (
@@ -473,7 +377,7 @@
                 </div>
               </div>
 
-              {/* Files Section */}
+              {/* FILES*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6 flex-shrink-0">
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900">Files</h3>
@@ -516,23 +420,19 @@
               </div>
             </div>
 
-            {/* Right Column - Loan Details */}
+            {/* RIGHT COLUMN */}
             <div className="lg:col-span-1 flex flex-col h-full">
-            {/* Loan Computation Card */}
+            {/* LOAN COMPUTATION */}
             <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-md mx-auto">
               {/* Card Header */}
               <div className="px-6 py-4 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">Loan Computation</h3>
               </div>
-
-              {/* Card Body */}
               <div className="p-6 space-y-6">
-                {/* Loan Details */}
                 <div className="space-y-3">
-                  <div className="flex flex-col space-y-1">
+                    <div className="flex justify-between">
                     <span className="text-sm font-medium text-gray-500">Loan Purpose</span>
-                    <span className="text-gray-900 break-words text-sm leading-relaxed">
-                      {application?.appLoanPurpose || '—'}
+                    <span className="text-gray-900 break-words text-sm leading-relaxed">{application?.appLoanPurpose || '—'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -549,30 +449,26 @@
                   </div>
                 </div>
 
-                {/* Computation Details */}
                 <div className="pt-4 border-t border-gray-200 space-y-3">
                   {(() => {
                     const principal = Number(application?.appLoanAmount || 0);
                     const interestRate = Number(application?.appInterest || 0);
                     const terms = Number(application?.appLoanTerms || 1);
 
-                    const totalInterest = (principal * interestRate * terms) / 100;
-                    const totalPayable = principal + totalInterest;
-                    const monthlyDue = totalPayable / terms;
 
                     return (
                       <>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">Total Interest</span>
-                          <span className="text-gray-900">{formatCurrency(totalInterest)}</span>
+                          <span className="text-gray-900">{formatCurrency(application?.interestAmount)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">Total Payable</span>
-                          <span className="text-gray-900 font-semibold text-lg">{formatCurrency(totalPayable)}</span>
+                          <span className="text-gray-900 font-semibold text-lg">{formatCurrency(application?.totalPayable)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">Monthly Due</span>
-                          <span className="text-gray-900">{formatCurrency(monthlyDue)}</span>
+                          <span className="text-gray-900">{formatCurrency(application?.periodAmount)}</span>
                         </div>
                       </>
                     );
@@ -584,20 +480,22 @@
           </div>
         </div>
 
-{/* MODALS */}
-  <SetScheduleModal
-    isOpen={isModalOpen}
-    onClose={() => setIsModalOpen(false)}
-    application={application}
-    setApplications={setApplications}
-    authFetch={authFetch}
-  />
+        {/* MODALS */}
+          <SetScheduleModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            application={application}
+            setApplications={setApplications}
+            authFetch={authFetch}
+          />
 
-  <LoanAgreementModal
-    isOpen={isAgreementOpen}
-    onClose={() => setIsAgreementOpen(false)}
-    application={application ?? null}
-  />
+          <LoanAgreementModal
+            isOpen={isAgreementOpen}
+            onClose={() => setIsAgreementOpen(false)}
+            application={application ?? null}
+          />
+
+        <AccountModal ref={modalRef} />
       </div>
       </Wrapper>
     );

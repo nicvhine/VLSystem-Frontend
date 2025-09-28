@@ -128,7 +128,7 @@ export default function SetScheduleModal({
 
   return (
     <div
-      className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"}`}
+      className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-black transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"}`}
       onMouseDown={onClose} 
     >
       <div
