@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Navbar from "../navbar";
 import WithCollateralLoanForm from "../forms/withCollateral/withCollateral";
 import WithoutCollateralLoanForm from "../forms/withoutCollateral/withoutCollateral";
-import OpenTermLoanForm from "../forms/openTerm";
+import OpenTermLoanForm from "../forms/openTerm/openTerm";
 import LoginModal from "../../loginForm/page";
 import { FiX } from "react-icons/fi";
 

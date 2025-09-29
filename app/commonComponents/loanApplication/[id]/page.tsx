@@ -8,7 +8,7 @@ import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
 
 //CUSTOMIZATION
 import WithCollateral from './customization/withCollateral';
-import OpenTerm from './customization/openTerm';
+import OpenTerm from './customization/openTerm'; // If this is a wrapper, leave as is. If it imports openTerm, update that file instead.
 
 //MODALS
 import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';

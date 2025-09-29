@@ -3,10 +3,16 @@
 import { useState, useEffect } from "react";
 import Navbar from "../navbar";
 import WithCollateralLoanForm from "../forms/withCollateral/withCollateral";
-import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
-import L from "leaflet";
+import dynamic from 'next/dynamic';
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
+const useMapEvents = dynamic(() => import('react-leaflet').then(mod => mod.useMapEvents), { ssr: false });
+let L;
+if (typeof window !== 'undefined') {
+  L = require('leaflet');
+}
 import WithoutCollateralLoanForm from "../forms/withoutCollateral/withoutCollateral";
-import OpenTermLoanForm from "../forms/openTerm";
+import OpenTermLoanForm from "../forms/openTerm/openTerm";
 import axios from "axios";
 import LoginModal from "../../loginForm/page";
 

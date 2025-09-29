@@ -506,17 +506,18 @@ export default function Common(props: CommonProps) {
       <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
       {language === "en" ? "Character References" : "Mga Tigi-uyonanan"}
     </h4>
+    <div className="mb-2"></div>
     {[1, 2, 3].map((i) => (
       <React.Fragment key={i}>
         {/* Reference Name */}
-        <label className="block font-medium mb-2 text-gray-700">
+        <label className="block font-medium mb-2 text-gray-700 mt-2">
           {language === "en"
             ? `Reference ${i} Name:`
             : `Pangalan sa Tig-uyon ${i}:`}
         </label>
         <input
           type="text"
-          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent mb-1 ${
             nameError[i - 1] ? "border-red-400" : "border-gray-200"
           }`}
           placeholder={language === "en" ? "Full name" : "Buong pangalan"}
@@ -555,7 +556,7 @@ export default function Common(props: CommonProps) {
         )}
 
         {/* Reference Contact */}
-        <label className="block font-medium mb-2 text-gray-700">
+  <label className="block font-medium mb-4 mt-4 text-gray-700">
           {language === "en" ? "Contact Number:" : "Numero ng Telepono:"}
         </label>
         <input
@@ -598,7 +599,7 @@ export default function Common(props: CommonProps) {
           )}
 
         {/* Reference Relationship */}
-        <label className="block font-medium mb-2 text-gray-700">
+        <label className="block font-medium mb-2 text-gray-700 mt-3">
           {language === "en" ? "Relationship:" : "Relasyon:"}
         </label>
         <input

@@ -1,8 +1,7 @@
-
 'use client';
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import Common from "./common/common";
+import Common from "../common/common";
 
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
 function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
@@ -65,7 +64,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
   );
 }
 
-const API_URL = "http://localhost:3001/loan-applications/open-term";
+const API_URL = "http://localhost:3001/loan-applications/apply/open-term";
 
 type LoanOption = {
   amount: number;
@@ -79,14 +78,16 @@ const loanOptions: LoanOption[] = [
   { amount: 500000, interest: 3 },
 ];
 
-interface OpenTermDesktopProps {
+interface OpenTermMobileProps {
   language: 'en' | 'ceb';
   onLanguageChange?: (lang: 'en' | 'ceb') => void;
 }
 
-export default function OpenTermDesktop({ language, onLanguageChange }: OpenTermDesktopProps) {
+export default function OpenTermMobile({ language, onLanguageChange }: OpenTermMobileProps) {
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
+  const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+  const [appBusinessName, setAppBusinessName] = useState("");
 
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
@@ -98,7 +99,6 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
   const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
   const [appAddress, setAppAddress] = useState("");
   const [appTypeBusiness, setAppTypeBusiness] = useState("");
-  const [appBusinessName, setAppBusinessName] = useState("");
   const [appDateStarted, setAppDateStarted] = useState("");
   const [appBusinessLoc, setAppBusinessLoc] = useState("");
   const [appMonthlyIncome, setAppMonthlyIncome] = useState<number>(0);
@@ -114,7 +114,7 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
 
   // Collateral specific states
   const [collateralType, setCollateralType] = useState("");
-  const [collateralValue, setCollateralValue] = useState<number>(0);
+  const [collateralValue, setCollateralValue] = useState<string>("");
   const [collateralDescription, setCollateralDescription] = useState("");
   const [ownershipStatus, setOwnershipStatus] = useState("");
 
@@ -140,7 +140,6 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
     if (e.target.files) {
       const files = Array.from(e.target.files);
       files.forEach((file) => {
-        const validTypes = ["image/jpeg", "image/png", "image/jpg"];
         if (!validTypes.includes(file.type)) {
           alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
           return;
@@ -168,15 +167,15 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
   };
 
   const handleSubmit = async () => {
-    if (!appLoanPurpose || !selectedLoan) {
+    if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
       alert(language === 'en'
-        ? "Please fill in all required fields."
-        : "Palihug pun-a ang tanang kinahanglan nga field."
+        ? "Please fill in all required fields including collateral information."
+        : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral."
       );
       return;
     }
     if (uploadedFiles.length === 0) {
-      alert(language === 'en'
+      alert(language === "en"
         ? "Please upload at least one document."
         : "Palihug i-upload ang usa ka dokumento."
       );
@@ -214,7 +213,7 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
       formData.append("appLoanPurpose", appLoanPurpose);
       // Collateral fields
       formData.append("collateralType", collateralType);
-      formData.append("collateralValue", String(collateralValue));
+      formData.append("collateralValue", String(collateralValue || 0));
       formData.append("collateralDescription", collateralDescription);
       formData.append("ownershipStatus", ownershipStatus);
       appReferences.forEach((ref, i) => {
@@ -238,7 +237,7 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
         setUploadedFiles([]);
         setPhoto2x2([]);
         setCollateralType("");
-        setCollateralValue(0);
+        setCollateralValue("");
         setCollateralDescription("");
         setOwnershipStatus("");
       } else {
@@ -252,7 +251,7 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
 
   const loanAmountPlaceholder = language === 'en' ? 'Select amount' : 'Pilia ang kantidad';
 
-    //Loan Amount
+  //Loan Amount
   const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
 
   const validateLoanAmount = (amount: number) => {
@@ -308,8 +307,8 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
         language={language}
       />
 
-      {/* Loan Details */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+  {/* Loan Details */}
+  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 mt-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam'}
@@ -358,46 +357,48 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
           </div>
         </div>
          {/* Sample Calculation */}
-  {customLoanAmount && selectedLoan && (
-    <div className="mt-6 border-t pt-4 text-gray-100">
-      <h5 className="text-md font-semibold mb-3 text-gray-700">
-        {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
-      </h5>
+    {customLoanAmount && selectedLoan && (
+      <div className="mt-6 border-t pt-4 text-gray-100">
+        <h5 className="text-md font-semibold mb-3 text-gray-700">
+          {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
+        </h5>
 
-      {(() => {
-        const loanAmount = Number(customLoanAmount);
-        const interestRate = Number(selectedLoan.interest) / 100;
-        const serviceChargeRate = 0.05; 
+        {(() => {
+          const loanAmount = Number(customLoanAmount);
+          const interestRate = Number(selectedLoan.interest) / 100;
+          const serviceChargeRate = 0.05; // 5%
 
-        const monthlyInterest = loanAmount * interestRate;
-        const serviceCharge = loanAmount * serviceChargeRate;
-        const netProceeds = loanAmount - serviceCharge;
+          const monthlyInterest = loanAmount * interestRate;
+          const serviceCharge = loanAmount * serviceChargeRate;
+          const netProceeds = loanAmount - serviceCharge;
 
-        return (
-          <div className="space-y-2 text-gray-700">
-            <p>
-              <span className="font-medium">
-                {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
-              </span>{" "}
-              ₱{loanAmount.toLocaleString()}
-            </p>
-            <p>
-              <span className="font-medium">
-                {language === "en" ? "Service Charge (5%):" : "Serbisyo nga Bayad (5%):"}
-              </span>{" "}
-              ₱{serviceCharge.toFixed(2)}
-            </p>
-            <p className="text-green-700 font-semibold">
-              <span>
-                {language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}
-              </span>{" "}
-              ₱{netProceeds.toFixed(2)}
-            </p>
-          </div>
-        );
-      })()}
-    </div>
-  )}
+          return (
+            <div className="space-y-2 text-gray-700">
+              <p>
+                <span className="font-medium">
+                  {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
+                </span>{" "}
+                ₱{loanAmount.toLocaleString()}
+              </p>
+              <p>
+                <span className="font-medium">
+                  {language === "en"
+                    ? "Service Charge (5%):"
+                    : "Serbisyo nga Bayad (5%):"}
+                </span>{" "}
+                ₱{serviceCharge.toFixed(2)}
+              </p>
+              <p className="text-green-700 font-semibold">
+                <span>
+                  {language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}
+                </span>{" "}
+                ₱{netProceeds.toFixed(2)}
+              </p>
+            </div>
+          );
+        })()}
+      </div>
+    )}
       </div>
 
       {/* Collateral Information */}
@@ -409,19 +410,24 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Type of Collateral:' : 'Klase sa Kolateral:'}</label>
-            <input
+            <select
               value={collateralType}
               onChange={(e) => setCollateralType(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder={language === 'en' ? 'Enter Collateral Type' : 'Isulod ang Klase sa Kolateral'}
-            />
+            >
+              <option value="">{language === 'en' ? 'Select collateral type' : 'Pilia ang klase sa kolateral'}</option>
+              <option value="real_estate">{language === 'en' ? 'Real Estate' : 'Yuta/Balay'}</option>
+              <option value="vehicle">{language === 'en' ? 'Vehicle' : 'Sasakyan'}</option>
+              <option value="equipment">{language === 'en' ? 'Equipment' : 'Kagamitan'}</option>
+              <option value="others">{language === 'en' ? 'Others' : 'Uban pa'}</option>
+            </select>
           </div>
           <div>
             <label className="block font-medium mb-2 text-gray-700">{language === 'en' ? 'Estimated Value:' : 'Gibanabanang Kantidad:'}</label>
             <input
               type="number"
               value={collateralValue}
-              onChange={(e) => setCollateralValue(Number(e.target.value))}
+              onChange={(e) => setCollateralValue(e.target.value)}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               placeholder={language === 'en' ? 'Enter Value' : 'Isulod ang Kantidad'}
             />

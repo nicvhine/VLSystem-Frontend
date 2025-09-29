@@ -6,7 +6,7 @@ import WithCollateralForm from "../forms/withCollateral";
 import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import WithoutCollateralForm from "../forms/withoutCollateral";
-import OpenTermForm from "../forms/openTerm";
+import OpenTermForm from "../forms/openTerm/openTerm";
 import axios from "axios";
 import Common from "../forms/common";
 import Borrower from "../../page";
