@@ -57,6 +57,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState(""); 
   const [role, setRole] = useState<string | null>(null);
+  const [printMode, setPrintMode] = useState(false); // Add a print mode state
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
@@ -296,43 +297,11 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   };
 
   const handlePrint = () => {
-    if (!tableRef.current) return;
-  
-    const tableClone = tableRef.current.cloneNode(true) as HTMLElement;
-  
-    if (role === "collector") {
-      const headers = tableClone.querySelectorAll('thead th');
-      if (headers.length > 0) headers[headers.length - 1].remove(); 
-  
-      const rows = tableClone.querySelectorAll('tbody tr');
-      rows.forEach(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length > 0) cells[cells.length - 1].remove(); 
-      });
-    }
-  
-    const printContents = tableClone.innerHTML;
-    const originalContents = document.body.innerHTML;
-    const formattedDate = `${selectedDate.getMonth() + 1}/${selectedDate.getDate()}/${selectedDate.getFullYear()}`;
-  
-    document.body.innerHTML = `
-      <div style="padding:20px;">
-        <h2 style="text-align:center; margin-bottom:20px;">
-          Collection Sheet for ${formattedDate}
-        </h2>
-        <table style="width:100%; border-collapse: collapse;">
-          <thead>
-            ${tableClone.querySelector('thead')?.innerHTML || ''}
-          </thead>
-          <tbody>
-            ${tableClone.querySelector('tbody')?.innerHTML || ''}
-          </tbody>
-        </table>
-      </div>
-    `;
-  
-    window.print();
-    document.body.innerHTML = originalContents;
+    setPrintMode(true);
+    setTimeout(() => {
+      window.print();
+      setPrintMode(false);
+    }, 100);
   };
   
   
@@ -489,80 +458,82 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
         {/* Table */}
         <div ref={tableRef} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <Suspense fallback={<LoadingSpinner />}>
-            <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Balance</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
-                <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
-                {role === "collector" && (
-                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Action</th>
-                )}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {loading ? (
+            <div className={printMode ? 'print-sheet' : ''} style={printMode ? { background: '#fff', padding: 20 } : {}}>
+              <table className="min-w-full divide-y divide-gray-200">
+              <thead>
                 <tr>
-                  <td colSpan={role === "collector" ? 11 : 10}><LoadingSpinner /></td>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Balance</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
+                  <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
+                  {role === "collector" && (
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Action</th>
+                  )}
                 </tr>
-              ) : filteredCollections.length === 0 ? (
-                <tr>
-                  <td colSpan={role === "collector" ? 11 : 10} className="text-center py-6 text-gray-500">
-                    No collections found.
-                  </td>
-                </tr>
-              ) : (
-                filteredCollections.map((col) => (
-                  <tr key={col.referenceNumber} className="hover:bg-blue-50/60">
-                    <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                        col.status === "Paid" ? "bg-green-100 text-green-800" :
-                        col.status === "Partial" ? "bg-yellow-100 text-yellow-800" :
-                        col.status === "Overdue" ? "bg-red-100 text-red-800" :
-                        "bg-gray-100 text-gray-600"}`}>
-                        {col.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{col.note}</td>
-                    {role === "collector" && (
-                      <td className="px-6 py-4 flex flex-col gap-1">
-                        {col.balance > 0 ? (
-                          <button
-                            onClick={() => handleMakePayment(col)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
-                          >
-                            Make Payment
-                          </button>
-                        ) : (
-                          <span className="text-green-600 text-xs">Paid</span>
-                        )}
-                        <button
-                          onClick={() => handleAddNote(col)}
-                          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs font-medium"
-                        >
-                          {col.note && col.note.trim() !== "" ? "Edit Note" : "Add Note"}
-                        </button>
-                      </td>
-                    )}
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {loading ? (
+                  <tr>
+                    <td colSpan={role === "collector" ? 11 : 10}><LoadingSpinner /></td>
                   </tr>
-                ))
-              )}
-            </tbody>
+                ) : filteredCollections.length === 0 ? (
+                  <tr>
+                    <td colSpan={role === "collector" ? 11 : 10} className="text-center py-6 text-gray-500">
+                      No collections found.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredCollections.map((col) => (
+                    <tr key={col.referenceNumber} className="hover:bg-blue-50/60">
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
+                      <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          col.status === "Paid" ? "bg-green-100 text-green-800" :
+                          col.status === "Partial" ? "bg-yellow-100 text-yellow-800" :
+                          col.status === "Overdue" ? "bg-red-100 text-red-800" :
+                          "bg-gray-100 text-gray-600"}`}>
+                          {col.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.note}</td>
+                      {role === "collector" && (
+                        <td className="px-6 py-4 flex flex-col gap-1">
+                          {col.balance > 0 ? (
+                            <button
+                              onClick={() => handleMakePayment(col)}
+                              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
+                            >
+                              Make Payment
+                            </button>
+                          ) : (
+                            <span className="text-green-600 text-xs">Paid</span>
+                          )}
+                          <button
+                            onClick={() => handleAddNote(col)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs font-medium"
+                          >
+                            {col.note && col.note.trim() !== "" ? "Edit Note" : "Add Note"}
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
 
-            </table>
+              </table>
+            </div>
           </Suspense>
         </div>
 
@@ -659,3 +630,12 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
       </Wrapper>
     );
   }
+
+// Add a print-only CSS style (can be in a global CSS or in a <style jsx global>):
+/*
+@media print {
+  body * { visibility: hidden; }
+  .print-sheet, .print-sheet * { visibility: visible; }
+  .print-sheet { position: absolute; left: 0; top: 0; width: 100vw; background: #fff; z-index: 9999; }
+}
+*/
