@@ -90,3 +90,9 @@ textarea::placeholder {
   background-color: #780101; /* Tailwind blue-500 */
   border-radius: 9999px;
 }
+
+@media print {
+  body * { visibility: hidden; }
+  .print-sheet, .print-sheet * { visibility: visible; }
+  .print-sheet { position: absolute; left: 0; top: 0; width: 100vw; background: #fff; z-index: 9999; }
+}
