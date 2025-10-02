@@ -465,7 +465,7 @@ const closeModal = () => {
 
 
        {/* 2x2 Upload */}
-  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-md mx-auto mt-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
