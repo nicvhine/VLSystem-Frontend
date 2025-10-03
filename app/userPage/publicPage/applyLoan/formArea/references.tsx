@@ -13,6 +13,7 @@ interface ReferencesProps {
   appReferences: Reference[];
   setAppReferences: React.Dispatch<React.SetStateAction<Reference[]>>;
   appContact: string;
+  missingFields?: string[];
 }
 
 export default function References({
@@ -20,18 +21,66 @@ export default function References({
   appReferences,
   setAppReferences,
   appContact,
+  missingFields = [],
 }: ReferencesProps) {
   const [nameError, setNameError] = useState<string[]>(["", "", ""]);
   const [refErrors, setRefErrors] = useState<string[]>(["", "", ""]);
 
   // Handle reference field changes
+
+  // Enhanced handleReferenceChange with validation
   const handleReferenceChange = (
     index: number,
     field: keyof Reference,
     value: string
   ) => {
     const updated = [...appReferences];
-    updated[index][field] = value;
+    let valid = true;
+    let errorMsg = "";
+
+    if (field === "name") {
+      // Only allow letters, ñ, hyphen, dot, and space
+      if (!/^[A-Za-zñÑ.\- ]*$/.test(value)) {
+        valid = false;
+        errorMsg = language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
+      } else {
+        // Check for duplicate names (case-insensitive, ignore self)
+        const lowerValue = value.trim().toLowerCase();
+        const isDuplicate = appReferences.some((ref, idx) => idx !== index && ref.name.trim().toLowerCase() === lowerValue && lowerValue !== "");
+        if (isDuplicate) {
+          valid = false;
+          errorMsg = language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
+        }
+      }
+      (updated[index][field] as string) = value;
+      const newNameError = [...nameError];
+      newNameError[index] = valid ? "" : errorMsg;
+      setNameError(newNameError);
+    } else if (field === "contact") {
+      // Only allow digits, max 11, must start with 09
+      if (!/^\d*$/.test(value) || value.length > 11) {
+        valid = false;
+        errorMsg = language === "en" ? "Contact must be up to 11 digits." : "Hangtud ra sa 11 ka numero.";
+      } else if (value.length > 0 && !value.startsWith("09")) {
+        valid = false;
+        errorMsg = language === "en" ? "Invalid phone number format" : "Sayop nga porma sa numero sa telepono.";
+      }
+      (updated[index][field] as string) = value;
+      const newRefErrors = [...refErrors];
+      newRefErrors[index] = valid ? "" : errorMsg;
+      setRefErrors(newRefErrors);
+    } else if (field === "relation") {
+      // Max 3 words
+      const wordCount = value.trim().split(/\s+/).length;
+      if (wordCount > 3) {
+        valid = false;
+        errorMsg = language === "en" ? "Max 3 words only." : "Hangtud ra sa 3 ka pulong.";
+      }
+      (updated[index][field] as string) = value;
+      // No error state for relation, but could add if needed
+    } else {
+      (updated[index][field] as string) = value;
+    }
     setAppReferences(updated);
   };
 
@@ -64,124 +113,55 @@ export default function References({
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
       <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
         <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-        {language === "en" ? "Character References" : "Mga Tigi-uyonanan"}
+        {language === "en" ? "Character References" : "Mga Reference"}
       </h4>
-
-      {[1, 2, 3].map((i) => (
-  <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {/* Reference Name */}
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block font-medium mb-2 text-gray-700">
-              {language === "en"
-                ? `Reference ${i} Name:`
-                : `Pangalan sa Tig-uyon ${i}:`}
+              {language === "en" ? `Reference ${i + 1} Name:` : `Ngalan sa Reference ${i + 1}:`}
             </label>
             <input
               type="text"
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                nameError[i - 1] ? "border-red-400" : "border-gray-200"
-              }`}
-              placeholder={language === "en" ? "Full name" : "Buong pangalan"}
-              value={appReferences[i - 1]?.name || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^[A-Za-zñÑ.\- ]*$/.test(value)) {
-                  handleReferenceChange(i - 1, "name", value);
-                  const updatedErrors = [...nameError];
-                  updatedErrors[i - 1] = "";
-                  setNameError(updatedErrors);
-                } else {
-                  const updatedErrors = [...nameError];
-                  updatedErrors[i - 1] =
-                    language === "en"
-                      ? "Invalid name format."
-                      : "Sayop ang porma sa ngalan.";
-                  setNameError(updatedErrors);
-                }
-              }}
+              value={appReferences[i]?.name || ""}
+              maxLength={50}
+              onChange={e => handleReferenceChange(i, "name", e.target.value)}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${nameError[i] || missingFields.includes(`Reference ${i + 1} Name`) ? 'border-red-500' : 'border-gray-200'}`}
+              placeholder={language === "en" ? "Enter name" : "Isulod ang ngalan"}
             />
-            {(nameError[i - 1] ||
-              (refErrors[i - 1] &&
-                refErrors[i - 1].toLowerCase().match(/duplicate name|applicant’s name/))) && (
-              <p className="text-sm text-red-600 mt-1">
-                {nameError[i - 1] ||
-                  refErrors[i - 1]
-                    .split("•")
-                    .filter(
-                      (err) =>
-                        err.toLowerCase().includes("duplicate name") ||
-                        err.toLowerCase().includes("applicant’s name")
-                    )
-                    .join(" • ")}
-              </p>
+            {nameError[i] && (
+              <p className="text-sm text-red-600 mt-1">{nameError[i]}</p>
             )}
           </div>
-
-          {/* Reference Contact */}
           <div>
             <label className="block font-medium mb-2 text-gray-700">
-              {language === "en" ? "Contact Number:" : "Numero ng Telepono:"}
+              {language === "en" ? "Contact Number:" : "Numero sa Kontak:"}
             </label>
             <input
               type="text"
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                refErrors[i - 1] &&
-                refErrors[i - 1].toLowerCase().includes("contact")
-                  ? "border-red-400"
-                  : "border-gray-200"
-              }`}
-              placeholder="09XXXXXXXXX"
-              value={appReferences[i - 1]?.contact || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (/^\d*$/.test(value) && value.length <= 11) {
-                  handleReferenceChange(i - 1, "contact", value);
-                }
-              }}
-              onBlur={(e) => {
-                const v = e.target.value.trim();
-                const next = [...refErrors];
-                if (v && !/^09\d{9}$/.test(v)) {
-                  next[i - 1] = "Invalid mobile format";
-                } else {
-                  next[i - 1] = "";
-                  validateReferenceUniqueness(appReferences, appContact);
-                }
-                setRefErrors(next);
-              }}
-              aria-invalid={
-                !!refErrors[i - 1] &&
-                refErrors[i - 1].toLowerCase().includes("contact")
-              }
+              value={appReferences[i]?.contact || ""}
+              maxLength={11}
+              onChange={e => handleReferenceChange(i, "contact", e.target.value)}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${refErrors[i] || missingFields.includes(`Reference ${i + 1} Contact`) ? 'border-red-500' : 'border-gray-200'}`}
+              placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
             />
-            {refErrors[i - 1] &&
-              refErrors[i - 1].toLowerCase().match(/contact|mobile|digits/) && (
-                <p className="text-sm text-red-600 mt-1">{refErrors[i - 1]}</p>
-              )}
+            {refErrors[i] && (
+              <p className="text-sm text-red-600 mt-1">{refErrors[i]}</p>
+            )}
           </div>
-
-          {/* Reference Relationship */}
           <div>
             <label className="block font-medium mb-2 text-gray-700">
               {language === "en" ? "Relationship:" : "Relasyon:"}
             </label>
             <input
               type="text"
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              placeholder={
-                language === "en"
-                  ? "e.g., Friend, Sibling"
-                  : "hal. Higala, Igsoon"
-              }
-              value={appReferences[i - 1]?.relation || ""}
-              onChange={(e) => {
-                const value = e.target.value;
-                const wordCount = value.trim().split(/\s+/).length;
-                if (wordCount <= 3) {
-                  handleReferenceChange(i - 1, "relation", value);
-                }
-              }}
+              value={appReferences[i]?.relation || ""}
+              maxLength={30}
+              onChange={e => handleReferenceChange(i, "relation", e.target.value)}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes(`Reference ${i + 1} Relationship`) ? 'border-red-500' : 'border-gray-200'}`}
+              placeholder={language === "en" ? "Enter relationship" : "Isulod ang relasyon"}
             />
+            {/* Could add error message for relation if needed */}
           </div>
         </div>
       ))}

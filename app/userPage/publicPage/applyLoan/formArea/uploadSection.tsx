@@ -10,6 +10,7 @@ interface UploadSectionProps {
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   removeProfile: (index: number) => void;
   removeDocument: (index: number) => void;
+  missingFields?: string[];
 }
 
 export default function UploadSection({
@@ -19,7 +20,8 @@ export default function UploadSection({
   handleProfileChange,
   handleFileChange,
   removeProfile,
-  removeDocument
+  removeDocument,
+  missingFields = [],
 }: UploadSectionProps) {
 
   return (
@@ -30,7 +32,7 @@ export default function UploadSection({
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
         </h4>
-        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
+        <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${missingFields.includes('2x2 Photo') ? 'border-red-500' : 'border-gray-200'}`}> 
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
@@ -70,7 +72,7 @@ export default function UploadSection({
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'I-upload ang mga Dokumento'}
         </h4>
-        <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center hover:border-red-300 transition-colors">
+        <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${missingFields.includes('Document Upload') ? 'border-red-500' : 'border-gray-200'}`}> 
           <input
             type="file"
             multiple

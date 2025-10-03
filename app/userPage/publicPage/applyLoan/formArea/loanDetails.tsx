@@ -14,6 +14,7 @@ interface LoanDetailsProps {
   appLoanPurpose: string;
   setAppLoanPurpose: (val: string) => void;
   onLoanSelect: (loan: { amount: number; months?: number; interest: number } | null) => void;
+  missingFields?: string[];
 }
 
 export default function LoanDetails({
