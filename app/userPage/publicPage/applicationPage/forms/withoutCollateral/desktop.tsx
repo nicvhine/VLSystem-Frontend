@@ -115,6 +115,41 @@ export default function WithoutCollateralForm({ language, onLanguageChange }: Wi
     { name: "", contact: "", relation: "" }
   ]); 
 
+  const [missingError, setMissingError] = useState<{ [key: string]: boolean }>({});
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: boolean } = {};
+  
+    if (!appName.trim()) newErrors.appName = true;
+    if (!appDob.trim()) newErrors.appDob = true;
+    if (!appContact.trim() || !/^09\d{9}$/.test(appContact)) newErrors.appContact = true;
+    if (!appEmail.trim()) newErrors.appEmail = true;
+    if (!appMarital.trim()) newErrors.appMarital = true;
+    if (!appAddress.trim()) newErrors.appAddress = true;
+  
+    if (sourceOfIncome === "business") {
+      if (!appTypeBusiness.trim()) newErrors.appTypeBusiness = true;
+      if (!appBusinessName.trim()) newErrors.appBusinessName = true;
+      if (!appDateStarted.trim()) newErrors.appDateStarted = true;
+      if (!appBusinessLoc.trim()) newErrors.appBusinessLoc = true;
+      if (!appMonthlyIncome) newErrors.appMonthlyIncome = true;
+    }
+  
+    if (sourceOfIncome === "employed") {
+      if (!appOccupation.trim()) newErrors.appOccupation = true;
+      if (!appEmploymentStatus.trim()) newErrors.appEmploymentStatus = true;
+      if (!appCompanyName.trim()) newErrors.appCompanyName = true;
+      if (!appMonthlyIncome) newErrors.appMonthlyIncome = true;
+    }
+  
+    if (!appLoanPurpose.trim()) newErrors.appLoanPurpose = true;
+    if (!selectedLoan) newErrors.selectedLoan = true;
+  
+    setMissingError(newErrors);
+    return Object.keys(newErrors).length === 0; // ✅ valid if no errors
+  };
+  
+
   // Success Modal State
 const [showSuccessModal, setShowSuccessModal] = useState(false);
 const [loanId, setLoanId] = useState<string | null>(null);
@@ -187,6 +222,11 @@ const closeModal = () => {
   
     
     const handleSubmit = async () => {
+
+      if (!validateForm()) {
+        alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
+        return;
+      }
       
       if (!appLoanPurpose || !selectedLoan) {
         alert(language === 'en'
@@ -345,13 +385,15 @@ const closeModal = () => {
       <input
         value={appLoanPurpose}
         onChange={(e) => setAppLoanPurpose(e.target.value)}
-        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+        className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+          missingError.appLoanPurpose ? "border-red-500" : "border-gray-200"
+        }`}
         placeholder={
           language === "en"
             ? "Enter Loan Purpose"
             : "Isulod ang Katuyoan sa Pahulam"
         }
-      />
+      /> 
     </div>
 
     <div>

@@ -1,0 +1,312 @@
+    'use client';
+
+    import { useState, useEffect } from "react";
+    import { useRouter } from "next/navigation";
+    import BasicInformation from "./basicInformation";
+    import SourceOfIncome from "./incomeSource";
+    import References from "./references";
+    import CollateralInformation from "./collateral"; 
+    import LoanDetails from "./loanDetails";
+    import UploadSection from "./uploadSection";
+
+    type SuccessModalWithAnimationProps = { 
+    language: string; 
+    loanId: string | null; 
+    onClose: () => void 
+    };
+
+    function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
+    const [animateIn, setAnimateIn] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        setAnimateIn(true);
+        return () => setAnimateIn(false);
+    }, []);
+
+    const handleClose = () => {
+        onClose();
+        router.push('/');
+    };
+
+    return (
+        <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-8 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+            <button
+            onClick={handleClose}
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition text-2xl"
+            aria-label="Close"
+            >
+            ×
+            </button>
+            <div className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                {language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}
+            </h3>
+            <p className="text-gray-600 mb-4">
+                {language === 'en'
+                ? 'Your loan application has been received and is being processed.'
+                : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
+            </p>
+            {loanId && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <p className="text-sm text-gray-600 mb-1">
+                    {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
+                </p>
+                <p className="text-lg font-semibold text-red-600">{loanId}</p>
+                </div>
+            )}
+            <span className="block text-xs text-gray-500 mb-6">
+                {language === 'en'
+                ? 'We will soon notify you for the next step of your application through your provided contact details. Stay tuned for the updates.'
+                : 'Amo kang pahibaw-an sa sunod nga lakang sa imong aplikasyon pinaagi sa imong gihatag nga contact details. Pabilin sa pagpaminaw para sa mga update.'}
+            </span>
+            <button
+                onClick={handleClose}
+                className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
+            >
+                {language === 'en' ? 'Close' : 'Sirado'}
+            </button>
+            </div>
+        </div>
+        </div>
+    );
+    }
+
+    interface FormAreaProps {
+    loanType: string;
+    language: 'en' | 'ceb';
+    }
+
+    export default function FormArea({ loanType, language }: FormAreaProps) {
+    const router = useRouter();
+    const [loanId, setLoanId] = useState<string | null>(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    
+
+    // Basic Info
+    const [appName, setAppName] = useState("");
+    const [appDob, setAppDob] = useState("");
+    const [appContact, setAppContact] = useState("");
+    const [appEmail, setAppEmail] = useState("");
+    const [appMarital, setAppMarital] = useState("");
+    const [appChildren, setAppChildren] = useState(0);
+    const [appSpouseName, setAppSpouseName] = useState("");
+    const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
+    const [appAddress, setAppAddress] = useState("");
+
+    // Source of Income
+    const [sourceOfIncome, setSourceOfIncome] = useState("");
+    const [appTypeBusiness, setAppTypeBusiness] = useState("");
+    const [appBusinessName, setAppBusinessName] = useState("");
+    const [appDateStarted, setAppDateStarted] = useState("");
+    const [appBusinessLoc, setAppBusinessLoc] = useState("");
+    const [appMonthlyIncome, setAppMonthlyIncome] = useState<number>(0);
+    const [appOccupation, setAppOccupation] = useState("");
+    const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
+    const [appCompanyName, setAppCompanyName] = useState("");
+    const [occupationError, setOccupationError] = useState(false);
+
+
+    // References
+    const [appReferences, setAppReferences] = useState([
+        { name: "", contact: "", relation: "" },
+        { name: "", contact: "", relation: "" },
+        { name: "", contact: "", relation: "" }
+    ]);
+
+    // Collateral
+    const [collateralType, setCollateralType] = useState("");
+    const [collateralValue, setCollateralValue] = useState<number>(0);
+    const [collateralDescription, setCollateralDescription] = useState("");
+    const [ownershipStatus, setOwnershipStatus] = useState("");
+    const collateralTypeOptions = [
+        { value: "vehicle", label: language === "en" ? "Vehicle" : "Sakyanan" },
+        { value: "land", label: language === "en" ? "Land" : "Yuta" },
+        { value: "house", label: language === "en" ? "House" : "Balay" },
+    ];
+
+    // Loan
+    const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
+    const [appLoanPurpose, setAppLoanPurpose] = useState("");
+
+    // Uploads
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+
+    const loanTypeParam = loanType === (language === "en" ? "Regular Loan With Collateral" : "Regular nga Pahulam (Naay Kolateral)")
+        ? "with"
+        : loanType === (language === "en" ? "Regular Loan Without Collateral" : "Regular nga Pahulam (Walay Kolateral)")
+        ? "without"
+        : "open-term";
+
+    const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
+    const API_URL = `http://localhost:3001/loan-applications/apply/${loanTypeParam}`;
+
+    const handleSubmit = async () => {
+        try {
+        const formData = new FormData();
+        // Basic info
+        formData.append("appName", appName);
+        formData.append("appDob", appDob);
+        formData.append("appContact", appContact);
+        formData.append("appEmail", appEmail);
+        formData.append("appMarital", appMarital);
+        formData.append("appChildren", String(appChildren));
+        formData.append("appSpouseName", appSpouseName);
+        formData.append("appSpouseOccupation", appSpouseOccupation);
+        formData.append("appAddress", appAddress);
+
+      // Source of Income
+        formData.append("sourceOfIncome", sourceOfIncome);
+
+        formData.append("appMonthlyIncome", String(appMonthlyIncome));
+
+        if (sourceOfIncome === "business") {
+            formData.append("appTypeBusiness", appTypeBusiness.trim());
+            formData.append("appBusinessName", appBusinessName.trim());
+            formData.append("appDateStarted", appDateStarted);
+            formData.append("appBusinessLoc", appBusinessLoc.trim());
+        } else {
+            formData.append("appOccupation", appOccupation.trim());
+            formData.append("appEmploymentStatus", appEmploymentStatus.trim());
+            formData.append("appCompanyName", appCompanyName.trim());
+        }
+
+        // Loan details
+        formData.append("appLoanPurpose", appLoanPurpose);
+        if (selectedLoan) {
+            formData.append("appLoanAmount", String(selectedLoan.amount));
+            formData.append("appLoanTerms", String(selectedLoan.months));
+            formData.append("appInterest", String(selectedLoan.interest));
+        }
+
+        // References
+        appReferences.forEach((ref, i) => {
+            formData.append(`appReferences[${i}][name]`, ref.name);
+            formData.append(`appReferences[${i}][contact]`, ref.contact);
+            formData.append(`appReferences[${i}][relation]`, ref.relation);
+        });
+
+        // Collateral
+        if (requiresCollateral) {
+            formData.append("collateralType", collateralType);
+            formData.append("collateralValue", String(collateralValue));
+            formData.append("collateralDescription", collateralDescription);
+            formData.append("ownershipStatus", ownershipStatus);
+        }
+
+        // Uploads
+        uploadedFiles.forEach(file => formData.append("documents", file));
+        if (photo2x2[0]) formData.append("profilePic", photo2x2[0]);
+
+        const res = await fetch(API_URL, { method: "POST", body: formData });
+        const data = await res.json();
+
+        if (res.ok) {
+            setLoanId(data.application?.applicationId || null);
+            setShowSuccessModal(true);
+        } else {
+            alert(language === 'en' ? data.error : "Napakyas: " + data.error);
+        }
+
+        } catch (error) {
+        console.error(error);
+        alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+        }
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto py-8">
+        
+        <BasicInformation
+            language={language}
+            appName={appName} setAppName={setAppName}
+            appDob={appDob} setAppDob={setAppDob}
+            appContact={appContact} setAppContact={setAppContact}
+            appEmail={appEmail} setAppEmail={setAppEmail}
+            appMarital={appMarital} setAppMarital={setAppMarital}
+            appChildren={appChildren} setAppChildren={setAppChildren}
+            appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName}
+            appSpouseOccupation={appSpouseOccupation} setAppSpouseOccupation={setAppSpouseOccupation}
+            appAddress={appAddress} setAppAddress={setAppAddress}
+        />
+
+        <SourceOfIncome
+            language={language}
+            sourceOfIncome={sourceOfIncome} setSourceOfIncome={setSourceOfIncome}
+            appTypeBusiness={appTypeBusiness} setAppTypeBusiness={setAppTypeBusiness}
+            appBusinessName={appBusinessName} setAppBusinessName={setAppBusinessName}
+            appDateStarted={appDateStarted} setAppDateStarted={setAppDateStarted}
+            appBusinessLoc={appBusinessLoc} setAppBusinessLoc={setAppBusinessLoc}
+            appMonthlyIncome={appMonthlyIncome} setAppMonthlyIncome={setAppMonthlyIncome}
+            appOccupation={appOccupation} setAppOccupation={setAppOccupation}
+            occupationError={occupationError} setOccupationError={setOccupationError}
+            appEmploymentStatus={appEmploymentStatus} setAppEmploymentStatus={setAppEmploymentStatus}
+            appCompanyName={appCompanyName} setAppCompanyName={setAppCompanyName}
+        />
+
+            <References
+            language={language}
+            appReferences={appReferences}
+            setAppReferences={setAppReferences}
+            appContact={appContact} 
+            />
+
+
+        {requiresCollateral && (
+            <CollateralInformation
+            language={language}
+            collateralType={collateralType} setCollateralType={setCollateralType}
+            collateralValue={collateralValue} setCollateralValue={setCollateralValue}
+            collateralDescription={collateralDescription} setCollateralDescription={setCollateralDescription}
+            ownershipStatus={ownershipStatus} setOwnershipStatus={setOwnershipStatus}
+            collateralTypeOptions={collateralTypeOptions}
+            />
+        )}
+
+        <LoanDetails
+            language={language}
+            loanType={loanTypeParam}
+            appLoanPurpose={appLoanPurpose} setAppLoanPurpose={setAppLoanPurpose}
+            onLoanSelect={(loan) => setSelectedLoan(loan)}
+        />
+
+        <UploadSection
+            language={language}
+            photo2x2={photo2x2}
+            documents={uploadedFiles}
+            handleProfileChange={(e) => {
+            if (e.target.files) setPhoto2x2(prev => [...prev, ...Array.from(e.target.files)]);
+            }}
+            handleFileChange={(e) => {
+            if (e.target.files) setUploadedFiles(prev => [...prev, ...Array.from(e.target.files)]);
+            }}
+            removeProfile={(index) => setPhoto2x2(prev => prev.filter((_, i) => i !== index))}
+            removeDocument={(index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index))}
+        />
+
+        <div className="mt-6 flex justify-end">
+            <button
+            onClick={handleSubmit}
+            className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700"
+            >
+            {language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"}
+            </button>
+        </div>
+
+        {showSuccessModal && (
+            <SuccessModalWithAnimation
+            language={language}
+            loanId={loanId}
+            onClose={() => setShowSuccessModal(false)}
+            />
+        )}
+        </div>
+    );
+    }
