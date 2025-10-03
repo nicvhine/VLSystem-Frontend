@@ -20,6 +20,7 @@ import Collector from '@/app/userPage/collectorPage/page';
 
 // Translations
 import headTranslations from "@/app/userPage/headPage/components/translation";
+import managerTranslations from "@/app/userPage/managerPage/components/translation";
 
 interface Collection {
   loanId: string;
@@ -69,7 +70,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   // Listen for language changes
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
-      if (event.detail.userType === 'head') {
+      if (event.detail.userType === 'head' || event.detail.userType === 'manager') {
         setLanguage(event.detail.language);
       }
     };
@@ -78,17 +79,16 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
 
-  const t = headTranslations[language];
+  const t = role === 'manager' ? managerTranslations[language] : headTranslations[language];
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
-    
-    // Initialize language from localStorage
-    const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
-    if (storedLanguage) {
-      setLanguage(storedLanguage);
-    }
+
+    // Initialize language from localStorage by role
+    const langKey = storedRole === 'manager' ? 'managerLanguage' : 'headLanguage';
+    const storedLanguage = localStorage.getItem(langKey) as 'en' | 'ceb';
+    if (storedLanguage) setLanguage(storedLanguage);
   }, []);
 
   // Animation states for Payment Modal

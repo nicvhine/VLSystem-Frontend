@@ -12,6 +12,7 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 // Translations
 import headTranslations from "@/app/userPage/headPage/components/translation";
 import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
+import managerTranslations from "@/app/userPage/managerPage/components/translation";
 
 const API_URL = "http://localhost:3001/loans";
 
@@ -50,7 +51,8 @@ export default function LoansPage() {
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if ((role === "head" && event.detail.userType === 'head') || 
-          (role === "loan officer" && event.detail.userType === 'loanOfficer')) {
+          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
+          (role === "manager" && event.detail.userType === 'manager')) {
         setLanguage(event.detail.language);
       }
     };
@@ -65,6 +67,8 @@ export default function LoansPage() {
       return headTranslations[language];
     } else if (role === "loan officer") {
       return loanOfficerTranslations[language];
+    } else if (role === "manager") {
+      return managerTranslations[language];
     }
     return headTranslations[language]; // default to head translations
   };
@@ -83,6 +87,11 @@ export default function LoansPage() {
       }
     } else if (storedRole === "loan officer") {
       const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    } else if (storedRole === "manager") {
+      const storedLanguage = localStorage.getItem("managerLanguage") as 'en' | 'ceb';
       if (storedLanguage) {
         setLanguage(storedLanguage);
       }
