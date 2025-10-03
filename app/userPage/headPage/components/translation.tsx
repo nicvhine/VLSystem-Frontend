@@ -117,6 +117,74 @@ const headTranslations = {
     statistics: 'Statistics',
     overview: 'Overview',
     
+    // Dashboard Labels
+    financialOverview: 'Financial Overview',
+    collectionStatus: 'Collection Status',
+    applicationStatus: 'Application Status',
+    loanTypes: 'Loan Types',
+    totalPrincipal: 'Total Principal',
+    totalInterest: 'Total Interest',
+    totalCollectables: 'Total Collectables',
+    totalCollected: 'Total Collected',
+    totalUnpaid: 'Total Unpaid',
+    pendingApplications: 'Pending Applications',
+    approvedApplications: 'Approved Applications',
+    deniedApplications: 'Denied Applications',
+    withCollateral: 'With Collateral',
+    withoutCollateral: 'Without Collateral',
+    openTermLoans: 'Open-Term Loans',
+    
+    // Audit Log
+    noRecentActivity: 'No recent activity',
+    seeMore: 'See more',
+    seeLess: 'See less',
+    
+    // User Management
+    allRoles: 'All Roles',
+    searchPlaceholder: 'Search by name, email, or phone...',
+    id: 'ID',
+    actions: 'Actions',
+    
+    // Loans Page
+    loans: 'Loans',
+    all: 'All',
+    active: 'Active',
+    overdue: 'Overdue',
+    closed: 'Closed',
+    searchPlaceholder: 'Search by name, ID or amount...',
+    sortBy: 'Sort by',
+    disburseDate: 'Disburse Date',
+    balance: 'Balance',
+    principal: 'Principal',
+    view: 'View',
+    
+    // Applications Page
+    applications: 'Applications',
+    loanType: 'Loan Type',
+    applicationDate: 'Application Date',
+    principalAmount: 'Principal Amount',
+    interestRate: 'Interest Rate',
+    collectableAmount: 'Collectable Amount',
+    releaseDate: 'Release Date',
+    amount: 'Amount',
+    
+    // Collections Page
+    collections: 'Collections',
+    collectionCalendar: 'Collection Calendar',
+    dailyProgress: 'Daily Progress',
+    dailyCollection: 'Daily Collection',
+    overallProgress: 'Overall Progress',
+    overallCollection: 'Overall Collection',
+    searchHere: 'Search here...',
+    printCollectionSheet: 'Print Collection Sheet',
+    referenceNumber: 'Reference #',
+    loanId: 'Loan ID',
+    periodAmount: 'Period Amount',
+    paidAmount: 'Paid Amount',
+    periodBalance: 'Period Balance',
+    note: 'Note',
+    action: 'Action',
+    
     // Table Headers
     applicationId: 'Application ID',
     applicantName: 'Applicant Name',
@@ -151,6 +219,21 @@ const headTranslations = {
     createLoan: 'CREATE LOAN',
     deleteLoan: 'DELETE LOAN',
     updateLoan: 'UPDATE LOAN',
+    updateUser: 'UPDATE USER',
+    login: 'LOGIN',
+    logout: 'LOGOUT',
+    createApplication: 'CREATE APPLICATION',
+    updateApplication: 'UPDATE APPLICATION',
+    deleteApplication: 'DELETE APPLICATION',
+    approveApplication: 'APPROVE APPLICATION',
+    rejectApplication: 'REJECT APPLICATION',
+    createCollection: 'CREATE COLLECTION',
+    updateCollection: 'UPDATE COLLECTION',
+    deleteCollection: 'DELETE COLLECTION',
+    makePayment: 'MAKE PAYMENT',
+    viewLoan: 'VIEW LOAN',
+    viewApplication: 'VIEW APPLICATION',
+    viewCollection: 'VIEW COLLECTION',
     unknown: 'Unknown',
     
     // Collections
@@ -248,7 +331,7 @@ const headTranslations = {
     details: 'Mga Detalye',
     
     // Messages
-    confirmDelete: 'Sigurado ka ba nga gusto nimo i-delete kini nga user?’,
+    confirmDelete: 'Sigurado ka ba nga gusto nimo i-delete kini nga user?',
     userCreated: 'Malampuson nga nahimo ang user',
     userUpdated: 'Malampuson nga na-update ang user',
     userDeleted: 'Malampuson nga na-delete ang user',
@@ -338,6 +421,21 @@ const headTranslations = {
     createLoan: 'PAGHIMO OG UTANG',
     deleteLoan: 'PAG-DELETE OG UTANG',
     updateLoan: 'PAG-UPDATE SA UTANG',
+    updateUser: 'PAG-UPDATE SA USER',
+    login: 'PAG-LOGIN',
+    logout: 'PAG-LOGOUT',
+    createApplication: 'PAGHIMO OG APLIKASYON',
+    updateApplication: 'PAG-UPDATE SA APLIKASYON',
+    deleteApplication: 'PAG-DELETE OG APLIKASYON',
+    approveApplication: 'PAG-APROBA SA APLIKASYON',
+    rejectApplication: 'PAG-BALIBAR SA APLIKASYON',
+    createCollection: 'PAGHIMO OG KOLEKSYON',
+    updateCollection: 'PAG-UPDATE SA KOLEKSYON',
+    deleteCollection: 'PAG-DELETE OG KOLEKSYON',
+    makePayment: 'PAGHIMO OG BAYAD',
+    viewLoan: 'TAN-AWA ANG UTANG',
+    viewApplication: 'TAN-AWA ANG APLIKASYON',
+    viewCollection: 'TAN-AWA ANG KOLEKSYON',
     unknown: 'Wala Mailhi',
     
     // Collections
@@ -372,6 +470,74 @@ const headTranslations = {
     next: 'Sunod',
     page: 'Panid',
     of: 'sa',
+    
+    // Dashboard Labels
+    financialOverview: 'Kinatibuk-ang Panglantaw sa Pinansyal',
+    collectionStatus: 'Kahimtang sa Koleksyon',
+    applicationStatus: 'Kahimtang sa Aplikasyon',
+    loanTypes: 'Mga Tipo sa Utang',
+    totalPrincipal: 'Kinatibuk-ang Principal',
+    totalInterest: 'Kinatibuk-ang Interes',
+    totalCollectables: 'Kinatibuk-ang Makolekta',
+    totalCollected: 'Kinatibuk-ang Nakolekta',
+    totalUnpaid: 'Kinatibuk-ang Wala Mabayad',
+    pendingApplications: 'Mga Naghulat nga Aplikasyon',
+    approvedApplications: 'Mga Gi-aprobahan nga Aplikasyon',
+    deniedApplications: 'Mga Gi-deny nga Aplikasyon',
+    withCollateral: 'Naay Kolateral',
+    withoutCollateral: 'Walay Kolateral',
+    openTermLoans: 'Mga Open-Term nga Utang',
+    
+    // Audit Log
+    noRecentActivity: 'Walay bag-ong kalihokan',
+    seeMore: 'Tan-awa pa',
+    seeLess: 'Tan-awa gamay',
+    
+    // User Management
+    allRoles: 'Tanan nga mga Papel',
+    searchPlaceholder: 'Pangita pinaagi sa ngalan, email, o telepono...',
+    id: 'ID',
+    actions: 'Mga Aksyon',
+    
+    // Loans Page
+    loans: 'Mga Utang',
+    all: 'Tanan',
+    active: 'Aktibo',
+    overdue: 'Nalapas',
+    closed: 'Sirado',
+    searchPlaceholder: 'Pangita pinaagi sa ngalan, ID o kantidad...',
+    sortBy: 'I-sort pinaagi sa',
+    disburseDate: 'Petsa sa Paghatag',
+    balance: 'Balanse',
+    principal: 'Principal',
+    view: 'Tan-awa',
+    
+    // Applications Page
+    applications: 'Mga Aplikasyon',
+    loanType: 'Klase sa Utang',
+    applicationDate: 'Petsa sa Aplikasyon',
+    principalAmount: 'Kantidad sa Principal',
+    interestRate: 'Rate sa Interes',
+    collectableAmount: 'Makolekta nga Kantidad',
+    releaseDate: 'Petsa sa Pag-release',
+    amount: 'Kantidad',
+    
+    // Collections Page
+    collections: 'Mga Koleksyon',
+    collectionCalendar: 'Kalendaryo sa Koleksyon',
+    dailyProgress: 'Adlaw-adlaw nga Pag-uswag',
+    dailyCollection: 'Adlaw-adlaw nga Koleksyon',
+    overallProgress: 'Kinatibuk-ang Pag-uswag',
+    overallCollection: 'Kinatibuk-ang Koleksyon',
+    searchHere: 'Pangita dinhi...',
+    printCollectionSheet: 'I-print ang Collection Sheet',
+    referenceNumber: 'Numero sa Reperensya',
+    loanId: 'ID sa Utang',
+    periodAmount: 'Kantidad sa Panahon',
+    paidAmount: 'Nabayad nga Kantidad',
+    periodBalance: 'Balanse sa Panahon',
+    note: 'Nota',
+    action: 'Aksyon',
   }
 };
 

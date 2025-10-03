@@ -9,6 +9,10 @@ import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
+// Translations
+import headTranslations from "@/app/userPage/headPage/components/translation";
+import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
+
 const API_URL = "http://localhost:3001/loans";
 
 interface LoanDetails {
@@ -38,10 +42,51 @@ export default function LoansPage() {
   const [loans, setLoans] = useState<LoanDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
+  
+  // Language state
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if ((role === "head" && event.detail.userType === 'head') || 
+          (role === "loan officer" && event.detail.userType === 'loanOfficer')) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+
+  // Get translations based on role
+  const getTranslations = () => {
+    if (role === "head") {
+      return headTranslations[language];
+    } else if (role === "loan officer") {
+      return loanOfficerTranslations[language];
+    }
+    return headTranslations[language]; // default to head translations
+  };
+
+  const t = getTranslations();
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
+    
+    // Initialize language from localStorage
+    if (storedRole === "head") {
+      const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    } else if (storedRole === "loan officer") {
+      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    }
   }, []);
 
 
@@ -119,7 +164,7 @@ export default function LoansPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">Loans</h1>
+            <h1 className="text-2xl font-semibold text-gray-800">{t.loans}</h1>
           </div>
 
           {/* Filter Tabs */}
@@ -134,7 +179,7 @@ export default function LoansPage() {
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
               >
-                {status}
+                {status === "All" ? t.all : status === "Active" ? t.active : status === "Overdue" ? t.overdue : t.closed}
               </button>
             ))}
           </div>
@@ -145,7 +190,7 @@ export default function LoansPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search by name, ID or amount..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -157,9 +202,9 @@ export default function LoansPage() {
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                <option value="">Sort by</option>
-                <option value="date">Disburse Date</option>
-                <option value="amount">Balance</option>
+                <option value="">{t.sortBy}</option>
+                <option value="date">{t.disburseDate}</option>
+                <option value="amount">{t.balance}</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -170,7 +215,7 @@ export default function LoansPage() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {["ID", "Name", "Disburse Date", "Principal", "Balance", "Status", "Action"].map((heading) => (
+                  {[t.id, t.name, t.disburseDate, t.principal, t.balance, t.status, t.actions].map((heading) => (
                     <th
                       key={heading}
                       className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -198,7 +243,7 @@ export default function LoansPage() {
                           href={`/commonComponents/loan/${loan.loanId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
-                          View
+{t.view}
                         </Link>
                     </td>
                   </tr>
@@ -214,17 +259,17 @@ export default function LoansPage() {
               disabled={currentPage === 1}
               className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
             >
-              Previous
+{t.previous}
             </button>
             <span className="px-3 py-1 text-gray-700">
-              Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+{t.page} <span className="font-medium">{currentPage}</span> {t.of} <span className="font-medium">{totalPages}</span>
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
               className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
             >
-              Next
+{t.next}
             </button>
           </div>
         </div>

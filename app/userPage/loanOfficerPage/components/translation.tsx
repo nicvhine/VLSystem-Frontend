@@ -76,6 +76,13 @@ const loanOfficerTranslations = {
     day: 'Day',
     agenda: 'Agenda',
     
+    // Calendar Navigation
+    today: 'Today',
+    back: 'Back',
+    next: 'Next',
+    event: 'Event',
+    noEventsInRange: 'No events in this range',
+    
     // Interview Status
     overdue: 'Overdue',
     upcoming: 'Upcoming',
@@ -87,13 +94,10 @@ const loanOfficerTranslations = {
     closed: 'Closed',
     disburseDate: 'Disburse Date',
     principal: 'Principal',
-    balance: 'Balance',
     actions: 'Actions',
     view: 'View',
     sortBy: 'Sort by',
     amount: 'Amount',
-    previous: 'Previous',
-    next: 'Next',
     page: 'Page',
     of: 'of',
     
@@ -110,10 +114,8 @@ const loanOfficerTranslations = {
     accepted: 'Accepted',
     
     // Collections
-    collections: 'Collections',
     referenceNumber: 'Reference #',
     loanId: 'Loan ID',
-    balance: 'Balance',
     periodAmount: 'Period Amount',
     paidAmount: 'Paid Amount',
     periodBalance: 'Period Balance',
@@ -208,6 +210,13 @@ const loanOfficerTranslations = {
     day: 'Adlaw',
     agenda: 'Agenda',
     
+    // Calendar Navigation
+    today: 'Karon',
+    back: 'Balik',
+    next: 'Sunod',
+    event: 'Kalihokan',
+    noEventsInRange: 'Walay mga kalihokan sa kini nga range',
+    
     // Interview Status
     overdue: 'Nalapas',
     upcoming: 'Umaabot',
@@ -219,13 +228,10 @@ const loanOfficerTranslations = {
     closed: 'Sirado',
     disburseDate: 'Petsa sa Paghatag',
     principal: 'Principal',
-    balance: 'Balanse',
     actions: 'Mga Aksyon',
     view: 'Tan-awa',
     sortBy: 'I-sort pinaagi sa',
     amount: 'Kantidad',
-    previous: 'Miagi',
-    next: 'Sunod',
     page: 'Panid',
     of: 'sa',
     
@@ -242,10 +248,8 @@ const loanOfficerTranslations = {
     accepted: 'Gi-dawat',
     
     // Collections
-    collections: 'Mga Koleksyon',
     referenceNumber: 'Numero sa Reperensya',
     loanId: 'ID sa Utang',
-    balance: 'Balanse',
     periodAmount: 'Kantidad sa Panahon',
     paidAmount: 'Nabayad nga Kantidad',
     periodBalance: 'Balanse sa Panahon',

@@ -44,7 +44,11 @@ export default function MobileMenu({ navItems, language, setLanguage }: MobileMe
             type="checkbox"
             className="sr-only"
             checked={language === 'ceb'}
-            onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
+            onChange={() => {
+              const newLanguage = language === 'en' ? 'ceb' : 'en';
+              setLanguage(newLanguage);
+              // Also dispatch event for mobile menu (navbar will handle the storage)
+            }}
           />
           <div className="relative w-12 h-6 bg-gray-300 rounded-full transition">
             <div

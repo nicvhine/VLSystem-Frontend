@@ -6,6 +6,7 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
+import loanOfficerTranslations from '../components/translation';
 
 interface InterviewEvent {
   title: string;
@@ -36,6 +37,27 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function InterviewCalendar() {
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail.userType === 'loanOfficer') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = loanOfficerTranslations[language];
+
   const [events, setEvents] = useState<InterviewEvent[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [view, setView] = useState<"month" | "week" | "day" | "agenda">("month");
@@ -113,7 +135,7 @@ export default function InterviewCalendar() {
   return (
     <div className="p-4">
       <div className="bg-white p-4 rounded shadow text-black">
-  <h2 className="text-xl font-semibold mb-4 text-black">Scheduled Interviews</h2>
+  <h2 className="text-xl font-semibold mb-4 text-black">{t.scheduledInterviews}</h2>
   {/* @ts-ignore: react-big-calendar type incompatibility with React 18+ */}
   <RBC
   localizer={localizer}
@@ -134,6 +156,20 @@ export default function InterviewCalendar() {
   popup
   style={{ height: "75vh" }}
   onSelectEvent={handleSelectEvent}
+  messages={{
+    today: t.today,
+    previous: t.back,
+    next: t.next,
+    month: t.month,
+    week: t.week,
+    day: t.day,
+    agenda: t.agenda,
+    date: t.date,
+    time: t.time,
+    event: t.event,
+    noEventsInRange: t.noEventsInRange,
+    showMore: (total: number) => `+${total} more`
+  }}
   eventPropGetter={(event: InterviewEvent) => {
     const app = applications.find(a => a.applicationId === event.applicationId);
     let baseClass = "";
@@ -206,11 +242,11 @@ export default function InterviewCalendar() {
 >
   <h3 className="text-2xl font-bold text-gray-800">{selectedApp.appName}</h3>
   <p className="text-gray-600 mt-1">
-    <strong>Home Address: </strong>
+    <strong>{t.homeAddress}: </strong>
     <span>{selectedApp.appAddress || "N/A"}</span>
   </p>
   <p className="text-gray-600 mt-1">
-    <strong>Status: </strong>
+    <strong>{t.status}: </strong>
     <span
       className={`font-semibold ${
         selectedApp.status?.trim().toLowerCase() === "pending"
@@ -230,7 +266,7 @@ export default function InterviewCalendar() {
       {selectedApp.status?.trim().toLowerCase() === "pending" && (
         <div className="grid grid-cols-1 gap-4 mb-6">
           <label className="flex flex-col text-gray-700 font-medium">
-            Date
+            {t.date}
             <input
               type="date"
               className="mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -242,7 +278,7 @@ export default function InterviewCalendar() {
           </label>
 
           <label className="flex flex-col text-gray-700 font-medium">
-            Time
+            {t.time}
             <input
               type="time"
               className="mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -261,7 +297,7 @@ export default function InterviewCalendar() {
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
           onClick={handleViewApplication}
         >
-          View Application
+{t.viewApplication}
         </button>
 
         {selectedApp.status?.trim().toLowerCase() === "pending" && (
@@ -312,7 +348,7 @@ export default function InterviewCalendar() {
               }
             }}
           >
-            Save Changes
+{t.saveChanges}
           </button>
         )}
       </div>
