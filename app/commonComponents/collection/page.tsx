@@ -18,6 +18,9 @@ import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import Collector from '@/app/userPage/collectorPage/page';
 
+// Translations
+import headTranslations from "@/app/userPage/headPage/components/translation";
+
 interface Collection {
   loanId: string;
   borrowersId: string;
@@ -59,10 +62,33 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   const [noteText, setNoteText] = useState(""); 
   const [role, setRole] = useState<string | null>(null);
   const [printMode, setPrintMode] = useState(false); // Add a print mode state
+  
+  // Language state
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail.userType === 'head') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = headTranslations[language];
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
+    
+    // Initialize language from localStorage
+    const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
+    if (storedLanguage) {
+      setLanguage(storedLanguage);
+    }
   }, []);
 
   // Animation states for Payment Modal
@@ -326,7 +352,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
             <div className={isMobile ? "bg-white rounded-xl p-4 shadow-sm" : "col-span-4 bg-white rounded-xl p-6 shadow-sm"}>
               <div className="flex items-center gap-2 mb-4">
                 <FiCalendar className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold text-gray-800">Collection Calendar</h2>
+                <h2 className="text-lg font-semibold text-gray-800">{t.collectionCalendar}</h2>
               </div>
               <div className="flex flex-col items-center gap-4">
                 <DatePicker
@@ -359,7 +385,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                   <FiCheckCircle className="text-blue-600 w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-500 text-sm">Daily Progress</p>
+                  <p className="text-gray-500 text-sm">{t.dailyProgress}</p>
                   <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{collectionRate}%</h3>
                   <p className="text-sm text-gray-400">
                     {completedPayments} of {totalPayments} payments
@@ -372,7 +398,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                   <FiDollarSign className="text-green-600 w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-500 text-sm">Daily Collection</p>
+                  <p className="text-gray-500 text-sm">{t.dailyCollection}</p>
                   <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
                   <p className="text-sm text-gray-400">
                     of {formatCurrency(totalTarget)} ({targetAchieved}%)
@@ -385,7 +411,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                   <FiCheckCircle className="text-purple-600 w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-500 text-sm">Overall Progress</p>
+                  <p className="text-gray-500 text-sm">{t.overallProgress}</p>
                   <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{overallCollectionRate}%</h3>
                   <p className="text-sm text-gray-400">
                     {overallCompletedPayments} of {overallTotalPayments} payments
@@ -398,7 +424,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                   <FiDollarSign className="text-indigo-600 w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-gray-500 text-sm">Overall Collection</p>
+                  <p className="text-gray-500 text-sm">{t.overallCollection}</p>
                   <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
                   <p className="text-sm text-gray-400">
                     of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)
@@ -415,7 +441,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
               </div>
               <input
                 type="text"
-                placeholder="Search here..."
+                placeholder={t.searchHere}
                 className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-200 text-gray-600"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -427,10 +453,10 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-4 py-2.5 bg-white rounded-lg border border-gray-200 text-gray-600"
               >
-                <option value="">Sort by</option>
-                <option value="amount">Amount</option>
-                <option value="balance">Balance</option>
-                <option value="status">Status</option>
+                <option value="">{t.sortBy}</option>
+                <option value="amount">{t.amount}</option>
+                <option value="balance">{t.balance}</option>
+                <option value="status">{t.status}</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
                 <FiChevronDown className="text-gray-400 w-4 h-4" />
@@ -443,7 +469,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
               onClick={handlePrint}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"
             >
-              Print Collection Sheet
+{t.printCollectionSheet}
             </button>
           </div>
           {/* Table */}
@@ -452,14 +478,14 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
               <table className="min-w-[700px] w-full divide-y divide-gray-200 text-xs sm:text-sm">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Balance</th>
-                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.referenceNumber}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.loanId}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.name}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.balance}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.periodAmount}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.paidAmount}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.periodBalance}</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.status}</th>
                     {/* Note and Action columns removed */}
                   </tr>
                 </thead>
@@ -506,17 +532,17 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                 <table className="min-w-[700px] w-full divide-y divide-gray-200 text-xs sm:text-sm">
                   <thead>
                     <tr>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Balance</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
-                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Note</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.referenceNumber}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.loanId}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.name}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.balance}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.periodAmount}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.paidAmount}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.periodBalance}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.status}</th>
+                      <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.note}</th>
                       {role === "collector" && (
-                        <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Action</th>
+                        <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.action}</th>
                       )}
                     </tr>
                   </thead>

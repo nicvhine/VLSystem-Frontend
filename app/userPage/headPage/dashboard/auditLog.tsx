@@ -8,6 +8,7 @@ import {
   FiInfo,
   FiActivity
 } from 'react-icons/fi';
+import headTranslations from '../components/translation';
 
 interface LogEntry {
   timestamp: string;
@@ -17,6 +18,26 @@ interface LogEntry {
 }
 
 export default function AuditLog() {
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("headLanguage") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail.userType === 'head') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = headTranslations[language];
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -67,6 +88,14 @@ export default function AuditLog() {
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   };
 
+  const translateAction = (action: string) => {
+    const actionKey = action.toLowerCase().replace(/_/g, '');
+    const translationKey = Object.keys(t).find(key => 
+      key.toLowerCase().replace(/_/g, '') === actionKey
+    );
+    return translationKey ? t[translationKey as keyof typeof t] : action.replace(/_/g, ' ');
+  };
+
   return (
     <div className="bg-white border border-gray-100 rounded-2xl shadow-sm h-full w-full flex flex-col">
       {/* Header */}
@@ -75,7 +104,7 @@ export default function AuditLog() {
           <div className="p-2 bg-red-50 rounded-lg">
             <FiActivity className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Recent Activity</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t.recentActivity}</h2>
         </div>
       </div>
 
@@ -98,7 +127,7 @@ export default function AuditLog() {
         ) : logs.length === 0 ? (
           <div className="text-center py-8">
             <FiActivity className="mx-auto text-gray-400 w-12 h-12 mb-4" />
-            <p className="text-gray-500">No recent activity</p>
+            <p className="text-gray-500">{t.noRecentActivity}</p>
           </div>
         ) : (
           <>
@@ -119,7 +148,7 @@ export default function AuditLog() {
                       </span>
                     </div>
                     <p className="text-xs text-red-600 font-medium mb-1">
-                      {log.action.replace(/_/g, ' ')}
+                      {translateAction(log.action)}
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {log.details}
@@ -136,7 +165,7 @@ export default function AuditLog() {
                   onClick={() => setShowAll(!showAll)}
                   className="text-blue-600 text-sm font-medium hover:underline"
                 >
-                  {showAll ? "See less" : "See more"}
+                  {showAll ? t.seeLess : t.seeMore}
                 </button>
               </div>
             )}

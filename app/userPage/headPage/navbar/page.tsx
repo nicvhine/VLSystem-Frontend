@@ -9,12 +9,18 @@ import { headNavItems } from '../../../commonComponents/navbarComponents/navItem
 import useAccountSettings from '../../../commonComponents/navbarComponents/accountSettings';
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
+import headTranslations from '../components/translation';
 
 export default function HeadNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("headLanguage") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
   const pathname = usePathname();
   const router = useRouter();
   const [name, setName] = useState('');
@@ -107,7 +113,23 @@ const {
     }
   }, []);
 
+  // Persist language change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("headLanguage", language);
+    }
+  }, [language]);
+
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+
+  // Create translated navigation items
+  const t = headTranslations[language];
+  const translatedHeadNavItems = [
+    { name: t.loans, href: '/commonComponents/loan' },
+    { name: t.applications, href: '/commonComponents/loanApplication' },
+    { name: t.collections, href: '/commonComponents/collection' },
+    { name: t.users, href: '/userPage/headPage/userPage' },
+  ];
 
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const newPrefs = {
@@ -230,7 +252,7 @@ const {
 
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex items-center space-x-6">
-              {headNavItems.map(item => {
+              {translatedHeadNavItems.map(item => {
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.name}>
@@ -246,6 +268,33 @@ const {
                 );
               })}
             </ul>
+
+            {/* Desktop Language Switcher */}
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={language === 'ceb'}
+                onChange={() => {
+                  const newLanguage = language === 'en' ? 'ceb' : 'en';
+                  setLanguage(newLanguage);
+                  // Dispatch language change event
+                  window.dispatchEvent(new CustomEvent('languageChange', { 
+                    detail: { language: newLanguage, userType: 'head' } 
+                  }));
+                }}
+              />
+              <div className="relative w-12 h-6 bg-gray-300 rounded-full transition">
+                <div
+                  className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition ${
+                    language === 'ceb' ? 'translate-x-6' : ''
+                  }`}
+                />
+              </div>
+              <span className="text-gray-900 ml-3 text-sm font-medium">
+                {language === 'en' ? 'English' : 'Cebuano'}
+              </span>
+            </label>
 
             {/* Profile Dropdown */}
             <div className="relative">
@@ -288,7 +337,7 @@ const {
         </div>
 
         {isMobileMenuOpen && (
-            <MobileMenu navItems={headNavItems} language={language} setLanguage={setLanguage} />
+            <MobileMenu navItems={translatedHeadNavItems} language={language} setLanguage={setLanguage} />
         )}
 
       </div>

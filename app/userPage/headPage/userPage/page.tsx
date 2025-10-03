@@ -7,7 +7,8 @@ import { useUsersLogic } from "./logic";
 import type { User } from "./logic";
 import React from "react";
 import CreateUserModal from "./createUserModal";
-import DecisionModal from "./modal"; 
+import DecisionModal from "./modal";
+import headTranslations from "../components/translation"; 
 
 function LoadingSpinner() {
   return (
@@ -18,6 +19,27 @@ function LoadingSpinner() {
 }
 
 export default function Page() {
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("headLanguage") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail.userType === 'head') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = headTranslations[language];
+
   const {
     roleFilter,
     setRoleFilter,
@@ -137,7 +159,7 @@ export default function Page() {
                   }`}
                   style={{ minWidth: 100 }}
                 >
-                  {roleOption === "All" ? "All Roles" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                  {roleOption === "All" ? t.allRoles : (roleOption === "head" ? t.head : roleOption === "manager" ? t.manager : roleOption === "loan officer" ? t.loanOfficer : t.collector)}
                 </button>
               ))}
             </div>
@@ -148,7 +170,7 @@ export default function Page() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search by name, email, or phone..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -156,10 +178,10 @@ export default function Page() {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-red-600 text-white rounded-lg px-5 py-2 flex items-center gap-2 shadow-md cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105 font-semibold text-base w-full sm:w-45"
+              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 shadow-md cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105 font-medium text-sm w-full sm:w-auto"
             >
-              <FiUserPlus className="w-5 h-5" />
-              <span>Create User</span>
+              <FiUserPlus className="w-4 h-4" />
+              <span>{t.createUser}</span>
             </button>
           </div>
           {/* Table */}
@@ -170,10 +192,10 @@ export default function Page() {
               <table className="min-w-full">
                 <thead>
                   <tr>
-                    {["ID", "Name", "Email", "Phone", "Role", "Actions"].map((heading) => (
+                    {[t.id, t.name, t.email, t.phoneNumber, t.role, t.actions].map((heading) => (
                       <th
                         key={heading}
-                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" ? " text-center" : " text-left"}`}
+                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center" : " text-left"}`}
                       >
                         {heading}
                       </th>
@@ -203,18 +225,20 @@ export default function Page() {
                               <option value="collector">Collector</option>
                             </select>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right relative flex gap-2">
-                            <button   
-                              onClick={handleSaveEdit}
-                              className="text-green-600 font-medium hover:underline">
-                              Save
-                            </button>
-                            <button
-                              onClick={handleCancelEdit}
-                              className="text-gray-600 font-medium hover:underline"
-                            >
-                              Cancel
-                            </button>
+                          <td className="px-6 py-4 whitespace-nowrap text-right relative">
+                            <div className="flex gap-2 justify-end">
+                              <button   
+                                onClick={handleSaveEdit}
+                                className="text-green-600 font-medium hover:underline">
+                                {t.save}
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-gray-600 font-medium hover:underline"
+                              >
+                                {t.cancel}
+                              </button>
+                            </div>
                           </td>
                         </>
                       ) : (
@@ -268,7 +292,7 @@ export default function Page() {
                                     }}
                                     className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 rounded-t-lg"
                                   >
-                                    Edit
+{t.edit}
                                   </button>
                                   <button
                                     onClick={() => {
@@ -277,7 +301,7 @@ export default function Page() {
                                     }}
                                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-300 rounded-b-lg"
                                   >
-                                    Delete
+{t.delete}
                                   </button>
                                 </div>
                               )}

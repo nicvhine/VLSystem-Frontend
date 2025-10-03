@@ -9,6 +9,10 @@ import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
+// Translations
+import headTranslations from "@/app/userPage/headPage/components/translation";
+import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
+
 const API_URL = "http://localhost:3001/loan-applications";
 
 // Application interface
@@ -40,6 +44,34 @@ export default function ApplicationsPage() {
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>("");
   const [role, setRole] = useState<string | null>(null);
+  
+  // Language state
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if ((role === "head" && event.detail.userType === 'head') || 
+          (role === "loan officer" && event.detail.userType === 'loanOfficer')) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+
+  // Get translations based on role
+  const getTranslations = () => {
+    if (role === "head") {
+      return headTranslations[language];
+    } else if (role === "loan officer") {
+      return loanOfficerTranslations[language];
+    }
+    return headTranslations[language]; // default to head translations
+  };
+
+  const t = getTranslations();
 
   // Persisted active filter
   const [activeFilter, setActiveFilter] = useState<string>(() => {
@@ -54,6 +86,19 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
+    
+    // Initialize language from localStorage
+    if (storedRole === "head") {
+      const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    } else if (storedRole === "loan officer") {
+      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -162,7 +207,7 @@ export default function ApplicationsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-800">
-              Loan Applications
+              {t.applications}
             </h1>
           </div>
 
@@ -214,7 +259,7 @@ export default function ApplicationsPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Search by name, ID or amount..."
+                placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
@@ -230,9 +275,9 @@ export default function ApplicationsPage() {
                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
                   appearance-none transition-all"
               >
-                <option value="">Sort by</option>
-                <option value="date">Release Date</option>
-                <option value="amount">Amount</option>
+                <option value="">{t.sortBy}</option>
+                <option value="date">{t.releaseDate}</option>
+                <option value="amount">{t.amount}</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -244,15 +289,15 @@ export default function ApplicationsPage() {
               <thead>
                 <tr>
                   {[
-                    "ID",
-                    "Name",
-                    "Loan Type",
-                    "Application Date",
-                    "Principal Amount",
-                    "Interest Rate",
-                    "Collectable Amount",
-                    "Status",
-                    "Action",
+                    t.id,
+                    t.name,
+                    t.loanType,
+                    t.applicationDate,
+                    t.principalAmount,
+                    t.interestRate,
+                    t.collectableAmount,
+                    t.status,
+                    t.actions,
                   ].map((heading) => (
                     <th
                       key={heading}

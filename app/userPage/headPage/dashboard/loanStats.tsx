@@ -10,8 +10,29 @@ import {
   FiUsers,
   FiPieChart
 } from 'react-icons/fi';
+import headTranslations from '../components/translation';
 
 export default function LoanStatsDashboard() {
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("headLanguage") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail.userType === 'head') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  const t = headTranslations[language];
   const [loanStats, setLoanStats] = useState({
     typeStats: [],
     totalPrincipal: 0,
@@ -73,18 +94,18 @@ export default function LoanStatsDashboard() {
           <div className="p-2 bg-red-50 rounded-lg">
             <FiDollarSign className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800 ">Financial Overview</h2>
+          <h2 className="text-xl font-semibold text-gray-800 ">{t.financialOverview}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard 
-            label="Total Principal" 
+            label={t.totalPrincipal} 
             value={loanStats.totalPrincipal ?? 0} 
             color="text-green-600" 
             icon={FiDollarSign}
             isAmount={true}
           />
           <StatCard 
-            label="Total Interest" 
+            label={t.totalInterest} 
             value={loanStats.totalInterest ?? 0} 
             color="text-red-600" 
             icon={FiTrendingUp}
@@ -99,25 +120,25 @@ export default function LoanStatsDashboard() {
           <div className="p-2 bg-red-50 rounded-lg">
             <FiCheckCircle className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Collection Status</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t.collectionStatus}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard 
-            label="Total Collectables" 
+            label={t.totalCollectables} 
             value={loanStats.totalCollectables ?? 0} 
             color="text-blue-600" 
             icon={FiPieChart}
             isAmount={true}
           />
           <StatCard 
-            label="Total Collected" 
+            label={t.totalCollected} 
             value={loanStats.totalCollected ?? 0} 
             color="text-green-600" 
             icon={FiCheckCircle}
             isAmount={true}
           />
           <StatCard 
-            label="Total Unpaid" 
+            label={t.totalUnpaid} 
             value={loanStats.totalUnpaid ?? 0} 
             color="text-red-600" 
             icon={FiXCircle}
@@ -132,23 +153,23 @@ export default function LoanStatsDashboard() {
           <div className="p-2 bg-red-50 rounded-lg">
             <FiUsers className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Application Status</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t.applicationStatus}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <StatCard 
-            label="Pending Applications" 
+            label={t.pendingApplications} 
             value={loanStats.pending ?? 0} 
             color="text-yellow-600" 
             icon={FiClock}
           />
           <StatCard 
-            label="Approved Applications" 
+            label={t.approvedApplications} 
             value={loanStats.approved ?? 0} 
             color="text-green-600" 
             icon={FiCheckCircle}
           />
           <StatCard 
-            label="Denied Applications" 
+            label={t.deniedApplications} 
             value={loanStats.denied ?? 0} 
             color="text-red-600" 
             icon={FiXCircle}
@@ -162,23 +183,23 @@ export default function LoanStatsDashboard() {
           <div className="p-2 bg-red-50 rounded-lg">
             <FiPieChart className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Loan Types</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t.loanTypes}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <StatCard 
-            label="With Collateral" 
+            label={t.withCollateral} 
             value={loanStats.withCollateral ?? 0} 
             color="text-blue-600" 
             icon={FiUsers}
           />
           <StatCard 
-            label="Without Collateral" 
+            label={t.withoutCollateral} 
             value={loanStats.withoutCollateral ?? 0} 
             color="text-green-600" 
             icon={FiUsers}
           />
           <StatCard 
-            label="Open-Term Loans" 
+            label={t.openTermLoans} 
             value={loanStats.openTerm ?? 0} 
             color="text-red-600" 
             icon={FiUsers}
