@@ -11,14 +11,78 @@ interface Props {
   language?: 'en' | 'ceb';
 }
 
-export default function LoginForm({ onClose, router, setShowForgotModal, setForgotRole, language = 'en' }: Props) {
+interface SMSModalProps {
+  isVisible: boolean;
+  onClose: () => void;
+  router: any;
+}
+
+function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
+  const [codeInput, setCodeInput] = useState('');
+
+  if (!isVisible) return null;
+
+  const handleVerify = () => {
+    const savedCode = sessionStorage.getItem('verificationCode');
+    const role = sessionStorage.getItem('userRole');
+
+    if (codeInput === savedCode) {
+      sessionStorage.removeItem('verificationCode');
+      sessionStorage.removeItem('userRole');
+      onClose();
+
+      const redirectMap: Record<string, string> = {
+        borrower: '/userPage/borrowerPage/dashboard',
+        head: '/userPage/headPage/dashboard',
+        manager: '/userPage/managerPage/dashboard',
+        'loan officer': '/userPage/loanOfficerPage/dashboard',
+        collector: '/commonComponents/collection',
+      };
+
+      router.push(redirectMap[role || ''] || '/');
+    } else {
+      alert('Incorrect verification code.');
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded-md w-80">
+        <h2 className="text-lg font-semibold mb-4 text-center">Enter SMS Code</h2>
+        <input
+          type="text"
+          value={codeInput}
+          onChange={(e) => setCodeInput(e.target.value)}
+          placeholder="6-digit code"
+          className="w-full border px-3 py-2 rounded mb-4"
+        />
+        <button
+          onClick={handleVerify}
+          className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+        >
+          Verify
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginFormWithSMS({
+  onClose,
+  router,
+  setShowForgotModal,
+  setForgotRole,
+  language = 'en',
+}: Props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showSMSModal, setShowSMSModal] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    loginHandler({ username, password, onClose, router });
+    // Pass setShowSMSModal so loginHandler can open it
+    await loginHandler({ username, password, onClose, router, setShowSMSModal });
   };
 
   return (
@@ -32,7 +96,7 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder={language === 'en' ? 'Username' : 'Username'}
+          placeholder="Username"
           className="w-full px-4 py-2 border border-gray-300 rounded-md mb-3 focus:outline-none text-black focus:ring-2 focus:ring-red-500"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -40,7 +104,7 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
         <div className="relative mb-4">
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder={language === 'en' ? 'Password' : 'Password'}
+            placeholder="Password"
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -50,10 +114,7 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
             className="absolute right-3 top-2.5 text-sm text-gray-600"
             onClick={() => setShowPassword(!showPassword)}
           >
-            {language === 'en' 
-              ? (showPassword ? 'Hide' : 'Show')
-              : (showPassword ? 'Tago' : 'Ipakita')
-            }
+            {showPassword ? 'Hide' : 'Show'}
           </button>
         </div>
         <p
@@ -74,6 +135,9 @@ export default function LoginForm({ onClose, router, setShowForgotModal, setForg
           </button>
         </div>
       </form>
+
+      {/* SMS verification modal */}
+      <SMSModal isVisible={showSMSModal} onClose={() => setShowSMSModal(false)} router={router} />
     </>
   );
 }
