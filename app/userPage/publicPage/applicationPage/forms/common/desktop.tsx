@@ -127,6 +127,8 @@ function MapComponent({
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [refErrors, setRefErrors] = useState<string[]>(["", "", ""]);
 
+  const [missingError, setMissingError] = useState<{ [key: string]: boolean }>({});
+
 
 
   function validateReferenceUniqueness(
@@ -211,10 +213,36 @@ function MapComponent({
 
   };
   
-  function isValidPHMobile(num: string) {
-    const trimmed = (num || "").trim();
-    return /^09\d{9}$/.test(trimmed) || /^\+639\d{9}$/.test(trimmed);
-  }
+  const validateForm = () => {
+    const newErrors: { [key: string]: boolean } = {};
+  
+    if (!appName.trim()) newErrors.appName = true;
+    if (!appDob.trim()) newErrors.appDob = true;
+    if (!appContact.trim() || !/^09\d{9}$/.test(appContact)) newErrors.appContact = true;
+    if (!appEmail.trim()) newErrors.appEmail = true;
+    if (!appMarital.trim()) newErrors.appMarital = true;
+    if (!appAddress.trim()) newErrors.appAddress = true;
+  
+    if (sourceOfIncome === "business") {
+      if (!appTypeBusiness.trim()) newErrors.appTypeBusiness = true;
+      if (!appBusinessName.trim()) newErrors.appBusinessName = true;
+      if (!appDateStarted.trim()) newErrors.appDateStarted = true;
+      if (!appBusinessLoc.trim()) newErrors.appBusinessLoc = true;
+      if (!appMonthlyIncome) newErrors.appMonthlyIncome = true;
+    }
+  
+    if (sourceOfIncome === "employed") {
+      if (!appOccupation.trim()) newErrors.appOccupation = true;
+      if (!appEmploymentStatus.trim()) newErrors.appEmploymentStatus = true;
+      if (!appCompanyName.trim()) newErrors.appCompanyName = true;
+      if (!appMonthlyIncome) newErrors.appMonthlyIncome = true;
+    }
+  
+    setMissingError(newErrors);
+  
+    return Object.keys(newErrors).length === 0; 
+  };
+  
 
   const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     props.setAppAddress(e.target.value);

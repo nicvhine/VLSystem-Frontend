@@ -67,7 +67,7 @@ export default function HeroSection({
 
           <div className="flex flex-col mt-10 sm:flex-row items-center justify-center md:justify-start gap-4">
             <Link
-              href="/userPage/publicPage/applicationPage"
+              href="/userPage/publicPage/applyLoan"
               className="bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition focus:outline-none active:bg-red-600"
             >
               {language === 'en' ? 'Apply Now' : 'Mag-aplay Karon'}
