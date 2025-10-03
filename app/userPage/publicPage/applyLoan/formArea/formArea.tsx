@@ -1,4 +1,4 @@
-    'use client';
+'use client';
 
     import { useState, useEffect } from "react";
     import { useRouter } from "next/navigation";
@@ -81,9 +81,10 @@
     interface FormAreaProps {
     loanType: string;
     language: 'en' | 'ceb';
+    isMobile?: boolean;
     }
 
-    export default function FormArea({ loanType, language }: FormAreaProps) {
+    export default function FormArea({ loanType, language, isMobile }: FormAreaProps) {
     const router = useRouter();
     const [loanId, setLoanId] = useState<string | null>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -222,7 +223,7 @@
     };
 
     return (
-        <div className="max-w-4xl mx-auto py-8">
+    <div className="max-w-4xl mx-auto py-0">
         
         <BasicInformation
             language={language}
@@ -291,7 +292,7 @@
             removeDocument={(index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index))}
         />
 
-        <div className="mt-6 flex justify-end">
+        <div className={`mt-6 flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
             <button
             onClick={handleSubmit}
             className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700"

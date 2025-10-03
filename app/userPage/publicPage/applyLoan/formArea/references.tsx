@@ -68,7 +68,7 @@ export default function References({
       </h4>
 
       {[1, 2, 3].map((i) => (
-        <div key={i} className="grid grid-cols-3 gap-4 mb-4">
+  <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           {/* Reference Name */}
           <div>
             <label className="block font-medium mb-2 text-gray-700">
