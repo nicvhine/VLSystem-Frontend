@@ -78,7 +78,7 @@ export default function SourceOfIncome({
 
       {/* Conditional Inputs */}
       {sourceOfIncome === 'business' ? (
-        <div className="grid grid-cols-2 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2 text-gray-700">
               {language === 'en' ? 'Type of Business:' : 'Matang sa Negosyo:'}
@@ -152,7 +152,7 @@ export default function SourceOfIncome({
           </div>
         </div>
       ) : sourceOfIncome === 'employed' ? (
-        <div className="grid grid-cols-2 gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block font-medium mb-2 text-gray-700">
               {language === 'en' ? 'Occupation:' : 'Trabaho:'}

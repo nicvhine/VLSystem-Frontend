@@ -45,11 +45,11 @@ export default function UploadSection({
         {photo2x2.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-4">
             {photo2x2.map((file, index) => (
-              <div key={index} className="flex flex-col items-center">
+              <div key={index} className="flex flex-col items-center w-full justify-center">
                 <img
                   src={URL.createObjectURL(file)}
                   alt="2x2 Preview"
-                  className="w-24 h-24 object-cover rounded border shadow-sm mb-2"
+                  className="w-24 h-24 object-cover rounded border shadow-sm mb-2 mx-auto"
                 />
                 <p className="text-sm text-gray-600">{file.name}</p>
                 <button

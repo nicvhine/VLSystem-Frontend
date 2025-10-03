@@ -12,6 +12,7 @@ interface LandingNavbarProps {
   isCalculationOpen?: boolean;
   setIsCalculationOpen?: (open: boolean) => void;
   isModalOpen?: boolean;
+  isMobile?: boolean;
 }
 
 export default function Navbar({
@@ -23,6 +24,7 @@ export default function Navbar({
   isCalculationOpen: parentIsCalculationOpen,
   setIsCalculationOpen: parentSetIsCalculationOpen,
   isModalOpen,
+  isMobile,
 }: LandingNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
