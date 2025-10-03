@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import managerTranslations from '../components/translation';
+import headTranslations from '@/app/userPage/headPage/components/translation';
 import {
   FiUserCheck,
   FiEdit3,
@@ -20,6 +22,12 @@ export default function AuditLog() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('managerLanguage') as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
 
   // show first 10 unless expanded
   const displayedLogs = showAll ? logs : logs.slice(0, 7);
@@ -45,6 +53,52 @@ export default function AuditLog() {
         setLoading(false);
       });
   }, []);
+
+  // listen for global language changes
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (e?.detail?.userType === 'manager') {
+        setLanguage(e.detail.language);
+      }
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('languageChange', handler);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('languageChange', handler);
+      }
+    };
+  }, []);
+
+  const t = managerTranslations[language];
+
+  const actionLabel = (action: string) => {
+    const headT = headTranslations[language];
+    switch (action) {
+      case 'CREATE_USER': return headT.createUser;
+      case 'DELETE_USER': return headT.deleteUser;
+      case 'CREATE_LOAN': return headT.createLoan;
+      case 'DELETE_LOAN': return headT.deleteLoan;
+      case 'UPDATE_LOAN': return headT.updateLoan;
+      case 'UPDATE_USER': return headT.updateUser;
+      case 'LOGIN': return headT.login;
+      case 'LOGOUT': return headT.logout;
+      case 'CREATE_APPLICATION': return headT.createApplication;
+      case 'UPDATE_APPLICATION': return headT.updateApplication;
+      case 'DELETE_APPLICATION': return headT.deleteApplication;
+      case 'APPROVE_APPLICATION': return headT.approveApplication;
+      case 'REJECT_APPLICATION': return headT.rejectApplication;
+      case 'CREATE_COLLECTION': return headT.createCollection;
+      case 'UPDATE_COLLECTION': return headT.updateCollection;
+      case 'DELETE_COLLECTION': return headT.deleteCollection;
+      case 'MAKE_PAYMENT': return headT.makePayment;
+      case 'VIEW_LOAN': return headT.viewLoan;
+      case 'VIEW_APPLICATION': return headT.viewApplication;
+      case 'VIEW_COLLECTION': return headT.viewCollection;
+      default: return headT.unknown;
+    }
+  };
 
   const getIcon = (action: string) => {
     const base = "p-2 rounded-full";
@@ -75,7 +129,7 @@ export default function AuditLog() {
           <div className="p-2 bg-red-50 rounded-lg">
             <FiActivity className="text-red-600 w-5 h-5" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-800">Recent Activity</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{t.recentActivity}</h2>
         </div>
       </div>
 
@@ -98,7 +152,7 @@ export default function AuditLog() {
         ) : logs.length === 0 ? (
           <div className="text-center py-8">
             <FiActivity className="mx-auto text-gray-400 w-12 h-12 mb-4" />
-            <p className="text-gray-500">No recent activity</p>
+            <p className="text-gray-500">{t.noRecentActivity}</p>
           </div>
         ) : (
           <>
@@ -119,7 +173,7 @@ export default function AuditLog() {
                       </span>
                     </div>
                     <p className="text-xs text-red-600 font-medium mb-1">
-                      {log.action.replace(/_/g, ' ')}
+                      {actionLabel(log.action)}
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {log.details}
@@ -136,7 +190,7 @@ export default function AuditLog() {
                   onClick={() => setShowAll(!showAll)}
                   className="text-blue-600 text-sm font-medium hover:underline"
                 >
-                  {showAll ? "See less" : "See more"}
+                  {showAll ? t.seeLess : t.seeMore}
                 </button>
               </div>
             )}

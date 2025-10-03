@@ -12,6 +12,7 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 // Translations
 import headTranslations from "@/app/userPage/headPage/components/translation";
 import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
+import managerTranslations from "@/app/userPage/managerPage/components/translation";
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -52,7 +53,8 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if ((role === "head" && event.detail.userType === 'head') || 
-          (role === "loan officer" && event.detail.userType === 'loanOfficer')) {
+          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
+          (role === "manager" && event.detail.userType === 'manager')) {
         setLanguage(event.detail.language);
       }
     };
@@ -67,6 +69,8 @@ export default function ApplicationsPage() {
       return headTranslations[language];
     } else if (role === "loan officer") {
       return loanOfficerTranslations[language];
+    } else if (role === "manager") {
+      return managerTranslations[language];
     }
     return headTranslations[language]; // default to head translations
   };
@@ -95,6 +99,11 @@ export default function ApplicationsPage() {
       }
     } else if (storedRole === "loan officer") {
       const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    } else if (storedRole === "manager") {
+      const storedLanguage = localStorage.getItem("managerLanguage") as 'en' | 'ceb';
       if (storedLanguage) {
         setLanguage(storedLanguage);
       }
@@ -372,7 +381,7 @@ export default function ApplicationsPage() {
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
-                          View
+                          {t.view}
                         </Link>
 
                       {/* Accept Reloan */}

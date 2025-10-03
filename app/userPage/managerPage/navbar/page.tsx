@@ -10,12 +10,18 @@ import useAccountSettings from '../../../commonComponents/navbarComponents/accou
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
 import { Bell } from 'lucide-react';
+import managerTranslations from '../components/translation';
 
 export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("managerLanguage") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
   const pathname = usePathname();
   const router = useRouter();
   const [name, setName] = useState('');
@@ -124,6 +130,21 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
+  // Persist language change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("managerLanguage", language);
+    }
+  }, [language]);
+
+  // Translation helper
+  const t = managerTranslations[language];
+  const translatedManagerNavItems = [
+    { name: t.loans, href: '/commonComponents/loan' },
+    { name: t.applications, href: '/commonComponents/loanApplication' },
+    { name: t.collections, href: '/commonComponents/collection' },
+  ];
+
   const handleLogout = () => {
     localStorage.clear();
     router.push('/');
@@ -220,7 +241,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
 
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex items-center space-x-6">
-              {managerNavItems.map((item) => {
+              {translatedManagerNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.name}>
@@ -239,6 +260,34 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                 );
               })}
             </ul>
+
+            {/* Language Switcher */}
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={language === 'ceb'}
+                onChange={() => {
+                  const newLanguage = language === 'en' ? 'ceb' : 'en';
+                  setLanguage(newLanguage);
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('languageChange', {
+                      detail: { language: newLanguage, userType: 'manager' }
+                    }));
+                  }
+                }}
+              />
+              <div className="relative w-12 h-6 bg-gray-300 rounded-full transition">
+                <div
+                  className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition ${
+                    language === 'ceb' ? 'translate-x-6' : ''
+                  }`}
+                />
+              </div>
+              <span className="text-gray-900 ml-3 text-sm font-medium">
+                {language === 'en' ? t.english : t.cebuano}
+              </span>
+            </label>
 
             {/* Notification bell */}
             <div className="relative">
@@ -261,7 +310,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
               >
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
-                  <h3 className="text-sm font-semibold text-gray-700">Notifications</h3>
+                  <h3 className="text-sm font-semibold text-gray-700">{t.notifications}</h3>
                   {notifications.some(n => !n.read) && (
                     <button
                       onClick={async () => {
@@ -278,7 +327,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                       }}
                       className="text-xs text-blue-600 hover:underline"
                     >
-                      Mark all as read
+                      {t.markAllAsRead}
                     </button>
                   )}
                 </div>
@@ -322,7 +371,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                           }}
                           
                       >
-                        <p className="text-sm text-gray-800">{notif.message}</p>
+                        <p className="text-sm text-gray-800">{translateNotificationMessage(notif, t, language)}</p>
                         <p className="text-xs text-gray-400 mt-1">
                           {new Date(notif.createdAt).toLocaleString()}
                         </p>
@@ -330,7 +379,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                     ))
                   ) : (
                     <div className="px-4 py-6 text-sm text-gray-500 text-center">
-                      No notifications
+                      {t.noNotifications}
                     </div>
                   )}
                 </div>  
@@ -387,4 +436,31 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
       </div>
     </div>
   );
+}
+
+// Simple translator for known notification patterns
+function translateNotificationMessage(notif: any, t: any, language: 'en' | 'ceb') {
+  const msg: string = notif?.message || '';
+  // Pattern: "Loan Officer has changed application 00001 to Disbursed"
+  const changedRegex = /has changed application\s+(\S+)\s+to\s+(\w+)/i;
+  const m = msg.match(changedRegex);
+  if (m) {
+    const applicationId = m[1];
+    const status = (m[2] || '').toLowerCase();
+    const statusMap: Record<string, { en: string; ceb: string }> = {
+      disbursed: { en: 'Disbursed', ceb: 'Gi-hatag' },
+      cleared: { en: 'Cleared', ceb: 'Gi-clear' },
+      pending: { en: 'Pending', ceb: 'Naghulat' },
+      approved: { en: 'Approved', ceb: 'Gi-aprubahan' },
+      denied: { en: 'Denied', ceb: 'Gi-balibaran' },
+    };
+    const statusText = statusMap[status]?.[language] || m[2];
+    if (language === 'ceb') {
+      return `Ang Loan Officer nag-usab sa aplikasyon ${applicationId} ngadto sa ${statusText}`;
+    }
+    return `Loan Officer has changed application ${applicationId} to ${statusText}`;
+  }
+
+  // Fallback to original
+  return msg;
 }
