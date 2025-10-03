@@ -23,6 +23,7 @@ export default function LoanDetails({
   appLoanPurpose,
   setAppLoanPurpose,
   onLoanSelect,
+  missingFields = [],
 }: LoanDetailsProps) {
   const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
@@ -87,7 +88,7 @@ export default function LoanDetails({
           <input
             value={appLoanPurpose} 
             onChange={(e) => setAppLoanPurpose(e.target.value)} 
-            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields && missingFields.includes('Loan Purpose') ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Enter Loan Purpose"
@@ -113,9 +114,7 @@ export default function LoanDetails({
                 onLoanSelect(null);
               }
             }}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-              selectedLoan === null && customLoanAmount !== "" ? "border-red-500" : "border-gray-200"
-            }`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields && missingFields.includes('Loan Amount') ? 'border-red-500' : selectedLoan === null && customLoanAmount !== "" ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Enter loan amount"
