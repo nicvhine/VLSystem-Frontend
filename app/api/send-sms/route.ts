@@ -1,0 +1,32 @@
+import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { phoneNumber, message } = await req.json();
+    const apiKey = process.env.SEMAPHORE_API_KEY;
+
+    if (!apiKey) throw new Error("Semaphore API key missing");
+
+    const formattedNumber = phoneNumber.startsWith("0")
+      ? "+63" + phoneNumber.slice(1)
+      : phoneNumber;
+
+    const response = await axios.post(
+      "https://api.semaphore.co/api/v4/messages",
+      {
+        apikey: apiKey,
+        number: formattedNumber,  
+        message,
+        sendername: "Gethsemane",   
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    console.log("SMS sent:", response.data);
+    return NextResponse.json({ success: true, data: response.data });
+  } catch (err: any) {
+    console.error("SMS sending failed:", err.response?.data || err);
+    return NextResponse.json({ success: false, error: "Failed to send SMS" });
+  }
+}
