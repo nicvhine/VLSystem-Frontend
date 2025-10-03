@@ -13,6 +13,7 @@ interface CollateralProps {
   ownershipStatus: string;
   setOwnershipStatus: (value: string) => void;
   collateralTypeOptions: { value: string; label: string }[];
+  missingFields?: string[];
 }
 
 export default function CollateralInformation({
@@ -26,6 +27,7 @@ export default function CollateralInformation({
   ownershipStatus,
   setOwnershipStatus,
   collateralTypeOptions,
+  missingFields = [],
 }: CollateralProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
@@ -43,13 +45,14 @@ export default function CollateralInformation({
           <select
             value={collateralType}
             onChange={(e) => setCollateralType(e.target.value)}
-            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Collateral Type') ? 'border-red-500' : 'border-gray-200'}`}
           >
             {collateralTypeOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>
             ))}
+            <option value="Other">{language === "en" ? "Other" : "Uban pa"}</option>
           </select>
         </div>
 
@@ -62,7 +65,7 @@ export default function CollateralInformation({
             type="number"
             value={collateralValue}
             onChange={(e) => setCollateralValue(parseFloat(e.target.value))}
-            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Collateral Value') ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Enter estimated value"
@@ -81,7 +84,7 @@ export default function CollateralInformation({
           <textarea
             value={collateralDescription}
             onChange={(e) => setCollateralDescription(e.target.value)}
-            className="w-full border border-gray-200 p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className={`w-full border p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Collateral Description') ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Provide detailed description of your collateral"
@@ -100,7 +103,7 @@ export default function CollateralInformation({
           <select
             value={ownershipStatus}
             onChange={(e) => setOwnershipStatus(e.target.value)}
-            className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Ownership Status') ? 'border-red-500' : 'border-gray-200'}`}
           >
             <option value="">
               {language === "en"
