@@ -447,9 +447,62 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
             </button>
           </div>
           {/* Table */}
-          <div ref={tableRef} className={isMobile ? "bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto" : "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"}>
-            <Suspense fallback={<LoadingSpinner />}>
-              <div className={printMode ? 'print-sheet' : ''} style={printMode ? { background: '#fff', padding: 20 } : {}}>
+          {printMode ? (
+            <div className="print-sheet" style={{ background: '#fff', padding: 20 }}>
+              <table className="min-w-[700px] w-full divide-y divide-gray-200 text-xs sm:text-sm">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Reference #</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Loan ID</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Name</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Balance</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Amount</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Paid Amount</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Period Balance</th>
+                    <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">Status</th>
+                    {/* Note and Action columns removed */}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={role === "collector" ? 11 : 10}><LoadingSpinner /></td>
+                    </tr>
+                  ) : filteredCollections.length === 0 ? (
+                    <tr>
+                      <td colSpan={role === "collector" ? 11 : 10} className="text-center py-6 text-gray-500">
+                        No collections found.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredCollections.map((col) => (
+                      <tr key={col.referenceNumber} className="hover:bg-blue-50/60">
+                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.referenceNumber}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">{col.loanId}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{col.name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                            col.status === "Paid" ? "bg-green-100 text-green-800" :
+                            col.status === "Partial" ? "bg-yellow-100 text-yellow-800" :
+                            col.status === "Overdue" ? "bg-red-100 text-red-800" :
+                            "bg-gray-100 text-gray-600"}`}>
+                            {col.status}
+                          </span>
+                        </td>
+                        {/* Note and Action columns removed */}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div ref={tableRef} className={isMobile ? "bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto" : "bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"}>
+              <Suspense fallback={<LoadingSpinner />}>
                 <table className="min-w-[700px] w-full divide-y divide-gray-200 text-xs sm:text-sm">
                   <thead>
                     <tr>
@@ -523,9 +576,9 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                     )}
                   </tbody>
                 </table>
-              </div>
-            </Suspense>
-          </div>
+              </Suspense>
+            </div>
+          )}
           {/* Payment Modal */}
           {isPaymentModalVisible && selectedCollection && (
             <div 
