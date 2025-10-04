@@ -21,7 +21,12 @@ const firstLoanApplicationTranslation = {
         sortBy: "Sort by",
         sort1: "Date Applied",
         sort2: "Amount Applied",
-        actionBtn: "View"
+        actionBtn: "View",
+        
+        // Loan Types
+        loanType1: "Regular Loan With Collateral",
+        loanType2: "Regular Loan Without Collateral",
+        loanType3: "Open-Term Loan", 
     },
 
     ceb: {
@@ -46,7 +51,12 @@ const firstLoanApplicationTranslation = {
         sortBy: "Pagpili base sa",
         sort1: "Petsa sa Pag-apply",
         sort2: "Kantidad nga Gi-apply",  
-        actionBtn: "Tan-awa"
+        actionBtn: "Tan-awa",
+
+        // Loan Types
+        loanType1: "Regular nga Pahulam (Walay Kolateral)",
+        loanType2: "Regular nga Utang  (Naay Kolateral)", 
+        loanType3: "Open-Term nga Pahulam",
     }
 }
 
