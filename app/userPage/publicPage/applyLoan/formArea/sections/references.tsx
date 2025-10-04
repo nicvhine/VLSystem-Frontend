@@ -25,18 +25,25 @@ export default function References({
 }: ReferencesProps) {
   // Always recalculate errors for all references on every render
   const nameError = useMemo(() => {
-    return appReferences.map((ref, idx) => {
-      if (!/^[A-Za-zñÑ.\- ]*$/.test(ref.name)) {
-        return language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
-      }
-      const lowerValue = ref.name.trim().toLowerCase();
-      const isDuplicate = appReferences.filter((r, i) => r.name.trim().toLowerCase() === lowerValue && lowerValue !== "").length > 1;
-      if (isDuplicate) {
-        return language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
-      }
-      return "";
-    });
-  }, [appReferences, language]);
+  return appReferences.map((ref, idx) => {
+    if (!/^[A-Za-zñÑ.\- ]*$/.test(ref.name)) {
+      return language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
+    }
+    // Require minimum of two words
+    const wordCount = ref.name.trim().split(/\s+/).filter(Boolean).length;
+    if (ref.name.trim() && wordCount < 2) {
+      return language === "en"
+        ? "Name must have at least two words."
+        : "Kinahanglan duha o labaw pa ka pulong ang ngalan.";
+    }
+    const lowerValue = ref.name.trim().toLowerCase();
+    const isDuplicate = appReferences.filter((r, i) => r.name.trim().toLowerCase() === lowerValue && lowerValue !== "").length > 1;
+    if (isDuplicate) {
+      return language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
+    }
+    return "";
+  });
+}, [appReferences, language]);
 
  const refErrors = useMemo(() => {
   return appReferences.map((ref, idx) => {
