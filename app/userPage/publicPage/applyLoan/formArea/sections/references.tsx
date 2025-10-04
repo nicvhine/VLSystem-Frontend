@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo } from "react";
 
 interface Reference {
   name: string;
@@ -23,89 +23,54 @@ export default function References({
   appContact,
   missingFields = [],
 }: ReferencesProps) {
-  const [nameError, setNameError] = useState<string[]>(["", "", ""]);
-  const [refErrors, setRefErrors] = useState<string[]>(["", "", ""]);
+  // Always recalculate errors for all references on every render
+  const nameError = useMemo(() => {
+    return appReferences.map((ref, idx) => {
+      if (!/^[A-Za-zñÑ.\- ]*$/.test(ref.name)) {
+        return language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
+      }
+      const lowerValue = ref.name.trim().toLowerCase();
+      const isDuplicate = appReferences.filter((r, i) => r.name.trim().toLowerCase() === lowerValue && lowerValue !== "").length > 1;
+      if (isDuplicate) {
+        return language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
+      }
+      return "";
+    });
+  }, [appReferences, language]);
 
-  // Handle reference field changes
+ const refErrors = useMemo(() => {
+  return appReferences.map((ref, idx) => {
+    if (!/^\d*$/.test(ref.contact) || ref.contact.length > 11) {
+      return language === "en" ? "Contact must be up to 11 digits." : "Hangtud ra sa 11 ka numero.";
+    }
+    if (ref.contact.length > 0 && !ref.contact.startsWith("09")) {
+      return language === "en" ? "Invalid phone number format" : "Sayop nga porma sa numero sa telepono.";
+    }
+    const trimmedValue = ref.contact.trim();
+    // Check for duplicate among references
+    const isDuplicate = appReferences.filter((r, i) => r.contact.trim() === trimmedValue && trimmedValue !== "").length > 1;
+    if (isDuplicate) {
+      return language === "en" ? "Duplicate contact number not allowed." : "Dili pwede ang parehas nga numero.";
+    }
+    // Check if matches applicant's contact number
+    if (trimmedValue !== "" && trimmedValue === appContact) {
+      return language === "en"
+        ? "Reference contact cannot be applicant's contact number."
+        : "Dili pwede nga parehas sa numero sa aplikante.";
+    }
+    return "";
+  });
+}, [appReferences, language, appContact]);
 
-  // Enhanced handleReferenceChange with validation
+  // Simple handler: just update state, validation is handled by useMemo
   const handleReferenceChange = (
     index: number,
     field: keyof Reference,
     value: string
   ) => {
     const updated = [...appReferences];
-    let valid = true;
-    let errorMsg = "";
-
-    if (field === "name") {
-      // Only allow letters, ñ, hyphen, dot, and space
-      if (!/^[A-Za-zñÑ.\- ]*$/.test(value)) {
-        valid = false;
-        errorMsg = language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
-      } else {
-        // Check for duplicate names (case-insensitive, ignore self)
-        const lowerValue = value.trim().toLowerCase();
-        const isDuplicate = appReferences.some((ref, idx) => idx !== index && ref.name.trim().toLowerCase() === lowerValue && lowerValue !== "");
-        if (isDuplicate) {
-          valid = false;
-          errorMsg = language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
-        }
-      }
-      (updated[index][field] as string) = value;
-      const newNameError = [...nameError];
-      newNameError[index] = valid ? "" : errorMsg;
-      setNameError(newNameError);
-    } else if (field === "contact") {
-      // Only allow digits, max 11, must start with 09
-      if (!/^\d*$/.test(value) || value.length > 11) {
-        valid = false;
-        errorMsg = language === "en" ? "Contact must be up to 11 digits." : "Hangtud ra sa 11 ka numero.";
-      } else if (value.length > 0 && !value.startsWith("09")) {
-        valid = false;
-        errorMsg = language === "en" ? "Invalid phone number format" : "Sayop nga porma sa numero sa telepono.";
-      }
-      (updated[index][field] as string) = value;
-      const newRefErrors = [...refErrors];
-      newRefErrors[index] = valid ? "" : errorMsg;
-      setRefErrors(newRefErrors);
-    } else if (field === "relation") {
-      // Max 3 words
-      const wordCount = value.trim().split(/\s+/).length;
-      if (wordCount > 3) {
-        valid = false;
-        errorMsg = language === "en" ? "Max 3 words only." : "Hangtud ra sa 3 ka pulong.";
-      }
-      (updated[index][field] as string) = value;
-    } else {
-      (updated[index][field] as string) = value;
-    }
+    (updated[index][field] as string) = value;
     setAppReferences(updated);
-  };
-
-  // Validate uniqueness against applicant + duplicates
-  const validateReferenceUniqueness = (
-    references: Reference[],
-    applicantContact: string
-  ) => {
-    const errors = ["", "", ""];
-    const namesSeen = new Set<string>();
-
-    references.forEach((ref, idx) => {
-      if (ref.name.trim() !== "" && ref.name.trim().toLowerCase() === applicantContact.toLowerCase()) {
-        errors[idx] = "Reference name cannot be applicant’s name";
-      }
-      if (namesSeen.has(ref.name.trim()) && ref.name.trim() !== "") {
-        errors[idx] = "Duplicate name not allowed";
-      }
-      namesSeen.add(ref.name.trim());
-
-      if (ref.contact && ref.contact === applicantContact) {
-        errors[idx] = "Reference contact cannot be applicant’s contact";
-      }
-    });
-
-    setRefErrors(errors);
   };
 
   return (
