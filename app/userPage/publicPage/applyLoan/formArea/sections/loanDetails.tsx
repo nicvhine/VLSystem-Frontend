@@ -65,13 +65,30 @@ export default function LoanDetails({
     }
   };
 
-  // Validate entered loan amount and inform parent
   const validateLoanAmount = (amount: number) => {
-    const match = getLoanOptions().find((opt) => opt.amount === amount) || null;
+    const options = getLoanOptions();
+  
+    if (options.length === 0) {
+      setSelectedLoan(null);
+      onLoanSelect(null);
+      return;
+    }
+  
+    const minAmount = Math.min(...options.map(o => o.amount));
+    if (amount < minAmount) {
+      setSelectedLoan(null);
+      onLoanSelect(null);
+      return;
+    }
+  
+    const match = options
+      .filter((o) => o.amount <= amount)
+      .reduce((prev, curr) => (curr.amount > prev.amount ? curr : prev), options[0]);
+  
     setSelectedLoan(match);
-    onLoanSelect(match); // ✅ update parent state
+    onLoanSelect({ ...match, amount });
   };
-
+  
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
       <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">

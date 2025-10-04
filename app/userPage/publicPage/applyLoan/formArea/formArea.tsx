@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import BasicInformation from "./basicInformation";
-import SourceOfIncome from "./sourceOfIncome";
-import References from "./references";
-import CollateralInformation from "./collateral";
-import LoanDetails from "./loanDetails";
-import UploadSection from "./uploadSection";
+import BasicInformation from "./sections/basicInformation";
+import SourceOfIncome from "./sections/sourceOfIncome";
+import References from "./sections/references";
+import CollateralInformation from "./sections/collateral";
+import LoanDetails from "./sections/loanDetails";
+import UploadSection from "./sections/uploadSection";
 
 
 // Error modal for missing fields

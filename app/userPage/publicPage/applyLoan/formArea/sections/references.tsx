@@ -77,7 +77,6 @@ export default function References({
         errorMsg = language === "en" ? "Max 3 words only." : "Hangtud ra sa 3 ka pulong.";
       }
       (updated[index][field] as string) = value;
-      // No error state for relation, but could add if needed
     } else {
       (updated[index][field] as string) = value;
     }
