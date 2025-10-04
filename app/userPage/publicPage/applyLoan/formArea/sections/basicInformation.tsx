@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
-import MapComponent from "../MapComponent"; 
+import MapComponent from "../../MapComponent"; 
 
 interface BasicInformationProps {
   language: "en" | "ceb";
@@ -51,6 +51,7 @@ export default function BasicInformation({
 }: BasicInformationProps) {
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
+  const [nameError, setNameError] = useState("");
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAppAddress(e.target.value);
@@ -74,13 +75,29 @@ export default function BasicInformation({
             value={appName}
             onChange={(e) => {
               const value = e.target.value;
+
               if (/^[A-Za-zñÑ.\-\s]*$/.test(value)) {
                 setAppName(value);
+
+                const words = value.trim().split(/\s+/).filter(Boolean);
+                if (words.length < 2) {
+                  setNameError(
+                    language === "en"
+                      ? "Please enter at least first and last name."
+                      : "Palihug isulod ang labing menos ngalan ug apelyido."
+                  );
+                } else {
+                  setNameError("");
+                }
               }
             }}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Name') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+              missingFields.includes("Name") || nameError ? "border-red-500" : "border-gray-200"
+            }`}
             placeholder={language === "en" ? "Enter your full name" : "Isulod ang imong tibuok ngalan"}
           />
+{nameError && <p className="text-red-500 text-sm mt-1">{nameError}</p>}
+
         </div>
 
         {/* DOB */}
