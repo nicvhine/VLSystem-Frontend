@@ -10,9 +10,7 @@ import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 // Translations
-import headTranslations from "@/app/userPage/headPage/components/translation";
-import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
-import managerTranslations from "@/app/userPage/managerPage/components/translation";
+import firstLoanApplicationTranslation from "./translation/first";
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -65,14 +63,7 @@ export default function ApplicationsPage() {
 
   // Get translations based on role
   const getTranslations = () => {
-    if (role === "head") {
-      return headTranslations[language];
-    } else if (role === "loan officer") {
-      return loanOfficerTranslations[language];
-    } else if (role === "manager") {
-      return managerTranslations[language];
-    }
-    return headTranslations[language]; // default to head translations
+    return firstLoanApplicationTranslation[language];
   };
 
   const t = getTranslations();
@@ -191,14 +182,15 @@ export default function ApplicationsPage() {
     });
 
   const filterOptions = [
-      "All",
-      "Applied",
-      "Pending",
-      "Cleared",
-      "Approved",
-      "Disbursed",
-      "Denied",
-  ];
+  { key: "All", label: t.tab1 },
+  { key: "Applied", label: t.tab2 },
+  { key: "Pending", label: t.tab3 },
+  { key: "Cleared", label: t.tab4 },
+  { key: "Approved", label: t.tab5 },
+  { key: "Disbursed", label: t.tab6 },
+  { key: "Denied", label: t.tab7 },
+];
+
     
   let Wrapper;
   if (role === "loan officer") {
@@ -216,7 +208,7 @@ export default function ApplicationsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-800">
-              {t.applications}
+              {t.h1}
             </h1>
           </div>
 
@@ -224,19 +216,19 @@ export default function ApplicationsPage() {
           <div className="mb-6">
             {/* Mobile Dropdown */}
             <div className="block sm:hidden relative">
-              <select
-                value={activeFilter}
-                onChange={(e) => setActiveFilter(e.target.value)}
-                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                  focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                  appearance-none transition-all"
-              >
-                {filterOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {status === "Onhold" ? "On Hold" : status}
-                  </option>
-                ))}
-              </select>
+            <select
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value)}
+              className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
+                focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
+                appearance-none transition-all"
+            >
+              {filterOptions.map(({ key, label }) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
               <FiChevronDown
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 
                   text-gray-400 w-4 h-4 pointer-events-none"
@@ -245,17 +237,17 @@ export default function ApplicationsPage() {
 
             {/* Desktop buttons */}
             <div className="hidden sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-auto">
-              {filterOptions.map((status) => (
+              {filterOptions.map(({ key, label }) => (
                 <button
-                  key={status}
-                  onClick={() => setActiveFilter(status)}
+                  key={key}
+                  onClick={() => setActiveFilter(key)}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeFilter === status
+                    activeFilter === key
                       ? "bg-blue-50 text-blue-600 shadow-sm"
                       : "text-gray-600 hover:bg-gray-100"
                   }`}
                 >
-                  {status === "Onhold" ? "On Hold" : status}
+                  {label}
                 </button>
               ))}
             </div>
@@ -285,8 +277,8 @@ export default function ApplicationsPage() {
                   appearance-none transition-all"
               >
                 <option value="">{t.sortBy}</option>
-                <option value="date">{t.releaseDate}</option>
-                <option value="amount">{t.amount}</option>
+                <option value="date">{t.sort1}</option>
+                <option value="amount">{t.sort2}</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -298,15 +290,15 @@ export default function ApplicationsPage() {
               <thead>
                 <tr>
                   {[
-                    t.id,
-                    t.name,
-                    t.loanType,
-                    t.applicationDate,
-                    t.principalAmount,
-                    t.interestRate,
-                    t.collectableAmount,
-                    t.status,
-                    t.actions,
+                    t.th1,
+                    t.th2,
+                    t.th3,
+                    t.th4,
+                    t.th5,
+                    t.th6,
+                    t.th7,
+                    t.th8,
+                    t.th9,
                   ].map((heading) => (
                     <th
                       key={heading}
@@ -381,7 +373,7 @@ export default function ApplicationsPage() {
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
-                          {t.view}
+                          {t.actionBtn}
                         </Link>
 
                       {/* Accept Reloan */}
