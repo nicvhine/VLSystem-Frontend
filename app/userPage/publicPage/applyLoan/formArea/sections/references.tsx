@@ -132,7 +132,6 @@ export default function References({
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes(`Reference ${i + 1} Relationship`) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter relationship" : "Isulod ang relasyon"}
             />
-            {/* Could add error message for relation if needed */}
           </div>
         </div>
       ))}
