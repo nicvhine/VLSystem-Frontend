@@ -19,6 +19,9 @@ import AccountModal from "@/app/commonComponents/modals/loanApplication/accountM
 import ApplicationButtons from "../hooks/applicationButtons";
 import { useApplications } from "../hooks/useApplication";
 
+//TRANSLATIONS
+import secondLoanApplicationTranslation from "../translation/second";
+
 //ROLE-BASED
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
@@ -34,6 +37,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState(false);
   const [role, setRole] = useState<string | null>(null);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const modalRef = useRef<any>(null);
 
@@ -66,7 +70,60 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   useEffect(() => {
     const storedRole = localStorage.getItem("role"); 
     setRole(storedRole);
+    
+    // Initialize language from localStorage
+    if (storedRole === "head") {
+      const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    } else if (storedRole === "loan officer") {
+      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    } else if (storedRole === "manager") {
+      const storedLanguage = localStorage.getItem("managerLanguage") as 'en' | 'ceb';
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
+    }
   }, []);
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if ((role === "head" && event.detail.userType === 'head') || 
+          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
+          (role === "manager" && event.detail.userType === 'manager')) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+
+  // Get translations
+  const getTranslations = () => {
+    return secondLoanApplicationTranslation[language];
+  };
+
+  const t = getTranslations();
+
+  // Function to translate loan types
+  const translateLoanType = (loanType: string) => {
+    switch (loanType) {
+      case "Regular Loan Without Collateral":
+        return t.loanType1;
+      case "Regular Loan With Collateral":
+        return t.loanType2;
+      case "Open-Term Loan":
+        return t.loanType3;
+      default:
+        return loanType;
+    }
+  };
 
   const application = applications.find(app => app.applicationId === params.id);
 
@@ -88,7 +145,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
     return (
       <div className="min-h-screen bg-gray-50">
         <LoanOfficerNavbar />
-        <div className="p-10 text-center text-gray-600 text-lg">Application not found.</div>
+        <div className="p-10 text-center text-gray-600 text-lg">{t.applicationNotFound}</div>
       </div>
     );
   }
@@ -126,7 +183,7 @@ return (
               {/*HEADER*/}
                 <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  Applicant profile | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
+                  {t.applicantProfile} | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
                 </h1>
                   <div className="flex items-center space-x-4 mt-1">
                     <span className={`px-2 py-1 rounded text-xs font-medium uppercase ${
@@ -138,7 +195,7 @@ return (
                     }`}>
                       {application?.status || 'Unknown'}
                     </span>
-                    <span className="text-sm text-gray-500">{application?.loanType}</span>
+                    <span className="text-sm text-gray-500">{translateLoanType(application?.loanType || '')}</span>
                   </div>
                 </div>
               </div>
@@ -198,19 +255,19 @@ return (
               {/* BASIC INFORMATION CARD*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{t.basicInformation}</h3>
                 </div>
                 <div className="p-6 space-y-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Date of birth:</p>
+                    <p className="text-sm font-medium text-gray-500">{t.dateOfBirth}</p>
                     <p className="text-gray-900">{application?.appDob || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Address:</p>
+                    <p className="text-sm font-medium text-gray-500">{t.address}</p>
                     <p className="text-gray-900">{application?.appAddress || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Marital Status:</p>
+                    <p className="text-sm font-medium text-gray-500">{t.maritalStatus}</p>
                     <p className="text-gray-900">{application?.appMarital || '—'}</p>
                   </div>
                   
@@ -218,18 +275,18 @@ return (
                   {application?.appMarital === "Married" && (
                     <>
                       <div>
-                        <p className="text-sm font-medium text-gray-500">Spouse Name:</p>
+                        <p className="text-sm font-medium text-gray-500">{t.spouseName}</p>
                         <p className="text-gray-900">{application?.appSpouseName || '—'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-500">Spouse Occupation:</p>
+                        <p className="text-sm font-medium text-gray-500">{t.spouseOccupation}</p>
                         <p className="text-gray-900">{application?.appSpouseOccupation || '—'}</p>
                       </div>
                     </>
                   )}
                   
                   <div>
-                    <p className="text-sm font-medium text-gray-500">Children:</p>
+                    <p className="text-sm font-medium text-gray-500">{t.children}</p>
                     <p className="text-gray-900">{application?.appChildren || '—'}</p>
                   </div>
                 </div>
@@ -251,7 +308,7 @@ return (
                           : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Income Information
+                      {t.incomeInformation}
                     </button>
                     <button
                       onClick={() => setActiveTab('references')}
@@ -261,7 +318,7 @@ return (
                           : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      Character References
+                      {t.characterReferences}
                     </button>
                     {(application?.loanType === "Regular Loan With Collateral" || application?.loanType === "Open-Term Loan") && (
                       <button
@@ -272,7 +329,7 @@ return (
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                       >
-                        Collateral Details
+                        {t.collateralDetails}
                       </button>
                     )}
                   </div>
@@ -285,22 +342,22 @@ return (
                   {activeTab === 'income' && (
                     <div className="space-y-4 h-full">
                       <div>
-                        <p className="text-sm font-medium text-gray-500">Source of Income:</p>
+                        <p className="text-sm font-medium text-gray-500">{t.sourceOfIncome}</p>
                         <p className="text-gray-900">{capitalizeWords(application?.sourceOfIncome) || '—'}</p>
                       </div>
                       
                       {application?.sourceOfIncome?.toLowerCase() === 'employed' && (
                         <>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Occupation:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.occupation}</p>
                             <p className="text-gray-900">{capitalizeWords(application?.appOccupation) || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Company:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.company}</p>
                             <p className="text-gray-900">{capitalizeWords(application?.appCompanyName) || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Employment Status:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.employmentStatus}</p>
                             <p className="text-gray-900">{capitalizeWords(application?.appEmploymentStatus) || '—'}</p>
                           </div>
                         </>
@@ -309,26 +366,26 @@ return (
                       {application?.sourceOfIncome?.toLowerCase() === 'business' && (
                         <>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Business Type:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.businessType}</p>
                             <p className="text-gray-900">{application?.appTypeBusiness || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Business Name:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.businessName}</p>
                             <p className="text-gray-900">{application?.appBusinessName || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Date Started:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.dateStarted}</p>
                             <p className="text-gray-900">{application?.appDateStarted || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">Business Location:</p>
+                            <p className="text-sm font-medium text-gray-500">{t.businessLocation}</p>
                             <p className="text-gray-900">{application?.appBusinessLoc || '—'}</p>
                           </div>
                         </>
                       )}
                       
                       <div className="pt-4 border-t border-gray-200">
-                        <p className="text-sm font-medium text-gray-500">Monthly Income:</p>
+                        <p className="text-sm font-medium text-gray-500">{t.monthlyIncome}</p>
                         <p className="text-lg font-bold text-green-600">{formatCurrency(application?.appMonthlyIncome)}</p>
                       </div>
                     </div>
@@ -343,13 +400,13 @@ return (
                             <div key={i} className="p-4 bg-gray-50 rounded-lg">
                               <div className="flex items-center mb-2">
                                 <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
-                                  Reference {i + 1}
+                                  {t.reference} {i + 1}
                                 </span>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">Name:</span> <span className="text-gray-900">{ref.name}</span></p>
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">Contact:</span> <span className="text-gray-900">{ref.contact}</span></p>
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">Relationship:</span> <span className="text-gray-900">{ref.relation}</span></p>
+                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{t.name}</span> <span className="text-gray-900">{ref.name}</span></p>
+                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{t.contact}</span> <span className="text-gray-900">{ref.contact}</span></p>
+                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{t.relationship}</span> <span className="text-gray-900">{ref.relation}</span></p>
                               </div>
                             </div>
                           ))}
@@ -357,7 +414,7 @@ return (
                       ) : (
                         <div className="text-center py-8 h-full flex flex-col justify-center">
                           <FiUser className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                          <p className="text-gray-500">No character references provided</p>
+                          <p className="text-gray-500">{t.noReferences}</p>
                         </div>
                       )}
                     </div>
@@ -380,7 +437,7 @@ return (
               {/* FILES*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6 flex-shrink-0">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">Files</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{t.files}</h3>
                 </div>
                 <div className="p-6">
                   {application?.documents && application.documents.length > 0 ? (
@@ -413,7 +470,7 @@ return (
                   ) : (
                     <div className="text-center py-4">
                       <FiPaperclip className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-gray-500 text-sm">No documents uploaded</p>
+                      <p className="text-gray-500 text-sm">{t.noDocuments}</p>
                     </div>
                   )}
                 </div>
@@ -426,26 +483,26 @@ return (
             <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-md mx-auto">
               {/* Card Header */}
               <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Loan Computation</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{t.loanComputation}</h3>
               </div>
               <div className="p-6 space-y-6">
                 <div className="space-y-3">
                     <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">Loan Purpose</span>
+                    <span className="text-sm font-medium text-gray-500">{t.loanPurpose}</span>
                     <span className="text-gray-900 break-words text-sm leading-relaxed">{application?.appLoanPurpose || '—'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">Loan Amount</span>
+                    <span className="text-sm font-medium text-gray-500">{t.loanAmount}</span>
                     <span className="text-gray-900">{formatCurrency(application?.appLoanAmount)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">Interest Rate</span>
+                    <span className="text-sm font-medium text-gray-500">{t.interestRate}</span>
                     <span className="text-gray-900">{application?.appInterest || '—'}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">Loan Term</span>
-                    <span className="text-gray-900">{application?.appLoanTerms || '—'} months</span>
+                    <span className="text-sm font-medium text-gray-500">{t.loanTerm}</span>
+                    <span className="text-gray-900">{application?.appLoanTerms || '—'} {t.months}</span>
                   </div>
                 </div>
 
@@ -459,15 +516,15 @@ return (
                     return (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">Total Interest</span>
+                          <span className="text-sm font-medium text-gray-500">{t.totalInterest}</span>
                           <span className="text-gray-900">{formatCurrency(application?.interestAmount)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">Total Payable</span>
+                          <span className="text-sm font-medium text-gray-500">{t.totalPayable}</span>
                           <span className="text-gray-900 font-semibold text-lg">{formatCurrency(application?.totalPayable)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">Monthly Due</span>
+                          <span className="text-sm font-medium text-gray-500">{t.monthlyDue}</span>
                           <span className="text-gray-900">{formatCurrency(application?.periodAmount)}</span>
                         </div>
                       </>

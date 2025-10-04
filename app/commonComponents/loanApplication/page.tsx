@@ -68,6 +68,20 @@ export default function ApplicationsPage() {
 
   const t = getTranslations();
 
+  // Function to translate loan types
+  const translateLoanType = (loanType: string) => {
+    switch (loanType) {
+      case "Regular Loan Without Collateral":
+        return t.loanType1;
+      case "Regular Loan With Collateral":
+        return t.loanType2;
+      case "Open-Term Loan":
+        return t.loanType3;
+      default:
+        return loanType;
+    }
+  };
+
   // Persisted active filter
   const [activeFilter, setActiveFilter] = useState<string>(() => {
     return localStorage.getItem("activeFilter") || "Cleared";
@@ -333,7 +347,7 @@ export default function ApplicationsPage() {
                     {/* Loan Type */}
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {application.loanType}
+                        {translateLoanType(application.loanType)}
                       </div>
                     </td>
 
