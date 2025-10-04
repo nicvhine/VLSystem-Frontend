@@ -381,6 +381,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 appReferences={appReferences}
                 setAppReferences={setAppReferences}
                 appContact={appContact}
+                appName={appName}
                 missingFields={missingFields}
             />
 
