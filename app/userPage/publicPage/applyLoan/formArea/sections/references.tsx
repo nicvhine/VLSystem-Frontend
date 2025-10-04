@@ -13,6 +13,7 @@ interface ReferencesProps {
   appReferences: Reference[];
   setAppReferences: React.Dispatch<React.SetStateAction<Reference[]>>;
   appContact: string;
+  appName: string; // <-- add this line
   missingFields?: string[];
 }
 
@@ -21,29 +22,36 @@ export default function References({
   appReferences,
   setAppReferences,
   appContact,
+  appName, // <-- add this line
   missingFields = [],
 }: ReferencesProps) {
   // Always recalculate errors for all references on every render
   const nameError = useMemo(() => {
-  return appReferences.map((ref, idx) => {
-    if (!/^[A-Za-zñÑ.\- ]*$/.test(ref.name)) {
-      return language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
-    }
-    // Require minimum of two words
-    const wordCount = ref.name.trim().split(/\s+/).filter(Boolean).length;
-    if (ref.name.trim() && wordCount < 2) {
-      return language === "en"
-        ? "Name must have at least two words."
-        : "Kinahanglan duha o labaw pa ka pulong ang ngalan.";
-    }
-    const lowerValue = ref.name.trim().toLowerCase();
-    const isDuplicate = appReferences.filter((r, i) => r.name.trim().toLowerCase() === lowerValue && lowerValue !== "").length > 1;
-    if (isDuplicate) {
-      return language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
-    }
-    return "";
-  });
-}, [appReferences, language]);
+    return appReferences.map((ref, idx) => {
+      if (!/^[A-Za-zñÑ.\- ]*$/.test(ref.name)) {
+        return language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
+      }
+      // Require minimum of two words
+      const wordCount = ref.name.trim().split(/\s+/).filter(Boolean).length;
+      if (ref.name.trim() && wordCount < 2) {
+        return language === "en"
+          ? "Name must have at least two words."
+          : "Kinahanglan duha o labaw pa ka pulong ang ngalan.";
+      }
+      const lowerValue = ref.name.trim().toLowerCase();
+      // Check if matches applicant's name
+      if (lowerValue !== "" && appName && lowerValue === appName.trim().toLowerCase()) {
+        return language === "en"
+          ? "Reference name cannot be applicant's name."
+          : "Dili pwede nga parehas sa ngalan sa aplikante.";
+      }
+      const isDuplicate = appReferences.filter((r, i) => r.name.trim().toLowerCase() === lowerValue && lowerValue !== "").length > 1;
+      if (isDuplicate) {
+        return language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
+      }
+      return "";
+    });
+  }, [appReferences, language, appName]);
 
  const refErrors = useMemo(() => {
   return appReferences.map((ref, idx) => {
