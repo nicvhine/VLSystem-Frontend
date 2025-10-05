@@ -185,11 +185,18 @@ export default function LoanDetails({
             const loanAmount = Number(customLoanAmount);
             const interestRate = Number(selectedLoan.interest) / 100;
             const months = selectedLoan.months || 12;
-            const serviceChargeRate = 0.05;
+
+            let serviceCharge = 0;
+            if (loanAmount >= 10000 && loanAmount <= 20000) {
+              serviceCharge = loanAmount * 0.05; 
+            } else if (loanAmount >= 25000 && loanAmount <= 45000) {
+              serviceCharge = 1000; 
+            } else if (loanAmount >= 50000 && loanAmount <= 500000) {
+              serviceCharge = loanAmount * 0.03;
+            }
 
             const monthlyInterest = loanAmount * interestRate;
             const monthlyPayment = loanAmount / months + monthlyInterest;
-            const serviceCharge = loanAmount * serviceChargeRate;
             const netProceeds = loanAmount - serviceCharge;
 
             return (
@@ -205,15 +212,17 @@ export default function LoanDetails({
                   </p>
                 )}
                 <p>
-                  <span className="font-medium">{language === "en" ? "Service Charge (5%):" : "Serbisyo nga Bayad (5%):"}</span>{" "}
+                  <span className="font-medium">{language === "en" ? "Service Charge:" : "Serbisyo nga Bayad:"}</span>{" "}
                   ₱{serviceCharge.toFixed(2)}
                 </p>
                 <p className="text-green-700 font-semibold">
-                  <span>{language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}</span> ₱{netProceeds.toFixed(2)}
+                  <span>{language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}</span>{" "}
+                  ₱{netProceeds.toFixed(2)}
                 </p>
               </div>
             );
           })()}
+
         </div>
       )}
     </div>

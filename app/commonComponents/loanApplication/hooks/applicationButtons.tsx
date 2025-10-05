@@ -1,8 +1,15 @@
 'use client';
 
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Application } from "./useApplication";
-import { handleClearedLoan, handleDisburse, handleDenyApplication, handleApproveApplication, handleDenyFromCleared } from "./statusHandler";
+import { 
+  handleClearedLoan, 
+  handleDisburse, 
+  handleDenyApplication, 
+  handleApproveApplication, 
+  handleDenyFromCleared 
+} from "./statusHandler";
+import { createPortal } from "react-dom";
 
 interface ApplicationButtonsProps {
   application: Application;
@@ -11,8 +18,8 @@ interface ApplicationButtonsProps {
   authFetch: (url: string, options?: RequestInit) => Promise<Response>;
   API_URL: string;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsAgreementOpen: React.Dispatch<React.SetStateAction<boolean>>;
   modalRef: React.RefObject<any>;
+  setIsAgreementOpen: React.Dispatch<React.SetStateAction<"loan" | "release" | null>>;
 }
 
 const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
@@ -22,10 +29,27 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   authFetch,
   API_URL,
   setIsModalOpen,
-  setIsAgreementOpen,
   modalRef,
+  setIsAgreementOpen,
 }) => {
+  const [showDocsDropdown, setShowDocsDropdown] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
   if (!application) return null;
+
+  const handleDocumentClick = (type: "loan" | "release") => {
+    setIsAgreementOpen(type);
+    setShowDocsDropdown(false);
+  };
+
+  const toggleDropdown = () => {
+    if (!showDocsDropdown && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX });
+    }
+    setShowDocsDropdown(!showDocsDropdown);
+  };
 
   return (
     <>
@@ -99,12 +123,40 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       )}
 
       {application.status === "Disbursed" && (
-        <button
-          onClick={() => setIsAgreementOpen(true)}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-        >
-          Loan Agreement
-        </button>
+        <>
+          <button
+            ref={buttonRef}
+            onClick={toggleDropdown}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            Documents
+          </button>
+
+          {showDocsDropdown && dropdownPos && createPortal(
+            <div
+              className="w-40 bg-red-600 text-white shadow-lg border rounded-md z-50"
+              style={{
+                position: 'absolute',
+                top: dropdownPos.top,
+                left: dropdownPos.left
+              }}
+            >
+              <button
+                onClick={() => handleDocumentClick("loan")}
+                className="w-full text-left px-4 py-2 hover:bg-red-700"
+              >
+                Loan Agreement
+              </button>
+              <button
+                onClick={() => handleDocumentClick("release")}
+                className="w-full text-left px-4 py-2 hover:bg-red-700"
+              >
+                Release Form
+              </button>
+            </div>,
+            document.body
+          )}
+        </>
       )}
     </>
   );

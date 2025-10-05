@@ -33,4 +33,6 @@ export interface Application {
   appLoanTerms: number;
   dateDisbursed: string | Date;
   totalPayable: number;
+  appServiceFee: number;
+  appNetReleased: number;
 }

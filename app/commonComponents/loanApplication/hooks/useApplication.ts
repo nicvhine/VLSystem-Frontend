@@ -39,9 +39,9 @@ export interface Application {
   appLoanAmount?: string;
   appLoanTerms?: string;
   appInterest?: number;
-  interestAmount?: number;
-  totalPayable?: number;
-  periodAmount?: number;
+  appTotalInterest?: number;
+  appTotalPayable?: number;
+  appMonthlyDue?: number;
   collateralDescription?: string;
   collateralValue?: number;
   collateralType?: string;

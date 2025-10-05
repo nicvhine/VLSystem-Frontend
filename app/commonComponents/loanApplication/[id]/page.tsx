@@ -4,16 +4,18 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from "react-icons/fi";
 
+
 import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
 
 //CUSTOMIZATION
 import WithCollateral from './customization/withCollateral';
-import OpenTerm from './customization/openTerm'; // If this is a wrapper, leave as is. If it imports openTerm, update that file instead.
+import OpenTerm from './customization/openTerm'; 
 
 //MODALS
 import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
 import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal"; 
+import ReleaseForm from "../../modals/loanAgreement/releaseForm";
 
 //HOOKS
 import ApplicationButtons from "../hooks/applicationButtons";
@@ -35,7 +37,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
 
   const [activeTab, setActiveTab] = useState('income');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAgreementOpen, setIsAgreementOpen] = useState(false);
+  const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
@@ -211,6 +213,7 @@ return (
                   setIsModalOpen={setIsModalOpen}
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}
+                  setIsAgreementOpen={setIsAgreementOpen}
                 />
               </div>
 
@@ -517,15 +520,15 @@ return (
                       <>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">{t.totalInterest}</span>
-                          <span className="text-gray-900">{formatCurrency(application?.interestAmount)}</span>
+                          <span className="text-gray-900">{formatCurrency(application?.appTotalInterest)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">{t.totalPayable}</span>
-                          <span className="text-gray-900 font-semibold text-lg">{formatCurrency(application?.totalPayable)}</span>
+                          <span className="text-gray-900 font-semibold text-lg">{formatCurrency(application?.appTotalPayable)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">{t.monthlyDue}</span>
-                          <span className="text-gray-900">{formatCurrency(application?.periodAmount)}</span>
+                          <span className="text-gray-900">{formatCurrency(application?.appMonthlyDue)}</span>
                         </div>
                       </>
                     );
@@ -546,11 +549,21 @@ return (
             authFetch={authFetch}
           />
 
-          <LoanAgreementModal
-            isOpen={isAgreementOpen}
-            onClose={() => setIsAgreementOpen(false)}
-            application={application ?? null}
-          />
+{isAgreementOpen === "loan" && (
+  <LoanAgreementModal
+    isOpen={true}
+    onClose={() => setIsAgreementOpen(null)}
+    application={application ?? null}
+  />
+)}
+
+{isAgreementOpen === "release" && (
+  <ReleaseForm
+    isOpen={true}
+    onClose={() => setIsAgreementOpen(null)}
+    application={application ?? null}
+  />
+)}
 
         <AccountModal ref={modalRef} />
       </div>
