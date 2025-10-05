@@ -1,6 +1,7 @@
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
+import ConfirmModal from "@/app/commonComponents/modals/confirmModal/ConfirmModal";
 
 interface UploadSectionProps {
   language: 'en' | 'ceb';
@@ -23,6 +24,41 @@ export default function UploadSection({
   removeDocument,
   missingFields = [],
 }: UploadSectionProps) {
+
+  // State for confirmation modal
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmType, setConfirmType] = useState<'profile' | 'document' | null>(null);
+  const [removeIndex, setRemoveIndex] = useState<number | null>(null);
+
+  // Wrapped remove handlers
+  const handleRemoveProfile = (index: number) => {
+    setRemoveIndex(index);
+    setConfirmType('profile');
+    setShowConfirm(true);
+  };
+  const handleRemoveDocument = (index: number) => {
+    setRemoveIndex(index);
+    setConfirmType('document');
+    setShowConfirm(true);
+  };
+
+  const handleConfirmRemove = () => {
+    if (removeIndex === null || !confirmType) return;
+    if (confirmType === 'profile') {
+      removeProfile(removeIndex);
+    } else if (confirmType === 'document') {
+      removeDocument(removeIndex);
+    }
+    setShowConfirm(false);
+    setRemoveIndex(null);
+    setConfirmType(null);
+  };
+
+  const handleCancelRemove = () => {
+    setShowConfirm(false);
+    setRemoveIndex(null);
+    setConfirmType(null);
+  };
 
   return (
     <div>
@@ -55,7 +91,7 @@ export default function UploadSection({
                 />
                 <p className="text-sm text-gray-600">{file.name}</p>
                 <button
-                  onClick={() => removeProfile(index)}
+                  onClick={() => handleRemoveProfile(index)}
                   className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
                 >
                   {language === 'en' ? 'Remove' : 'Tangtangon'}
@@ -103,11 +139,22 @@ export default function UploadSection({
                   <p className="text-sm text-gray-700">{file.name}</p>
                 </div>
                 <button
-                  onClick={() => removeDocument(index)}
+                  onClick={() => handleRemoveDocument(index)}
                   className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
                 >
                   {language === 'en' ? 'Remove' : 'Tangtangon'}
                 </button>
+      {/* Confirmation Modal for Remove */}
+      <ConfirmModal
+        show={showConfirm}
+        message={
+          confirmType === 'profile'
+            ? (language === 'en' ? 'Are you sure you want to remove this photo?' : 'Sigurado ka nga gusto nimo tangtangon ang litrato?')
+            : (language === 'en' ? 'Are you sure you want to remove this document?' : 'Sigurado ka nga gusto nimo tangtangon ang dokumento?')
+        }
+        onConfirm={handleConfirmRemove}
+        onCancel={handleCancelRemove}
+      />
               </div>
             ))}
           </div>

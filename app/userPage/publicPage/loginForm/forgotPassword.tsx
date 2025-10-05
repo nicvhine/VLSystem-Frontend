@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
 import emailjs from 'emailjs-com';
 
 type Props = {
@@ -101,32 +102,43 @@ export default function ForgotPasswordModal({
     }
   };
 
+  // Confirmation modal state for password reset
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+
   // Step 3: Reset Password
-  const handleResetPassword = async () => {
+  const doResetPassword = async () => {
     setError('');
+    setResetLoading(true);
     if (newPassword !== confirmPassword) {
       setError('Passwords do not match.');
+      setResetLoading(false);
       return;
     }
-  
     try {
       const res = await fetch(`http://localhost:3001/borrowers/reset-password/${borrowerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword }),
       });
-  
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || data.message || 'Password reset failed.');
+        setResetLoading(false);
         return;
       }
-  
       alert('Password reset successfully!');
       setShowForgotModal(false);
     } catch (err) {
       setError('Server error. Please try again.');
+    } finally {
+      setResetLoading(false);
+      setShowResetConfirm(false);
     }
+  };
+
+  const handleResetPassword = () => {
+    setShowResetConfirm(true);
   };
 
   return (
@@ -247,6 +259,13 @@ export default function ForgotPasswordModal({
             >
               Reset Password
             </button>
+            <ConfirmModal
+              show={showResetConfirm}
+              message={"Are you sure you want to reset your password?"}
+              onConfirm={doResetPassword}
+              onCancel={() => setShowResetConfirm(false)}
+              loading={resetLoading}
+            />
           </>
         )}
 

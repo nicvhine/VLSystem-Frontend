@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from "react";
+import ConfirmModal from "../../modals/confirmModal/ConfirmModal";
 import { Application } from "./useApplication";
 import { 
   handleClearedLoan, 
@@ -35,6 +36,10 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   const [showDocsDropdown, setShowDocsDropdown] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+
+  const [showConfirm, setShowConfirm] = useState<{ type: 'approve' | 'deny' | 'disburse' | null }>({ type: null });
+  const [pendingAction, setPendingAction] = useState<() => void>(() => () => {});
 
   if (!application) return null;
 
@@ -99,27 +104,65 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       {application.status === "Cleared" && role === "manager" && (
         <>
           <button
-            onClick={() => handleApproveApplication(application, setApplications, authFetch, API_URL)}
+            onClick={() => {
+              setShowConfirm({ type: 'approve' });
+              setPendingAction(() => () => handleApproveApplication(application, setApplications, authFetch, API_URL));
+            }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
             APPROVE
           </button>
           <button
-            onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL)}
+            onClick={() => {
+              setShowConfirm({ type: 'deny' });
+              setPendingAction(() => () => handleDenyApplication(application, setApplications, authFetch, API_URL));
+            }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             DENY
           </button>
+      <ConfirmModal
+        show={showConfirm.type === 'approve'}
+        message="Do you want to approve this loan application?"
+        onConfirm={() => {
+          setShowConfirm({ type: null });
+          pendingAction();
+        }}
+        onCancel={() => setShowConfirm({ type: null })}
+      />
+      <ConfirmModal
+        show={showConfirm.type === 'deny'}
+        message="Do you want to deny this loan application?"
+        onConfirm={() => {
+          setShowConfirm({ type: null });
+          pendingAction();
+        }}
+        onCancel={() => setShowConfirm({ type: null })}
+      />
         </>
       )}
 
       {application.status === "Approved" && role === "loan officer" && (
-        <button
-          onClick={() => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen)}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-        >
-          Disburse
-        </button>
+        <>
+          <button
+            onClick={() => {
+              setShowConfirm({ type: 'disburse' });
+              setPendingAction(() => () => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen));
+            }}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+          >
+            Disburse
+          </button>
+          <ConfirmModal
+            show={showConfirm.type === 'disburse'}
+            message="Do you want to disburse this loan?"
+            onConfirm={() => {
+              setShowConfirm({ type: null });
+              pendingAction();
+            }}
+            onCancel={() => setShowConfirm({ type: null })}
+          />
+        </>
       )}
 
       {application.status === "Disbursed" && (
