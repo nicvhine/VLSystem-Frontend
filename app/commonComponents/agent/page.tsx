@@ -26,6 +26,11 @@ export default function AgentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Modal animation states
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalAnimating, setIsModalAnimating] = useState(false);
+
+
   const fetchAgents = async () => {
     try {
       const res = await fetch("http://localhost:3001/agents");
@@ -84,8 +89,8 @@ export default function AgentPage() {
     role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
 
   return (
-    <Wrapper>
-      <div className="p-6">
+    <Wrapper isNavbarBlurred={isModalVisible}>
+      <div className="p-6 text-black">
         {role === "loan officer" && (
           <div className="mb-6 flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-800">Agents</h1>

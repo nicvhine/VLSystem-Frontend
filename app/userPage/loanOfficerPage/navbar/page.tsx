@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useProfilePic from '../../../commonComponents/navbarComponents/profilePic';
-import { loanOfficerNavItems } from '../../../commonComponents/navbarComponents/navItems'
+import { getLoanOfficerNavItems } from '../../../commonComponents/navbarComponents/navItems'
 import useAccountSettings from '../../../commonComponents/navbarComponents/accountSettings';
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
@@ -13,7 +13,6 @@ import loanOfficerTranslations from '../components/translation';
 
 export default function LoanOfficerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== "undefined") {
@@ -21,8 +20,11 @@ export default function LoanOfficerNavbar({ isBlurred = false }: { isBlurred?: b
     }
     return 'en';
   });
+  const [navItems, setNavItems] = useState(getLoanOfficerNavItems(language));
+
   const pathname = usePathname();
   const router = useRouter();
+  
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -243,7 +245,7 @@ const {
 
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex items-center space-x-6">
-              {loanOfficerNavItems.map(item => {
+              {navItems.map(item => {
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.name}>
@@ -334,7 +336,7 @@ const {
         </div>
 
         {isMobileMenuOpen && (
-            <MobileMenu navItems={loanOfficerNavItems} language={language} setLanguage={setLanguage} />
+            <MobileMenu navItems={navItems} language={language} setLanguage={setLanguage} />
         )}
 
       </div>
