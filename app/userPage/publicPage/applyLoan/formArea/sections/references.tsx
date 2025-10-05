@@ -22,16 +22,14 @@ export default function References({
   appReferences,
   setAppReferences,
   appContact,
-  appName, // <-- add this line
+  appName, 
   missingFields = [],
 }: ReferencesProps) {
-  // Always recalculate errors for all references on every render
   const nameError = useMemo(() => {
     return appReferences.map((ref, idx) => {
       if (!/^[A-Za-zñÑ.\- ]*$/.test(ref.name)) {
         return language === "en" ? "Invalid name format." : "Sayop ang porma sa ngalan.";
       }
-      // Require minimum of two words
       const wordCount = ref.name.trim().split(/\s+/).filter(Boolean).length;
       if (ref.name.trim() && wordCount < 2) {
         return language === "en"
@@ -39,7 +37,6 @@ export default function References({
           : "Kinahanglan duha o labaw pa ka pulong ang ngalan.";
       }
       const lowerValue = ref.name.trim().toLowerCase();
-      // Check if matches applicant's name
       if (lowerValue !== "" && appName && lowerValue === appName.trim().toLowerCase()) {
         return language === "en"
           ? "Reference name cannot be applicant's name."
@@ -62,12 +59,10 @@ export default function References({
       return language === "en" ? "Invalid phone number format" : "Sayop nga porma sa numero sa telepono.";
     }
     const trimmedValue = ref.contact.trim();
-    // Check for duplicate among references
     const isDuplicate = appReferences.filter((r, i) => r.contact.trim() === trimmedValue && trimmedValue !== "").length > 1;
     if (isDuplicate) {
       return language === "en" ? "Duplicate contact number not allowed." : "Dili pwede ang parehas nga numero.";
     }
-    // Check if matches applicant's contact number
     if (trimmedValue !== "" && trimmedValue === appContact) {
       return language === "en"
         ? "Reference contact cannot be applicant's contact number."
@@ -77,7 +72,6 @@ export default function References({
   });
 }, [appReferences, language, appContact]);
 
-  // Simple handler: just update state, validation is handled by useMemo
   const handleReferenceChange = (
     index: number,
     field: keyof Reference,

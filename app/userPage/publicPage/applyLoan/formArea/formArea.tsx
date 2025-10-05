@@ -8,6 +8,8 @@ import References from "./sections/references";
 import CollateralInformation from "./sections/collateral";
 import LoanDetails from "./sections/loanDetails";
 import UploadSection from "./sections/uploadSection";
+import AgentDropdown from "./sections/agent"; 
+import { formToJSON } from "axios";
 
 
 // Error modal for missing fields
@@ -190,6 +192,9 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
             { name: "", contact: "", relation: "" }
         ]);
 
+        // Agents
+        const [appAgent, setAppAgent] = useState("");
+
         // Collateral
         const [collateralType, setCollateralType] = useState("");
         const [collateralValue, setCollateralValue] = useState<number>(0);
@@ -258,6 +263,9 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 if (!ref.contact.trim()) missing.push(`Reference ${i + 1} Contact`);
                 if (!ref.relation.trim()) missing.push(`Reference ${i + 1} Relationship`);
             });
+
+            if (!appAgent.trim()) missing.push("Agent");
+
             // Uploads
             if (photo2x2.length === 0) missing.push("2x2 Photo");
             if (uploadedFiles.length === 0) missing.push("Document Upload");
@@ -307,6 +315,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                     formData.append(`appReferences[${i}][contact]`, ref.contact);
                     formData.append(`appReferences[${i}][relation]`, ref.relation);
                 });
+                formData.append("appAgent", appAgent);
                 if (requiresCollateral) {
                     formData.append("collateralType", collateralType);
                     formData.append("collateralValue", String(collateralValue));
@@ -384,7 +393,12 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 appName={appName}
                 missingFields={missingFields}
             />
-
+        
+        <AgentDropdown
+            language={language}
+            appAgent={appAgent}
+            setAppAgent={setAppAgent}
+        />
 
         {requiresCollateral && (
             <CollateralInformation

@@ -122,13 +122,6 @@ const {
 
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
-  // Create translated navigation items
-  const t = loanOfficerTranslations[language];
-  const translatedLoanOfficerNavItems = [
-    { name: t.loans, href: '/commonComponents/loan' },
-    { name: t.applications, href: '/commonComponents/loanApplication' },
-  ];
-
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const newPrefs = {
       ...notificationPreferences,
@@ -250,7 +243,7 @@ const {
 
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex items-center space-x-6">
-              {translatedLoanOfficerNavItems.map(item => {
+              {loanOfficerNavItems.map(item => {
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.name}>
@@ -341,7 +334,7 @@ const {
         </div>
 
         {isMobileMenuOpen && (
-            <MobileMenu navItems={translatedLoanOfficerNavItems} language={language} setLanguage={setLanguage} />
+            <MobileMenu navItems={loanOfficerNavItems} language={language} setLanguage={setLanguage} />
         )}
 
       </div>

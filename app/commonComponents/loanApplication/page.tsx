@@ -62,7 +62,6 @@ export default function ApplicationsPage() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, [role]);
 
-  // Get translations based on role
   const getTranslations = () => {
     return firstLoanApplicationTranslation[language];
   };
