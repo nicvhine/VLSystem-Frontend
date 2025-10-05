@@ -95,30 +95,36 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
         style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
         aria-hidden={!isDropdownOpen}
       >
-        {/* Connector Arrow */}
-  {/* Arrow removed as requested */}
-        {/* Profile Header */}
+      
   <div className="flex flex-col items-center pt-7 pb-4 gap-1">
-          <div
-            className="relative group w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer hover:ring-4 transition-all"
-            onClick={() => document.getElementById('profileUpload')?.click()}
-          >
-            <Image
-              src={previewPic || profilePic || '/idPic.jpg'}
-              alt="Profile"
-              width={80}
-              height={80}
-              className="w-full h-full object-cover rounded-full"
-            />
-            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">Change</div>
-            <input
-              type="file"
-              id="profileUpload"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
+    <div
+      className="relative group w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer hover:ring-4 transition-all flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-2xl"
+      onClick={() => document.getElementById('profileUpload')?.click()}
+    >
+      {previewPic || profilePic ? (
+        <Image
+          src={previewPic || profilePic}
+          alt="Profile"
+          width={80}
+          height={80}
+          className="w-full h-full object-cover rounded-full"
+        />
+      ) : (
+        <span>{name ? name.charAt(0).toUpperCase() : "U"}</span>
+      )}
+
+      <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
+        Change
+      </div>
+      <input
+        type="file"
+        id="profileUpload"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+    </div>
+
           <div className="font-semibold text-lg text-center">{name}</div>
           <div className="text-gray-400 text-sm text-center m-0">{email}</div>
           <div className="text-red-600 text-xs font-medium text-center mt-1 uppercase tracking-wide">

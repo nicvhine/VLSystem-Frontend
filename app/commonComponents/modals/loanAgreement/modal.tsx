@@ -17,7 +17,6 @@ interface AgreementModalProps {
   application: Application | null;
 }
 
-// Reusable component for lender/borrower section
 function SignatorySection({ role, name }: { role: string; name: string }) {
   return (
     <div className="flex flex-col space-y-6">
