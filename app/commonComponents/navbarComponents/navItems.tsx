@@ -14,6 +14,7 @@ export const managerNavItems = [
 export const loanOfficerNavItems = [
     { name: 'Loans', href: '/commonComponents/loan' },
     { name: 'Applications', href: '/commonComponents/loanApplication' },
+    { name: 'Agents', href: '/commonComponents/agent' },
 ];
 
 export const collectorNavItems = [
