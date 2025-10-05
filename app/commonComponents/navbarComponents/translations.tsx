@@ -16,4 +16,4 @@ const navbarTranslations = {
   };
 
 export default navbarTranslations;
-  
+
