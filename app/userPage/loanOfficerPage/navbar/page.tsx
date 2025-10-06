@@ -122,6 +122,22 @@ const {
     }
   }, [language]);
 
+  // Update nav items whenever language changes
+  useEffect(() => {
+    setNavItems(getLoanOfficerNavItems(language));
+  }, [language]);
+
+  // Listen for global language changes (e.g., Translate button)
+  useEffect(() => {
+    const handler = (event: CustomEvent) => {
+      if (event.detail?.userType === 'loanOfficer') {
+        setLanguage(event.detail.language);
+      }
+    };
+    window.addEventListener('languageChange', handler as EventListener);
+    return () => window.removeEventListener('languageChange', handler as EventListener);
+  }, []);
+
   const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   const handleNotificationToggle = (type: 'sms' | 'email') => {

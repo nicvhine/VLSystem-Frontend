@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal"; 
+import firstAgentTranslation from "./translations/first";
 
 interface Agent {
   agentId: string;
@@ -25,6 +27,13 @@ export default function AgentPage() {
   const [newAgentPhone, setNewAgentPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Language state (default English)
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Search / Sort
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("");
 
   // Modal animation states
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -47,8 +56,24 @@ export default function AgentPage() {
 
     if (currentRole === "loan officer") {
       fetchAgents();
+      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb' | null;
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
     }
   }, []);
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (role === "loan officer" && event.detail.userType === 'loanOfficer') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
 
   const handleAddAgent = async () => {
     if (!newAgentName || !newAgentPhone) {
@@ -85,62 +110,157 @@ export default function AgentPage() {
 
   if (!role) return null;
 
-  const Wrapper: React.FC =
-    role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
+  let Wrapper;
+  if (role === "loan officer") {
+    Wrapper = LoanOfficer;
+  } else if (role === "head") {
+    Wrapper = Head;
+  } else {
+    Wrapper = Manager;
+  }
+
+  const t = firstAgentTranslation[language];
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(amount);
+
+  const filteredAndSortedAgents = agents
+    .filter((agent) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        agent.name.toLowerCase().includes(q) ||
+        agent.phoneNumber.toLowerCase().includes(q) ||
+        agent.agentId.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === 'handled') {
+        return b.handledLoans - a.handledLoans;
+      }
+      if (sortBy === 'amount') {
+        return b.totalLoanAmount - a.totalLoanAmount;
+      }
+      return 0;
+    });
 
   return (
     <Wrapper isNavbarBlurred={isModalVisible}>
-      <div className="p-6 text-black">
+      <div className="min-h-screen bg-gray-50 text-black">
         {role === "loan officer" && (
-          <div className="mb-6 flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-800">Agents</h1>
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              onClick={() => setShowModal(true)}
-            >
-              Add Agent
-            </button>
+          <div className="mx-auto px-4 sm:px-6 py-8">
+            <div className="mb-6 flex justify-between items-center">
+              <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                onClick={() => setShowModal(true)}
+              >
+                {t.addBtn}
+              </button>
+            </div>
+
+            {/* Search + Sort (applications-style) */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+              <div className="relative w-full">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder={t.searchPlaceholder}
+                  className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
+                    focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="relative w-full sm:w-[200px]">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
+                    focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
+                    appearance-none transition-all"
+                >
+                  <option value="">{t.sortBy}</option>
+                  <option value="handled">{t.sort1}</option>
+                  <option value="amount">{t.sort2}</option>
+                </select>
+                <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+            </div>
           </div>
         )}
 
         {/* Display agents */}
-        <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Handled Loans
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Loan Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Commission
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {agents.map((agent) => (
-                <tr key={agent.agentId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.agentId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.phoneNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.handledLoans}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalLoanAmount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalCommission.toLocaleString()}</td>
+        <div className="mx-auto px-4 sm:px-6 pb-8">
+          <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+            <table className="min-w-full">
+              <thead>
+                <tr>
+                  {[
+                    t.th1,
+                    t.th2,
+                    t.th3,
+                    t.th4,
+                    t.th5,
+                    t.th6,
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {heading}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody className="divide-y divide-gray-200 bg-white">
+                {filteredAndSortedAgents.map((agent) => (
+                  <tr
+                    key={agent.agentId}
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    {/* ID */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {agent.agentId}
+                      </div>
+                    </td>
+
+                    {/* Name */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {agent.name}
+                      </div>
+                    </td>
+
+                    {/* Phone */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {agent.phoneNumber}
+                    </td>
+
+                    {/* Handled Loans */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {agent.handledLoans}
+                    </td>
+
+                    {/* Total Loan Amount */}
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {formatCurrency(agent.totalLoanAmount)}
+                    </td>
+
+                    {/* Total Commission */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {formatCurrency(agent.totalCommission)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Add Agent Modal */}
