@@ -196,26 +196,66 @@ export default function AgentPage() {
         {/* Display agents */}
         <div className="mx-auto px-4 sm:px-6 pb-8">
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full">
+              <thead>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.th1}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.th2}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.th3}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.th4}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.th5}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{t.th6}</th>
+                  {[
+                    t.th1,
+                    t.th2,
+                    t.th3,
+                    t.th4,
+                    t.th5,
+                    t.th6,
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      {heading}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+
+              <tbody className="divide-y divide-gray-200 bg-white">
                 {filteredAndSortedAgents.map((agent) => (
-                  <tr key={agent.agentId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">{agent.agentId}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{agent.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{agent.phoneNumber}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{agent.handledLoans}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(agent.totalLoanAmount)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{formatCurrency(agent.totalCommission)}</td>
+                  <tr
+                    key={agent.agentId}
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                  >
+                    {/* ID */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {agent.agentId}
+                      </div>
+                    </td>
+
+                    {/* Name */}
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {agent.name}
+                      </div>
+                    </td>
+
+                    {/* Phone */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {agent.phoneNumber}
+                    </td>
+
+                    {/* Handled Loans */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {agent.handledLoans}
+                    </td>
+
+                    {/* Total Loan Amount */}
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      {formatCurrency(agent.totalLoanAmount)}
+                    </td>
+
+                    {/* Total Commission */}
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {formatCurrency(agent.totalCommission)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
