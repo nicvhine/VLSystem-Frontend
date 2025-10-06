@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal"; 
+import firstAgentTranslation from "./translations/first";
 
 interface Agent {
   agentId: string;
@@ -26,6 +28,18 @@ export default function AgentPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Language state (default English)
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Search / Sort
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("");
+
+  // Modal animation states
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalAnimating, setIsModalAnimating] = useState(false);
+
+
   const fetchAgents = async () => {
     try {
       const res = await fetch("http://localhost:3001/agents");
@@ -42,8 +56,24 @@ export default function AgentPage() {
 
     if (currentRole === "loan officer") {
       fetchAgents();
+      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb' | null;
+      if (storedLanguage) {
+        setLanguage(storedLanguage);
+      }
     }
   }, []);
+
+  // Listen for language changes
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (role === "loan officer" && event.detail.userType === 'loanOfficer') {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
 
   const handleAddAgent = async () => {
     if (!newAgentName || !newAgentPhone) {
@@ -80,21 +110,86 @@ export default function AgentPage() {
 
   if (!role) return null;
 
-  const Wrapper: React.FC =
-    role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
+  let Wrapper;
+  if (role === "loan officer") {
+    Wrapper = LoanOfficer;
+  } else if (role === "head") {
+    Wrapper = Head;
+  } else {
+    Wrapper = Manager;
+  }
+
+  const t = firstAgentTranslation[language];
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-PH", {
+      style: "currency",
+      currency: "PHP",
+    }).format(amount);
+
+  const filteredAndSortedAgents = agents
+    .filter((agent) => {
+      const q = searchQuery.toLowerCase();
+      return (
+        agent.name.toLowerCase().includes(q) ||
+        agent.phoneNumber.toLowerCase().includes(q) ||
+        agent.agentId.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === 'handled') {
+        return b.handledLoans - a.handledLoans;
+      }
+      if (sortBy === 'amount') {
+        return b.totalLoanAmount - a.totalLoanAmount;
+      }
+      return 0;
+    });
 
   return (
-    <Wrapper>
-      <div className="p-6">
+    <Wrapper isNavbarBlurred={isModalVisible}>
+      <div className="min-h-screen bg-gray-50 text-black">
         {role === "loan officer" && (
-          <div className="mb-6 flex justify-between items-center">
-            <h1 className="text-2xl font-semibold text-gray-800">Agents</h1>
-            <button
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-              onClick={() => setShowModal(true)}
-            >
-              Add Agent
-            </button>
+          <div className="mx-auto px-4 sm:px-6 py-8">
+            <div className="mb-6 flex justify-between items-center">
+              <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => setShowModal(true)}
+              >
+                {t.addBtn}
+              </button>
+            </div>
+
+            {/* Search + Sort (applications-style) */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+              <div className="relative w-full">
+                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder={t.searchPlaceholder}
+                  className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
+                    focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="relative w-full sm:w-[200px]">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
+                    focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
+                    appearance-none transition-all"
+                >
+                  <option value="">{t.sortBy}</option>
+                  <option value="handled">{t.sort1}</option>
+                  <option value="amount">{t.sort2}</option>
+                </select>
+                <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -126,12 +221,12 @@ export default function AgentPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {agents.map((agent) => (
                 <tr key={agent.agentId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.agentId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.phoneNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.handledLoans}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-black">₱{agent.totalLoanAmount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-black">₱{agent.totalCommission.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.agentId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.phoneNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.handledLoans}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalLoanAmount.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalCommission.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

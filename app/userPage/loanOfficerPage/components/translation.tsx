@@ -208,7 +208,7 @@ const loanOfficerTranslations = {
     month: 'Buwan',
     week: 'Semana',
     day: 'Adlaw',
-    agenda: 'Agenda',
+    agenda: 'Adyenda',
     
     // Calendar Navigation
     today: 'Karon',

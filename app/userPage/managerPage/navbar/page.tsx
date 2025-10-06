@@ -5,33 +5,32 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useProfilePic from '../../../commonComponents/navbarComponents/profilePic';
-import { managerNavItems } from '../../../commonComponents/navbarComponents/navItems';
+import { getManagerNavItems } from '../../../commonComponents/navbarComponents/navItems';
 import useAccountSettings from '../../../commonComponents/navbarComponents/accountSettings';
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
 import { Bell } from 'lucide-react';
-import managerTranslations from '../components/translation';
 
 export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("managerLanguage") as 'en' | 'ceb') || 'en';
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('managerLanguage') as 'en' | 'ceb') || 'en';
     }
     return 'en';
   });
+  const [navItems, setNavItems] = useState(getManagerNavItems(language));
+
   const pathname = usePathname();
   const router = useRouter();
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [role, setRole] = useState('');
-
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
 
@@ -43,39 +42,22 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
     originalPic,
     setOriginalPic,
     isUploadingPic,
-    setIsUploadingPic,
     handleFileChange,
     handleSaveProfilePic,
     handleCancelUpload,
   } = useProfilePic();
 
-  const {
-    editingEmail,
-    setEditingEmail,
-    editingPhone,
-    setEditingPhone,
-    isEditingEmailField,
-    setIsEditingEmailField,
-    isEditingPhoneField,
-    setIsEditingPhoneField,
-    isEditingPasswordField,
-    setIsEditingPasswordField,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
-    notificationPreferences,
-    setNotificationPreferences,
-    passwordError,
-    setPasswordError,
-    settingsSuccess,
-    setSettingsSuccess,
-    activeSettingsTab,
-    setActiveSettingsTab,
-  } = useAccountSettings();
+  const { setNotificationPreferences } = useAccountSettings();
 
-  // Load user info + notifications
+  // Update nav items whenever language changes
   useEffect(() => {
+    setNavItems(getManagerNavItems(language));
+  }, [language]);
+
+  // Load user data and notifications
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     const storedName = localStorage.getItem('fullName');
     const storedEmail = localStorage.getItem('email');
     const storedPhoneNumber = localStorage.getItem('phoneNumber');
@@ -85,65 +67,39 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
     const storedRole = localStorage.getItem('role');
 
     if (storedName) setName(storedName);
-    if (storedEmail) {
-      setEmail(storedEmail);
-      setEditingEmail(storedEmail);
-    }
-    if (storedPhoneNumber) {
-      setPhoneNumber(storedPhoneNumber);
-      setEditingPhone(storedPhoneNumber);
-    }
+    if (storedEmail) setEmail(storedEmail);
+    if (storedPhoneNumber) setPhoneNumber(storedPhoneNumber);
     if (storedUsername) setUsername(storedUsername);
     if (storedPic) {
       setProfilePic(storedPic);
       setOriginalPic(storedPic);
     }
     if (storedRole) setRole(storedRole);
+
     if (storedNotifications) {
       const parsed = JSON.parse(storedNotifications);
-      if (parsed.both) {
-        setNotificationPreferences({ sms: true, email: true });
-      } else {
-        setNotificationPreferences({
-          sms: parsed.sms || false,
-          email: parsed.email !== undefined ? parsed.email : true,
-        });
-      }
+      setNotificationPreferences({
+        sms: parsed.sms || false,
+        email: parsed.email ?? true,
+      });
     }
- 
+
     const token = localStorage.getItem('token');
     if (token) {
       fetch(`http://localhost:3001/notifications/manager`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           const normalized = (data || []).map((n: any) => ({
             ...n,
             read: n.read ?? n.viewed ?? false,
           }));
           setNotifications(normalized);
         })
-        .catch(err => console.error("Failed to load notifications:", err));
+        .catch((err) => console.error('Failed to load notifications:', err));
     }
   }, []);
-
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
-
-  // Persist language change
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("managerLanguage", language);
-    }
-  }, [language]);
-
-  // Translation helper
-  const t = managerTranslations[language];
-  const translatedManagerNavItems = [
-    { name: t.loans, href: '/commonComponents/loan' },
-    { name: t.applications, href: '/commonComponents/loanApplication' },
-    { name: t.collections, href: '/commonComponents/collection' },
-  ];
 
   const handleLogout = () => {
     localStorage.clear();
@@ -151,38 +107,6 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
-
-  // Mark all as read
-  const handleMarkAllRead = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:3001/notifications/manager/read-all', {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    } catch (err) {
-      console.error('Failed to mark all as read:', err);
-    }
-  };
-
-  // Mark single notif as read
-  const handleMarkOneRead = async (id: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch(`http://localhost:3001/notifications/${id}/read`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, read: true } : n))
-      );
-    } catch (err) {
-      console.error('Failed to mark one as read:', err);
-    }
-  };
-
-  // Add new toggle functions to ensure only one dropdown is open at a time
   const handleToggleNotifs = () => {
     setShowNotifs((prev) => {
       if (!prev) setIsDropdownOpen(false);
@@ -197,7 +121,11 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
   };
 
   return (
-    <div className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${isBlurred ? 'relative z-40' : 'sticky top-0 z-50'} ${isBlurred ? 'blur-sm' : ''} transition-all duration-150`}>
+    <div
+      className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${
+        isBlurred ? 'relative z-40 blur-sm' : 'sticky top-0 z-50'
+      } transition-all duration-150`}
+    >
       <div className="w-full px-6 py-3">
         <div className="flex items-center justify-between">
           <Link
@@ -207,7 +135,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
             <span>VLSystem</span>
           </Link>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu toggle */}
           <button
             className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
             onClick={toggleMobileMenu}
@@ -222,37 +150,26 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
               aria-hidden="true"
             >
               {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               )}
             </svg>
           </button>
 
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex items-center space-x-6">
-              {translatedManagerNavItems.map((item) => {
+              {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <li key={item.name}>
                     <Link
                       href={item.href}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all 
-                        ${
-                          isActive
-                            ? 'text-white bg-red-600 hover:bg-red-700 shadow-sm'
-                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                        }`}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        isActive
+                          ? 'text-white bg-red-600 hover:bg-red-700 shadow-sm'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
                     >
                       {item.name}
                     </Link>
@@ -261,19 +178,20 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
               })}
             </ul>
 
-            {/* Language Switcher */}
+            {/* Language switcher */}
             <label className="flex items-center cursor-pointer">
               <input
                 type="checkbox"
                 className="sr-only"
                 checked={language === 'ceb'}
                 onChange={() => {
-                  const newLanguage = language === 'en' ? 'ceb' : 'en';
-                  setLanguage(newLanguage);
+                  const newLang = language === 'en' ? 'ceb' : 'en';
+                  setLanguage(newLang);
                   if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('languageChange', {
-                      detail: { language: newLanguage, userType: 'manager' }
-                    }));
+                    localStorage.setItem('managerLanguage', newLang);
+                    window.dispatchEvent(
+                      new CustomEvent('languageChange', { detail: { language: newLang, userType: 'manager' } })
+                    );
                   }
                 }}
               />
@@ -285,110 +203,101 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                 />
               </div>
               <span className="text-gray-900 ml-3 text-sm font-medium">
-                {language === 'en' ? t.english : t.cebuano}
+                {language === 'en' ? 'English' : 'Cebuano'}
               </span>
             </label>
 
-            {/* Notification bell */}
+            {/* Notifications */}
             <div className="relative">
-            <button
-              className="relative p-2 rounded-full hover:bg-gray-100"
-              onClick={handleToggleNotifs}
-            >
-              <Bell className="h-5 w-5 text-gray-700" />
-              {notifications.filter(n => !n.read).length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
-                  {notifications.filter(n => !n.read).length}
-                </span>
-              )}
-            </button>
+              <button className="relative p-2 rounded-full hover:bg-gray-100" onClick={handleToggleNotifs}>
+                <Bell className="h-5 w-5 text-gray-700" />
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
+                    {notifications.filter((n) => !n.read).length}
+                  </span>
+                )}
+              </button>
 
-            {showNotifs && (
-              <div
-                className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 overflow-hidden"
-                style={{ position: "fixed", top: "4rem", right: "1rem", zIndex: 9999 }}
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
-                  <h3 className="text-sm font-semibold text-gray-700">{t.notifications}</h3>
-                  {notifications.some(n => !n.read) && (
-                    <button
-                      onClick={async () => {
-                        try {
-                          const token = localStorage.getItem("token");
-                          await fetch("http://localhost:3001/notifications/manager/read-all", {
-                            method: "PUT",
-                            headers: { Authorization: `Bearer ${token}` },
-                          });
-                          setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-                        } catch (err) {
-                          console.error("Failed to mark all as read:", err);
-                        }
-                      }}
-                      className="text-xs text-blue-600 hover:underline"
-                    >
-                      {t.markAllAsRead}
-                    </button>
-                  )}
-                </div>
-                
-                {/* List */}
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length > 0 ? (
-                    notifications.map((notif, idx) => (
-                      <div
-                        key={idx}
-                        className={`px-4 py-3 border-b last:border-none cursor-pointer transition-colors duration-150 
-                          ${!notif.read ? "bg-blue-50" : "hover:bg-gray-50"}`}
+              {showNotifs && (
+                <div
+                  className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 overflow-hidden"
+                  style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999 }}
+                >
+                  <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+                    <h3 className="text-sm font-semibold text-gray-700">
+                      {language === 'ceb' ? 'Mga Notipikasyon' : 'Notifications'}
+                    </h3>
+                    {notifications.some((n) => !n.read) && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem('token');
+                            await fetch('http://localhost:3001/notifications/manager/read-all', {
+                              method: 'PUT',
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                          } catch (err) {
+                            console.error('Failed to mark all as read:', err);
+                          }
+                        }}
+                        className="text-xs text-blue-600 hover:underline"
+                      >
+                        {language === 'ceb' ? 'Markahi tanan nga nabasa' : 'Mark all as read'}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((notif, idx) => (
+                        <div
+                          key={idx}
+                          className={`px-4 py-3 border-b last:border-none cursor-pointer transition-colors duration-150 ${
+                            !notif.read ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          }`}
                           onClick={async () => {
                             try {
-                              const token = localStorage.getItem("token");
+                              const token = localStorage.getItem('token');
                               const notifId = notif._id || notif.id;
-                          
                               if (!notif.read) {
-                                await fetch(
-                                  `http://localhost:3001/notifications/manager/${notifId}/read`,
-                                  {
-                                    method: "PUT",
-                                    headers: { Authorization: `Bearer ${token}` },
-                                  }
-                                );
-                          
-                                setNotifications(prev =>
-                                  prev.map(n =>
+                                await fetch(`http://localhost:3001/notifications/manager/${notifId}/read`, {
+                                  method: 'PUT',
+                                  headers: { Authorization: `Bearer ${token}` },
+                                });
+                                setNotifications((prev) =>
+                                  prev.map((n) =>
                                     (n._id || n.id) === notifId ? { ...n, read: true } : n
                                   )
                                 );
                               }
-                          
                               if (notif.applicationId) {
                                 router.push(`/components/manager/applications/${notif.applicationId}`);
                               }
-                              
                             } catch (err) {
-                              console.error("Failed to mark notification as read:", err);
+                              console.error('Failed to mark notification as read:', err);
                             }
                           }}
-                          
-                      >
-                        <p className="text-sm text-gray-800">{translateNotificationMessage(notif, t, language)}</p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(notif.createdAt).toLocaleString()}
-                        </p>
+                        >
+                          <p className="text-sm text-gray-800">
+                            {translateNotificationMessage(notif, language)}
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {new Date(notif.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-6 text-sm text-gray-500 text-center">
+                        {language === 'ceb' ? 'Walay mga notipikasyon' : 'No notifications'}
                       </div>
-                    ))
-                  ) : (
-                    <div className="px-4 py-6 text-sm text-gray-500 text-center">
-                      {t.noNotifications}
-                    </div>
-                  )}
-                </div>  
-                  
+                    )}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Profile dropdown */}
+            {/* Profile Dropdown */}
             <div className="relative">
               <div
                 className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
@@ -427,21 +336,16 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
         </div>
 
         {isMobileMenuOpen && (
-          <MobileMenu
-            navItems={managerNavItems}
-            language={language}
-            setLanguage={setLanguage}
-          />
+          <MobileMenu navItems={navItems} language={language} setLanguage={setLanguage} />
         )}
       </div>
     </div>
   );
 }
 
-// Simple translator for known notification patterns
-function translateNotificationMessage(notif: any, t: any, language: 'en' | 'ceb') {
+// Notification translation helper
+function translateNotificationMessage(notif: any, language: 'en' | 'ceb') {
   const msg: string = notif?.message || '';
-  // Pattern: "Loan Officer has changed application 00001 to Disbursed"
   const changedRegex = /has changed application\s+(\S+)\s+to\s+(\w+)/i;
   const m = msg.match(changedRegex);
   if (m) {
@@ -455,12 +359,9 @@ function translateNotificationMessage(notif: any, t: any, language: 'en' | 'ceb'
       denied: { en: 'Denied', ceb: 'Gi-balibaran' },
     };
     const statusText = statusMap[status]?.[language] || m[2];
-    if (language === 'ceb') {
-      return `Ang Loan Officer nag-usab sa aplikasyon ${applicationId} ngadto sa ${statusText}`;
-    }
-    return `Loan Officer has changed application ${applicationId} to ${statusText}`;
+    return language === 'ceb'
+      ? `Ang Loan Officer nag-usab sa aplikasyon ${applicationId} ngadto sa ${statusText}`
+      : `Loan Officer has changed application ${applicationId} to ${statusText}`;
   }
-
-  // Fallback to original
   return msg;
 }
