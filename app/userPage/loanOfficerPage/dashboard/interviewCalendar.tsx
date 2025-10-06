@@ -38,13 +38,19 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function InterviewCalendar() {
+  // All hooks must be at the top level
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb') || 'en';
     }
     return 'en';
   });
-
+  const [events, setEvents] = useState<InterviewEvent[]>([]);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [view, setView] = useState<"month" | "week" | "day" | "agenda">("month");
+  const [date, setDate] = useState(new Date());
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
@@ -59,13 +65,7 @@ export default function InterviewCalendar() {
 
   const t = loanOfficerTranslations[language];
 
-  const [events, setEvents] = useState<InterviewEvent[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [view, setView] = useState<"month" | "week" | "day" | "agenda">("month");
-  const [date, setDate] = useState(new Date());
-
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  // (moved above)
 
 
   useEffect(() => {

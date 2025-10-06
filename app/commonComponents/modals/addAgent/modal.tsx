@@ -1,6 +1,6 @@
 'use client';
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 
 import ConfirmModal from "../confirmModal/ConfirmModal";
@@ -31,6 +31,17 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const [animateIn, setAnimateIn] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      const timer = setTimeout(() => setAnimateIn(true), 10);
+      return () => clearTimeout(timer);
+    } else {
+      setAnimateIn(false);
+    }
+  }, [show]);
+
   if (!show) return null;
 
   const handleAddClick = () => {
@@ -48,15 +59,15 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
+      <div className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}> 
           <button
             className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
             onClick={onClose}
           >
             <FiX size={20} />
           </button>
-          <h2 className="text-xl font-semibold mb-4">Add New Agent</h2>
+          <h2 className="text-xl font-semibold mb-4 text-black">Add New Agent</h2>
 
           <div className="flex flex-col gap-3">
             <input
@@ -77,7 +88,7 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
             <button
               onClick={handleAddClick}
               disabled={loading}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
             >
               {loading ? "Adding..." : "Add Agent"}
             </button>

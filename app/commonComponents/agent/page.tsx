@@ -90,7 +90,7 @@ export default function AgentPage() {
           <div className="mb-6 flex justify-between items-center">
             <h1 className="text-2xl font-semibold text-gray-800">Agents</h1>
             <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
               onClick={() => setShowModal(true)}
             >
               Add Agent
@@ -126,12 +126,12 @@ export default function AgentPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {agents.map((agent) => (
                 <tr key={agent.agentId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.agentId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.phoneNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.handledLoans}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalLoanAmount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalCommission.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.agentId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.phoneNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-black">{agent.handledLoans}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-black">₱{agent.totalLoanAmount.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-black">₱{agent.totalCommission.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

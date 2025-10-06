@@ -38,7 +38,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   const buttonRef = useRef<HTMLButtonElement>(null);
 
 
-  const [showConfirm, setShowConfirm] = useState<{ type: 'approve' | 'deny' | 'disburse' | null }>({ type: null });
+  const [showConfirm, setShowConfirm] = useState<{ type: 'approve' | 'deny' | 'disburse' | 'clear' | 'dismissPending' | null }>({ type: null });
   const [pendingAction, setPendingAction] = useState<() => void>(() => () => {});
 
   if (!application) return null;
@@ -87,17 +87,41 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       {application.status === "Pending" && role === "loan officer" && (
         <>
           <button
-            onClick={() => handleClearedLoan(application, setApplications, authFetch, API_URL)}
+            onClick={() => {
+              setShowConfirm({ type: 'clear' });
+              setPendingAction(() => () => handleClearedLoan(application, setApplications, authFetch, API_URL));
+            }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
             CLEAR
           </button>
           <button
-            onClick={() => handleDenyFromCleared(application, setApplications, authFetch, API_URL)}
+            onClick={() => {
+              setShowConfirm({ type: 'dismissPending' });
+              setPendingAction(() => () => handleDenyFromCleared(application, setApplications, authFetch, API_URL));
+            }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             DISMISS
           </button>
+          <ConfirmModal
+            show={showConfirm.type === 'clear'}
+            message="Do you want to clear this pending loan application?"
+            onConfirm={() => {
+              setShowConfirm({ type: null });
+              pendingAction();
+            }}
+            onCancel={() => setShowConfirm({ type: null })}
+          />
+          <ConfirmModal
+            show={showConfirm.type === 'dismissPending'}
+            message="Do you want to dismiss this pending loan application?"
+            onConfirm={() => {
+              setShowConfirm({ type: null });
+              pendingAction();
+            }}
+            onCancel={() => setShowConfirm({ type: null })}
+          />
         </>
       )}
 

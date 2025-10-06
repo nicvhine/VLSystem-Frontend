@@ -229,7 +229,7 @@ export default function Page() {
                             <div className="flex gap-2 justify-end">
                               <button   
                                 onClick={handleSaveEdit}
-                                className="text-green-600 font-medium hover:underline">
+                                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
                                 {t.save}
                               </button>
                               <button

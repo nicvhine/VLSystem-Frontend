@@ -1,6 +1,7 @@
 "use client";
 
 import { FC, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface ConfirmModalProps {
   show: boolean;
@@ -34,7 +35,7 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
 
   if (!visible) return null;
 
-  return (
+  const modalContent = (
     <div className={`fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         <h2 className="text-lg font-semibold mb-4 text-center">Confirmation</h2>
@@ -58,6 +59,8 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 };
 
 export default ConfirmModal;
