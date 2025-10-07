@@ -31,9 +31,8 @@ interface Collection {
   dueDate: string;
   periodAmount: number;
   paidAmount: number;
-  totalPayment: number;
   loanBalance: number;
-  balance: number;
+  periodBalance: number;
   status: "Paid" | "Partial" | "Unpaid" | "Overdue";
   collector: string;
   note?: string;
