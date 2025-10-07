@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ConfirmModal from "@/app/commonComponents/modals/confirmModal/ConfirmModal";
 
 interface CreateUserModalProps {
   isOpen: boolean;
@@ -28,6 +29,8 @@ export default function CreateUserModal({
     role: "head" as const,
     status: "Active" as const,
   });
+  const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
+  const [showConfirm, setShowConfirm] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -51,10 +54,26 @@ export default function CreateUserModal({
     }, 150);
   };
 
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    let error = "";
+    if (name === "name") {
+      if (!/^[A-Za-z ]*$/.test(value)) error = "Name must contain only letters and spaces.";
+      else if (value.length < 2) error = "Name must be at least 2 characters.";
+      else if (value.length > 50) error = "Name must be at most 50 characters.";
+      else if (value && !value.includes(" ")) error = "Please enter a full name (first and last).";
+    }
+    if (name === "email") {
+      if (!/^\S+@\S+\.\S+$/.test(value)) error = "Please enter a valid email address.";
+    }
+    if (name === "phoneNumber") {
+      if (!/^\d*$/.test(value)) error = "Phone number must contain only digits.";
+      else if (value.length !== 11 && value.length > 0) error = "Phone number must be exactly 11 digits.";
+    }
+    setErrors((prev) => ({ ...prev, [name]: error }));
     setNewUser((prev) => ({
       ...prev,
       [name]: value,
@@ -63,21 +82,24 @@ export default function CreateUserModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUser.name.trim()) {
-      alert("Please enter a name.");
-      return;
-    }
-    if (!newUser.email.trim()) {
-      alert("Please enter an email address.");
-      return;
-    }
-    if (!newUser.name.trim().includes(" ")) {
-      alert("Please enter a full name with first and last name.");
-      return;
-    }
+    const newErrors: typeof errors = {};
+    if (!newUser.name.trim()) newErrors.name = "Please enter a name.";
+    else if (!/^[A-Za-z ]{2,50}$/.test(newUser.name.trim())) newErrors.name = "Name must be 2-50 letters and spaces only.";
+    else if (!newUser.name.trim().includes(" ")) newErrors.name = "Please enter a full name (first and last).";
+    if (!newUser.email.trim()) newErrors.email = "Please enter an email address.";
+    else if (!/^\S+@\S+\.\S+$/.test(newUser.email.trim())) newErrors.email = "Please enter a valid email address.";
+    if (!newUser.phoneNumber.trim()) newErrors.phoneNumber = "Please enter a phone number.";
+    else if (!/^\d{11}$/.test(newUser.phoneNumber.trim())) newErrors.phoneNumber = "Phone number must be exactly 11 digits.";
+    setErrors(newErrors);
+    if (Object.values(newErrors).some(Boolean)) return;
+    setShowConfirm(true);
+  };
+
+  const handleConfirmCreate = () => {
     onCreate(newUser);
     handleModalClose();
     setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
+    setShowConfirm(false);
   };
 
   if (!isVisible) return null;
@@ -96,34 +118,52 @@ export default function CreateUserModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-semibold mb-4">Create New User</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="name"
-            placeholder="Enter Name"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="email"
-            placeholder="Enter Email"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="contact"
-            name="phoneNumber"
-            placeholder="Enter Phone Number"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
-            value={newUser.phoneNumber}
-            onChange={handleChange}
-            required
-          />
+  <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Enter Name"
+              className={`w-full px-4 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+              value={newUser.name}
+              onChange={handleChange}
+              minLength={2}
+              maxLength={50}
+              pattern="[A-Za-z ]+"
+              required
+              autoComplete="off"
+            />
+            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+          </div>
+          <div className="mb-4">
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter Email"
+              className={`w-full px-4 py-2 border rounded-md ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+              value={newUser.email}
+              onChange={handleChange}
+              required
+              autoComplete="off"
+            />
+            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+          </div>
+          <div className="mb-4">
+            <input
+              type="tel"
+              name="phoneNumber"
+              placeholder="Enter Phone Number"
+              className={`w-full px-4 py-2 border rounded-md ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+              value={newUser.phoneNumber}
+              onChange={handleChange}
+              minLength={11}
+              maxLength={11}
+              pattern="\d{11}"
+              required
+              autoComplete="off"
+            />
+            {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+          </div>
           <select
             name="role"
             className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
@@ -150,6 +190,12 @@ export default function CreateUserModal({
               Create User
             </button>
           </div>
+          <ConfirmModal
+            show={showConfirm}
+            message="Are you sure you want to create this user?"
+            onConfirm={handleConfirmCreate}
+            onCancel={() => setShowConfirm(false)}
+          />
         </form>
       </div>
     </div>

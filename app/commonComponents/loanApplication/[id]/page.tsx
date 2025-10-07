@@ -19,6 +19,7 @@ import ReleaseForm from "../../modals/loanAgreement/releaseForm";
 
 //HOOKS
 import ApplicationButtons from "../hooks/applicationButtons";
+import { createPortal } from "react-dom";
 import { useApplications } from "../hooks/useApplication";
 
 //TRANSLATIONS
@@ -156,10 +157,18 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
   if (role === "loan officer") Wrapper = LoanOfficer;
   else if (role === "head") Wrapper = Head;
   else Wrapper = Manager;
-  
+
+  // Portal host for modals
+  const [modalContainer, setModalContainer] = useState<Element | null>(null);
+  useEffect(() => {
+    setModalContainer(document.getElementById('modal-root'));
+  }, []);
+
 return (
   <Wrapper>
     <div className="min-h-screen bg-gray-50">
+      {/* Modal Portal Host */}
+      <div id="modal-root"></div>
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
@@ -214,6 +223,7 @@ return (
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}
                   setIsAgreementOpen={setIsAgreementOpen}
+                  modalPortal={modalContainer}
                 />
               </div>
 

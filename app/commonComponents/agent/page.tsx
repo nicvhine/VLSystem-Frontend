@@ -154,7 +154,7 @@ export default function AgentPage() {
             <div className="mb-6 flex justify-between items-center">
               <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
               <button
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                 onClick={() => setShowModal(true)}
               >
                 {t.addBtn}
@@ -194,73 +194,43 @@ export default function AgentPage() {
         )}
 
         {/* Display agents */}
-        <div className="mx-auto px-4 sm:px-6 pb-8">
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
-            <table className="min-w-full">
-              <thead>
-                <tr>
-                  {[
-                    t.th1,
-                    t.th2,
-                    t.th3,
-                    t.th4,
-                    t.th5,
-                    t.th6,
-                  ].map((heading) => (
-                    <th
-                      key={heading}
-                      className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                    >
-                      {heading}
-                    </th>
-                  ))}
+        <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Handled Loans
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Loan Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total Commission
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {agents.map((agent) => (
+                <tr key={agent.agentId} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.agentId}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.phoneNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{agent.handledLoans}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalLoanAmount.toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalCommission.toLocaleString()}</td>
                 </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {filteredAndSortedAgents.map((agent) => (
-                  <tr
-                    key={agent.agentId}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    {/* ID */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {agent.agentId}
-                      </div>
-                    </td>
-
-                    {/* Name */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {agent.name}
-                      </div>
-                    </td>
-
-                    {/* Phone */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {agent.phoneNumber}
-                    </td>
-
-                    {/* Handled Loans */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {agent.handledLoans}
-                    </td>
-
-                    {/* Total Loan Amount */}
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {formatCurrency(agent.totalLoanAmount)}
-                    </td>
-
-                    {/* Total Commission */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {formatCurrency(agent.totalCommission)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Add Agent Modal */}

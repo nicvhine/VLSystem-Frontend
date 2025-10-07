@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
+import ConfirmModal from "../modals/confirmModal/ConfirmModal";
 import useIsMobile from "@/app/commonComponents/utils/useIsMobile";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -291,9 +292,13 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     }
   };
   
+  // Confirmation modal state for payment
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+
   const handleConfirmPayment = async () => {
     if (!selectedCollection) return;
-
+    setPaymentLoading(true);
     try {
       const response = await fetch(
         `http://localhost:3001/payments/${selectedCollection.referenceNumber}/cash`,
@@ -319,6 +324,8 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
       console.error("Payment failed:", err);
       alert("Payment failed.");
     } finally {
+      setPaymentLoading(false);
+      setShowPaymentConfirm(false);
       handlePaymentModalClose();
     }
   };
@@ -453,7 +460,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-4 py-2.5 bg-white rounded-lg border border-gray-200 text-gray-600"
               >
-                <option value="">{t.sortBy}</option>
+                <option value="">Sort By</option>
                 <option value="amount">{t.amount}</option>
                 <option value="balance">{t.balance}</option>
                 <option value="status">{t.status}</option>
@@ -644,10 +651,23 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                   </button>
                   <button
                     className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
-                    onClick={handleConfirmPayment}
-                    >
-                      Confirm
-                    </button>
+                    onClick={() => setShowPaymentConfirm(true)}
+                    disabled={paymentLoading}
+                  >
+                    Confirm
+                  </button>
+          {/* Payment Confirmation Modal */}
+          <Suspense fallback={null}>
+            {showPaymentConfirm && (
+              <ConfirmModal
+                show={showPaymentConfirm}
+                message={`Are you sure you want to process this payment for ${selectedCollection?.name}?`}
+                onConfirm={handleConfirmPayment}
+                onCancel={() => setShowPaymentConfirm(false)}
+                loading={paymentLoading}
+              />
+            )}
+          </Suspense>
                   </div>
                 </div>
               </div>

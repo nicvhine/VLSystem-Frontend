@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
 
 interface Props {
   username: string;
@@ -90,6 +90,18 @@ export default function ProfileSettingsPanel({
   smsVerificationSent,
 }: Props) {
   
+  // Confirmation modal state
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Wrapped save handler
+  const handleSaveWithConfirm = async () => {
+    setShowConfirm(false);
+    setLoading(true);
+    await handleAccountSettingsUpdate();
+    setLoading(false);
+  };
+
   return (
      <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300`}>
     {/* Tab switch buttons */}
@@ -301,12 +313,21 @@ export default function ProfileSettingsPanel({
             </div>
 
             {(isEditingEmailField || isEditingPhoneField || isEditingPasswordField) && (
-              <button
-                onClick={handleAccountSettingsUpdate}
-                className="w-full bg-red-600 text-white py-2 rounded-lg"
-              >
-                Save Changes
-              </button>
+              <>
+                <button
+                  onClick={() => setShowConfirm(true)}
+                  className="w-full bg-red-600 text-white py-2 rounded-lg"
+                >
+                  Save Changes
+                </button>
+                <ConfirmModal
+                  show={showConfirm}
+                  message={"Are you sure you want to save these changes to your account?"}
+                  onConfirm={handleSaveWithConfirm}
+                  onCancel={() => setShowConfirm(false)}
+                  loading={loading}
+                />
+              </>
             )}
           </div>
         </div>
