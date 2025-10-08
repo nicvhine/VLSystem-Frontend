@@ -106,7 +106,8 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           </button>
           <ConfirmModal
             show={showConfirm.type === 'clear'}
-            message="Do you want to clear this pending loan application?"
+            applicationId={application.applicationId}
+            status="Cleared"
             onConfirm={() => {
               setShowConfirm({ type: null });
               pendingAction();
@@ -147,7 +148,8 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           </button>
       <ConfirmModal
         show={showConfirm.type === 'approve'}
-        message="Do you want to approve this loan application?"
+        applicationId={application.applicationId}
+        status="Approved"
         onConfirm={() => {
           setShowConfirm({ type: null });
           pendingAction();
@@ -179,7 +181,8 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           </button>
           <ConfirmModal
             show={showConfirm.type === 'disburse'}
-            message="Do you want to disburse this loan?"
+            applicationId={application.applicationId}
+            status="Disbursed"
             onConfirm={() => {
               setShowConfirm({ type: null });
               pendingAction();

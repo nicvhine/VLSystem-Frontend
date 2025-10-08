@@ -279,12 +279,37 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                             }
                           }}
                         >
-                          <p className="text-sm text-gray-800">
-                            {translateNotificationMessage(notif, language)}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {new Date(notif.createdAt).toLocaleString()}
-                          </p>
+                          <div className="flex items-start gap-4 mb-2">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              {notif.actorProfilePic ? (
+                                <Image
+                                  src={notif.actorProfilePic}
+                                  alt={notif.actorName || 'Profile'}
+                                  width={48}
+                                  height={48}
+                                  className="object-cover w-full h-full"
+                                />
+                              ) : (
+                                <span className="text-gray-400 text-2xl font-bold">
+                                  {notif.actorName ? notif.actorName.charAt(0).toUpperCase() : 'U'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-col justify-center flex-1">
+                              <div className="font-semibold text-base text-gray-900 leading-tight">
+                                {notif.actorName || 'Unknown'}
+                              </div>
+                              <div className="text-xs text-gray-500 mb-2">
+                                {notif.actorRole ? notif.actorRole : 'loan officer'}
+                              </div>
+                              <div className="text-sm text-gray-800 mb-1">
+                                {translateNotificationMessage(notif, language)}
+                              </div>
+                              <div className="text-xs text-gray-400">
+                                {new Date(notif.createdAt).toLocaleString()}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       ))
                     ) : (
