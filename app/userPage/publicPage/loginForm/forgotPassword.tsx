@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
+import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
 import emailjs from 'emailjs-com';
 
 type Props = {
@@ -32,12 +33,13 @@ const sendOtpViaEmail = async (toEmail: string, otp: string) => {
     console.error('EmailJS error:', error);
   }
 };
-
 export default function ForgotPasswordModal({
   forgotRole,
   setForgotRole,
   setShowForgotModal,
 }: Props) {
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
   const [animateIn, setAnimateIn] = useState(false);
   const [step, setStep] = useState<'role' | 'account' | 'otp' | 'reset' | 'staff'>('role');
   const [username, setUsername] = useState('');
@@ -127,8 +129,12 @@ export default function ForgotPasswordModal({
         setResetLoading(false);
         return;
       }
-      alert('Password reset successfully!');
-      setShowForgotModal(false);
+      setSuccessMsg('Password reset successfully!');
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        setShowForgotModal(false);
+      }, 3000);
     } catch (err) {
       setError('Server error. Please try again.');
     } finally {
@@ -143,6 +149,9 @@ export default function ForgotPasswordModal({
 
   return (
     <div className={`fixed inset-0 bg-black/50 flex justify-center items-center z-50 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      {showSuccessModal && (
+        <SuccessModal isOpen={showSuccessModal} message={successMsg} onClose={() => setShowSuccessModal(false)} />
+      )}
       <div className={`bg-white w-[400px] rounded-lg shadow-lg p-6 transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         
         {/* Step 0: Choose Role */}

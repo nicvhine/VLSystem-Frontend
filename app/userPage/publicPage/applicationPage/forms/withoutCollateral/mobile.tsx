@@ -150,16 +150,20 @@ const closeModal = () => {
     const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
   
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
     const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
         const files = Array.from(e.target.files);
         files.forEach((file) => {
           if (!validTypes.includes(file.type)) {
-            alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+            setErrorMsg(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+            setShowErrorModal(true);
             return;
           }
           if (file.size > 2 * 1024 * 1024) {
-            alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+            setErrorMsg(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+            setShowErrorModal(true);
             return;
           }
           const img = new Image();
@@ -167,7 +171,8 @@ const closeModal = () => {
             const { width, height } = img;
             const aspectRatio = width / height;
             if (aspectRatio < 0.9 || aspectRatio > 1.1) {
-              alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+              setErrorMsg(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+              setShowErrorModal(true);
               return;
             }
             setPhoto2x2((prev) => [...prev, file]);
@@ -187,26 +192,29 @@ const closeModal = () => {
     const handleSubmit = async () => {
       
       if (!appLoanPurpose || !selectedLoan) {
-        alert(language === 'en'
+        setErrorMsg(language === 'en'
           ? "Please fill in all required fields."
           : "Palihug pun-a ang tanang kinahanglan nga field."
         );
+        setShowErrorModal(true);
         return;
       }
 
       if (uploadedFiles.length === 0) {
-        alert(language === 'en'
+        setErrorMsg(language === 'en'
           ? "Please upload at least one document."
           : "Palihug i-upload ang usa ka dokumento."
         );
+        setShowErrorModal(true);
         return;
       }
 
       if (photo2x2.length === 0) {
-        alert(language === "en"
+        setErrorMsg(language === "en"
           ? "Please upload your 2x2 photo."
           : "Palihug i-upload ang imong 2x2 nga litrato."
         );
+        setShowErrorModal(true);
         return;
       }
     
@@ -265,11 +273,24 @@ const closeModal = () => {
           setPhoto2x2([]);
         } else {
           const errorText = await res.text();
-          alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+          setErrorMsg(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+          setShowErrorModal(true);
         }
       } catch (error) {
-        alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+        setErrorMsg(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+        setShowErrorModal(true);
       }
+    {/* Error modal */}
+    {showErrorModal && (
+      <div className="fixed bottom-4 right-4 z-50">
+        <div className="bg-red-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+          {errorMsg}
+          <button className="ml-4 text-white" onClick={() => setShowErrorModal(false)}>
+            ×
+          </button>
+        </div>
+      </div>
+    )}
     };
     
   //Loan Amount

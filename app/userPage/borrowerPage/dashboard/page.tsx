@@ -1,5 +1,7 @@
 'use client';
 
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+
 type Payment = {
   _id?: string;
   referenceNumber: string;
@@ -117,6 +119,8 @@ export default function BorrowerDashboard() {
   const [paymentProgress, setPaymentProgress] = useState(0);
 
   const [paidPayments, setPaidPayments] = useState<any[]>([]);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
 
@@ -218,7 +222,8 @@ async function handlePay(collection: Collection) {
   const amountToPay = collection.periodAmount ?? 0;
 
   if (amountToPay <= 0) {
-    alert('This collection has no amount due.');
+    setErrorMsg('This collection has no amount due.');
+    setShowErrorModal(true);
     return;
   }
 
@@ -244,7 +249,8 @@ async function handlePay(collection: Collection) {
     if (!res.ok) {
       const errorData = await res.json();
       console.error('Backend error:', errorData);
-      alert(`Payment failed: ${errorData.error || 'Unknown error'}`);
+      setErrorMsg(`Payment failed: ${errorData.error || 'Unknown error'}`);
+      setShowErrorModal(true);
       return;
     }
 
@@ -252,11 +258,13 @@ async function handlePay(collection: Collection) {
     if (data.checkout_url) {
       window.location.href = data.checkout_url;
     } else {
-      alert('Failed to create payment.');
+      setErrorMsg('Failed to create payment.');
+      setShowErrorModal(true);
     }
   } catch (err) {
     console.error(err);
-    alert('Error connecting to payment gateway.');
+    setErrorMsg('Error connecting to payment gateway.');
+    setShowErrorModal(true);
   }
 }
 
@@ -536,7 +544,10 @@ async function handlePay(collection: Collection) {
         paidPayments={paidPayments}
       />
 
-
+      {/* Error modal */}
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
+      )}
 
       </div>
     </Borrower>

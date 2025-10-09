@@ -186,8 +186,7 @@ export default function SourceOfIncome({
                 <label className="block font-medium mb-2 text-gray-700">
                   {language === "en" ? "Employment Status:" : "Kahimtang sa Trabaho:"}
                 </label>
-                <input
-                  type="text"
+                <select
                   value={appEmploymentStatus}
                   onChange={(e) => setAppEmploymentStatus(e.target.value)}
                   className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
@@ -195,12 +194,13 @@ export default function SourceOfIncome({
                       ? "border-red-500"
                       : "border-gray-200"
                   }`}
-                  placeholder={
-                    language === "en"
-                      ? "Enter employment status"
-                      : "Isulod ang kahimtang sa trabaho"
-                  }
-                />
+                >
+                  <option value="">
+                    {language === "en" ? "Select status" : "Pilia ang kahimtang"}
+                  </option>
+                  <option value="regular">{language === "en" ? "Regular" : "Regular"}</option>
+                  <option value="irregular">{language === "en" ? "Irregular" : "Dili Regular"}</option>
+                </select>
               </div>
               <div>
                 <label className="block font-medium mb-2 text-gray-700">

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { FiX, FiFileText } from "react-icons/fi";
+import ErrorModal from '../../modals/errorModal/modal';
 import emailjs from "emailjs-com";
 
 const API_URL = "http://localhost:3001/loan-applications";
@@ -12,6 +13,8 @@ interface SetScheduleModalProps {
   application: any;
   setApplications: React.Dispatch<React.SetStateAction<any[]>>;
   authFetch: (url: string, options?: RequestInit) => Promise<any>;
+  showError: (msg: string) => void;
+  showSuccess: (msg: string) => void;
 }
 
 export default function SetScheduleModal({
@@ -20,9 +23,19 @@ export default function SetScheduleModal({
   application,
   setApplications,
   authFetch,
+  showError,
+  showSuccess,
 }: SetScheduleModalProps) {
   const [interviewDate, setInterviewDate] = useState("");
   const [interviewTime, setInterviewTime] = useState("");
+
+  // Calculate date restrictions
+  const today = new Date();
+  const appliedDate = application?.appliedDate ? new Date(application.appliedDate) : today;
+  const minDate = today.toISOString().split("T")[0];
+  const maxDateObj = new Date(appliedDate);
+  maxDateObj.setDate(maxDateObj.getDate() + 7);
+  const maxDate = maxDateObj.toISOString().split("T")[0];
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -60,8 +73,16 @@ export default function SetScheduleModal({
   if (!showModal) return null;
 
   const handleSaveSchedule = async () => {
+
     if (!interviewDate || !interviewTime) {
-      alert("Please select both date and time.");
+      showError("Please select both date and time.");
+      return;
+    }
+
+    // Validate time is between 09:00 and 18:00
+    const [hour, minute] = interviewTime.split(":").map(Number);
+    if (hour < 9 || hour > 18 || (hour === 18 && minute > 0)) {
+      showError("Interview time must be between 9:00 AM and 6:00 PM.");
       return;
     }
 
@@ -76,7 +97,11 @@ export default function SetScheduleModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ interviewDate, interviewTime }),
       });
-      if (!scheduleRes.ok) throw new Error("Failed to save schedule");
+      if (!scheduleRes.ok) {
+        showError("Could not schedule interview. Try again.");
+        setLoading(false);
+        return;
+      }
 
       // Update status to Pending
       await authFetch(`${API_URL}/${id}`, {
@@ -116,11 +141,11 @@ export default function SetScheduleModal({
         }
       }
 
-      alert("Interview scheduled.");
+      showSuccess("Interview scheduled.");
       onClose(); // <-- notify parent to close modal
     } catch (err) {
       console.error(err);
-      alert("Could not schedule interview. Try again.");
+      showError("Unexpected error. Try again.");
     } finally {
       setLoading(false);
     }
@@ -154,16 +179,21 @@ export default function SetScheduleModal({
               type="date"
               value={interviewDate}
               onChange={(e) => setInterviewDate(e.target.value)}
+              min={minDate}
+              max={maxDate}
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-red-500"
             />
           </label>
 
+                {/* ErrorModal is now rendered in parent page */}
           <label className="block">
             <span className="text-sm text-gray-700">Interview Time</span>
             <input
               type="time"
               value={interviewTime}
               onChange={(e) => setInterviewTime(e.target.value)}
+              min="09:00"
+              max="18:00"
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-red-500"
             />
           </label>

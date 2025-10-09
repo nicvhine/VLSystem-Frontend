@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from "react";
+import ErrorModal from '../../../../../commonComponents/modals/errorModal/modal';
 
 interface SourceOfIncomeProps {
   language: 'en' | 'ceb';
@@ -27,6 +28,18 @@ interface SourceOfIncomeProps {
 }
 
 export default function SourceOfIncome({
+  // Error modal state for date validation
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorModalMessage, setErrorModalMessage] = useState("");
+  // ...existing code...
+  {/* Error Modal for date validation */}
+  {errorModalOpen && (
+    <ErrorModal
+      isOpen={errorModalOpen}
+      message={errorModalMessage}
+      onClose={() => setErrorModalOpen(false)}
+    />
+  )}
   language,
   sourceOfIncome,
   setSourceOfIncome,
@@ -37,52 +50,48 @@ export default function SourceOfIncome({
   appDateStarted,
   setAppDateStarted,
   appBusinessLoc,
-  setAppBusinessLoc,
-  appMonthlyIncome,
-  setAppMonthlyIncome,
-  appOccupation,
-  setAppOccupation,
-  occupationError,
-  setOccupationError,
-  appEmploymentStatus,
-  setAppEmploymentStatus,
-  appCompanyName,
-  setAppCompanyName,
-}: SourceOfIncomeProps) {
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-        <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-        {language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita'}
-      </h4>
-
-      {/* Radio Buttons */}
-      <div className="flex gap-6 mb-4">
-        {[
-          { value: 'business', label: language === 'en' ? 'Business Owner' : 'Tag-iya sa Negosyo' },
-          { value: 'employed', label: language === 'en' ? 'Employed' : 'Trabahante' },
-        ].map(({ value, label }) => (
-          <label key={value} className="flex items-center">
-            <input
-              type="radio"
-              name="employmentType"
-              value={value}
-              checked={sourceOfIncome === value}
-              onChange={(e) => setSourceOfIncome(e.target.value)}
-              className="mr-2 text-red-600 focus:ring-red-500"
-            />
-            <span className="text-gray-700">{label}</span>
-          </label>
-        ))}
-      </div>
-
-      {/* Conditional Inputs */}
-      {sourceOfIncome === 'business' ? (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block font-medium mb-2 text-gray-700">
-              {language === 'en' ? 'Type of Business:' : 'Matang sa Negosyo:'}
+  export default function SourceOfIncome(props: SourceOfIncomeProps) {
+    const {
+      language,
+      sourceOfIncome,
+      setSourceOfIncome,
+      appTypeBusiness,
+      setAppTypeBusiness,
+      appBusinessName,
+      setAppBusinessName,
+      appDateStarted,
+      setAppDateStarted,
+      appBusinessLoc,
+      setAppBusinessLoc,
+      appMonthlyIncome,
+      setAppMonthlyIncome,
+      appOccupation,
+      setAppOccupation,
+      occupationError,
+      setOccupationError,
+      appEmploymentStatus,
+      setAppEmploymentStatus,
+      appCompanyName,
+      setAppCompanyName,
+    } = props;
+    // Error modal state for date validation
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const [errorModalMessage, setErrorModalMessage] = useState("");
             </label>
+    return (
+      <>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          {/* ...existing JSX... */}
+        </div>
+        {errorModalOpen && (
+          <ErrorModal
+            isOpen={errorModalOpen}
+            message={errorModalMessage}
+            onClose={() => setErrorModalOpen(false)}
+          />
+        )}
+      </>
+    );
             <input
               type="text"
               value={appTypeBusiness}
@@ -112,15 +121,27 @@ export default function SourceOfIncome({
                 const selectedDate = e.target.value;
                 const today = new Date().toISOString().split("T")[0];
                 if (selectedDate > today) {
-                  alert(
-                    language === "en"
-                      ? "Date cannot be in the future."
-                      : "Ang petsa dili mahimong sa umaabot."
-                  );
+                  setErrorModalMessage(language === "en"
+                    ? "Date cannot be in the future."
+                    : "Ang petsa dili mahimong sa umaabot.");
+                  setErrorModalOpen(true);
                   setAppDateStarted("");
                 } else {
                   setAppDateStarted(selectedDate);
                 }
+// Add error modal state and modal at top-level of component
+const [errorModalOpen, setErrorModalOpen] = useState(false);
+const [errorModalMessage, setErrorModalMessage] = useState("");
+
+// ...existing code...
+
+{errorModalOpen && (
+  <ErrorModal
+    isOpen={errorModalOpen}
+    message={errorModalMessage}
+    onClose={() => setErrorModalOpen(false)}
+  />
+)}
               }}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               max={new Date().toISOString().split("T")[0]}
@@ -213,6 +234,13 @@ export default function SourceOfIncome({
               min={0}
               value={appMonthlyIncome}
               onChange={(e) => setAppMonthlyIncome(parseFloat(e.target.value))}
+      {errorModalOpen && (
+        <ErrorModal
+          isOpen={errorModalOpen}
+          message={errorModalMessage}
+          onClose={() => setErrorModalOpen(false)}
+        />
+      )}
               className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
               placeholder={language === 'en' ? 'Enter your monthly income' : 'Isulod ang buwanang kita'}
             />
@@ -220,5 +248,13 @@ export default function SourceOfIncome({
         </div>
       ) : null}
     </div>
+      {errorModalOpen && (
+        <ErrorModal
+          isOpen={errorModalOpen}
+          message={errorModalMessage}
+          onClose={() => setErrorModalOpen(false)}
+        />
+      )}
+    </>
   );
 }

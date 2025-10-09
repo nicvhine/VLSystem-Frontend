@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 export default function VerifySMS() {
   const router = useRouter();
   const [code, setCode] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleVerify = () => {
     const savedCode = sessionStorage.getItem('verificationCode');
@@ -34,7 +36,8 @@ export default function VerifySMS() {
           router.push('/');
       }
     } else {
-      alert('Incorrect verification code.');
+      setErrorMsg('Incorrect verification code.');
+      setShowErrorModal(true);
     }
   };
 
@@ -54,6 +57,16 @@ export default function VerifySMS() {
       >
         Verify
       </button>
+      {showErrorModal && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="bg-red-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+            {errorMsg}
+            <button className="ml-4 text-white" onClick={() => setShowErrorModal(false)}>
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

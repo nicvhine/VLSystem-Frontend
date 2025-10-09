@@ -10,6 +10,7 @@ import useAccountSettings from '../../../commonComponents/navbarComponents/accou
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
 import { Bell } from 'lucide-react';
+import { capitalizeWords } from '../../../commonComponents/modals/loanAgreement/logic';
 
 export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -272,7 +273,7 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                                 );
                               }
                               if (notif.applicationId) {
-                                router.push(`/components/manager/applications/${notif.applicationId}`);
+                                router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
                               }
                             } catch (err) {
                               console.error('Failed to mark notification as read:', err);
@@ -297,10 +298,10 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                             </div>
                             <div className="flex flex-col justify-center flex-1">
                               <div className="font-semibold text-base text-gray-900 leading-tight">
-                                {notif.actorName || 'Unknown'}
+                                {capitalizeWords(notif.actorName) || 'Unknown'}
                               </div>
                               <div className="text-xs text-gray-500 mb-2">
-                                {notif.actorRole ? notif.actorRole : 'loan officer'}
+                                {notif.actorRole ? capitalizeWords(notif.actorRole) : 'Loan Officer'}
                               </div>
                               <div className="text-sm text-gray-800 mb-1">
                                 {translateNotificationMessage(notif, language)}

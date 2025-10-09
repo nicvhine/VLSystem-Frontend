@@ -19,6 +19,8 @@ interface SMSModalProps {
 
 function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
   const [codeInput, setCodeInput] = useState('');
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   if (!isVisible) return null;
 
@@ -41,7 +43,8 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
 
       router.push(redirectMap[role || ''] || '/');
     } else {
-      alert('Incorrect verification code.');
+      setErrorMsg('Incorrect verification code.');
+      setShowErrorModal(true);
     }
   };
 
@@ -62,6 +65,16 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
         >
           Verify
         </button>
+        {showErrorModal && (
+          <div className="fixed bottom-4 right-4 z-50">
+            <div className="bg-red-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+              {errorMsg}
+              <button className="ml-4 text-white" onClick={() => setShowErrorModal(false)}>
+                ×
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -78,11 +91,13 @@ export default function LoginFormWithSMS({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Pass setShowSMSModal so loginHandler can open it
-    await loginHandler({ username, password, onClose, router, setShowSMSModal });
+    // Pass setShowSMSModal and error modal callbacks to loginHandler
+    await loginHandler({ username, password, onClose, router, setShowSMSModal, setShowErrorModal, setErrorMsg });
   };
 
   return (
@@ -138,6 +153,17 @@ export default function LoginFormWithSMS({
 
       {/* SMS verification modal */}
       <SMSModal isVisible={showSMSModal} onClose={() => setShowSMSModal(false)} router={router} />
+      {/* Error modal */}
+      {showErrorModal && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <div className="bg-red-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
+            {errorMsg}
+            <button className="ml-4 text-white" onClick={() => setShowErrorModal(false)}>
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
