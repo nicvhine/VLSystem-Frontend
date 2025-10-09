@@ -1,5 +1,7 @@
 'use client';
 
+import { useParams } from 'next/navigation';
+
 type Payment = {
   _id?: string;
   referenceNumber: string;
@@ -93,7 +95,7 @@ interface Loan {
   principal: number;
   interestRate: number;
   termsInMonths: number;
-  loanType: string;
+  type?: string;
   interestAmount: string; 
   totalInterest: string;
   monthlyDue: string;
@@ -121,24 +123,37 @@ export default function BorrowerDashboard() {
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
 
   // Fetch active loan
+  const { loanId } = useParams(); // capture loanId from /details/:loanId route
+
   useEffect(() => {
     if (!borrowersId) return;
-    async function fetchActiveLoan() {
+
+    async function fetchLoan() {
       setLoading(true);
       setError('');
+
       try {
-        const res = await fetch(`http://localhost:3001/loans/borrower-loans-details/${borrowersId}`);
-        if (!res.ok) throw new Error('No active loan found');
+        let res;
+
+        if (loanId) {
+          res = await fetch(`http://localhost:3001/loans/details/${loanId}`);
+        } else {
+          res = await fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`);
+        }
+
+        if (!res.ok) throw new Error('No loan found');
         const data: Loan = await res.json();
         setActiveLoan(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Error fetching active loan');
+        setError(err instanceof Error ? err.message : 'Error fetching loan');
       } finally {
         setLoading(false);
       }
     }
-    fetchActiveLoan();
-  }, [borrowersId]);
+
+    fetchLoan();
+  }, [borrowersId, loanId]);
+
   
 // Fetch all payments for the borrower
 useEffect(() => {
@@ -169,8 +184,6 @@ useEffect(() => {
 
   fetchPayments();
 }, [borrowersId]);
-
-
 
    // Fetch collections
    useEffect(() => {
@@ -304,7 +317,7 @@ async function handlePay(collection: Collection) {
               </div>
               <div className="flex items-center group transition">
                 <span className="font-medium text-gray-500">Loan Type</span>
-                <span className="ml-auto font-semibold text-gray-800">{activeLoan?.loanType || 'N/A'}</span>
+                <span className="ml-auto font-semibold text-gray-800">{activeLoan?.type || 'N/A'}</span>
               </div>
               <div className="flex items-center group transition">
                 <span className="font-medium text-gray-500">Date Disbursed</span>

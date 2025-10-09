@@ -199,7 +199,6 @@ export function useProfileDropdownLogic(
     localStorage.setItem('notificationPreferences', JSON.stringify(updatedPrefs));
   };
 
-  // ✅ Full async function (fixes "await only in async" error)
   const handleAccountSettingsUpdate = async () => {
     setPasswordError('');
     setPhoneError('');
@@ -242,13 +241,11 @@ export function useProfileDropdownLogic(
 
         localStorage.setItem('email', editingEmail);
 
-        // ✅ Show success modal + success message
         setShowSuccessModal(true);
         setSettingsSuccess('✔ Email changed successfully.');
         setTimeout(() => setSettingsSuccess(''), 4000); // auto-hide after 4s
       }
 
-      // PHONE UPDATE
       if (isEditingPhoneField) {
         const phoneRes = await fetch(
           `http://localhost:3001/users/${userId}/update-phoneNumber`,
