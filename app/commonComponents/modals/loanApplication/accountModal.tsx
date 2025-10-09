@@ -15,7 +15,6 @@ interface Application {
   status?: string;
 }
 
-//EMAIL WITH CREDENTIALS 
 const sendEmail = async ({
   to_name,
   email,
@@ -46,14 +45,14 @@ export default forwardRef(function AccountModal(_, ref) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [generatedUsername, setGeneratedUsername] = useState("");
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState("");
+  const [generatedUsername, setGeneratedUsername] = useState<string>(""); 
 
   useImperativeHandle(ref, () => ({
     openModal(app: Application) {
       setSelectedApp(app);
-      setGeneratedUsername(app.appName?.toLowerCase().replace(/\s+/g, "") + "123");
+      setGeneratedUsername(""); 
       setIsVisible(true);
       setTimeout(() => setIsAnimating(true), 10);
     },
@@ -65,6 +64,7 @@ export default forwardRef(function AccountModal(_, ref) {
       setIsVisible(false);
       setSelectedApp(null);
       setSelectedCollector("");
+      setGeneratedUsername("");
     }, 150);
   };
 
@@ -96,40 +96,38 @@ export default forwardRef(function AccountModal(_, ref) {
     }
 
     try {
-      // Create borrower account
       const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: generatedUsername,
           name: selectedApp.appName,
           role: "borrower",
           applicationId: selectedApp.applicationId,
           assignedCollector: selectedCollector,
         }),
       });
+
       const borrowerData = await borrowerRes.json();
       if (!borrowerRes.ok) throw new Error(borrowerData?.error);
 
-      // Update application status
+      setGeneratedUsername(borrowerData.borrower.username);
+
       await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "Active" }),
       });
 
-      // Generate loan
       const loanResponse = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
         method: "POST",
       });
       const loanData = await loanResponse.json();
       if (!loanResponse.ok) throw new Error(loanData?.error);
 
-      // Send email
       await sendEmail({
         to_name: selectedApp.appName,
         email: selectedApp.appEmail,
-        borrower_username: generatedUsername,
+        borrower_username: borrowerData.borrower.username,
         borrower_password: borrowerData.tempPassword,
       });
 
@@ -160,10 +158,12 @@ export default forwardRef(function AccountModal(_, ref) {
         <p className="mb-2 text-black">
           <strong>Name:</strong> {selectedApp?.appName}
         </p>
-        <p className="mb-4 text-black">
-          <strong>Generated Username:</strong>{" "}
-          <span className="text-red-600">{generatedUsername}</span>
-        </p>
+        {generatedUsername && (
+          <p className="mb-4 text-black">
+            <strong>Generated Username:</strong>{" "}
+            <span className="text-red-600">{generatedUsername}</span>
+          </p>
+        )}
 
         <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
         <select
