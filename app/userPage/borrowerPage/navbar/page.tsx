@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useProfilePic from '../../../commonComponents/navbarComponents/profilePic';
-import { loanOfficerNavItems } from '../../../commonComponents/navbarComponents/navItems'
 import useAccountSettings from '../../../commonComponents/navbarComponents/accountSettings';
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
@@ -270,9 +269,9 @@ const {
           </div>
         </div>
 
-        {isMobileMenuOpen && (
-            <MobileMenu navItems={loanOfficerNavItems} language={language} setLanguage={setLanguage} />
-        )}
+        {/* {isMobileMenuOpen && (
+            <MobileMenu navItems={getLoanOfficerNavItems} language={language} setLanguage={setLanguage} />
+        )} */}
 
       </div>
     </div>
