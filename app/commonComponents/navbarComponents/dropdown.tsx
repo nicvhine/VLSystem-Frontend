@@ -24,7 +24,6 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown(props: ProfileDropdownProps) {
-  // Destructure props first
   const {
     name,
     email,
@@ -83,8 +82,6 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     smsVerificationSent,
     sendSmsVerificationCode,
     verifySmsCode,
-  // darkMode,
-  // handleSetDarkMode,
   } = useProfileDropdownLogic(setIsEditing);
 
   return (
