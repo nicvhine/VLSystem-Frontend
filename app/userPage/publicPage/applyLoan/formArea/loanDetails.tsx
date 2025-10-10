@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 
+// Type definition for loan options
 type LoanOption = {
   amount: number;
   months?: number;
   interest: number;
 };
 
+// Props interface for LoanDetails component
 interface LoanDetailsProps {
   language: "en" | "ceb";
   loanType: "with" | "without" | "open-term";
@@ -17,6 +19,17 @@ interface LoanDetailsProps {
   missingFields?: string[];
 }
 
+/**
+ * Loan details component for selecting loan options and purpose
+ * Displays different loan options based on loan type (with/without collateral, open-term)
+ * @param language - Current language setting (English or Cebuano)
+ * @param loanType - Type of loan (with collateral, without collateral, or open-term)
+ * @param appLoanPurpose - Current loan purpose value
+ * @param setAppLoanPurpose - Function to set loan purpose
+ * @param onLoanSelect - Callback function when a loan option is selected
+ * @param missingFields - Array of missing field names for validation
+ * @returns JSX element containing the loan details form section
+ */
 export default function LoanDetails({
   language,
   loanType,
@@ -27,7 +40,7 @@ export default function LoanDetails({
   const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
-  // Loan options
+  // Loan options for different loan types
   const withCollateralOptions: LoanOption[] = [
     { amount: 20000, months: 8, interest: 7 },
     { amount: 50000, months: 10, interest: 5 },

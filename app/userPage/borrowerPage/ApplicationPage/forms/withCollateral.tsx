@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react";
 import Common from "./common";
 
+// API endpoint for loan applications with collateral
 const API_URL = "http://localhost:3001/loan-applications/with";
 
+// Type definition for loan options
 type LoanOption = {
   amount: number;
   months: number;
   interest: number;
 };
 
+// Available loan options for with collateral loans
 const loanOptions: LoanOption[] = [
   { amount: 20000, months: 8, interest: 7 },
   { amount: 50000, months: 10, interest: 5 },
@@ -20,6 +23,7 @@ const loanOptions: LoanOption[] = [
   { amount: 500000, months: 60, interest: 1.5 },
 ];
 
+// Props interface for WithCollateralForm component
 interface WithCollateralFormProps {
   language: 'en' | 'ceb';
   maritalStatus?: string;
@@ -33,9 +37,16 @@ interface WithCollateralFormProps {
   reloanData?: any;
 }
 
+/**
+ * Form component for loan applications with collateral
+ * Handles form state management and submission for collateral-based loans
+ * @param props - Component props including language and form state handlers
+ * @returns JSX element containing the with collateral loan application form
+ */
 export default function WithCollateralForm(props: WithCollateralFormProps) {
   const { language = 'en', reloanData, ...rest } = props;
-  // Common form states
+  
+  // Common form states for applicant information
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
   const [appContact, setAppContact] = useState("");

@@ -11,18 +11,31 @@ import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
 import headTranslations from '../components/translation';
 
+/**
+ * Navbar component for head/administrator pages
+ * Provides navigation, profile management, and language switching functionality
+ * @param isBlurred - Optional prop to apply blur effect to the navbar
+ * @returns JSX element containing the head navbar
+ */
 export default function HeadNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
+  // UI state management
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Language state with localStorage persistence
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("headLanguage") as 'en' | 'ceb') || 'en';
     }
     return 'en';
   });
+  
+  // Navigation and routing
   const pathname = usePathname();
   const router = useRouter();
+  
+  // User profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');

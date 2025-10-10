@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ConfirmModal from "@/app/commonComponents/modals/confirmModal/ConfirmModal";
 
+// Props interface for CreateUserModal component
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -17,11 +18,20 @@ interface CreateUserModalProps {
   ) => void;
 }
 
+/**
+ * Modal component for creating new users
+ * Handles form validation, user input, and confirmation before creation
+ * @param isOpen - Boolean to control modal visibility
+ * @param onClose - Callback function to close the modal
+ * @param onCreate - Callback function to create the user with provided data
+ * @returns JSX element containing the create user modal
+ */
 export default function CreateUserModal({
   isOpen,
   onClose,
   onCreate,
 }: CreateUserModalProps) {
+  // Form state for new user data
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -29,7 +39,11 @@ export default function CreateUserModal({
     role: "head" as const,
     status: "Active" as const,
   });
+  
+  // Form validation errors
   const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
+  
+  // Modal state management
   const [showConfirm, setShowConfirm] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);

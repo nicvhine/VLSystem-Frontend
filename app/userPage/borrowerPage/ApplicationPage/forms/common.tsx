@@ -10,7 +10,9 @@ import axios from "axios";
 //   { ssr: false }
 // );
 
+// Props interface for Common form component
 interface CommonProps {
+  // Applicant personal information
   appName: string;
   setAppName: React.Dispatch<React.SetStateAction<string>>;
   appDob: string;
@@ -23,10 +25,14 @@ interface CommonProps {
   setAppMarital: React.Dispatch<React.SetStateAction<string>>;
   appChildren: number;
   setAppChildren: React.Dispatch<React.SetStateAction<number>>;
+  
+  // Spouse information
   appSpouseName: string;
   setAppSpouseName: React.Dispatch<React.SetStateAction<string>>;
   appSpouseOccupation: string;
   setAppSpouseOccupation: React.Dispatch<React.SetStateAction<string>>;
+  
+  // Address and location information
   appAddress: string;
   setAppAddress: React.Dispatch<React.SetStateAction<string>>;
   appTypeBusiness: string;
@@ -35,18 +41,22 @@ interface CommonProps {
   setAppDateStarted: React.Dispatch<React.SetStateAction<string>>;
   appBusinessLoc: string;
   setAppBusinessLoc: React.Dispatch<React.SetStateAction<string>>;
+  
+  // Income and employment information
   appMonthlyIncome: number;
   setAppMonthlyIncome: React.Dispatch<React.SetStateAction<number>>;
   appOccupation: string;
   setAppOccupation: React.Dispatch<React.SetStateAction<string>>;
-  appReferences: { name: string; contact: string; relation: string }[];
-  setAppReferences: React.Dispatch<React.SetStateAction<{ name: string; contact: string; relation: string }[]>>;
   appEmploymentStatus: string;
   setAppEmploymentStatus: React.Dispatch<React.SetStateAction<string>>;
   appCompanyName: string;
   setAppCompanyName: React.Dispatch<React.SetStateAction<string>>;
   sourceOfIncome: string;
   setSourceOfIncome: React.Dispatch<React.SetStateAction<string>>;
+  
+  // References and language
+  appReferences: { name: string; contact: string; relation: string }[];
+  setAppReferences: React.Dispatch<React.SetStateAction<{ name: string; contact: string; relation: string }[]>>;
   language: 'en' | 'ceb';
   reloanData?: any; 
 };

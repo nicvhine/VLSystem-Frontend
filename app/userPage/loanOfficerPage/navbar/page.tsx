@@ -11,9 +11,18 @@ import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
 import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown';
 import loanOfficerTranslations from '../components/translation';
 
+/**
+ * Navbar component for loan officer pages
+ * Provides navigation, profile management, and language switching functionality
+ * @param isBlurred - Optional prop to apply blur effect to the navbar
+ * @returns JSX element containing the loan officer navbar
+ */
 export default function LoanOfficerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
+  // UI state management
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Language state with localStorage persistence
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb') || 'en';
@@ -22,9 +31,11 @@ export default function LoanOfficerNavbar({ isBlurred = false }: { isBlurred?: b
   });
   const [navItems, setNavItems] = useState(getLoanOfficerNavItems(language));
 
+  // Navigation and routing
   const pathname = usePathname();
   const router = useRouter();
   
+  // User profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
