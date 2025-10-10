@@ -2,48 +2,33 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import landingPageTranslation from '@/app/commonComponents/translations/landingPage';
 
 export interface FeatureSectionProps {
   language: 'en' | 'ceb';
 }
 
-const features = [
-  {
-    title: {
-      en: 'Quick Processing',
-      ceb: 'Dali nga Pagproseso',
-    },
-    description: {
-      en: 'Experience lightning-fast loan approvals and minimal paperwork.',
-      ceb: 'Masinati ang dali nga pag-apruba sa loan ug gamay ra nga papeles.',
-    },
-    icon: '⚡',
-  },
-  {
-    title: {
-      en: 'Secure Platform',
-      ceb: 'Luwas nga Plataporma',
-    },
-    description: {
-      en: 'Your data and transactions are protected with top-grade security.',
-      ceb: 'Ang imong datos ug transaksyon gipanalipdan sa labing taas nga seguridad.',
-    },
-    icon: '🔒',
-  },
-  {
-    title: {
-      en: 'Easy Loan Tracking',
-      ceb: 'Masayon nga Pagsubay sa Loan',
-    },
-    description: {
-      en: 'Monitor your applications, loans, and payments anytime.',
-      ceb: 'Masayon nga pagsubay sa imong aplikasyon, utang, ug bayad bisan kanus-a.',
-    },
-    icon: '📍',
-  },
-];
-
 const FeatureSection: React.FC<FeatureSectionProps> = ({ language }) => {
+  const t = landingPageTranslation[language];
+
+  const features = [
+    {
+      title: t.f1Title,
+      description: t.f1Description,
+      icon: '⚡',
+    },
+    {
+      title: t.f2Title,
+      description: t.f2Description,
+      icon: '🔒',
+    },
+    {
+      title: t.f3Title,
+      description: t.f3Description,
+      icon: '📍',
+    },
+  ];
+
   return (
     <section className="py-24 bg-gradient-to-br from-white to-gray-100">
       <div className="mx-auto px-6">
@@ -71,7 +56,7 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({ language }) => {
               viewport={{ once: true }}
               className="bg-white rounded-2xl p-8 shadow-md hover:shadow-xl transition-transform transform hover:-translate-y-2 duration-300"
             >
-              {/* Icon with continuous floating animation */}
+              {/* Icon */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -81,10 +66,10 @@ const FeatureSection: React.FC<FeatureSectionProps> = ({ language }) => {
               </motion.div>
 
               <h3 className="text-2xl font-semibold text-gray-800 mb-3">
-                {feature.title[language]}
+                {feature.title}
               </h3>
               <p className="text-gray-600 leading-relaxed">
-                {feature.description[language]}
+                {feature.description}
               </p>
             </motion.div>
           ))}

@@ -42,13 +42,32 @@ export default function AgentPage() {
 
   const fetchAgents = async () => {
     try {
-      const res = await fetch("http://localhost:3001/agents");
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found in localStorage");
+        return;
+      }
+  
+      const res = await fetch("http://localhost:3001/agents", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, 
+        },
+      });
+  
+      if (!res.ok) {
+        const errMsg = await res.text();
+        throw new Error(`Failed to fetch agents: ${res.status} ${errMsg}`);
+      }
+  
       const data = await res.json();
       setAgents(data.agents || []);
     } catch (err) {
       console.error("Failed to fetch agents", err);
     }
   };
+  
 
   useEffect(() => {
     const currentRole = getUserRole();
@@ -85,11 +104,22 @@ export default function AgentPage() {
     setError("");
 
     try {
+      const token = localStorage.getItem("token"); 
+      if (!token) {
+        setError("No token found. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch("http://localhost:3001/agents", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json", 
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ name: newAgentName, phoneNumber: newAgentPhone }),
       });
+
       const data = await res.json();
 
       if (!res.ok) {
