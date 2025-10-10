@@ -1,7 +1,6 @@
 'use client';
 
 import { FC, useEffect, useState } from "react";
-// Error modal for missing agent
 function ErrorModal({ message, onClose }: { message: string; onClose: () => void }) {
   const [animateIn, setAnimateIn] = useState(false);
   useEffect(() => {

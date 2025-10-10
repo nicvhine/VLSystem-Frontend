@@ -11,8 +11,8 @@ const AboutSection: React.FC<AboutSectionProps> = ({ language }) => {
         </h2>
         <p className="text-lg text-gray-600 leading-relaxed mb-12">
           {language === 'en'
-            ? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.'
-            : 'Ang Vistula Lending Corporation nagtinguha sa paghatag og kasaligan ug sayon nga serbisyo sa pagpahulam alang sa tanan. Ang among plataporma naghatag og oportunidad ug kasaligan nga serbisyo pinasikad sa integridad ug kustomer nga sentro nga pamaagi.'}
+            ? 'Vistula Lending Corporation strives to provide reliable and convenient lending services for everyone. Our platform creates opportunities and delivers dependable service founded on integrity and a customer-centered approach. We aim to build trust and lasting relationships that linger — ensuring every client experiences care, transparency, and genuine support even beyond each transaction.'
+            : 'Ang Vistula Lending Corporation nagtinguha sa paghatag og kasaligan ug sayon nga serbisyo sa pagpahulam para sa tanan. Ang among plataporma nagmugna og oportunidad ug kasaligan nga serbisyo nga pinasikad sa integridad ug kustomer-sentro nga pamaagi. Nagtinguha kami sa pagtukod og pagsalig ug dugay nga relasyon nga magpabilin — aron matag kliyente makasinati sa pag-atiman, kasinsero, ug kasaligan nga suporta bisan human sa matag transaksyon.'}
         </p>
 
         <div className="mt-16">

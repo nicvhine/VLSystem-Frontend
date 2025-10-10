@@ -88,6 +88,10 @@ export default function LoanDetails({
     setSelectedLoan(match);
     onLoanSelect({ ...match, amount });
   };
+
+
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount);
   
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
@@ -176,7 +180,7 @@ export default function LoanDetails({
 
       {/* Sample Calculation */}
       {customLoanAmount && selectedLoan && (
-        <div className="mt-6 border-t pt-4">
+        <div className="mt-6 border-t pt-4 text-gray-300">
           <h5 className="text-md font-semibold mb-3 text-gray-700">
             {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
           </h5>
@@ -200,25 +204,25 @@ export default function LoanDetails({
             const netProceeds = loanAmount - serviceCharge;
 
             return (
-              <div className="space-y-2 text-gray-700">
+              <div className="space-y-2 text-black">
                 <p>
                   <span className="font-medium">{language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}</span>{" "}
                   ₱{loanAmount.toLocaleString()}
                 </p>
-                {loanType !== "open-term" && (
-                  <p>
-                    <span className="font-medium">{language === "en" ? "Monthly Payment:" : "Bulan nga Bayad:"}</span>{" "}
-                    ₱{monthlyPayment.toFixed(2)}
-                  </p>
-                )}
                 <p>
                   <span className="font-medium">{language === "en" ? "Service Charge:" : "Serbisyo nga Bayad:"}</span>{" "}
-                  ₱{serviceCharge.toFixed(2)}
+                  {formatCurrency(serviceCharge)}
                 </p>
                 <p className="text-green-700 font-semibold">
                   <span>{language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}</span>{" "}
-                  ₱{netProceeds.toFixed(2)}
+                  {formatCurrency(netProceeds)}
                 </p>
+                {loanType !== "open-term" && (
+                  <p>
+                    <span className="font-medium">{language === "en" ? "Monthly Payment:" : "Bulan nga Bayad:"}</span>{" "}
+                    {formatCurrency(monthlyPayment)}
+                  </p>
+                )}
               </div>
             );
           })()}

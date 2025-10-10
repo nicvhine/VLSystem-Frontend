@@ -8,6 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { Navigation, Autoplay, EffectFade } from 'swiper/modules';
 import { motion } from 'framer-motion';
+import landingPageTranslation from '@/app/commonComponents/translations/landingPage'; 
 
 interface HeroSectionProps {
   language?: 'en' | 'ceb';
@@ -26,10 +27,18 @@ export default function HeroSection({
   const isTrackOpen = parentIsTrackOpen !== undefined ? parentIsTrackOpen : localIsTrackOpen;
   const setIsTrackOpen = parentSetIsTrackOpen || setLocalIsTrackOpen;
 
+  const t = landingPageTranslation[language];
+
   const slides = [
-    { img: '../image1.jpg', alt: 'Slide 1' },
-    { img: '../image2.jpg', alt: 'Slide 2' },
-    { img: '../image3.jpg', alt: 'Slide 3' },
+    { img: '../landingPagePics/image1.jpg', alt: 'Slide 1' },
+    { img: '../landingPagePics/eq2.jpg', alt: 'Slide 2' },
+    { img: '../landingPagePics/eq1.jpg', alt: 'Slide 3' },
+    { img: '../landingPagePics/eq3.jpg', alt: 'Slide 4' },
+    { img: '../landingPagePics/eq4.jpg', alt: 'Slide 5' },
+    { img: '../landingPagePics/image2.jpg', alt: 'Slide 6' },
+    { img: '../landingPagePics/eq5.jpg', alt: 'Slide 7' },
+    { img: '../landingPagePics/image3.jpg', alt: 'Slide 8' },
+    { img: '../landingPagePics/eq6.jpg', alt: 'Slide 9' },
   ];
 
   return (
@@ -47,22 +56,16 @@ export default function HeroSection({
               👋
             </motion.span>
             <span className="text-red-600 font-semibold">
-              {language === 'en' ? 'Welcome to Vistula Lending Corporation' : 'Maayong Pag-abot sa Vistula Lending Corporation'}
+              {t.topHeader}
             </span>            
           </p>
 
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-4 select-none">
-            {language === 'en' ? (
-              <>Empowering Lives <br /> Through Better Lending</>
-            ) : (
-              <>Paghatag Kusog sa Kinabuhi Pinaagi sa Mas Maayong Pahulam</>
-            )}
+            {t.header}
           </h1>
+
           <p className="text-xl text-gray-700 select-none">
-            {language === 'en' 
-              ? 'Experience seamless lending with our cutting-edge platform — fast, secure, and tailored to your needs.'
-              : 'Masinati ang walay kalisod nga pahulam sa among modernong plataporma — dali, luwas, ug gidisenyo alang sa imong panginahanglan.'
-            }
+            {t.subheader}
           </p>
 
           <div className="flex flex-col mt-10 sm:flex-row items-center justify-center md:justify-start gap-4">
@@ -70,51 +73,51 @@ export default function HeroSection({
               href="/userPage/publicPage/applyLoan"
               className="bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition focus:outline-none active:bg-red-600"
             >
-              {language === 'en' ? 'Apply Now' : 'Mag-aplay Karon'}
+              {t.applyBtn}
             </Link>
 
             <button
               onClick={() => setIsTrackOpen(true)}
               className="bg-gray-600 text-white px-6 py-3 rounded-full font-medium hover:bg-gray-700 transition focus:outline-none active:bg-gray-800"
             >
-              {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
+              {t.trackBtn}
             </button>
           </div>
         </div>
 
         {/* IMAGE SLIDER */}
-        <div className="w-full md:w-2/6 relative">
-        <div className="relative w-full h-64 sm:h-80 md:h-[400px] lg:h-[450px]">
-          <Swiper
-            modules={[Navigation, Autoplay, EffectFade]}
-            effect="fade"
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            loop
-            navigation={{
-              nextEl: '.custom-next',
-              prevEl: '.custom-prev',
-            }}
-            className="w-full rounded-2xl shadow-2xl overflow-hidden"
-          >
-            {slides.map((slide, index) => (
-              <SwiperSlide key={index} className="relative">
-                <img
-                  src={slide.img}
-                  alt={slide.alt}
-                  className="w-full h-64 sm:h-80 md:h-96 lg:h-[400px] object-cover select-none"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+        <div className="w-full md:w-3/6 relative">
+          <div className="relative w-full h-64 sm:h-80 md:h-[400px] lg:h-[450px]">
+            <Swiper
+              modules={[Navigation, Autoplay, EffectFade]}
+              effect="fade"
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              loop
+              navigation={{
+                nextEl: '.custom-next',
+                prevEl: '.custom-prev',
+              }}
+              className="w-full rounded-2xl shadow-2xl overflow-hidden"
+            >
+              {slides.map((slide, index) => (
+                <SwiperSlide key={index} className="relative">
+                  <img
+                    src={slide.img}
+                    alt={slide.alt}
+                    className="w-full h-64 sm:h-80 md:h-96 lg:h-[400px] object-cover select-none"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
+                </SwiperSlide>
+              ))}
+            </Swiper>
 
-          {/* GLASSMORPHIC ARROWS */}
-          <div className="custom-prev absolute top-1/2 left-3 -translate-y-1/2 z-10 cursor-pointer backdrop-blur-md bg-white/40 hover:bg-white/60 p-3 rounded-full shadow-lg transition">
-            ◀
-          </div>
-          <div className="custom-next absolute top-1/2 right-3 -translate-y-1/2 z-10 cursor-pointer backdrop-blur-md bg-white/40 hover:bg-white/60 p-3 rounded-full shadow-lg transition">
-            ▶
-          </div>
+            {/* GLASSMORPHIC ARROWS */}
+            <div className="custom-prev absolute top-1/2 left-3 -translate-y-1/2 z-10 cursor-pointer backdrop-blur-md bg-white/40 hover:bg-white/60 p-3 rounded-full shadow-lg transition">
+              ◀
+            </div>
+            <div className="custom-next absolute top-1/2 right-3 -translate-y-1/2 z-10 cursor-pointer backdrop-blur-md bg-white/40 hover:bg-white/60 p-3 rounded-full shadow-lg transition">
+              ▶
+            </div>
           </div>
         </div>
       </div>
