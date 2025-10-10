@@ -1,3 +1,4 @@
+// Handle clearing a loan application
 export const handleClearedLoan = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
@@ -19,6 +20,7 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
     }
   };
   
+  // Handle disbursing a loan application
   export const handleDisburse = async (application: any, setApplications: any, authFetch: any, API_URL: string, setIsAgreementOpen: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
@@ -42,6 +44,7 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
     }
   };
   
+  // Handle denying a loan application
   export const handleDenyApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
@@ -63,6 +66,7 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
     }
   };
   
+  // Handle approving a loan application
   export const handleApproveApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
@@ -86,6 +90,7 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
     }
   };
   
+  // Handle denying a cleared loan application
   export const handleDenyFromCleared = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;

@@ -12,9 +12,18 @@ import ProfileDropdown from '../../../commonComponents/navbarComponents/dropdown
 import { Bell } from 'lucide-react';
 import { capitalizeWords } from '../../../commonComponents/modals/loanAgreement/logic';
 
+/**
+ * Navbar component for manager pages
+ * Provides navigation, profile management, notifications, and language switching functionality
+ * @param isBlurred - Optional prop to apply blur effect to the navbar
+ * @returns JSX element containing the manager navbar
+ */
 export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boolean }) {
+  // UI state management
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Language state with localStorage persistence
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('managerLanguage') as 'en' | 'ceb') || 'en';
@@ -23,15 +32,19 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
   });
   const [navItems, setNavItems] = useState(getManagerNavItems(language));
 
+  // Navigation and routing
   const pathname = usePathname();
   const router = useRouter();
 
+  // User profile state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [username, setUsername] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [role, setRole] = useState('');
+  
+  // Notification state
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
 

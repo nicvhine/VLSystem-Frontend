@@ -8,6 +8,7 @@ interface Props {
 
 export default function OpenTerm({ application, formatCurrency }: Props) {
 
+    // Capitalize first letter of each word
     const capitalizeWords = (text?: string) => {
         if (!text) return "—";
         return text

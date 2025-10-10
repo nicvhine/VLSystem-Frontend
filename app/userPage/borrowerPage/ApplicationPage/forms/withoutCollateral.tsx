@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react";
 import Common from "./common";
 
+// API endpoint for loan applications without collateral
 const API_URL = "http://localhost:3001/loan-applications/without";
 
+// Type definition for loan options
 type LoanOption = {
   amount: number;
   months: number;
   interest: number;
 };
 
+// Available loan options for without collateral loans
 const loanOptions: LoanOption[] = [
   { amount: 10000, months: 5, interest: 10 },
   { amount: 15000, months: 6, interest: 10 },
@@ -18,16 +21,28 @@ const loanOptions: LoanOption[] = [
   { amount: 30000, months: 10, interest: 10 },
 ];
 
+// Props interface for WithoutCollateralForm component
 interface WithoutCollateralFormProps {
   language: 'en' | 'ceb';
   reloanData?: any;
   onLanguageChange?: (lang: 'en' | 'ceb') => void;
 }
 
+/**
+ * Form component for loan applications without collateral
+ * Handles form state management and submission for non-collateral loans
+ * @param language - Current language setting (English or Cebuano)
+ * @param reloanData - Data for reloan applications
+ * @param onLanguageChange - Callback function for language changes
+ * @returns JSX element containing the without collateral loan application form
+ */
 export default function WithoutCollateralForm({ language, reloanData, onLanguageChange }: WithoutCollateralFormProps) {
+  // Loan-specific form states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
   const [appReloanType, setAppReloanType] = useState("");
+  
+  // Common form states for applicant information
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
   const [appContact, setAppContact] = useState("");
@@ -45,8 +60,10 @@ export default function WithoutCollateralForm({ language, reloanData, onLanguage
   const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
+  
+  // References array for character references
   const [appReferences, setAppReferences] = useState([
-   { name: "", contact: "", relation: "" },
+    { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" }
   ]); 

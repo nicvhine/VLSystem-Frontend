@@ -47,11 +47,13 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
 
   if (!application) return null;
 
+  // Handle document type selection and close dropdown
   const handleDocumentClick = (type: "loan" | "release") => {
     setIsAgreementOpen(type);
     setShowDocsDropdown(false);
   };
 
+  // Toggle documents dropdown and position it
   const toggleDropdown = () => {
     if (!showDocsDropdown && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();

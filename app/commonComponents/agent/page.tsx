@@ -1,5 +1,6 @@
 'use client';
 
+// Agents page: list, search, sort, and add agent (loan officer)
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
@@ -40,6 +41,7 @@ export default function AgentPage() {
   const [isModalAnimating, setIsModalAnimating] = useState(false);
 
 
+  // Fetch agents list for loan officer view
   const fetchAgents = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -69,6 +71,7 @@ export default function AgentPage() {
   };
   
 
+  // Initialize role and (for loan officer) load agents and language
   useEffect(() => {
     const currentRole = getUserRole();
     setRole(currentRole);
@@ -82,7 +85,8 @@ export default function AgentPage() {
     }
   }, []);
 
-  // Listen for language changes
+  // Listen for language changes (loan officer context)
+  // Listen to global language changes relevant to the user's role
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (role === "loan officer" && event.detail.userType === 'loanOfficer') {
@@ -94,6 +98,7 @@ export default function AgentPage() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, [role]);
 
+  // Submit a new agent to backend, then update local list
   const handleAddAgent = async () => {
     if (!newAgentName || !newAgentPhone) {
       setError("Please fill in all fields.");
@@ -140,6 +145,7 @@ export default function AgentPage() {
 
   if (!role) return null;
 
+  // Choose page wrapper based on user role
   let Wrapper;
   if (role === "loan officer") {
     Wrapper = LoanOfficer;
@@ -151,12 +157,14 @@ export default function AgentPage() {
 
   const t = firstAgentTranslation[language];
 
+  // Format PHP currency values
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-PH", {
       style: "currency",
       currency: "PHP",
     }).format(amount);
 
+  // Client-side filter and sort for agents table
   const filteredAndSortedAgents = agents
     .filter((agent) => {
       const q = searchQuery.toLowerCase();

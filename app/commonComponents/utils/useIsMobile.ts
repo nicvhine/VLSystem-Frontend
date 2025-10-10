@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-// Returns true if the screen width is less than or equal to 768px (mobile)
+// Responsive utility: true when viewport width <= 768px (mobile)
 export default function useIsMobile(): boolean {
   const [isMobile, setIsMobile] = useState(false);
 

@@ -1,5 +1,7 @@
 "use client";
 
+// Modal: loan agreement preview and print
+
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
@@ -48,6 +50,7 @@ function SignatorySection({ role, name }: { role: string; name: string }) {
   );
 }
 
+// Modal to preview and print the loan agreement
 export default function AgreementModal({
   isOpen,
   onClose,
@@ -57,6 +60,7 @@ export default function AgreementModal({
   const [animateIn, setAnimateIn] = useState(false);
   const [role, setRole] = useState<string | null>(null);
 
+  // Read role from storage for print button visibility
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedRole = localStorage.getItem("role");
@@ -64,6 +68,7 @@ export default function AgreementModal({
     }
   }, []);
 
+  // Animation timing on open/close
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);

@@ -3,6 +3,7 @@
 import { FC, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+// Reusable confirmation modal (used for sensitive actions)
 interface ConfirmModalProps {
   show: boolean;
   message?: string;
@@ -25,6 +26,8 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
   const [animateIn, setAnimateIn] = useState(false);
   const [visible, setVisible] = useState(false);
 
+  // Animation timing on open/close
+  // Control enter/exit animation lifecycle
   useEffect(() => {
     if (show) {
       setVisible(true);

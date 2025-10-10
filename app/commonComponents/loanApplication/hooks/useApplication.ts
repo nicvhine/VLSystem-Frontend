@@ -1,4 +1,4 @@
-// frontend/app/userPage/hooks/useApplications.ts
+// frontend/app/userPage/hooks/useApplications.ts  Hook: fetch and map loan applications with auth
 import { useState, useEffect } from "react";
 
 export interface CharacterReference {
@@ -53,10 +53,12 @@ export interface Application {
   profilePic: string;
 }
 
+// Fetch applications with auth and normalize nested references
 export function useApplications(apiUrl: string) {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Helper to add auth header from localStorage
   async function authFetch(url: string, options: RequestInit = {}) {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token in localStorage");
@@ -67,6 +69,7 @@ export function useApplications(apiUrl: string) {
     });
   }
 
+  // Load applications on mount or when apiUrl changes
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -99,6 +102,7 @@ export function useApplications(apiUrl: string) {
     fetchApplications();
   }, [apiUrl]);
 
+  // Utility: capitalizes each word for display
   const capitalizeWords = (text?: string) => {
     if (!text) return "—";
     return text

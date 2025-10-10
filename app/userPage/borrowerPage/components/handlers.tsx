@@ -46,6 +46,7 @@ export function useBorrowerDashboard() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Payment | null>(null);
 
+  // Initialize authentication and fetch loan data
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return router.push('/');
@@ -95,12 +96,14 @@ export function useBorrowerDashboard() {
     }
   }, [router]);
 
+  // Update current loan when index changes
   useEffect(() => {
     if (allLoans.length > 0) {
       setLoanInfo(allLoans[currentLoanIndex]);
     }
   }, [currentLoanIndex, allLoans]);
 
+  // Fetch all payments data
   useEffect(() => {
     const fetchPayments = async () => {
       try {
@@ -116,23 +119,27 @@ export function useBorrowerDashboard() {
     fetchPayments();
   }, []);
 
+  // Handle user logout
   const handleLogout = () => {
     localStorage.clear();
     router.push('/');
   };
 
+  // Navigate to previous loan
   const handlePreviousLoan = () => {
     if (currentLoanIndex > 0) {
       setCurrentLoanIndex(currentLoanIndex - 1);
     }
   };
 
+  // Navigate to next loan
   const handleNextLoan = () => {
     if (currentLoanIndex < allLoans.length - 1) {
       setCurrentLoanIndex(currentLoanIndex + 1);
     }
   };
 
+  // Handle reloan application process
   const handleReloan = async () => {
     if (!loanInfo) return;
 
@@ -199,6 +206,7 @@ export function useBorrowerDashboard() {
     }
   };
 
+  // Calculate payment progress percentage
   const calculatePaymentProgress = () => {
     if (!loanInfo) return 0;
     const totalLoan = loanInfo.totalPayable;
@@ -207,6 +215,7 @@ export function useBorrowerDashboard() {
     return Math.round((paid / totalLoan) * 100);
   };
 
+  // Format amount as Philippine Peso currency
   const formatCurrency = (amount: number) =>
     Number(amount).toLocaleString('en-PH', {
       style: 'currency',
@@ -214,6 +223,7 @@ export function useBorrowerDashboard() {
       minimumFractionDigits: 0,
     });
 
+  // Format date string for display
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString('en-PH', {
       year: 'numeric',

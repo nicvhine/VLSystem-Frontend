@@ -1,5 +1,6 @@
 'use client';
 
+// Modal: schedule interview for a loan application
 import { useState, useEffect } from "react";
 import { FiX, FiFileText } from "react-icons/fi";
 import ErrorModal from '../../modals/errorModal/modal';
@@ -17,6 +18,7 @@ interface SetScheduleModalProps {
   showSuccess: (msg: string) => void;
 }
 
+// Modal for setting interview schedule on an application
 export default function SetScheduleModal({
   isOpen,
   onClose,
@@ -29,7 +31,7 @@ export default function SetScheduleModal({
   const [interviewDate, setInterviewDate] = useState("");
   const [interviewTime, setInterviewTime] = useState("");
 
-  // Calculate date restrictions
+  // Date restrictions for scheduling window
   const today = new Date();
   const appliedDate = application?.appliedDate ? new Date(application.appliedDate) : today;
   const minDate = today.toISOString().split("T")[0];
@@ -40,6 +42,7 @@ export default function SetScheduleModal({
   const [animateIn, setAnimateIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Format HH:mm to 12-hour clock for email text
   function formatTimeTo12Hour(time: string) {
     const [hourStr, minute] = time.split(":");
     let hour = parseInt(hourStr || "0", 10);
@@ -48,7 +51,8 @@ export default function SetScheduleModal({
     return `${hour}:${minute} ${ampm}`;
   }
 
-  // show/hide with animation based on isOpen (prop)
+  // Show/hide with animation based on isOpen
+  // Animate open/close transitions
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
@@ -61,7 +65,8 @@ export default function SetScheduleModal({
     }
   }, [isOpen]);
 
-  // close on Escape
+  // Close on Escape key
+  // Close on Escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) onClose();
@@ -72,6 +77,7 @@ export default function SetScheduleModal({
 
   if (!showModal) return null;
 
+  // Persist schedule + set status, update local state and send email
   const handleSaveSchedule = async () => {
 
     if (!interviewDate || !interviewTime) {

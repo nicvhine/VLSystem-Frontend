@@ -4,6 +4,7 @@ import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { Fragment } from 'react';
 
+// Interface for payment data structure
 interface Payment {
   referenceNumber: string;
   borrowersId: string;
@@ -13,15 +14,25 @@ interface Payment {
   datePaid: string;
 }
 
+// Props interface for ReceiptModal component
 interface ReceiptModalProps {
   isOpen: boolean;
   onClose: () => void;
   payment: Payment | null;
 }
 
+/**
+ * Receipt modal component for displaying payment receipts
+ * Shows payment details in a printable format with company branding
+ * @param isOpen - Boolean to control modal visibility
+ * @param onClose - Callback function to close the modal
+ * @param payment - Payment data to display in the receipt
+ * @returns JSX element containing the receipt modal
+ */
 export default function ReceiptModal({ isOpen, onClose, payment }: ReceiptModalProps) {
   if (!payment) return null;
 
+  // Format the payment date for display
   const formattedDate = format(new Date(payment.datePaid), 'MMMM dd, yyyy');
 
   return (

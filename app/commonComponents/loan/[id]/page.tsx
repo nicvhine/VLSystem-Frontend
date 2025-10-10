@@ -1,5 +1,6 @@
 "use client";
 
+// Loan details page: tabs for personal info, current loan, and history
 import { useEffect, useState } from "react";
 import { FiFileText } from "react-icons/fi"; 
 import LedgerModal from "./components/ledgerModal";
@@ -80,6 +81,7 @@ interface LoanDetails {
   ownershipStatus: string;
 }
 
+// Format date to a readable PH locale string
 const formatDate = (dateString?: string) =>
   dateString
     ? new Date(dateString).toLocaleDateString("en-PH", {
@@ -89,6 +91,7 @@ const formatDate = (dateString?: string) =>
       })
     : "—";
 
+// Capitalize each word for display-only fields
 const capitalizeWords = (text?: string) => {
   if (!text) return "—";
   return text
@@ -98,6 +101,7 @@ const capitalizeWords = (text?: string) => {
     .join(" ");
 };
 
+// Loan details view with personal and loan tabs
 export default function LoansDetailPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("loan");
   const [loanSubTab, setLoanSubTab] = useState("active");
@@ -106,11 +110,13 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
   const [showLedger, setShowLedger] = useState(false);
   const [role, setRole] = useState<string | null>(null);
 
+  // Initialize user role for wrapper selection
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
   }, []);
 
+  // Fetch loan details for the given id
   useEffect(() => {
     const fetchLoanDetails = async () => {
       try {
@@ -131,11 +137,13 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
   if (!client)
     return <div className="p-8 text-red-500 text-center">Client not found.</div>;
 
+  // Format amounts in PHP currency
   const formatCurrency = (amount?: number) =>
     amount
       ? new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount)
       : "—";
 
+  // Small presentation component for label/value pairs
   const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
     <div className="flex flex-col py-1">
       <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
@@ -143,6 +151,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 
+  // Choose page wrapper based on role
   let Wrapper;
   if (role === "loan officer") {
     Wrapper = LoanOfficer;

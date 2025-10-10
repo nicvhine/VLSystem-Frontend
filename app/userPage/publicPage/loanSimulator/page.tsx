@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
+// Loan simulator modal: quick what-if calculator (static tables)
 interface SimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -33,7 +34,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const [animateIn, setAnimateIn] = useState(false);
   const [showResult, setShowResult] = useState(false);
 
-  // Debug: Log when props change
+  // Debug: log when props change
   useEffect(() => {
     console.log('SimulatorModal props:', { isOpen, showModal });
   }, [isOpen, showModal]);
@@ -49,7 +50,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   const paymentPeriod = 'monthly';
 
-  // Handle animation timing
+  // Animation timing on open/close
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
@@ -111,7 +112,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
       return;
     }
 
-    // Reset animation state first
+    // UI: reset animation state first
     setShowResult(false);
 
     const amt = Number(selectedLoanAmount);
@@ -151,7 +152,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
       })}`,
     });
 
-    // Trigger animation after setting result
+    // UI: trigger animation after setting result
     setTimeout(() => setShowResult(true), 10);
   };
 

@@ -1,6 +1,7 @@
 "use client";
 import SuccessModal from '../../modals/successModal/modal';
 
+// Application details page: profile, income, references, collateral, and modals
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from "react-icons/fi";

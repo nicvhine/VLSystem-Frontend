@@ -1,5 +1,6 @@
 'use client';
 
+// Login form with SMS verification step
 import { FormEvent, useState } from 'react';
 import { loginHandler } from './loginHandlers';
 
@@ -33,6 +34,7 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
       sessionStorage.removeItem('userRole');
       onClose();
 
+      // Routing per role after SMS verification
       const redirectMap: Record<string, string> = {
         borrower: '/userPage/borrowerPage/dashboard',
         head: '/userPage/headPage/dashboard',
@@ -96,7 +98,7 @@ export default function LoginFormWithSMS({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Pass setShowSMSModal and error modal callbacks to loginHandler
+    // Auth: pass SMS and error callbacks to handler
     await loginHandler({ username, password, onClose, router, setShowSMSModal, setShowErrorModal, setErrorMsg });
   };
 

@@ -1,5 +1,6 @@
 'use client';
 
+// Account settings panel shown inside profile dropdown
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
 

@@ -2,6 +2,7 @@
 
 import React from "react";
 
+// Props interface for DecisionModal component
 interface DecisionModalProps {
   isOpen: boolean;
   title: string;
@@ -14,6 +15,21 @@ interface DecisionModalProps {
   error?: string; // optional error message
 }
 
+/**
+ * Decision modal component for user confirmations
+ * Displays a modal with title, message, and confirm/cancel buttons
+ * Supports danger styling and error message display
+ * @param isOpen - Boolean to control modal visibility
+ * @param title - Title text for the modal
+ * @param message - Main message content
+ * @param confirmText - Text for the confirm button (default: "Confirm")
+ * @param cancelText - Text for the cancel button (default: "Cancel")
+ * @param onConfirm - Callback function for confirm action
+ * @param onCancel - Callback function for cancel action
+ * @param danger - Boolean to apply danger styling to confirm button
+ * @param error - Optional error message to display
+ * @returns JSX element containing the decision modal
+ */
 export default function DecisionModal({
   isOpen,
   title,
@@ -26,6 +42,7 @@ export default function DecisionModal({
   error,
 }: DecisionModalProps) {
   const [animateIn, setAnimateIn] = React.useState(false);
+  
   React.useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => setAnimateIn(true), 10);

@@ -1,7 +1,9 @@
 'use client';
+// Hook: duplicate inactivity logic (kept in sync with logic.tsx)
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Duplicate hook maintained for components that import from modal.tsx path
 export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10000) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);

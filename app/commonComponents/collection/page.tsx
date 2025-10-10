@@ -1,5 +1,6 @@
 "use client";
 
+// Collections page: filter, stats, payment and note modals, and print sheet
 import { useState, useEffect, useRef, Suspense } from "react";
 import ConfirmModal from "../modals/confirmModal/ConfirmModal";
 import useIsMobile from "@/app/commonComponents/utils/useIsMobile";
@@ -41,6 +42,7 @@ interface Collection {
   totalPayable: number;
 }
 
+// Lightweight loading spinner used across table views
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -49,6 +51,7 @@ function LoadingSpinner() {
   );
 }
 
+// Collections listing with filters, stats and modals
 export default function CollectionsPage({ onModalStateChange }: { onModalStateChange?: (isOpen: boolean) => void }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
@@ -68,6 +71,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   // Listen for language changes
+  // Handle language changes broadcasted from navbar
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (event.detail.userType === 'head' || event.detail.userType === 'manager') {
@@ -81,6 +85,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
 
   const t = role === 'manager' ? managerTranslations[language] : headTranslations[language];
 
+  // Initialize role and language based on stored preferences
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
@@ -101,11 +106,13 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
 
   const tableRef = useRef<HTMLDivElement>(null);
 
+  // Load collections; scope to collector when applicable
   useEffect(() => {
     const storedCollector = localStorage.getItem("collectorName");
     setCurrentCollector(storedCollector);
   }, []);
 
+  // Animate payment modal mount/unmount
   useEffect(() => {
     const fetchCollections = async () => {
       try {
@@ -131,6 +138,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   
 
   // Payment Modal Animation Control
+  // Animate note modal mount/unmount
   useEffect(() => {
     if (showModal) {
       setIsPaymentModalVisible(true);
@@ -142,6 +150,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   }, [showModal]);
 
   // Note Modal Animation Control
+  // Notify parent when any modal visibility changes
   useEffect(() => {
     if (showNoteModal) {
       setIsNoteModalVisible(true);
@@ -159,6 +168,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     }
   }, [isPaymentModalVisible, isNoteModalVisible, onModalStateChange]);
 
+  // Format amounts in PHP currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-PH", {
       style: "currency",
@@ -166,6 +176,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     }).format(amount);
   };
 
+  // Filter by selected date, role scope and search query
   const filteredCollections = collections.filter((col) => {
     const due = new Date(col.dueDate);
     const selected = selectedDate;
@@ -226,12 +237,14 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   const targetAchieved =
     totalTarget > 0 ? Math.round((totalCollected / totalTarget) * 100) : 0;
 
+  // Open payment modal pre-filled with suggested amount
   const handleMakePayment = (collection: Collection) => {
     setSelectedCollection(collection);
     setPaymentAmount(collection.periodAmount - collection.paidAmount);
     setShowModal(true);
   };
 
+  // Open note modal for a specific collection row
   const handleAddNote = (collection: Collection) => {
     setSelectedCollection(collection);
     setNoteText(collection.note || "");
@@ -239,6 +252,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   };
 
   // Animated close functions
+  // Gracefully close payment modal with animation
   const handlePaymentModalClose = () => {
     setIsPaymentModalAnimating(false);
     setTimeout(() => {
@@ -249,6 +263,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     }, 150);
   };
 
+  // Gracefully close note modal with animation
   const handleNoteModalClose = () => {
     setIsNoteModalAnimating(false);
     setTimeout(() => {
@@ -259,6 +274,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     }, 150);
   };
 
+  // Persist note to backend and update the table row
   const handleSaveNote = async () => {
     if (!selectedCollection) return;
   
@@ -295,6 +311,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
 
+  // Confirm and post cash payment, then refresh the affected row
   const handleConfirmPayment = async () => {
     if (!selectedCollection) return;
     setPaymentLoading(true);
@@ -329,6 +346,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
     }
   };
 
+  // Trigger print-friendly sheet view
   const handlePrint = () => {
     setPrintMode(true);
     setTimeout(() => {

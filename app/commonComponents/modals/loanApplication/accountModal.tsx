@@ -1,5 +1,7 @@
 'use client';
 
+// Modal: create borrower account, assign collector, and generate loan
+
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import emailjs from "emailjs-com";
 
@@ -15,6 +17,7 @@ interface Application {
   status?: string;
 }
 
+// Send borrower credentials via EmailJS (best-effort)
 const sendEmail = async ({
   to_name,
   email,
@@ -41,6 +44,7 @@ const sendEmail = async ({
   }
 };
 
+// Modal to create borrower account, assign collector and generate loan
 export default forwardRef(function AccountModal(_, ref) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -49,6 +53,7 @@ export default forwardRef(function AccountModal(_, ref) {
   const [selectedCollector, setSelectedCollector] = useState("");
   const [generatedUsername, setGeneratedUsername] = useState<string>(""); 
 
+  // Expose openModal to parent via ref
   useImperativeHandle(ref, () => ({
     openModal(app: Application) {
       setSelectedApp(app);
@@ -58,6 +63,7 @@ export default forwardRef(function AccountModal(_, ref) {
     },
   }));
 
+  // Close modal with animation and reset selection
   const handleModalClose = () => {
     setIsAnimating(false);
     setTimeout(() => {
@@ -68,12 +74,14 @@ export default forwardRef(function AccountModal(_, ref) {
     }, 150);
   };
 
+  // Helper: fetch with Authorization header from localStorage
   async function authFetch(url: string, options: RequestInit = {}) {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token found in localStorage");
     return fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } });
   }
 
+  // Load available collectors for assignment
   useEffect(() => {
     const fetchCollectors = async () => {
       try {
@@ -88,6 +96,7 @@ export default forwardRef(function AccountModal(_, ref) {
     fetchCollectors();
   }, []);
 
+  // Create borrower, activate application, generate loan, and email credentials
   const handleCreateAccount = async () => {
     if (!selectedApp) return;
     if (!selectedCollector) {

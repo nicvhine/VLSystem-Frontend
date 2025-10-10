@@ -11,14 +11,21 @@ import UploadSection from "./sections/uploadSection";
 import AgentDropdown from "./sections/agent"; 
 import { formToJSON } from "axios";
 
-
-// Error modal for missing fields
+/**
+ * Error modal component for displaying missing field errors
+ * Shows an animated modal with error message and close button
+ * @param message - Error message to display
+ * @param onClose - Callback function to close the modal
+ * @returns JSX element containing the error modal
+ */
 function ErrorModal({ message, onClose }: { message: string; onClose: () => void }) {
     const [animateIn, setAnimateIn] = useState(false);
+    
     useEffect(() => {
         setAnimateIn(true);
         return () => setAnimateIn(false);
     }, []);
+    
     return (
         <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
             <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>

@@ -1,8 +1,10 @@
 'use client';
 
+// Modal: force user to update password before continuing
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useChangePassword } from './logic';
 
+// Modal UI for forced password change
 export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
   const role = typeof window !== "undefined" ? localStorage.getItem('role') as "user" | "borrower" : "user";
   const id =

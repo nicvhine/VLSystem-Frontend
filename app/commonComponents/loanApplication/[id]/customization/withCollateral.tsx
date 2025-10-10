@@ -8,14 +8,15 @@ interface Props {
 
 export default function WithCollateral({ application, formatCurrency }: Props) {
 
-    const capitalizeWords = (text?: string) => {
-        if (!text) return "—";
-        return text
-          .toLowerCase()
-          .split(" ")
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-      };
+  // Capitalize first letter of each word
+  const capitalizeWords = (text?: string) => {
+    if (!text) return "—";
+    return text
+      .toLowerCase()
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   return (
     <section>

@@ -10,6 +10,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose })
   const [visible, setVisible] = useState(false);
   const [animation, setAnimation] = useState<'fade-in' | 'fade-out' | ''>('');
 
+  // Handle modal visibility and animation
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
@@ -21,6 +22,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose })
     }
   }, [isOpen, visible]);
 
+  // Auto-close modal after 5 seconds
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => onClose(), 5000);

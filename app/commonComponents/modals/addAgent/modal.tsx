@@ -33,6 +33,7 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 
   const [animateIn, setAnimateIn] = useState(false);
 
+  // Handle modal animation timing
   useEffect(() => {
     if (show) {
       const timer = setTimeout(() => setAnimateIn(true), 10);
@@ -44,15 +45,18 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 
   if (!show) return null;
 
+  // Show confirmation modal before adding agent
   const handleAddClick = () => {
     setShowConfirm(true);
   };
 
+  // Confirm and proceed with adding agent
   const handleConfirm = () => {
     setShowConfirm(false);
     onAddAgent();
   };
 
+  // Cancel adding agent
   const handleCancel = () => {
     setShowConfirm(false);
   };

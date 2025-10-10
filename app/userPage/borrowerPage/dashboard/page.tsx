@@ -122,7 +122,7 @@ export default function BorrowerDashboard() {
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') || '' : '';
 
-  // Fetch active loan
+  // Fetch active loan for the borrower
   useEffect(() => {
     if (!borrowersId) return;
     async function fetchActiveLoan() {
@@ -142,7 +142,7 @@ export default function BorrowerDashboard() {
     fetchActiveLoan();
   }, [borrowersId]);
 
-  // fetch details of loan
+  // Fetch detailed loan information
   useEffect(() => {
     if (!activeLoan?.loanId) return; 
   
@@ -164,7 +164,7 @@ export default function BorrowerDashboard() {
   }, [activeLoan?.loanId]);
   
 
-  // ✅ Fetch all payments
+  // Fetch all payments for the borrower
   useEffect(() => {
     if (!borrowersId) return;
     async function fetchPayments() {
@@ -188,6 +188,7 @@ export default function BorrowerDashboard() {
     fetchPayments();
   }, [borrowersId]);
 
+  // Fetch collection schedule for the loan
   useEffect(() => {
     if (!activeLoan?.loanId || !borrowersId) return;
     async function fetchCollections() {
@@ -207,6 +208,7 @@ export default function BorrowerDashboard() {
     fetchCollections();
   }, [activeLoan, borrowersId]);
 
+  // Calculate payment progress based on collections
   useEffect(() => {
     if (!activeLoan) return;
     if (collections.length > 0) {
@@ -223,7 +225,7 @@ export default function BorrowerDashboard() {
 
   
 
-    // PayMongo handler
+    // Handle payment through PayMongo gateway
 async function handlePay(collection: Collection) {
   if (!activeLoan) return;
 
@@ -277,7 +279,7 @@ async function handlePay(collection: Collection) {
 }
 
 
-  // Animate Payment Modal like Login Modal
+  // Handle payment modal animation timing
   useEffect(() => {
     if (isPaymentModalOpen) {
       setPaymentModalAnimateIn(false);
@@ -288,6 +290,7 @@ async function handlePay(collection: Collection) {
     }
   }, [isPaymentModalOpen]);
 
+  // Format date string for display
   const formatDate = (dateString: string | undefined): string => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -297,6 +300,7 @@ async function handlePay(collection: Collection) {
     });
   };
 
+  // Alternative payment handler (duplicate function - should be removed)
   async function handlePay(collection: Collection) {
     if (!activeLoan) return;
     const amountToPay = collection.periodAmount ?? 0;

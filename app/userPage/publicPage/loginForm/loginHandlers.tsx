@@ -8,6 +8,7 @@ interface LoginParams {
   setShowSMSModal?: (show: boolean) => void;
 }
 
+// Handle user login for both borrowers and staff
 export async function loginHandler({ username, password, onClose, router, setShowErrorModal, setErrorMsg, setShowSMSModal }: LoginParams) {
   if (!username || !password) {
     if (typeof setErrorMsg === 'function') setErrorMsg('Please enter both username and password.');
@@ -16,12 +17,14 @@ export async function loginHandler({ username, password, onClose, router, setSho
   }
 
   try {
+    // Try borrower login first
     const borrowerRes = await fetch('http://localhost:3001/borrowers/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
 
+    // Handle successful borrower login
     if (borrowerRes.ok) {
       const data = await borrowerRes.json();
       localStorage.setItem('token', data.token || '');
@@ -50,12 +53,14 @@ export async function loginHandler({ username, password, onClose, router, setSho
     
     
     
+    // Try staff login if borrower login failed
     const staffRes = await fetch('http://localhost:3001/users/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
 
+  // Handle successful staff login
   if (staffRes.ok) {
   const data = await staffRes.json();
   const user = data.user; 
@@ -88,6 +93,7 @@ export async function loginHandler({ username, password, onClose, router, setSho
 
   onClose();
 
+  // Redirect based on user role
   const redirectMap: Record<string, string> = {
     head: '/userPage/headPage/dashboard',
     manager: '/userPage/managerPage/dashboard',
@@ -100,6 +106,7 @@ export async function loginHandler({ username, password, onClose, router, setSho
 }
 
 
+  // Handle login failure
   if (typeof setErrorMsg === 'function') setErrorMsg('Invalid credentials or user not found.');
   if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
   } catch (error) {

@@ -1,5 +1,6 @@
 "use client";
 
+// Loan applications list: filters, search/sort, reloan accept
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import Link from "next/link";

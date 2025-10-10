@@ -1,5 +1,6 @@
 "use client";
 
+// Loans page: list, filter, sort, paginate, and link to details
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown, FiLoader } from "react-icons/fi";
 import Link from "next/link";
@@ -28,6 +29,7 @@ interface LoanDetails {
   dateDisbursed: string;
 }
 
+// Simple loading spinner while fetching loans
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -36,6 +38,7 @@ function LoadingSpinner() {
   );
 }
 
+// Loans listing with filters, search, sort and pagination
 export default function LoansPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
@@ -48,6 +51,7 @@ export default function LoansPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   // Listen for language changes
+  // Listen to language changes based on active role
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if ((role === "head" && event.detail.userType === 'head') || 
@@ -62,6 +66,7 @@ export default function LoansPage() {
   }, [role]);
 
   // Get translations based on role
+  // Resolve translation bundle for current role
   const getTranslations = () => {
     if (role === "head") {
       return headTranslations[language];
@@ -75,6 +80,7 @@ export default function LoansPage() {
 
   const t = getTranslations();
 
+  // Initialize role and language from localStorage
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
@@ -103,6 +109,7 @@ export default function LoansPage() {
   const ITEMS_PER_PAGE = 10;
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Fetch loans list from backend
   useEffect(() => {
     const fetchLoans = async () => {
       try {
@@ -125,6 +132,7 @@ export default function LoansPage() {
   }, []);
 
   // Filter loans
+  // Apply search and status filter
   const filteredLoans = loans.filter((loan) => {
     const matchesSearch = Object.values(loan).some((v) =>
       v?.toString().toLowerCase().includes(searchQuery.toLowerCase())
@@ -138,6 +146,7 @@ export default function LoansPage() {
   });
 
   // Sort loans
+  // Sort by date or balance
   const sortedLoans = [...filteredLoans].sort((a, b) => {
     if (sortBy === "date") return new Date(b.dateDisbursed).getTime() - new Date(a.dateDisbursed).getTime();
     if (sortBy === "amount") return b.balance - a.balance;
@@ -146,19 +155,23 @@ export default function LoansPage() {
 
   // Pagination logic
   const totalPages = Math.ceil(sortedLoans.length / ITEMS_PER_PAGE);
+  // Compute current page slice
   const paginatedLoans = sortedLoans.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   );
 
+  // Format amounts in PHP currency
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount);
 
+  // Human-readable PH date
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" });
 
   if (loading) return <LoadingSpinner />;
 
+  // Choose wrapper based on user role
   let Wrapper;
   if (role === "loan officer") {
     Wrapper = LoanOfficer;

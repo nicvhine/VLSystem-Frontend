@@ -14,6 +14,8 @@ import Borrower from "../../page";
 
 export default function ApplicationPage() {
   const router = useRouter();
+  
+  // State management for application form
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [address, setAddress] = useState('');
   const [loanType, setLoanType] = useState<string>('');
@@ -24,6 +26,7 @@ export default function ApplicationPage() {
   const [employmentStatus, setEmploymentStatus] = useState('');
   const [reloanData, setReloanData] = useState<any>(null);
 
+  // Load reloan information from localStorage on component mount
   useEffect(() => {
     const reloanInfo = localStorage.getItem('reloanInfo');
     if (reloanInfo) {
@@ -37,9 +40,20 @@ export default function ApplicationPage() {
     }
   }, []);
 
+  /**
+   * Handle form submission - shows success modal
+   */
   const handleSubmit = () => setShowSuccessModal(true);
+  
+  /**
+   * Close the success modal
+   */
   const closeModal = () => setShowSuccessModal(false);
 
+  /**
+   * Handle file upload changes
+   * @param e - File input change event
+   */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       //setDocuments(e.target.files);
@@ -48,12 +62,18 @@ export default function ApplicationPage() {
 
 
 
+  // Available loan types with bilingual support
   const loanTypes = [
     language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)',
     language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)',
     language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam',
   ];
 
+  /**
+   * Get requirements for a specific loan type
+   * @param type - The loan type to get requirements for
+   * @returns Array of requirement strings
+   */
   const getRequirements = (type: string) => {
     switch(type) {
       case (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)'):
@@ -84,6 +104,7 @@ export default function ApplicationPage() {
     }
   };
 
+  // Loan application process steps with bilingual support
   const loanProcessSteps = [
     language === 'en' ? 'Application Submission' : 'Pagsumite sa Aplikasyon',
     language === 'en' ? 'Document Verification' : 'Pag-verify sa Dokumento',
@@ -92,34 +113,39 @@ export default function ApplicationPage() {
     language === 'en' ? 'Loan Disbursement' : 'Pagpagawas sa Pahulam',
   ];
 
+  /**
+   * Map component for address selection using Leaflet
+   * @param setAddress - Function to set the selected address
+   */
   function MapComponent({ setAddress }: { setAddress: (address: string) => void }) {
-  const [marker, setMarker] = useState<L.Marker | null>(null);
+    const [marker, setMarker] = useState<L.Marker | null>(null);
 
-  useMapEvents({
-    click(e) {
-      const { lat, lng } = e.latlng;
-      if (marker) marker.remove();
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng;
+        if (marker) marker.remove();
 
-      const newMarker = L.marker([lat, lng]).addTo(e.target);
-      setMarker(newMarker);
+        const newMarker = L.marker([lat, lng]).addTo(e.target);
+        setMarker(newMarker);
 
-      axios.get("https://nominatim.openstreetmap.org/reverse", {
-        params: {
-          lat,
-          lon: lng,
-          format: "json",
-        },
-      })
-        .then((response) => {
-          const address = response.data.display_name;
-          setAddress(address);
-          newMarker.bindPopup(address).openPopup();
+        // Fetch address from coordinates using OpenStreetMap Nominatim API
+        axios.get("https://nominatim.openstreetmap.org/reverse", {
+          params: {
+            lat,
+            lon: lng,
+            format: "json",
+          },
         })
-        .catch((error) => {
-          console.error("Error fetching address:", error);
-        });
-    },
-  });
+          .then((response) => {
+            const address = response.data.display_name;
+            setAddress(address);
+            newMarker.bindPopup(address).openPopup();
+          })
+          .catch((error) => {
+            console.error("Error fetching address:", error);
+          });
+      },
+    });
 
   return null;
 }
@@ -185,27 +211,29 @@ return (
             </div>
           </div>
 
-          {/* Loan Process Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-            <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-              <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}</h3>
-            </div>
-            <div className="p-4">
-              <div className="space-y-3">
-                <ul className="space-y-3 text-sm">
-                  {loanProcessSteps.map((step, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium min-w-[24px] text-center">
-                        {index + 1}
-                      </span>
-                      <span className="text-gray-600">{step}</span>
-                    </li>
-                  ))}
-                </ul>
+            {/* Loan Process Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+              <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
+                <h3 className="font-semibold text-gray-800 text-center">
+                  {language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}
+                </h3>
+              </div>
+              <div className="p-4">
+                <div className="space-y-3">
+                  <ul className="space-y-3 text-sm">
+                    {loanProcessSteps.map((step, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium min-w-[24px] text-center">
+                          {index + 1}
+                        </span>
+                        <span className="text-gray-600">{step}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
         {/* Main Content Area */}
         <div className="flex-1 bg-white shadow-sm ml-0 rounded-lg">
