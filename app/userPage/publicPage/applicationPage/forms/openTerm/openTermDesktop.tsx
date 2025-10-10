@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import Common from "../common/common";
+import ErrorModal from '../../../../../commonComponents/modals/errorModal/modal';
 
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
 function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWithAnimationProps) {
@@ -84,7 +85,22 @@ interface OpenTermDesktopProps {
 }
 
 export default function OpenTermDesktop({ language, onLanguageChange }: OpenTermDesktopProps) {
+  // Error state for validation (pattern used for other fields)
+  const [missingError, setMissingError] = useState({
+    appLoanPurpose: false,
+    selectedLoan: false,
+    collateralType: false,
+    ownershipStatus: false,
+  });
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
+// Modal state for error messages
+const [errorModalOpen, setErrorModalOpen] = useState(false);
+const [errorModalMessage, setErrorModalMessage] = useState('');
+
+const showError = (msg: string) => {
+  setErrorModalMessage(msg);
+  setErrorModalOpen(true);
+};
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
 
   const [appName, setAppName] = useState("");
@@ -140,22 +156,22 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
       const files = Array.from(e.target.files);
       files.forEach((file) => {
         const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-        if (!validTypes.includes(file.type)) {
-          alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
-          return;
-        }
+          if (!validTypes.includes(file.type)) {
+            showError(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+            return;
+          }
         if (file.size > 2 * 1024 * 1024) {
-          alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
-          return;
-        }
+            showError(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+            return;
+          }
         const img = new Image();
         img.onload = () => {
           const { width, height } = img;
           const aspectRatio = width / height;
           if (aspectRatio < 0.9 || aspectRatio > 1.1) {
-            alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
-            return;
-          }
+              showError(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+              return;
+            }
           setPhoto2x2((prev) => [...prev, file]);
         };
         img.src = URL.createObjectURL(file);
@@ -167,22 +183,29 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
   };
 
   const handleSubmit = async () => {
-    if (!appLoanPurpose || !selectedLoan) {
-      alert(language === 'en'
+    const newMissingError = {
+      appLoanPurpose: !appLoanPurpose,
+      selectedLoan: !selectedLoan,
+      collateralType: !collateralType,
+      ownershipStatus: !ownershipStatus,
+    };
+    setMissingError(newMissingError);
+    if (Object.values(newMissingError).some(Boolean)) {
+      showError(language === 'en'
         ? "Please fill in all required fields."
         : "Palihug pun-a ang tanang kinahanglan nga field."
       );
       return;
     }
     if (uploadedFiles.length === 0) {
-      alert(language === 'en'
+      showError(language === 'en'
         ? "Please upload at least one document."
         : "Palihug i-upload ang usa ka dokumento."
       );
       return;
     }
     if (photo2x2.length === 0) {
-      alert(language === "en"
+      showError(language === "en"
         ? "Please upload your 2x2 photo."
         : "Palihug i-upload ang imong 2x2 nga litrato."
       );
@@ -242,10 +265,16 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
         setOwnershipStatus("");
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        showError(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
       }
     } catch (error) {
-      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+      showError(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+    }
+  <ErrorModal
+    isOpen={errorModalOpen}
+    message={errorModalMessage}
+    onClose={() => setErrorModalOpen(false)}
+  />
     }
   };
 
@@ -411,7 +440,7 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
             <select
               value={collateralType}
               onChange={(e) => setCollateralType(e.target.value)}
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingError.collateralType ? 'border-red-500' : 'border-gray-200'}`}
             >
               <option value="">{language === 'en' ? 'Select collateral type' : 'Pilia ang klase sa kolateral'}</option>
               <option value="real_estate">{language === 'en' ? 'Real Estate' : 'Yuta/Balay'}</option>
@@ -445,7 +474,7 @@ export default function OpenTermDesktop({ language, onLanguageChange }: OpenTerm
             <select
               value={ownershipStatus}
               onChange={(e) => setOwnershipStatus(e.target.value)}
-              className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingError.ownershipStatus ? 'border-red-500' : 'border-gray-200'}`}
             >
               <option value="">{language === 'en' ? 'Select status' : 'Pilia ang kahimtang'}</option>
               <option value="owned">{language === 'en' ? 'Owned' : 'Gipanag-iya'}</option>

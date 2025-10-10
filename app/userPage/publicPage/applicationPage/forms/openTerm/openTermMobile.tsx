@@ -1,5 +1,37 @@
 'use client';
 import { useState, useEffect } from "react";
+// Centralized error modal
+function ErrorModal({ message, onClose }: { message: string; onClose: () => void }) {
+  const [animateIn, setAnimateIn] = useState(false);
+  useEffect(() => {
+    setAnimateIn(true);
+    return () => setAnimateIn(false);
+  }, []);
+  return (
+    <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-red-500 hover:text-red-700 transition text-2xl"
+          aria-label="Close"
+        >×</button>
+        <div className="text-center">
+          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-red-600 mb-2">Error</h3>
+          <p className="text-gray-700 mb-4 text-sm">{message}</p>
+          <button
+            onClick={onClose}
+            className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold transition-colors text-sm"
+          >Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 import { useRouter } from 'next/navigation';
 import Common from "../common/common";
 
@@ -84,6 +116,9 @@ interface OpenTermMobileProps {
 }
 
 export default function OpenTermMobile({ language, onLanguageChange }: OpenTermMobileProps) {
+  // Error modal state
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
   const validTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -141,11 +176,13 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
       const files = Array.from(e.target.files);
       files.forEach((file) => {
         if (!validTypes.includes(file.type)) {
-          alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+          setErrorMessage(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+          setShowErrorModal(true);
           return;
         }
         if (file.size > 2 * 1024 * 1024) {
-          alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+          setErrorMessage(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+          setShowErrorModal(true);
           return;
         }
         const img = new Image();
@@ -153,7 +190,8 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
           const { width, height } = img;
           const aspectRatio = width / height;
           if (aspectRatio < 0.9 || aspectRatio > 1.1) {
-            alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+            setErrorMessage(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+            setShowErrorModal(true);
             return;
           }
           setPhoto2x2((prev) => [...prev, file]);
@@ -168,24 +206,27 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
 
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
-      alert(language === 'en'
+      setErrorMessage(language === 'en'
         ? "Please fill in all required fields including collateral information."
         : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral."
       );
+      setShowErrorModal(true);
       return;
     }
     if (uploadedFiles.length === 0) {
-      alert(language === "en"
+      setErrorMessage(language === "en"
         ? "Please upload at least one document."
         : "Palihug i-upload ang usa ka dokumento."
       );
+      setShowErrorModal(true);
       return;
     }
     if (photo2x2.length === 0) {
-      alert(language === "en"
+      setErrorMessage(language === "en"
         ? "Please upload your 2x2 photo."
         : "Palihug i-upload ang imong 2x2 nga litrato."
       );
+      setShowErrorModal(true);
       return;
     }
     try {
@@ -242,10 +283,12 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
         setOwnershipStatus("");
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        setErrorMessage(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        setShowErrorModal(true);
       }
     } catch (error) {
-      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+      setErrorMessage(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+      setShowErrorModal(true);
     }
   };
 
@@ -265,6 +308,12 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
 
   return (
     <>
+      {showErrorModal && (
+        <ErrorModal
+          message={errorMessage}
+          onClose={() => setShowErrorModal(false)}
+        />
+      )}
       <Common
         appName={appName}
         setAppName={setAppName}

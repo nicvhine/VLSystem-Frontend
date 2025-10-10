@@ -2,6 +2,16 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import ErrorModal from '../../../../../commonComponents/modals/errorModal/modal';
+// ...existing code...
+// Modal state for error messages
+const [errorModalOpen, setErrorModalOpen] = useState(false);
+const [errorModalMessage, setErrorModalMessage] = useState('');
+
+const showError = (msg: string) => {
+  setErrorModalMessage(msg);
+  setErrorModalOpen(true);
+};
 import { useRouter } from 'next/navigation';
 
 type SuccessModalWithAnimationProps = { language: string; loanId: string | null; onClose: () => void };
@@ -188,12 +198,12 @@ const closeModal = () => {
         files.forEach((file) => {
           const validTypes = ["image/jpeg", "image/png", "image/jpg"];
           if (!validTypes.includes(file.type)) {
-            alert(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
+            showError(language === "en" ? "Only JPG and PNG are allowed for 2x2 photo." : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato.");
             return;
           }
     
           if (file.size > 2 * 1024 * 1024) {
-            alert(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
+            showError(language === "en" ? "2x2 photo must be less than 2MB." : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB.");
             return;
           }
     
@@ -203,7 +213,7 @@ const closeModal = () => {
             const aspectRatio = width / height;
     
             if (aspectRatio < 0.9 || aspectRatio > 1.1) {
-              alert(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
+              showError(language === "en" ? "2x2 photo must be square (equal width and height)." : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on).");
               return;
             }
     
@@ -224,12 +234,12 @@ const closeModal = () => {
     const handleSubmit = async () => {
 
       if (!validateForm()) {
-        alert(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
+        showError(language === 'en' ? "Please fill in all required fields." : "Palihug pun-a ang tanang kinahanglan nga field.");
         return;
       }
       
       if (!appLoanPurpose || !selectedLoan) {
-        alert(language === 'en'
+        showError(language === 'en'
           ? "Please fill in all required fields."
           : "Palihug pun-a ang tanang kinahanglan nga field."
         );
@@ -237,7 +247,7 @@ const closeModal = () => {
       }
 
       if (uploadedFiles.length === 0) {
-        alert(language === 'en'
+        showError(language === 'en'
           ? "Please upload at least one document."
           : "Palihug i-upload ang usa ka dokumento."
         );
@@ -245,7 +255,7 @@ const closeModal = () => {
       }
 
       if (photo2x2.length === 0) {
-        alert(language === "en"
+        showError(language === "en"
           ? "Please upload your 2x2 photo."
           : "Palihug i-upload ang imong 2x2 nga litrato."
         );
@@ -307,11 +317,17 @@ const closeModal = () => {
           setPhoto2x2([]);
         } else {
           const errorText = await res.text();
-          alert(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+          showError(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
         }
       } catch (error) {
-        alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+        showError(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
       }
+  {/* Error Modal */}
+  <ErrorModal
+    isOpen={errorModalOpen}
+    message={errorModalMessage}
+    onClose={() => setErrorModalOpen(false)}
+  />
     };
     
   //Loan Amount
@@ -402,7 +418,7 @@ const closeModal = () => {
       </label>
       <input
         type="number"
-        className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${selectedLoan === null && showErrorModal ? 'border-red-500' : 'border-gray-200'}`}
         value={customLoanAmount}
         onChange={(e) => {
           const value = e.target.value === "" ? "" : parseInt(e.target.value, 10);

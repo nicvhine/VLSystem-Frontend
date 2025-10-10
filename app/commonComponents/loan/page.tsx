@@ -177,20 +177,27 @@ export default function LoansPage() {
           </div>
 
           {/* Filter Tabs */}
-          <div className="hidden sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-auto">
-            {["All", "Active", "Overdue", "Closed"].map((status) => (
-              <button
-                key={status}
-                onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                  activeFilter === status
-                      ? "bg-blue-50 text-blue-600 shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-              >
-                {status === "All" ? t.all : status === "Active" ? t.active : status === "Overdue" ? t.overdue : t.closed}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-auto">
+            {["All", "Active", "Overdue", "Closed"].map((status) => {
+              let label = status;
+              if (status === "All") label = t.all || "All";
+              else if (status === "Active") label = t.active || "Active";
+              else if (status === "Overdue") label = t.overdue || "Overdue";
+              else if (status === "Closed") label = t.closed || "Closed";
+              return (
+                <button
+                  key={status}
+                  onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                    activeFilter === status
+                        ? "bg-blue-50 text-blue-600 shadow-sm"
+                        : "text-gray-600 hover:bg-gray-100"
+                    }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Search and Sort */}

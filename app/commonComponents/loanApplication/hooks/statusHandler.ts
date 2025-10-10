@@ -1,4 +1,4 @@
-export const handleClearedLoan = async (application: any, setApplications: any, authFetch: any, API_URL: string) => {
+export const handleClearedLoan = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
       if (!id) throw new Error("Missing application id");
@@ -12,14 +12,14 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
       setApplications((prev: any[]) =>
         prev.map((app) => app.applicationId === id ? { ...app, status: "Cleared" } : app)
       );
-      alert("Loan status has been set to Cleared.");
+      showSuccess("Loan status has been set to Cleared.");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong.");
+      showError("Something went wrong.");
     }
   };
   
-  export const handleDisburse = async (application: any, setApplications: any, authFetch: any, API_URL: string, setIsAgreementOpen: any) => {
+  export const handleDisburse = async (application: any, setApplications: any, authFetch: any, API_URL: string, setIsAgreementOpen: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
       if (!id) throw new Error("Missing application id");
@@ -35,13 +35,14 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
       );
   
       setIsAgreementOpen(true);
+      showSuccess("Loan status has been set to Disbursed.");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong while disbursing the loan.");
+      showError("Something went wrong while disbursing the loan.");
     }
   };
   
-  export const handleDenyApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string) => {
+  export const handleDenyApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
       if (!id) throw new Error("Missing application id");
@@ -55,14 +56,14 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
       setApplications((prev: any[]) =>
         prev.map((app) => app.applicationId === id ? { ...app, status: "Denied" } : app)
       );
-      alert("Loan status changed to 'Denied'.");
+      showSuccess("Loan status changed to 'Denied'.");
     } catch (error) {
       console.error(error);
-      alert("Something went wrong.");
+      showError("Something went wrong.");
     }
   };
   
-  export const handleApproveApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string) => {
+  export const handleApproveApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
       if (!id) throw new Error("Missing application id");
@@ -78,14 +79,14 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
         prev.map((app) => (app.applicationId === id ? { ...app, status: "Approved" } : app))
       );
   
-      alert("Application approved.");
+      showSuccess("Application approved.");
     } catch (error) {
       console.error("Failed to approve application:", error);
-      alert("Could not approve application. Try again.");
+      showError("Could not approve application. Try again.");
     }
   };
   
-  export const handleDenyFromCleared = async (application: any, setApplications: any, authFetch: any, API_URL: string) => {
+  export const handleDenyFromCleared = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
     try {
       const id = application?.applicationId;
       if (!id) throw new Error("Missing application id");
@@ -101,10 +102,9 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
         prev.map((app) => (app.applicationId === id ? { ...app, status: "Denied by LO" } : app))
       );
   
-      alert("Application denied.");
+      showSuccess("Application denied.");
     } catch (error) {
       console.error("Failed to deny application:", error);
-      alert("Could not deny application. Try again.");
+      showError("Could not deny application. Try again.");
     }
   };
-  

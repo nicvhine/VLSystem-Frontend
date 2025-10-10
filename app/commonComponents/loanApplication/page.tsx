@@ -11,6 +11,8 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 // Translations
 import firstLoanApplicationTranslation from "./translation/first";
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -44,6 +46,9 @@ export default function ApplicationsPage() {
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState<string>("");
   const [role, setRole] = useState<string | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
   
   // Language state
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -217,6 +222,12 @@ export default function ApplicationsPage() {
 
   return (
     <Wrapper isNavbarBlurred={isModalVisible}>
+      {showSuccessModal && (
+        <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
+      )}
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
+      )}
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           {/* Header */}
@@ -431,12 +442,12 @@ export default function ApplicationsPage() {
                                   )
                                 );
 
-                                alert(
-                                  "Reloan accepted and loan generated successfully."
-                                );
+                                setModalMsg("Reloan accepted and loan generated successfully.");
+                                setShowSuccessModal(true);
                               } catch (error) {
                                 console.error(error);
-                                alert("Failed to accept and generate reloan");
+                                setModalMsg("Failed to accept and generate reloan");
+                                setShowErrorModal(true);
                               }
                             }}
                           >

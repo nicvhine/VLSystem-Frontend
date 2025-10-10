@@ -3,10 +3,22 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import React, { useState } from "react";
+import ErrorModal from '../../../../../commonComponents/modals/errorModal/modal';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import axios from "axios";
 
 const customIcon = new L.Icon({
+// Error modal state for date validation
+const [errorModalOpen, setErrorModalOpen] = useState(false);
+const [errorModalMessage, setErrorModalMessage] = useState("");
+  {/* Error Modal for date validation */}
+  {errorModalOpen && (
+    <ErrorModal
+      isOpen={errorModalOpen}
+      message={errorModalMessage}
+      onClose={() => setErrorModalOpen(false)}
+    />
+  )}
   iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
@@ -126,6 +138,9 @@ export default function Common(props: CommonProps) {
   ) {
     const errors = ["", "", ""];
     const nameMap = new Map<string, number[]>();
+      // Error modal state for date validation
+      const [errorModalOpen, setErrorModalOpen] = useState(false);
+      const [errorModalMessage, setErrorModalMessage] = useState("");
     const numberMap = new Map<string, number[]>();
 
     refs.forEach((r, idx) => {
@@ -400,15 +415,27 @@ export default function Common(props: CommonProps) {
                     const selectedDate = e.target.value;
                     const today = new Date().toISOString().split("T")[0]; 
                     if (selectedDate > today) {
-                    alert(
-                        language === "en"
+                      setErrorModalMessage(language === "en"
                         ? "Date cannot be in the future."
-                        : "Ang petsa dili mahimong sa umaabot."
-                    );
-                    setAppDateStarted("");
+                        : "Ang petsa dili mahimong sa umaabot.");
+                      setErrorModalOpen(true);
+                      setAppDateStarted("");
                     } else {
-                    setAppDateStarted(selectedDate);
+                      setAppDateStarted(selectedDate);
                     }
+// Add error modal state and modal at top-level of component
+const [errorModalOpen, setErrorModalOpen] = useState(false);
+const [errorModalMessage, setErrorModalMessage] = useState("");
+
+// ...existing code...
+
+{errorModalOpen && (
+  <ErrorModal
+    isOpen={errorModalOpen}
+    message={errorModalMessage}
+    onClose={() => setErrorModalOpen(false)}
+  />
+)}
                 }}
                 className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 max={new Date().toISOString().split("T")[0]} 

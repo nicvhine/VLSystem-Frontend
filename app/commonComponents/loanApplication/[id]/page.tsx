@@ -1,4 +1,5 @@
-'use client';
+"use client";
+import SuccessModal from '../../modals/successModal/modal';
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -16,6 +17,7 @@ import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/moda
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
 import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal"; 
 import ReleaseForm from "../../modals/loanAgreement/releaseForm";
+import ErrorModal from '../../modals/errorModal/modal';
 
 //HOOKS
 import ApplicationButtons from "../hooks/applicationButtons";
@@ -33,6 +35,13 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 const API_URL = "http://localhost:3001/loan-applications";
 
 export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg);
+    setSuccessModalOpen(true);
+    setTimeout(() => setSuccessModalOpen(false), 5000);
+  };
   const router = useRouter();
   const { applications, setApplications, loading } = useApplications(API_URL);
 
@@ -164,7 +173,16 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
     setModalContainer(document.getElementById('modal-root'));
   }, []);
 
-return (
+  // Error modal state
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const showError = (msg: string) => {
+    setErrorMessage(msg);
+    setErrorModalOpen(true);
+    setTimeout(() => setErrorModalOpen(false), 3000);
+  };
+
+  return (
   <Wrapper>
     <div className="min-h-screen bg-gray-50">
       {/* Modal Portal Host */}
@@ -222,8 +240,8 @@ return (
                   setIsModalOpen={setIsModalOpen}
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}
-                  setIsAgreementOpen={setIsAgreementOpen}
-                  modalPortal={modalContainer}
+                  showSuccess={showSuccess}
+                  showError={showError}
                 />
               </div>
 
@@ -243,9 +261,9 @@ return (
                 <div className="p-6 text-center">
                   {/* Profile Image */}
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100 mb-4 border-4 border-white shadow-lg">
-                    {application?.profilePic?.filePath ? (
+                    {application?.profilePic && typeof application.profilePic === 'object' && (application.profilePic as any).filePath ? (
                       <img
-                        src={`http://localhost:3001/${application.profilePic.filePath}`}
+                        src={`http://localhost:3001/${(application.profilePic as any).filePath}`}
                         alt="Profile"
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -557,6 +575,23 @@ return (
             application={application}
             setApplications={setApplications}
             authFetch={authFetch}
+            showError={showError}
+            showSuccess={showSuccess}
+          />
+          <ErrorModal
+            isOpen={errorModalOpen}
+            message={errorMessage}
+            onClose={() => setErrorModalOpen(false)}
+          />
+          <SuccessModal
+            isOpen={successModalOpen}
+            message={successMessage}
+            onClose={() => setSuccessModalOpen(false)}
+          />
+          <ErrorModal
+            isOpen={errorModalOpen}
+            message={errorMessage}
+            onClose={() => setErrorModalOpen(false)}
           />
 
 {isAgreementOpen === "loan" && (
@@ -579,4 +614,4 @@ return (
       </div>
       </Wrapper>
     );
-  } 
+  }

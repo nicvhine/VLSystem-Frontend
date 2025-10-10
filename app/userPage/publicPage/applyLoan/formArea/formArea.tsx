@@ -24,7 +24,7 @@ function ErrorModal({ message, onClose }: { message: string; onClose: () => void
             <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
                 <button
                     onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition text-2xl"
+                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 transition text-2xl"
                     aria-label="Close"
                 >×</button>
                 <div className="text-center">
@@ -33,8 +33,8 @@ function ErrorModal({ message, onClose }: { message: string; onClose: () => void
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-red-600 mb-2">Missing Required Fields</h3>
-                    <p className="text-gray-700 mb-4 text-sm">Please fill out all required fields before submitting the form.</p>
+                    <h3 className="text-lg font-semibold text-red-600 mb-2">Document Upload Error</h3>
+                    <p className="text-gray-700 mb-4 text-sm">Please fill out the missing fields.</p>
                     <button
                         onClick={onClose}
                         className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold transition-colors text-sm"
@@ -193,7 +193,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         ]);
 
         // Agents
-        const [appAgent, setAppAgent] = useState("");
+    const [appAgent, setAppAgent] = useState("");
+    const [agentMissingError, setAgentMissingError] = useState(false);
 
         // Collateral
         const [collateralType, setCollateralType] = useState("");
@@ -265,6 +266,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
             });
 
             if (!appAgent.trim()) missing.push("Agent");
+    setAgentMissingError(!appAgent.trim());
 
             // Uploads
             if (photo2x2.length === 0) missing.push("2x2 Photo");
@@ -335,12 +337,14 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                         setDocumentUploadError(data.error);
                         setShowDocumentUploadErrorModal(true);
                     } else {
-                        alert(language === 'en' ? data.error : "Napakyas: " + data.error);
+                        setDocumentUploadError(language === 'en' ? data.error : "Napakyas: " + data.error);
+                        setShowDocumentUploadErrorModal(true);
                     }
                 }
             } catch (error) {
                 console.error(error);
-                alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+                setDocumentUploadError(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+                setShowDocumentUploadErrorModal(true);
             }
         };
 
@@ -395,10 +399,11 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
             />
         
         <AgentDropdown
-            language={language}
-            appAgent={appAgent}
-            setAppAgent={setAppAgent}
-        />
+                        language={language}
+                        appAgent={appAgent}
+                        setAppAgent={setAppAgent}
+                        missingError={agentMissingError}
+                    />
 
         {requiresCollateral && (
             <CollateralInformation

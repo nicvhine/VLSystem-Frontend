@@ -9,6 +9,9 @@ import "./calendar.css";
 import loanOfficerTranslations from '../components/translation';
 import InterviewModal from "@/app/commonComponents/modals/calendarModal/modal";
 
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+
 interface InterviewEvent {
   title: string;
   start: Date;
@@ -38,6 +41,9 @@ const localizer = dateFnsLocalizer({
 });
 
 export default function InterviewCalendar() {
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
   // All hooks must be at the top level
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== "undefined") {
@@ -132,10 +138,12 @@ export default function InterviewCalendar() {
       });
   
       if (res.ok) {
-        alert("Schedule updated!");
+        setModalMsg("Schedule updated!");
+        setShowSuccessModal(true);
         setShowModal(false);
       } else {
-        alert("Failed to update schedule");
+        setModalMsg("Failed to update schedule");
+        setShowErrorModal(true);
       }
     } catch (err) {
       console.error("Error saving changes:", err);
@@ -148,6 +156,12 @@ export default function InterviewCalendar() {
 
   return (
     <div className="p-4">
+      {showSuccessModal && (
+        <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
+      )}
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
+      )}
       <div className="bg-white p-4 rounded shadow text-black">
   <h2 className="text-xl font-semibold mb-4 text-black">{t.scheduledInterviews}</h2>
   {/* @ts-ignore: react-big-calendar type incompatibility with React 18+ */}

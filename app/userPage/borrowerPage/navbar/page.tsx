@@ -269,9 +269,25 @@ const {
           </div>
         </div>
 
-        {/* {isMobileMenuOpen && (
-            <MobileMenu navItems={getLoanOfficerNavItems} language={language} setLanguage={setLanguage} />
-        )} */}
+        {/* Mobile menu is currently disabled */}
+        {/*
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-5 md:hidden">
+            <div className="fixed top-0 left-0 w-full bg-white rounded-b-xl shadow-lg p-4 pt-20 max-h-screen overflow-y-auto">
+              <MobileMenu
+                navItems={[
+                  { name: 'Dashboard', href: '/userPage/borrowerPage/dashboard' },
+                  { name: 'Loan Application', href: '/userPage/borrowerPage/application' },
+                  { name: 'Payment History', href: '/userPage/borrowerPage/payment-history' },
+                  // Add more nav items as needed
+                ]}
+                language={language}
+                setLanguage={setLanguage}
+              />
+            </div>
+          </div>
+        )}
+        */}
 
       </div>
     </div>

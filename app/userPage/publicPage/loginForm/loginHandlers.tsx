@@ -3,11 +3,15 @@ interface LoginParams {
   password: string;
   onClose: () => void;
   router: any;
+  setShowErrorModal?: (show: boolean) => void;
+  setErrorMsg?: (msg: string) => void;
+  setShowSMSModal?: (show: boolean) => void;
 }
 
-export async function loginHandler({ username, password, onClose, router }: LoginParams) {
+export async function loginHandler({ username, password, onClose, router, setShowErrorModal, setErrorMsg, setShowSMSModal }: LoginParams) {
   if (!username || !password) {
-    alert('Please enter both username and password.');
+    if (typeof setErrorMsg === 'function') setErrorMsg('Please enter both username and password.');
+    if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
     return;
   }
 
@@ -96,9 +100,11 @@ export async function loginHandler({ username, password, onClose, router }: Logi
 }
 
 
-    alert('Invalid credentials or user not found.');
+  if (typeof setErrorMsg === 'function') setErrorMsg('Invalid credentials or user not found.');
+  if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
   } catch (error) {
     console.error('Login error:', error);
-    alert('Error connecting to the server.');
+    if (typeof setErrorMsg === 'function') setErrorMsg('Error connecting to the server.');
+    if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
   }
 }
