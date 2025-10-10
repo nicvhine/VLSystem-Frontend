@@ -7,6 +7,7 @@ import Navbar from "./navbar";
 import LoginModal from "../loginForm/page";
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
 
+W// Apply loan page: loan info sidebars and application form
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== 'undefined') {
@@ -114,7 +115,7 @@ export default function ApplicationPage() {
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
 
 
-      {/* Floating Info Button for mobile */}
+      {/* Floating info button (mobile) */}
       {isMobile && (
         <button
           className="fixed bottom-6 right-6 z-50 bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-red-700"
@@ -125,7 +126,7 @@ export default function ApplicationPage() {
         </button>
       )}
 
-      {/* Info Overlay Modal for mobile */}
+      {/* Info overlay modal (mobile) */}
       {isMobile && showInfoOverlay && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-lg border border-gray-200 p-4 w-80 max-w-[90vw] max-h-[80vh] overflow-y-auto relative">

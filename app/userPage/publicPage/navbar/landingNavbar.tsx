@@ -1,5 +1,7 @@
 'use client';
 
+// Public landing navbar: handles language, section navigation, and login modal
+
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
@@ -23,7 +25,7 @@ export default function LandingNavbar({
   setIsCalculationOpen: parentSetIsCalculationOpen
 }: LandingNavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Use parent state if provided, otherwise use local state
+  // State wiring: prefer parent state when provided, fallback to local
   const [localIsCalculationOpen, setLocalIsCalculationOpen] = useState(false);
   const [localIsLoginOpen, setLocalIsLoginOpen] = useState(false);
   
@@ -32,12 +34,12 @@ export default function LandingNavbar({
   const isLoginOpen = parentIsLoginOpen !== undefined ? parentIsLoginOpen : localIsLoginOpen;
   const setIsLoginOpen = parentSetIsLoginOpen || setLocalIsLoginOpen;
 
-  // Debug: Log state changes
+  // Debug log: calculation modal state
   useEffect(() => {
     console.log('isCalculationOpen changed:', isCalculationOpen);
   }, [isCalculationOpen]);
 
-  // Smooth scroll function
+  // Smooth scroll to in-page sections
   const smoothScrollTo = (elementId: string) => {
     const element = document.getElementById(elementId);
     if (element) {
@@ -73,9 +75,9 @@ export default function LandingNavbar({
             VLSystem
           </button>
 
-          {/* Desktop Nav */}
+          {/* Desktop nav */}
           <nav className="hidden sm:flex items-center gap-9">
-            {/* Language Toggle - left of Loan Simulator */}
+            {/* Language toggle */}
             <label className="flex items-center cursor-pointer mr-2">
               <input
                 type="checkbox"
@@ -90,7 +92,7 @@ export default function LandingNavbar({
                 {language === 'en' ? 'English' : 'Cebuano'}
               </span>
             </label>
-            {/* Loan Simulator (first nav item) */}
+            {/* Open loan simulator modal */}
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -100,7 +102,7 @@ export default function LandingNavbar({
             >
               {navItems[0].name}
             </button>
-            {/* Other nav items */}
+            {/* Section links */}
             {navItems.slice(1).map((item) => (
               <button
                 key={item.name}
@@ -145,10 +147,10 @@ export default function LandingNavbar({
           </button>
         </div>
 
-        {/* Mobile menu */}
+          {/* Mobile menu */}
         <div className={`sm:hidden ${isMenuOpen ? 'block' : 'hidden'} mt-4`}>
           <div className="flex flex-col gap-4">
-            {/* Language Toggle - left of Loan Simulator */}
+            {/* Language toggle */}
             <label className="flex items-center cursor-pointer mb-2">
               <input
                 type="checkbox"
@@ -163,7 +165,7 @@ export default function LandingNavbar({
                 {language === 'en' ? 'English' : 'Cebuano'}
               </span>
             </label>
-            {/* Loan Simulator (first nav item) */}
+            {/* Open loan simulator modal */}
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -174,7 +176,7 @@ export default function LandingNavbar({
             >
               {navItems[0].name}
             </button>
-            {/* Other nav items */}
+            {/* Section links */}
             {navItems.slice(1).map((item) => (
               <button
                 key={item.name + '-mobile'}

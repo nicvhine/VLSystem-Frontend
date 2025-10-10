@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+// Application tracker modal: fetch status and show progress
 interface TrackModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,7 +21,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
 
-  // Handle animation timing
+  // Animation timing on open/close
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
@@ -67,6 +68,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
     }
 
     try {
+      // API: fetch application status by ID
       const res = await fetch(`http://localhost:3001/loan-applications/${applicationId}`);
       if (!res.ok) {
         setStatus(null);

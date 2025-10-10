@@ -1,5 +1,7 @@
 'use client';
 
+// Landing page container: orchestrates sections, navbar, and modals
+
 import { useState, useEffect } from 'react';
 
 // Sections
@@ -27,13 +29,13 @@ export default function LandingPage() {
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
 
-  // Trigger page fade-in animation on mount
+  // UI: trigger page fade-in animation on mount
   useEffect(() => {
     const timer = setTimeout(() => setPageLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle logo click animation
+  // UX: handle logo click (scroll to top + quick fade re-trigger)
   const handleLogoClick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
@@ -61,7 +63,7 @@ export default function LandingPage() {
           setIsCalculationOpen={setIsCalculationOpen}
         />
 
-        {/* Main Sections */}
+        {/* Main sections */}
         <HeroSection
           language={language}
           isTrackOpen={isTrackOpen}
@@ -83,7 +85,7 @@ export default function LandingPage() {
         </section>
       </div>
 
-      {/* Modals */}
+      {/* Modals: login, simulator, tracker */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => setIsLoginOpen(false)}
