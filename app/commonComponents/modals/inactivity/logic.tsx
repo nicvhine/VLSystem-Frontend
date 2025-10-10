@@ -1,7 +1,9 @@
 'use client';
+// Hook: auto-logout on inactivity with warning countdown modal
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Track user inactivity and present warning modal before auto-logout
 export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10000) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
@@ -11,6 +13,7 @@ export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10
   const modalTimer = useRef<NodeJS.Timeout | null>(null);
   const countdownInterval = useRef<NodeJS.Timeout | null>(null);
 
+  // Clear session and redirect to login
   const logout = () => {
     localStorage.clear();
     router.push('/');
@@ -21,6 +24,7 @@ export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10
     if (countdownInterval.current) clearInterval(countdownInterval.current);
   };
 
+  // Show modal and start countdown + auto-logout timer
   const showInactivityModal = () => {
     setShowModal(true);
     let remaining = modalTimeout / 1000;
@@ -39,6 +43,7 @@ export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10
     }, modalTimeout);
   };
 
+  // Reset inactivity timer based on recent activity
   const startInactivityTimer = () => {
     if (activityTimer.current) clearTimeout(activityTimer.current);
     activityTimer.current = setTimeout(() => {
@@ -46,6 +51,7 @@ export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10
     }, timeout);
   };
 
+  // Dismiss modal and resume normal inactivity tracking
   const stayLoggedIn = () => {
     setShowModal(false);
     resetCountdown();

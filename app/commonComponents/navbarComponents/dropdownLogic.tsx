@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import emailjs from 'emailjs-com';
 import useAccountSettings from './accountSettings';
 
+// Hook: profile dropdown logic for editing fields and verifications
 export function useProfileDropdownLogic(
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
 ) {
@@ -46,6 +47,7 @@ export function useProfileDropdownLogic(
     setActiveSettingsTab,
   } = useAccountSettings();
 
+  // Toggle account settings panel and reset related UI state
   const toggleEdit = () => {
     setIsEditing((prev) => !prev);
     setActiveSettingsTab('account');
@@ -56,6 +58,7 @@ export function useProfileDropdownLogic(
     setIsEditingPasswordField(false);
   };
 
+  // Clear session and return to login
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = '/';
@@ -72,7 +75,8 @@ export function useProfileDropdownLogic(
     }
   }, [editingEmail]);
 
-  // EMAIL VERIFICATION
+  // Email verification: send + validate code
+  // Send email verification code via EmailJS after basic validation
   const sendVerificationCode = async () => {
     if (!editingEmail || !editingEmail.trim()) {
       setPasswordError('Please enter a valid email address.');
@@ -130,6 +134,7 @@ export function useProfileDropdownLogic(
     }
   };
 
+  // Check user-entered email code against the generated one
   const verifyEmailCode = () => {
     if (userEnteredCode === emailVerificationCode) {
       setEmailVerified(true);
@@ -143,7 +148,8 @@ export function useProfileDropdownLogic(
   };
   
 
-  // SMS VERIFICATION
+  // SMS verification: send + validate code
+  // Request an SMS code to be delivered to the provided phone number
   const sendSmsVerificationCode = async () => {
     if (!editingPhone || !editingPhone.trim()) {
       setPhoneError('Please enter a valid phone number.');
@@ -180,6 +186,7 @@ export function useProfileDropdownLogic(
     }
   };
 
+  // Validate SMS code
   const verifySmsCode = () => {
     if (userEnteredCode === smsVerificationCode) {
       setSmsVerified(true);
@@ -190,6 +197,7 @@ export function useProfileDropdownLogic(
     }
   };
 
+  // Toggle notification preference and persist to localStorage
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const updatedPrefs = {
       ...notificationPreferences,
@@ -199,6 +207,7 @@ export function useProfileDropdownLogic(
     localStorage.setItem('notificationPreferences', JSON.stringify(updatedPrefs));
   };
 
+  // Persist email/phone/password changes to backend with validation
   const handleAccountSettingsUpdate = async () => {
     setPasswordError('');
     setPhoneError('');

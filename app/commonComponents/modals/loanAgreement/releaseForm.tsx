@@ -1,5 +1,6 @@
 'use client';
 
+// Modal: release form preview and print
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";

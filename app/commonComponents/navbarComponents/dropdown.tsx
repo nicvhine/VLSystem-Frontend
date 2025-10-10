@@ -1,5 +1,7 @@
 'use client';
 
+// Profile dropdown: avatar, account settings panel, and logout
+
 import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
@@ -23,6 +25,7 @@ interface ProfileDropdownProps {
   handleCancelUpload: () => void;
 }
 
+// Profile dropdown container rendering avatar, settings panel and actions
 export default function ProfileDropdown(props: ProfileDropdownProps) {
   const {
     name,
@@ -42,7 +45,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     handleCancelUpload,
   } = props;
 
-  // Get dropdown logic
+  // Logic: state/actions for account settings and verification flows
   const {
     editingEmail,
     setEditingEmail,

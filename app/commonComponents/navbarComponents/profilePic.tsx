@@ -1,13 +1,16 @@
 'use client';
 
+// Hook: profile picture preview, upload, and cancel handlers
 import { useState } from 'react';
 
+// Manage profile picture preview and upload lifecycle
 export default function useProfilePic() {
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [previewPic, setPreviewPic] = useState<string | null>(null);
   const [originalPic, setOriginalPic] = useState<string | null>(null);
   const [isUploadingPic, setIsUploadingPic] = useState(false);
 
+  // Preview selected image and set uploading state
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -17,6 +20,7 @@ export default function useProfilePic() {
     setIsUploadingPic(true);
   };
 
+  // Upload selected image to backend and persist URL
   const handleSaveProfilePic = async () => {
     if (!previewPic) return;
 
@@ -48,6 +52,7 @@ export default function useProfilePic() {
     }
   };
 
+  // Revert preview and exit uploading state
   const handleCancelUpload = () => {
     setPreviewPic(null);
     setIsUploadingPic(false);

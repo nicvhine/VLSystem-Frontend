@@ -28,11 +28,13 @@ export default function InterviewModal({
   const [showConfirm, setShowConfirm] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
 
+  // Update form fields when props change
   useEffect(() => {
     setDate(currentDate || "");
     setTime(currentTime || "");
   }, [currentDate, currentTime]);
 
+  // Handle modal animation timing
   useEffect(() => {
     if (show) {
       const timer = setTimeout(() => setAnimateIn(true), 10);
@@ -44,6 +46,7 @@ export default function InterviewModal({
 
   if (!show) return null;
 
+  // Validate and show confirmation before saving
   const handleSave = () => {
     if (!date || !time) {
       alert("Please set both date and time before saving.");
@@ -52,11 +55,13 @@ export default function InterviewModal({
     setShowConfirm(true);
   };
 
+  // Confirm and save schedule changes
   const handleConfirm = () => {
     setShowConfirm(false);
     onSave(date, time);
   };
 
+  // Cancel saving changes
   const handleCancel = () => {
     setShowConfirm(false);
   };

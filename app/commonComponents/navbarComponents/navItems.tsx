@@ -1,5 +1,7 @@
 import navbarTranslations from "./translations";
 
+// Role-specific nav item generators
+
 export const getHeadNavItems = (language: 'en' | 'ceb') => {
   const t = navbarTranslations[language];
   return [

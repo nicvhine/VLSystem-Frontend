@@ -32,6 +32,7 @@ export default function ReleaseFormModal({
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
 
+  // Handle modal animation timing
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
@@ -46,6 +47,7 @@ export default function ReleaseFormModal({
 
   if (!showModal) return null;
 
+  // Trigger print dialog with slight delay
   const handlePrint = () => setTimeout(() => window.print(), 100);
 
   const modalContent = (

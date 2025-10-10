@@ -7,7 +7,7 @@ import Navbar from "./navbar";
 import LoginModal from "../loginForm/page";
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
 
-W// Apply loan page: loan info sidebars and application form
+// Apply loan page: loan info sidebars and application form
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== 'undefined') {

@@ -1,3 +1,4 @@
+// Helpers: currency, capitalization, and safe month addition
 export const formatCurrency = (amount?: number) =>
   amount && !isNaN(amount)
     ? new Intl.NumberFormat("en-PH", {

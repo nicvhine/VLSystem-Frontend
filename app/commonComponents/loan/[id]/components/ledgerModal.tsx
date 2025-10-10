@@ -1,5 +1,6 @@
 "use client";
 
+// Modal: loan payment ledger (chronological with running balance)
 import { useEffect, useState } from "react";
 import { FiX } from "react-icons/fi";
 
@@ -33,6 +34,7 @@ export default function LedgerModal({
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Fetch ledger data when modal opens
   useEffect(() => {
     if (!isOpen || !loanId) return;
 
@@ -56,6 +58,7 @@ export default function LedgerModal({
 
   if (!isOpen) return null;
 
+  // Sort payments chronologically
   const sortedPayments = [...payments].sort(
     (a, b) =>
       new Date(a.datePaid).getTime() - new Date(b.datePaid).getTime()
@@ -63,6 +66,7 @@ export default function LedgerModal({
 
   let runningBalance = totalPayable;
 
+  // Format amount as Philippine Peso currency
   const formatCurrency = (amount?: number) =>
     typeof amount === "number"
       ? new Intl.NumberFormat("en-PH", {

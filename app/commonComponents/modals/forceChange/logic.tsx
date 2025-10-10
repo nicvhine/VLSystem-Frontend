@@ -1,7 +1,9 @@
 'use client';
 
+// Hook: change-password flow for forced updates (borrower/user)
 import { useState, useCallback } from 'react';
 
+// Manage forced password change state and submission
 export function useChangePassword(
   id: string | null,
   role: 'user' | 'borrower', // 👈 add role
@@ -16,6 +18,7 @@ export function useChangePassword(
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
 
 
+  // Disallow copy/paste for basic hardening
   const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
     return false;
@@ -31,6 +34,7 @@ export function useChangePassword(
     return false;
   }, []);
 
+  // Validate and submit password change to backend
   const handleChange = async () => {
     if (newPassword !== confirm) {
       setError("Passwords don't match");
