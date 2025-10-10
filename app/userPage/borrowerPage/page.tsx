@@ -14,6 +14,7 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
 
     const {showModal, countdown, stayLoggedIn, logout} = useInactivityLogout();
 
+    // Check authentication and password change requirements
     useEffect(() => {
         const token = localStorage.getItem('token');
         const mustChange = localStorage.getItem('forcePasswordChange');

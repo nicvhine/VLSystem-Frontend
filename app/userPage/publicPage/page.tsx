@@ -29,13 +29,13 @@ export default function LandingPage() {
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
 
-  // UI: trigger page fade-in animation on mount
+  // Trigger page fade-in animation on mount
   useEffect(() => {
     const timer = setTimeout(() => setPageLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // UX: handle logo click (scroll to top + quick fade re-trigger)
+  // Handle logo click (scroll to top + trigger fade animation)
   const handleLogoClick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 

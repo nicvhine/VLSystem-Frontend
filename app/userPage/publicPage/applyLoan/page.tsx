@@ -27,6 +27,7 @@ export default function ApplicationPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false); 
   const isMobile = useIsMobile();
   
+  // Update reloan info with current language preference
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const reloanInfo = localStorage.getItem('reloanInfo');
@@ -63,6 +64,7 @@ export default function ApplicationPage() {
     language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam',
   ];
 
+  // Get loan requirements based on loan type
   const getRequirements = (type: string) => {
     switch(type) {
       case (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)'):
