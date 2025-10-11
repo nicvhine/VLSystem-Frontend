@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 
+// Props interface for error modal component
 interface ErrorModalProps {
   isOpen: boolean;
   message: string;
   onClose: () => void;
 }
 
+/**
+ * Error modal component with fade animations and auto-close functionality
+ * Displays error messages with red styling and error icon
+ * @param isOpen - Boolean to control modal visibility
+ * @param message - Error message to display
+ * @param onClose - Callback function to close the modal
+ * @returns JSX element containing the error modal
+ */
 const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, message, onClose }) => {
+  // Modal state management
   const [visible, setVisible] = useState(false);
   const [animation, setAnimation] = useState<'fade-in' | 'fade-out' | ''>('');
 
-  // Handle modal visibility and animation
+  // Handle modal visibility and animation transitions
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
@@ -22,7 +32,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, message, onClose }) => 
     }
   }, [isOpen, visible]);
 
-  // Auto-close modal after 5 seconds
+  // Auto-close modal after 5 seconds when opened
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => onClose(), 5000);

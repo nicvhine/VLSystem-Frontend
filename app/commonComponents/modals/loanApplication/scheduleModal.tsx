@@ -1,13 +1,14 @@
 'use client';
 
-// Modal: schedule interview for a loan application
 import { useState, useEffect } from "react";
 import { FiX, FiFileText } from "react-icons/fi";
 import ErrorModal from '../../modals/errorModal/modal';
 import emailjs from "emailjs-com";
 
+// API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
 
+// Props interface for schedule modal component
 interface SetScheduleModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +19,18 @@ interface SetScheduleModalProps {
   showSuccess: (msg: string) => void;
 }
 
-// Modal for setting interview schedule on an application
+/**
+ * Modal component for setting interview schedule on a loan application
+ * Handles date/time selection, email notifications, and application status updates
+ * @param isOpen - Boolean to control modal visibility
+ * @param onClose - Callback function to close the modal
+ * @param application - Application data object
+ * @param setApplications - Function to update applications state
+ * @param authFetch - Authenticated fetch function
+ * @param showError - Function to display error messages
+ * @param showSuccess - Function to display success messages
+ * @returns JSX element containing the schedule modal
+ */
 export default function SetScheduleModal({
   isOpen,
   onClose,

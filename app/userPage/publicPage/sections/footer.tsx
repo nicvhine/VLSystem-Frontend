@@ -1,9 +1,16 @@
 import Link from 'next/link';
 
+// Props interface for footer component
 interface FooterProps {
   language: 'en' | 'ceb';
 }
 
+/**
+ * Footer component displaying company information, legal links, and contact details
+ * Features bilingual content with responsive grid layout
+ * @param language - Language preference for content display
+ * @returns JSX element containing the footer section
+ */
 export default function Footer({ language }: FooterProps) {
 
   return (

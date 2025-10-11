@@ -10,25 +10,36 @@ import { Navigation, Autoplay, EffectFade } from 'swiper/modules';
 import { motion } from 'framer-motion';
 import landingPageTranslation from '@/app/commonComponents/translations/landingPage'; 
 
+// Props interface for hero section component
 interface HeroSectionProps {
   language?: 'en' | 'ceb';
   isTrackOpen?: boolean;
   setIsTrackOpen?: (open: boolean) => void;
 }
 
+/**
+ * Hero section component with image carousel and call-to-action content
+ * Features a Swiper carousel with company images and bilingual support
+ * @param language - Language preference for content display
+ * @param isTrackOpen - Parent state for track modal visibility
+ * @param setIsTrackOpen - Parent function to control track modal visibility
+ * @returns JSX element containing the hero section with carousel
+ */
 export default function HeroSection({ 
   language = 'en', 
   isTrackOpen: parentIsTrackOpen, 
   setIsTrackOpen: parentSetIsTrackOpen 
 }: HeroSectionProps) {
 
-  // TRACK APPLICATIONS
+  // Track applications modal state management
   const [localIsTrackOpen, setLocalIsTrackOpen] = useState(false);
   const isTrackOpen = parentIsTrackOpen !== undefined ? parentIsTrackOpen : localIsTrackOpen;
   const setIsTrackOpen = parentSetIsTrackOpen || setLocalIsTrackOpen;
 
+  // Get translations for current language
   const t = landingPageTranslation[language];
 
+  // Image slides data for the carousel
   const slides = [
     { img: '../landingPagePics/image1.jpg', alt: 'Slide 1' },
     { img: '../landingPagePics/eq2.jpg', alt: 'Slide 2' },

@@ -1,10 +1,8 @@
 'use client';
 
-// Landing page container: orchestrates sections, navbar, and modals
-
 import { useState, useEffect } from 'react';
 
-// Sections
+// Section components
 import HeroSection from './sections/heroSection';
 import AboutUsSection from './sections/aboutUsSection';
 import FeatureSection from './sections/featuresection';
@@ -12,34 +10,44 @@ import TestimonialSection from './sections/testimonialSection';
 import TeamSection from './sections/teamSection';
 import Footer from './sections/footer';
 
-// Components
+// Navigation component
 import LandingNavbar from './navbar/landingNavbar';
 
-// Modals
+// Modal components
 import LoginModal from './loginForm/page';
 import SimulatorModal from './loanSimulator/page';
 import TrackModal from './applicationTracker/page';
 
+/**
+ * Main landing page component that orchestrates all sections, navbar, and modals
+ * Handles language switching, page animations, and modal state management
+ * @returns JSX element containing the complete landing page layout
+ */
 export default function LandingPage() {
+  // Language state for bilingual support
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  
+  // Page animation state
   const [pageLoaded, setPageLoaded] = useState(false);
 
-  // Modal states
+  // Modal visibility states
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
 
-  // Trigger page fade-in animation on mount
+  // Trigger page fade-in animation on component mount
   useEffect(() => {
     const timer = setTimeout(() => setPageLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle logo click (scroll to top + trigger fade animation)
+  /**
+   * Handle logo click - scrolls to top and triggers fade animation
+   */
   const handleLogoClick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Trigger fade animation
+    // Trigger fade animation by resetting and re-enabling page loaded state
     setPageLoaded(false);
     setTimeout(() => setPageLoaded(true), 100);
   };

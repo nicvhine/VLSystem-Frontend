@@ -1,51 +1,67 @@
 "use client";
-import SuccessModal from '../../modals/successModal/modal';
 
-// Application details page: profile, income, references, collateral, and modals
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from "react-icons/fi";
+import { createPortal } from "react-dom";
 
+// Success modal component
+import SuccessModal from '../../modals/successModal/modal';
 
+// Navigation component
 import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
 
-//CUSTOMIZATION
+// Customization components
 import WithCollateral from './customization/withCollateral';
 import OpenTerm from './customization/openTerm'; 
 
-//MODALS
+// Modal components
 import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
 import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal"; 
 import ReleaseForm from "../../modals/loanAgreement/releaseForm";
 import ErrorModal from '../../modals/errorModal/modal';
 
-//HOOKS
+// Custom hooks
 import ApplicationButtons from "../hooks/applicationButtons";
-import { createPortal } from "react-dom";
 import { useApplications } from "../hooks/useApplication";
 
-//TRANSLATIONS
+// Translation module
 import secondLoanApplicationTranslation from "../translation/second";
 
-//ROLE-BASED
+// Role-based page wrappers
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
+// API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
 
+/**
+ * Application details page component with profile, income, references, collateral, and modals
+ * Displays comprehensive application information in a tabbed interface with action buttons
+ * @param params - Route parameters containing the application ID
+ * @returns JSX element containing the application details interface
+ */
 export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
+  // Success modal state
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  /**
+   * Show success modal with message
+   * @param msg - Success message to display
+   */
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
     setSuccessModalOpen(true);
     setTimeout(() => setSuccessModalOpen(false), 5000);
   };
+  
   const router = useRouter();
   const { applications, setApplications, loading } = useApplications(API_URL);
 
+  // Tab and modal state
   const [activeTab, setActiveTab] = useState('income');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);

@@ -2,6 +2,7 @@
 
 import React from "react";
 
+// Props interface for source of income form section
 interface SourceOfIncomeProps {
   language: "en" | "ceb";
   sourceOfIncome: string;
@@ -26,6 +27,34 @@ interface SourceOfIncomeProps {
   setAppCompanyName: (value: string) => void;
   missingFields?: string[];
 }
+
+/**
+ * Source of income form section component
+ * Handles employment and business information with conditional fields based on income source
+ * @param language - Current language setting (English or Cebuano)
+ * @param sourceOfIncome - Selected source of income (employed/business)
+ * @param setSourceOfIncome - Function to set source of income
+ * @param appTypeBusiness - Type of business
+ * @param setAppTypeBusiness - Function to set business type
+ * @param appBusinessName - Business name
+ * @param setAppBusinessName - Function to set business name
+ * @param appDateStarted - Date business started
+ * @param setAppDateStarted - Function to set business start date
+ * @param appBusinessLoc - Business location
+ * @param setAppBusinessLoc - Function to set business location
+ * @param appMonthlyIncome - Monthly income amount
+ * @param setAppMonthlyIncome - Function to set monthly income
+ * @param appOccupation - Occupation/job title
+ * @param setAppOccupation - Function to set occupation
+ * @param occupationError - Occupation validation error message
+ * @param setOccupationError - Function to set occupation error
+ * @param appEmploymentStatus - Employment status
+ * @param setAppEmploymentStatus - Function to set employment status
+ * @param appCompanyName - Company name
+ * @param setAppCompanyName - Function to set company name
+ * @param missingFields - Array of missing field names for validation
+ * @returns JSX element containing the source of income form section
+ */
 
 export default function SourceOfIncome({
   language,

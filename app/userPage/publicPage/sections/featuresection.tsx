@@ -4,13 +4,22 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import landingPageTranslation from '@/app/commonComponents/translations/landingPage';
 
+// Props interface for feature section component
 export interface FeatureSectionProps {
   language: 'en' | 'ceb';
 }
 
+/**
+ * Feature section component displaying company features and benefits
+ * Features animated cards with icons and bilingual content
+ * @param language - Language preference for content display
+ * @returns JSX element containing the feature section
+ */
 const FeatureSection: React.FC<FeatureSectionProps> = ({ language }) => {
+  // Get translations for current language
   const t = landingPageTranslation[language];
 
+  // Feature data array with translations
   const features = [
     {
       title: t.f1Title,

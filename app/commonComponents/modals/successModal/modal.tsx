@@ -1,16 +1,26 @@
 import React, { useEffect, useState } from 'react';
 
+// Props interface for success modal component
 interface SuccessModalProps {
   isOpen: boolean;
   message: string;
   onClose: () => void;
 }
 
+/**
+ * Success modal component with fade animations and auto-close functionality
+ * Displays success messages with green styling and checkmark icon
+ * @param isOpen - Boolean to control modal visibility
+ * @param message - Success message to display
+ * @param onClose - Callback function to close the modal
+ * @returns JSX element containing the success modal
+ */
 const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose }) => {
+  // Modal state management
   const [visible, setVisible] = useState(false);
   const [animation, setAnimation] = useState<'fade-in' | 'fade-out' | ''>('');
 
-  // Handle modal visibility and animation
+  // Handle modal visibility and animation transitions
   useEffect(() => {
     if (isOpen) {
       setVisible(true);
@@ -22,7 +32,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose })
     }
   }, [isOpen, visible]);
 
-  // Auto-close modal after 5 seconds
+  // Auto-close modal after 5 seconds when opened
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => onClose(), 5000);
