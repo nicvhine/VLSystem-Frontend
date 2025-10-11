@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import emailjs from 'emailjs-com';
 import useAccountSettings from './accountSettings';
 
-// Hook: profile dropdown logic for editing fields and verifications
 export function useProfileDropdownLogic(
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
 ) {
@@ -278,37 +277,59 @@ export function useProfileDropdownLogic(
         localStorage.setItem('phoneNumber', editingPhone);
       }
 
-      // PASSWORD UPDATE
+      //Password update
       if (isEditingPasswordField && newPassword) {
         if (newPassword !== confirmPassword) {
           setPasswordError('New Password and Confirm Password do not match.');
           return;
         }
 
-        const passwordRegex =
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-        if (!passwordRegex.test(newPassword)) {
-          setPasswordError(
-            'Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.'
-          );
-          return;
-        }
+        try {
+          const borrowersId = localStorage.getItem('borrowersId') || '';
+          const userId = localStorage.getItem('userId') || '';
+          const role = localStorage.getItem('role') || '';
+          const token = localStorage.getItem('token') || '';
 
-        const passwordRes = await fetch(
-          `http://localhost:3001/users/${userId}/change-password`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ newPassword }),
+          let endpoint = '';
+          let targetId = '';
+
+          if (['loan officer', 'head', 'manager', 'collector'].includes(role?.toLowerCase() || '')) {
+            endpoint = 'users';
+            targetId = userId;
+          } else if (role?.toLowerCase() === 'borrower') {
+            endpoint = 'borrowers';
+            targetId = borrowersId;
+          } else {
+            setPasswordError('Invalid account role.');
+            return;
           }
-        );
 
-        if (!passwordRes.ok) {
-          const data = await passwordRes.json();
-          setPasswordError(data.message || 'Failed to update password.');
-          return;
+          const passwordRes = await fetch(
+            `http://localhost:3001/${endpoint}/${targetId}/change-password`,
+            {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({ currentPassword, newPassword }),
+            }
+          );
+
+          if (!passwordRes.ok) {
+            const data = await passwordRes.json();
+            setPasswordError(data.message || 'Failed to update password.');
+            return;
+          }
+
+          setSettingsSuccess('✔ Password updated successfully!');
+          setTimeout(() => setSettingsSuccess(''), 4000);
+        } catch (error) {
+          console.error('Password update error:', error);
+          setPasswordError('Server error. Please try again.');
         }
       }
+
 
       setIsEditingEmailField(false);
       setIsEditingPhoneField(false);
