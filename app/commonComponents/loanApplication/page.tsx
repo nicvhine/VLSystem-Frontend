@@ -24,7 +24,7 @@ interface Application {
   appEmail: string;
   dateApplied: string;
   appLoanAmount: number;
-  appInterest: number;
+  appInterestRate: number;
   appTotalPayable: number;
   loanType: string;
   status: string;
@@ -383,7 +383,7 @@ export default function ApplicationsPage() {
 
                     {/* Interest */}
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {application.appInterest}%
+                      {application.appInterestRate}%
                     </td>
 
                     {/* Collectable */}
