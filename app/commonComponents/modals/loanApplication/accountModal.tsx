@@ -175,13 +175,7 @@ export default forwardRef(function AccountModal(_, ref) {
         <p className="mb-2 text-black">
           <strong>Name:</strong> {selectedApp?.appName}
         </p>
-        {generatedUsername && (
-          <p className="mb-4 text-black">
-            <strong>Generated Username:</strong>{" "}
-            <span className="text-red-600">{generatedUsername}</span>
-          </p>
-        )}
-
+        
         <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
         <select
           value={selectedCollector}

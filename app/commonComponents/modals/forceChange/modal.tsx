@@ -5,24 +5,21 @@ import { useChangePassword } from './logic';
 
 /**
  * Modal component for forced password change
- * Displays password change form with validation and security features
- * @param onClose - Callback function to close the modal
- * @returns JSX element containing the password change modal
  */
 export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
-  // Get user role and ID from localStorage
   const role = typeof window !== "undefined" ? localStorage.getItem('role') as "user" | "borrower" : "user";
   const id =
     role === "borrower"
       ? localStorage.getItem("borrowerId")
       : localStorage.getItem("userId");
 
-  // Use custom hook for password change logic
   const {
+    currentPassword, setCurrentPassword,
     newPassword, setNewPassword,
     confirm, setConfirm,
     showNew, setShowNew,
     showConfirm, setShowConfirm,
+    showCurrent, setShowCurrent,
     error, setError,
     handleChange,
     preventCopy, preventCut, preventCopyPaste,
@@ -37,8 +34,42 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
           <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg">{error}</div>
         )}
 
-        {/* New Password */}
         <div className="space-y-4 mt-6">
+          {/* Current Password */}
+          <div>
+            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                id="currentPassword"
+                type={showCurrent ? 'text' : 'password'}
+                placeholder="Enter current password"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-12 
+                           focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none 
+                           transition placeholder:text-gray-500 text-gray-900"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setError('');
+                }}
+                autoComplete="current-password"
+                onContextMenu={(e) => e.preventDefault()}
+                onPaste={preventCopyPaste}
+                onCopy={preventCopy}
+                onCut={preventCut}
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowCurrent(!showCurrent)}
+              >
+                {showCurrent ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* New Password */}
           <div>
             <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
               New Password
@@ -112,7 +143,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
           <button
             onClick={handleChange}
             className="w-full bg-red-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-red-700 transition"
-            disabled={!newPassword || !confirm || newPassword !== confirm}
+            disabled={!currentPassword || !newPassword || !confirm || newPassword !== confirm}
           >
             Change Password
           </button>

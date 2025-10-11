@@ -1,47 +1,39 @@
 'use client';
 
-// Hook: change-password flow for forced updates (borrower/user)
 import { useState, useCallback } from 'react';
 
-// Manage forced password change state and submission
 export function useChangePassword(
   id: string | null,
-  role: 'user' | 'borrower', // 👈 add role
+  role: 'user' | 'borrower',
   onClose: () => void
 ) {
   const [newPassword, setNewPassword] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
   const [error, setError] = useState('');
+
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : '';
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
-
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : ''; // <-- get token
 
   // Disallow copy/paste for basic hardening
-  const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    return false;
-  }, []);
-
-  const preventCopy = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    return false;
-  }, []);
-
-  const preventCut = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    return false;
-  }, []);
+  const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
+  const preventCopy = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
+  const preventCut = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
 
   // Validate and submit password change to backend
   const handleChange = async () => {
     if (newPassword !== confirm) {
-      setError("Passwords don't match");
+      setError('New Password and Confirm Password do not match.');
       return;
     }
-    if (!newPassword || newPassword.length < 6) {
-      setError("Password must be at least 6 characters long");
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      setError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
       return;
     }
 
@@ -53,8 +45,11 @@ export function useChangePassword(
 
       const res = await fetch(endpoint, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newPassword }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ newPassword, currentPassword }),
       });
 
       const result = await res.json();
@@ -66,14 +61,15 @@ export function useChangePassword(
       } else {
         setError(result.message || 'Failed to change password');
       }
-    } catch (error) {
-      console.error('Password change error:', error);
+    } catch (err) {
+      console.error('Password change error:', err);
       setError('Something went wrong. Please try again.');
     }
   };
 
   return {
     newPassword, setNewPassword,
+    currentPassword, setCurrentPassword,
     confirm, setConfirm,
     showNew, setShowNew,
     showConfirm, setShowConfirm,
