@@ -106,6 +106,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         onClose();
         router.push('/');
     };
+    
 
     return (
         <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>

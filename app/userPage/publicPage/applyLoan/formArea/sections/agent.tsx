@@ -58,7 +58,7 @@ const AgentDropdown: FC<AgentDropdownProps> = ({
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const res = await fetch("http://localhost:3001/agents");
+        const res = await fetch("http://localhost:3001/agents/names");
         if (!res.ok) throw new Error("Failed to fetch agents");
         const data = await res.json();
         setAgents(data.agents || []);
@@ -89,7 +89,7 @@ const AgentDropdown: FC<AgentDropdownProps> = ({
           <option value="">{language === "en" ? "Choose an agent" : "Pilia ang ahente"}</option>
           {agents.map((agent) => (
             <option key={agent.agentId} value={agent.agentId}>
-              {agent.name} ({agent.agentId})
+              {agent.name}
             </option>
           ))}
         </select>
