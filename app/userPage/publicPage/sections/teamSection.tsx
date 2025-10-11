@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 
+// Props interface for team section component
 export interface TeamSectionProps {
   language: 'en' | 'ceb';
 }
 
+// Team members data with bilingual role descriptions
 const teamMembers = [
   { name: 'Divina Alburo', role: { en: 'Chief Executive Officer', ceb: 'Punong Ehekutibo' }, img: '/idPic.jpg' },
   { name: 'Ronelyn Pelayo', role: { en: 'Loan Manager', ceb: 'Tagdumala sa Pahulam' }, img: '/idPic.jpg' },
@@ -25,6 +27,12 @@ const teamMembers = [
   { name: 'Emma Lopez', role: { en: 'Collector', ceb: 'Kolektor' }, img: '/idPic.jpg' },
 ];
 
+/**
+ * Team section component displaying company team members
+ * Features responsive grid layout with bilingual role descriptions
+ * @param language - Language preference for content display
+ * @returns JSX element containing the team section
+ */
 const TeamSection: React.FC<TeamSectionProps> = ({ language }) => {
   return (
     <section className="py-24 bg-gray-50 text-black" id="team">

@@ -1,7 +1,14 @@
+// Props interface for about section component
 export interface AboutSectionProps {
   language: 'en' | 'ceb';
 }
 
+/**
+ * About section component displaying company information, vision, and mission
+ * Features bilingual content with responsive design
+ * @param language - Language preference for content display
+ * @returns JSX element containing the about section
+ */
 const AboutSection: React.FC<AboutSectionProps> = ({ language }) => {
   return (
     <section id="about" className="py-24 bg-gray-100">

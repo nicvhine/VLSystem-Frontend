@@ -1,23 +1,23 @@
 "use client";
 
-// Loan applications list: filters, search/sort, reloan accept
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import Link from "next/link";
 
-// Role-based wrappers
+// Role-based page wrappers
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
-// Translations
+// Translation and modal components
 import firstLoanApplicationTranslation from "./translation/first";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 
+// API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
 
-// Application interface
+// Interface for loan application data structure
 interface Application {
   applicationId: string;
   appName: string;
@@ -34,13 +34,21 @@ interface Application {
   borrowersId: string;
 }
 
-// MAIN COMPONENT
+/**
+ * Loan applications listing page with filters, search, sort, and reloan acceptance
+ * Displays applications in a table format with role-based access control
+ * @returns JSX element containing the applications listing interface
+ */
 export default function ApplicationsPage() {
-  // States
+  // Data state
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
+  
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [generatedUsername, setGeneratedUsername] = useState("");

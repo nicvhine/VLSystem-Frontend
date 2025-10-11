@@ -3,13 +3,22 @@
 import React from 'react';
 import landingPageTranslation from '@/app/commonComponents/translations/landingPage';
 
+// Props interface for testimonial section component
 export interface TestimonialSectionProps {
   language: 'en' | 'ceb';
 }
 
+/**
+ * Testimonial section component displaying customer testimonials
+ * Features bilingual content with hover animations
+ * @param language - Language preference for content display
+ * @returns JSX element containing the testimonial section
+ */
 const TestimonialSection: React.FC<TestimonialSectionProps> = ({ language }) => {
+  // Get translations for current language
   const t = landingPageTranslation[language];
 
+  // Testimonial data array with translations
   const testimonials = [
     {
       quote: t.t1Quote, 

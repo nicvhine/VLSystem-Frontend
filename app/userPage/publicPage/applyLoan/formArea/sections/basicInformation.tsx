@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import MapComponent from "../../MapComponent"; 
 
+// Props interface for basic information form section
 interface BasicInformationProps {
   language: "en" | "ceb";
   appName: string;
@@ -26,6 +27,32 @@ interface BasicInformationProps {
   setAppAddress: (value: string) => void;
   missingFields?: string[];
 }
+
+/**
+ * Basic information form section component
+ * Handles personal details including name, contact, marital status, and address with map integration
+ * @param language - Current language setting (English or Cebuano)
+ * @param appName - Applicant's name
+ * @param setAppName - Function to set applicant's name
+ * @param appDob - Applicant's date of birth
+ * @param setAppDob - Function to set date of birth
+ * @param appContact - Applicant's contact number
+ * @param setAppContact - Function to set contact number
+ * @param appEmail - Applicant's email address
+ * @param setAppEmail - Function to set email address
+ * @param appMarital - Applicant's marital status
+ * @param setAppMarital - Function to set marital status
+ * @param appChildren - Number of children
+ * @param setAppChildren - Function to set number of children
+ * @param appSpouseName - Spouse's name
+ * @param setAppSpouseName - Function to set spouse's name
+ * @param appSpouseOccupation - Spouse's occupation
+ * @param setAppSpouseOccupation - Function to set spouse's occupation
+ * @param appAddress - Applicant's address
+ * @param setAppAddress - Function to set address
+ * @param missingFields - Array of missing field names for validation
+ * @returns JSX element containing the basic information form section
+ */
 
 export default function BasicInformation({
   language,

@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { formToJSON } from "axios";
+
+// Form section components
 import BasicInformation from "./sections/basicInformation";
 import SourceOfIncome from "./sections/sourceOfIncome";
 import References from "./sections/references";
 import CollateralInformation from "./sections/collateral";
 import LoanDetails from "./sections/loanDetails";
 import UploadSection from "./sections/uploadSection";
-import AgentDropdown from "./sections/agent"; 
-import { formToJSON } from "axios";
+import AgentDropdown from "./sections/agent";
 
 /**
  * Error modal component for displaying missing field errors

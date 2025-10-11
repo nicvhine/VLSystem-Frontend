@@ -1,17 +1,23 @@
 'use client';
 
-// Modal: force user to update password before continuing
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useChangePassword } from './logic';
 
-// Modal UI for forced password change
+/**
+ * Modal component for forced password change
+ * Displays password change form with validation and security features
+ * @param onClose - Callback function to close the modal
+ * @returns JSX element containing the password change modal
+ */
 export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
+  // Get user role and ID from localStorage
   const role = typeof window !== "undefined" ? localStorage.getItem('role') as "user" | "borrower" : "user";
   const id =
     role === "borrower"
       ? localStorage.getItem("borrowerId")
       : localStorage.getItem("userId");
 
+  // Use custom hook for password change logic
   const {
     newPassword, setNewPassword,
     confirm, setConfirm,
@@ -19,7 +25,7 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
     showConfirm, setShowConfirm,
     error, setError,
     handleChange,
-    preventCopy, preventCut, preventCopyPaste, // include these if you still want them
+    preventCopy, preventCut, preventCopyPaste,
   } = useChangePassword(id, role, onClose);
 
   return (

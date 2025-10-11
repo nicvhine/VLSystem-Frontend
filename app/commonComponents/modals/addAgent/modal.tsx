@@ -5,6 +5,7 @@ import { FiX } from "react-icons/fi";
 
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
+// Props interface for add agent modal component
 interface AddAgentModalProps {
   show: boolean;
   onClose: () => void;
@@ -16,6 +17,21 @@ interface AddAgentModalProps {
   newAgentPhone: string;
   setNewAgentPhone: (phone: string) => void;
 }
+
+/**
+ * Add agent modal component for creating new agent accounts
+ * Handles form validation, confirmation, and agent creation
+ * @param show - Boolean to control modal visibility
+ * @param onClose - Callback function to close the modal
+ * @param onAddAgent - Callback function to add the agent
+ * @param loading - Boolean to show loading state
+ * @param error - Error message to display
+ * @param newAgentName - New agent's name
+ * @param setNewAgentName - Function to set agent name
+ * @param newAgentPhone - New agent's phone number
+ * @param setNewAgentPhone - Function to set agent phone
+ * @returns JSX element containing the add agent modal
+ */
 
 
 const AddAgentModal: FC<AddAgentModalProps> = ({

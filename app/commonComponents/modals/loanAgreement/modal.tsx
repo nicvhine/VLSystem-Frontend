@@ -1,11 +1,10 @@
 "use client";
 
-// Modal: loan agreement preview and print
-
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 
+// Utility functions and types from logic module
 import {
   formatCurrency,
   capitalizeWords,
@@ -13,12 +12,20 @@ import {
   Application,
 } from "./logic"; 
 
+// Props interface for loan agreement modal
 interface AgreementModalProps {
   isOpen: boolean;
   onClose: () => void;
   application: Application | null;
 }
 
+/**
+ * Signatory section component for loan agreement
+ * Displays role and name with signature line
+ * @param role - Role/title of the signatory
+ * @param name - Name of the signatory
+ * @returns JSX element containing the signatory section
+ */
 function SignatorySection({ role, name }: { role: string; name: string }) {
   return (
     <div className="flex flex-col space-y-6">

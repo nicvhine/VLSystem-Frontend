@@ -2,6 +2,7 @@
 
 import React from "react";
 
+// Props interface for collateral information form section
 interface CollateralProps {
   language: "en" | "ceb";
   collateralType: string;
@@ -15,6 +16,23 @@ interface CollateralProps {
   collateralTypeOptions: { value: string; label: string }[];
   missingFields?: string[];
 }
+
+/**
+ * Collateral information form section component
+ * Handles collateral details including type, value, description, and ownership status
+ * @param language - Current language setting (English or Cebuano)
+ * @param collateralType - Selected collateral type
+ * @param setCollateralType - Function to set collateral type
+ * @param collateralValue - Collateral value amount
+ * @param setCollateralValue - Function to set collateral value
+ * @param collateralDescription - Description of collateral
+ * @param setCollateralDescription - Function to set collateral description
+ * @param ownershipStatus - Ownership status of collateral
+ * @param setOwnershipStatus - Function to set ownership status
+ * @param collateralTypeOptions - Available collateral type options
+ * @param missingFields - Array of missing field names for validation
+ * @returns JSX element containing the collateral information form section
+ */
 
 export default function CollateralInformation({
   language,

@@ -1,23 +1,25 @@
 "use client";
 
-// Loan details page: tabs for personal info, current loan, and history
 import { useEffect, useState } from "react";
 import { FiFileText } from "react-icons/fi"; 
 import LedgerModal from "./components/ledgerModal";
 
-// Role-based wrappers
+// Role-based page wrappers
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
+// API endpoint for loan details
 const API_URL = "http://localhost:3001/loans";
 
+// Interface for character reference data
 interface CharacterReference {
   name: string;
   contact: string;
   relation?: string;
 }
 
+// Interface for current loan information
 interface CurrentLoan {
   purpose: string;
   type: string;
@@ -33,12 +35,14 @@ interface CurrentLoan {
   status?: string;
 }
 
+// Interface for profile picture data
 interface ProfilePic {
   fileName: string;
   filePath: string;
   mimeType: string;
 }
 
+// Main interface for loan details data structure
 interface LoanDetails {
   loanId: string;
   name: string;
@@ -53,18 +57,21 @@ interface LoanDetails {
   emailAddress?: string;
   address?: string;
   incomeSource?: string;
-  //employed
+  
+  // Employment information
   employmentStatus?: string;
   occupation?: string;
-  //business
+  
+  // Business information
   businessType: string;
   dateStarted: string;
   businessLocation: string;
 
-  //loan details
+  // Loan details
   totalPayable: string;
   principal: string;
 
+  // Additional loan information
   monthlyIncome?: number;
   score?: number;
   activeLoan?: "Yes" | "No";
@@ -74,14 +81,18 @@ interface LoanDetails {
   profilePic?: ProfilePic;
   previousLoans?: CurrentLoan[];
   
-
+  // Collateral information
   collateralType: string;
   collateralValue: string;
   collateralDescription: string;
   ownershipStatus: string;
 }
 
-// Format date to a readable PH locale string
+/**
+ * Format date to a readable Philippine locale string
+ * @param dateString - Date string to format
+ * @returns Formatted date string or "—" if no date provided
+ */
 const formatDate = (dateString?: string) =>
   dateString
     ? new Date(dateString).toLocaleDateString("en-PH", {
@@ -91,7 +102,11 @@ const formatDate = (dateString?: string) =>
       })
     : "—";
 
-// Capitalize each word for display-only fields
+/**
+ * Capitalize each word in a string for display purposes
+ * @param text - Text to capitalize
+ * @returns Capitalized text or "—" if no text provided
+ */
 const capitalizeWords = (text?: string) => {
   if (!text) return "—";
   return text
@@ -101,10 +116,18 @@ const capitalizeWords = (text?: string) => {
     .join(" ");
 };
 
-// Loan details view with personal and loan tabs
+/**
+ * Loan details page component with tabs for personal info, current loan, and history
+ * Displays comprehensive loan and borrower information in a tabbed interface
+ * @param params - Route parameters containing the loan ID
+ * @returns JSX element containing the loan details interface
+ */
 export default function LoansDetailPage({ params }: { params: { id: string } }) {
+  // Tab state management
   const [activeTab, setActiveTab] = useState("loan");
   const [loanSubTab, setLoanSubTab] = useState("active");
+  
+  // Data state
   const [client, setClient] = useState<LoanDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLedger, setShowLedger] = useState(false);
@@ -116,7 +139,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     setRole(storedRole);
   }, []);
 
-  // Fetch loan details for the given id
+  // Fetch loan details for the given ID
   useEffect(() => {
     const fetchLoanDetails = async () => {
       try {
@@ -132,18 +155,28 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     fetchLoanDetails();
   }, [params.id]);
 
+  // Loading and error states
   if (loading)
     return <div className="p-8 text-gray-500 text-center">Loading client details...</div>;
   if (!client)
     return <div className="p-8 text-red-500 text-center">Client not found.</div>;
 
-  // Format amounts in PHP currency
+  /**
+   * Format amounts in Philippine Peso currency
+   * @param amount - Amount to format
+   * @returns Formatted currency string or "—" if no amount provided
+   */
   const formatCurrency = (amount?: number) =>
     amount
       ? new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount)
       : "—";
 
-  // Small presentation component for label/value pairs
+  /**
+   * Small presentation component for label/value pairs
+   * @param label - Label text to display
+   * @param value - Value to display
+   * @returns JSX element containing the detail row
+   */
   const DetailRow = ({ label, value }: { label: string; value: string | number }) => (
     <div className="flex flex-col py-1">
       <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
@@ -151,7 +184,7 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
     </div>
   );
 
-  // Choose page wrapper based on role
+  // Choose page wrapper based on user role
   let Wrapper;
   if (role === "loan officer") {
     Wrapper = LoanOfficer;

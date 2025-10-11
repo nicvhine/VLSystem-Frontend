@@ -4,6 +4,7 @@ import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 
+// Props interface for release form modal component
 interface ReleaseFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -12,7 +13,11 @@ interface ReleaseFormModalProps {
   releaseDate: string;
 }
 
-// Reusable component for signatures
+/**
+ * Reusable signature line component for forms
+ * @param label - Label text for the signature line
+ * @returns JSX element containing the signature line
+ */
 function SignatureLine({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center mt-8">
@@ -21,6 +26,17 @@ function SignatureLine({ label }: { label: string }) {
     </div>
   );
 }
+
+/**
+ * Release form modal component for loan disbursement documentation
+ * Displays printable release form with borrower and loan details
+ * @param isOpen - Boolean to control modal visibility
+ * @param onClose - Callback function to close the modal
+ * @param borrowerName - Name of the borrower
+ * @param loanAmount - Amount of the loan
+ * @param releaseDate - Date of loan release
+ * @returns JSX element containing the release form modal
+ */
 
 export default function ReleaseFormModal({
   isOpen,

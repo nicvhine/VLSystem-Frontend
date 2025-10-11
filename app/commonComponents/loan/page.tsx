@@ -1,22 +1,23 @@
 "use client";
 
-// Loans page: list, filter, sort, paginate, and link to details
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown, FiLoader } from "react-icons/fi";
 import Link from "next/link";
 
-// Role-based wrappers
+// Role-based page wrappers
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
-// Translations
+// Translation modules for different roles
 import headTranslations from "@/app/userPage/headPage/components/translation";
 import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
 import managerTranslations from "@/app/userPage/managerPage/components/translation";
 
+// API endpoint for loans data
 const API_URL = "http://localhost:3001/loans";
 
+// Interface for loan data structure
 interface LoanDetails {
   loanId: string;
   name: string;
@@ -29,7 +30,10 @@ interface LoanDetails {
   dateDisbursed: string;
 }
 
-// Simple loading spinner while fetching loans
+/**
+ * Loading spinner component displayed while fetching loans data
+ * @returns JSX element containing the loading spinner
+ */
 function LoadingSpinner() {
   return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -38,20 +42,26 @@ function LoadingSpinner() {
   );
 }
 
-// Loans listing with filters, search, sort and pagination
+/**
+ * Loans listing page with filters, search, sort, and pagination functionality
+ * Displays loans data in a table format with role-based access control
+ * @returns JSX element containing the loans listing interface
+ */
 export default function LoansPage() {
+  // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  
+  // Data state
   const [loans, setLoans] = useState<LoanDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
   
-  // Language state
+  // Language state for bilingual support
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
-  // Listen for language changes
-  // Listen to language changes based on active role
+  // Listen for language changes based on active role
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if ((role === "head" && event.detail.userType === 'head') || 
@@ -65,8 +75,10 @@ export default function LoansPage() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, [role]);
 
-  // Get translations based on role
-  // Resolve translation bundle for current role
+  /**
+   * Get translations based on current user role
+   * @returns Translation object for the current role and language
+   */
   const getTranslations = () => {
     if (role === "head") {
       return headTranslations[language];

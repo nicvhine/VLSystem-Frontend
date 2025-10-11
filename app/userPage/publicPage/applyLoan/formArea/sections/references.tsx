@@ -2,20 +2,34 @@
 
 import { useMemo } from "react";
 
+// Interface for character reference data
 interface Reference {
   name: string;
   contact: string;
   relation: string;
 }
 
+// Props interface for references form section
 interface ReferencesProps {
   language: "en" | "ceb";
   appReferences: Reference[];
   setAppReferences: React.Dispatch<React.SetStateAction<Reference[]>>;
   appContact: string;
-  appName: string; // <-- add this line
+  appName: string;
   missingFields?: string[];
 }
+
+/**
+ * References form section component
+ * Handles character references with validation for name format and contact numbers
+ * @param language - Current language setting (English or Cebuano)
+ * @param appReferences - Array of character references
+ * @param setAppReferences - Function to update references array
+ * @param appContact - Applicant's contact number for validation
+ * @param appName - Applicant's name for validation
+ * @param missingFields - Array of missing field names for validation
+ * @returns JSX element containing the references form section
+ */
 
 export default function References({
   language,

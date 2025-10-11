@@ -1,12 +1,12 @@
 'use client';
 
-// Modal: create borrower account, assign collector, and generate loan
-
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import emailjs from "emailjs-com";
 
+// API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
 
+// Interface for application data structure
 interface Application {
   applicationId: string;
   appName: string;
@@ -17,7 +17,15 @@ interface Application {
   status?: string;
 }
 
-// Send borrower credentials via EmailJS (best-effort)
+/**
+ * Send borrower credentials via EmailJS service
+ * Attempts to send email with generated username and password
+ * @param to_name - Recipient's name
+ * @param email - Recipient's email address
+ * @param borrower_username - Generated username for borrower
+ * @param borrower_password - Generated password for borrower
+ * @returns Promise that resolves when email is sent
+ */
 const sendEmail = async ({
   to_name,
   email,

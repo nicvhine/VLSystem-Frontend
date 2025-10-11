@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
+// Props interface for interview calendar modal component
 interface InterviewModalProps {
   show: boolean;
   onClose: () => void;
@@ -13,6 +14,18 @@ interface InterviewModalProps {
   onView: (applicationId: string) => void;
 }
 
+/**
+ * Interview calendar modal component for scheduling loan interviews
+ * Handles date/time selection with validation and confirmation
+ * @param show - Boolean to control modal visibility
+ * @param onClose - Callback function to close the modal
+ * @param applicationId - ID of the application being scheduled
+ * @param currentDate - Currently selected date
+ * @param currentTime - Currently selected time
+ * @param onSave - Callback function to save the schedule
+ * @param onView - Callback function to view application details
+ * @returns JSX element containing the interview calendar modal
+ */
 export default function InterviewModal({
   show,
   onClose,
@@ -22,7 +35,7 @@ export default function InterviewModal({
   onSave,
   onView,
 }: InterviewModalProps) {
-  // All hooks must be at the top level
+  // Form state management
   const [date, setDate] = useState(currentDate || "");
   const [time, setTime] = useState(currentTime || "");
   const [showConfirm, setShowConfirm] = useState(false);
