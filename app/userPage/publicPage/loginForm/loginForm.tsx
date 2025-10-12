@@ -3,6 +3,7 @@
 // Login form with SMS verification step
 import { FormEvent, useState } from 'react';
 import { loginHandler } from './loginHandlers';
+import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
 
 interface Props {
   onClose: () => void;
@@ -96,76 +97,77 @@ export default function LoginFormWithSMS({
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    // Auth: pass SMS and error callbacks to handler
-    await loginHandler({ username, password, onClose, router, setShowSMSModal, setShowErrorModal, setErrorMsg });
-  };
+    const handleSubmit = (e: FormEvent) => {
+      e.preventDefault();
+      if (!username || !password) {
+        setErrorMsg('Please enter both username and password.');
+        setShowErrorModal(true);
+        return;
+      }
+      loginHandler({ username, password, onClose, setErrorMsg, setShowErrorModal, setShowSMSModal, router });
+    };
 
-  return (
-    <>
-      <h2 className="text-xl font-semibold text-center text-gray-800 mb-2">
-        {language === 'en' ? 'Welcome Back' : 'Maayong Pagbalik'}
-      </h2>
-      <p className="text-sm text-gray-600 text-center mb-4">
-        {language === 'en' ? 'Login to your VLSystem account' : 'Sulod sa imong VLSystem account'}
-      </p>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md mb-3 focus:outline-none text-black focus:ring-2 focus:ring-red-500"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <div className="relative mb-4">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Password"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            type="button"
-            className="absolute right-3 top-2.5 text-sm text-gray-600"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? 'Hide' : 'Show'}
-          </button>
-        </div>
-        <p
-          className="text-sm text-blue-600 hover:underline cursor-pointer text-center mb-4"
-          onClick={() => {
-            setShowForgotModal(true);
-            setForgotRole('');
-          }}
-        >
-          {language === 'en' ? 'Forgot Password or Username?' : 'Nakalimot sa Password o Username?'}
-        </p>
-        <div className="flex justify-center">
-          <button
-            type="submit"
-            className="w-20 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-          >
-            {language === 'en' ? 'Login' : 'Sulod'}
-          </button>
-        </div>
-      </form>
-
-      {/* SMS verification modal */}
-      <SMSModal isVisible={showSMSModal} onClose={() => setShowSMSModal(false)} router={router} />
-      {/* Error modal */}
-      {showErrorModal && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <div className="bg-red-600 text-white px-4 py-2 rounded shadow-lg animate-fade-in-out">
-            {errorMsg}
-            <button className="ml-4 text-white" onClick={() => setShowErrorModal(false)}>
-              ×
+    return (
+      <>
+        {/* Error modal - always at top level, overlays page */}
+        <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
+        {/* Login modal */}
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-8 rounded-md shadow-lg w-96 max-w-full relative">
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              onClick={onClose}
+            >
+              &times;
             </button>
+            <h2 className="text-2xl font-semibold mb-2 text-center">Welcome Back</h2>
+            <p className="mb-6 text-center text-gray-600">Login to your VLSystem account</p>
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Username"
+                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+              <div className="relative mb-4">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-2.5 text-sm text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <p
+                className="text-sm text-blue-600 hover:underline cursor-pointer text-center mb-4"
+                onClick={() => {
+                  setShowForgotModal(true);
+                  setForgotRole('');
+                }}
+              >
+                {language === 'en' ? 'Forgot Password or Username?' : 'Nakalimot sa Password o Username?'}
+              </p>
+              <div className="flex justify-center">
+                <button
+                  type="submit"
+                  className="w-20 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                >
+                  {language === 'en' ? 'Login' : 'Sulod'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-      )}
-    </>
-  );
+        {/* SMS verification modal */}
+        <SMSModal isVisible={showSMSModal} onClose={() => setShowSMSModal(false)} router={router} />
+      </>
+    );
 }

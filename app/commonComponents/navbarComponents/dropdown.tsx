@@ -92,7 +92,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
       <div
         className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative transition-all duration-300 ease-out transform
           ${isDropdownOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
-        style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999 }}
+        style={{ position: "fixed", top: "4rem", right: 0, zIndex: 9999, maxHeight: '80vh', overflowY: 'auto' }}
         aria-hidden={!isDropdownOpen}
       >
       
@@ -159,7 +159,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           {/* Expandable Account Settings */}
           <div
             className={`transition-all duration-300 overflow-hidden bg-gray-50 rounded-lg ${isEditing ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0 pointer-events-none'}`}
-            style={{ transitionProperty: 'max-height, opacity, margin-top' }}
+            style={{ transitionProperty: 'max-height, opacity, margin-top', maxHeight: isEditing ? '70vh' : undefined, overflowY: isEditing ? 'auto' : undefined }}
           >
             <div className="pt-3 pb-0 px-4">
               <div className="mb-2 flex justify-center items-center pt-2">

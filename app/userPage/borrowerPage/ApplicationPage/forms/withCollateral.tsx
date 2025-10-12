@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import Common from "./common";
 
 // API endpoint for loan applications with collateral
@@ -44,6 +46,10 @@ interface WithCollateralFormProps {
  * @returns JSX element containing the with collateral loan application form
  */
 export default function WithCollateralForm(props: WithCollateralFormProps) {
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const { language = 'en', reloanData, ...rest } = props;
   
   // Common form states for applicant information
@@ -137,7 +143,9 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
 
   const handleSubmit = async () => {
     if (!appLoanPurpose || !selectedLoan || !collateralType || !collateralValue || !collateralDescription || !ownershipStatus) {
-      alert(language === 'en' ? "Please fill in all required fields including collateral information." : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral.");
+      setErrorMessage(language === 'en' ? "Please fill in all required fields including collateral information." : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral.");
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
       return;
     }
 
@@ -180,7 +188,9 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       });
 
       if (res.ok) {
-        alert(language === 'en' ? "Loan application with collateral submitted successfully!" : "Malampusong napasa ang aplikasyon nga adunay kolateral!");
+        setSuccessMessage(language === 'en' ? "Loan application with collateral submitted successfully!" : "Malampusong napasa ang aplikasyon nga adunay kolateral!");
+        setSuccessOpen(true);
+        setTimeout(() => setSuccessOpen(false), 5000);
         // Reset form
         setAppLoanPurpose("");
         setSelectedLoan(null);
@@ -190,10 +200,14 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
         setOwnershipStatus("");
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? "Failed to submit application. Server says: " : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        setErrorMessage(language === 'en' ? "Failed to submit application. Server says: " + errorText : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+        setErrorOpen(true);
+        setTimeout(() => setErrorOpen(false), 5000);
       }
     } catch (error) {
-      alert(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+      setErrorMessage(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
     }
   };
 
@@ -208,6 +222,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
 
   return (
     <>
+      <SuccessModal isOpen={successOpen} message={successMessage} onClose={() => setSuccessOpen(false)} />
+      <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
       <Common {...rest} language={language}
         appName={appName}
         setAppName={setAppName}

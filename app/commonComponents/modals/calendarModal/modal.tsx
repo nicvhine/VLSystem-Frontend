@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import ErrorModal from "../errorModal/modal";
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
 // Props interface for interview calendar modal component
@@ -40,6 +41,8 @@ export default function InterviewModal({
   const [time, setTime] = useState(currentTime || "");
   const [showConfirm, setShowConfirm] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+    const [errorOpen, setErrorOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
   // Update form fields when props change
   useEffect(() => {
@@ -62,7 +65,9 @@ export default function InterviewModal({
   // Validate and show confirmation before saving
   const handleSave = () => {
     if (!date || !time) {
-      alert("Please set both date and time before saving.");
+      setErrorMessage("Please set both date and time before saving.");
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 2000);
       return;
     }
     setShowConfirm(true);
@@ -138,6 +143,7 @@ export default function InterviewModal({
           </div>
         </div>
       </div>
+      <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
       <ConfirmModal
         show={showConfirm}
         message="Do you want to save these changes?"

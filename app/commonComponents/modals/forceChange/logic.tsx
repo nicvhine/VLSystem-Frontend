@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import SuccessModal from '../successModal/modal';
 
 export function useChangePassword(
   id: string | null,
@@ -14,6 +15,8 @@ export function useChangePassword(
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [error, setError] = useState('');
+    const [successOpen, setSuccessOpen] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : '';
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
@@ -55,9 +58,13 @@ export function useChangePassword(
       const result = await res.json();
 
       if (res.ok) {
-        alert('Password changed successfully.');
-        localStorage.removeItem('forcePasswordChange');
-        onClose();
+          setSuccessMessage('Password changed successfully.');
+          setSuccessOpen(true);
+          setTimeout(() => {
+            setSuccessOpen(false);
+            localStorage.removeItem('forcePasswordChange');
+            onClose();
+          }, 5000);
       } else {
         setError(result.message || 'Failed to change password');
       }
@@ -76,5 +83,14 @@ export function useChangePassword(
     error, setError,
     handleChange,
     preventCopy, preventCut, preventCopyPaste,
+    successOpen, setSuccessOpen,
+    successMessage, setSuccessMessage,
+    SuccessModalComponent: (
+      <SuccessModal
+        isOpen={successOpen}
+        message={successMessage}
+        onClose={() => setSuccessOpen(false)}
+      />
+    ),
   };
 }

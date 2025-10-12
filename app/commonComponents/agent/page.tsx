@@ -6,7 +6,7 @@ import { FiSearch, FiChevronDown } from "react-icons/fi";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
-import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal"; 
+import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal";
 import firstAgentTranslation from "./translations/first";
 
 interface Agent {
@@ -26,107 +26,66 @@ export default function AgentPage() {
   const [showModal, setShowModal] = useState(false);
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentPhone, setNewAgentPhone] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Language state (default English)
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-
-  // Search / Sort
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
 
-  // Modal animation states
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModalAnimating, setIsModalAnimating] = useState(false);
+  useEffect(() => {
+    const currentRole = getUserRole();
+    setRole(currentRole);
+    if (currentRole === "loan officer") {
+      fetchAgents();
+      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb' | null;
+      if (storedLanguage) setLanguage(storedLanguage);
+    }
+  }, []);
 
-
-  // Fetch agents list for loan officer view
   const fetchAgents = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found in localStorage");
-        return;
-      }
-  
+      if (!token) return;
       const res = await fetch("http://localhost:3001/agents", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       });
-  
-      if (!res.ok) {
-        const errMsg = await res.text();
-        throw new Error(`Failed to fetch agents: ${res.status} ${errMsg}`);
-      }
-  
       const data = await res.json();
       setAgents(data.agents || []);
     } catch (err) {
-      console.error("Failed to fetch agents", err);
+      setAgents([]);
+    } finally {
+      setLoading(false);
     }
   };
-  
 
-  // Initialize role and (for loan officer) load agents and language
-  useEffect(() => {
-    const currentRole = getUserRole();
-    setRole(currentRole);
-
-    if (currentRole === "loan officer") {
-      fetchAgents();
-      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb' | null;
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    }
-  }, []);
-
-  // Listen for language changes (loan officer context)
-  // Listen to global language changes relevant to the user's role
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      if (role === "loan officer" && event.detail.userType === 'loanOfficer') {
-        setLanguage(event.detail.language);
-      }
-    };
-
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
-
-  // Submit a new agent to backend, then update local list
   const handleAddAgent = async () => {
     if (!newAgentName || !newAgentPhone) {
       setError("Please fill in all fields.");
       return;
     }
-
     setLoading(true);
     setError("");
-
     try {
-      const token = localStorage.getItem("token"); 
+      const token = localStorage.getItem("token");
       if (!token) {
         setError("No token found. Please log in again.");
         setLoading(false);
         return;
       }
-
       const res = await fetch("http://localhost:3001/agents", {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
+        headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ name: newAgentName, phoneNumber: newAgentPhone }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.message || "Failed to add agent");
       } else {
@@ -136,7 +95,6 @@ export default function AgentPage() {
         setShowModal(false);
       }
     } catch (err) {
-      console.error(err);
       setError("Server error");
     } finally {
       setLoading(false);
@@ -144,145 +102,117 @@ export default function AgentPage() {
   };
 
   if (!role) return null;
-
-  // Choose page wrapper based on user role
   let Wrapper;
-  if (role === "loan officer") {
-    Wrapper = LoanOfficer;
-  } else if (role === "head") {
-    Wrapper = Head;
-  } else {
-    Wrapper = Manager;
-  }
-
+  if (role === "loan officer") Wrapper = LoanOfficer;
+  else if (role === "head") Wrapper = Head;
+  else Wrapper = Manager;
   const t = firstAgentTranslation[language];
 
-  // Format PHP currency values
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(amount);
-
-  // Client-side filter and sort for agents table
-  const filteredAndSortedAgents = agents
-    .filter((agent) => {
-      const q = searchQuery.toLowerCase();
-      return (
-        agent.name.toLowerCase().includes(q) ||
-        agent.phoneNumber.toLowerCase().includes(q) ||
-        agent.agentId.toLowerCase().includes(q)
-      );
-    })
-    .sort((a, b) => {
-      if (sortBy === 'handled') {
-        return b.handledLoans - a.handledLoans;
-      }
-      if (sortBy === 'amount') {
-        return b.totalLoanAmount - a.totalLoanAmount;
-      }
-      return 0;
-    });
+  // Filter and sort
+  const filteredAgents = agents.filter(agent => {
+    const q = searchQuery.toLowerCase();
+    return (
+      agent.name.toLowerCase().includes(q) ||
+      agent.phoneNumber.toLowerCase().includes(q) ||
+      agent.agentId.toLowerCase().includes(q)
+    );
+  });
+  const sortedAgents = [...filteredAgents].sort((a, b) => {
+    if (sortBy === 'handled') return b.handledLoans - a.handledLoans;
+    if (sortBy === 'amount') return b.totalLoanAmount - a.totalLoanAmount;
+    return 0;
+  });
 
   return (
-    <Wrapper isNavbarBlurred={isModalVisible}>
-      <div className="min-h-screen bg-gray-50 text-black">
-        {role === "loan officer" && (
-          <div className="mx-auto px-4 sm:px-6 py-8">
-            <div className="mb-6 flex justify-between items-center">
-              <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
-              <button
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => setShowModal(true)}
-              >
-                {t.addBtn}
-              </button>
+    <Wrapper>
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-4 sm:px-6 py-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+            <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
+            <button
+              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              onClick={() => setShowModal(true)}
+            >
+              {t.addBtn}
+            </button>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            <div className="relative w-full">
+              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+              <input
+                type="text"
+                placeholder={t.searchPlaceholder}
+                className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-
-            {/* Search + Sort (applications-style) */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-              <div className="relative w-full">
-                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder={t.searchPlaceholder}
-                  className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                    focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <div className="relative w-full sm:w-[200px]">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                    focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                    appearance-none transition-all"
-                >
-                  <option value="">{t.sortBy}</option>
-                  <option value="handled">{t.sort1}</option>
-                  <option value="amount">{t.sort2}</option>
-                </select>
-                <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            <div className="relative w-full sm:w-[200px]">
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
+              >
+                <option value="">{t.sortBy}</option>
+                <option value="handled">{t.sort1}</option>
+                <option value="amount">{t.sort2}</option>
+              </select>
+              <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+            </div>
+          </div>
+          {/* Agents Table - match loan applications style */}
+          <div className="w-full">
+            <div className="rounded-lg bg-white shadow-sm border border-gray-100">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">ID</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Name</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Phone</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Handled Loans</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Loan Amount</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Total Commission</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {loading ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-gray-500 text-lg">Loading...</td>
+                      </tr>
+                    ) : sortedAgents.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="text-center py-8 text-gray-500 text-lg">No agents found.</td>
+                      </tr>
+                    ) : (
+                      sortedAgents.map((agent) => (
+                        <tr key={agent.agentId} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 text-sm text-gray-900">{agent.agentId}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{agent.name}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{agent.phoneNumber}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{agent.handledLoans}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900 font-medium">₱{agent.totalLoanAmount.toLocaleString()}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900 font-medium">₱{agent.totalCommission.toLocaleString()}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        )}
-
-        {/* Display agents */}
-        <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Handled Loans
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Loan Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Commission
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {agents.map((agent) => (
-                <tr key={agent.agentId} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.agentId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.phoneNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{agent.handledLoans}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalLoanAmount.toLocaleString()}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">₱{agent.totalCommission.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AddAgentModal
+            show={showModal}
+            onClose={() => setShowModal(false)}
+            onAddAgent={handleAddAgent}
+            loading={loading}
+            error={error}
+            newAgentName={newAgentName}
+            setNewAgentName={setNewAgentName}
+            newAgentPhone={newAgentPhone}
+            setNewAgentPhone={setNewAgentPhone}
+          />
         </div>
-
-        {/* Add Agent Modal */}
-        <AddAgentModal
-          show={showModal}
-          onClose={() => setShowModal(false)}
-          onAddAgent={handleAddAgent}
-          loading={loading}
-          error={error}
-          newAgentName={newAgentName}
-          setNewAgentName={setNewAgentName}
-          newAgentPhone={newAgentPhone}
-          setNewAgentPhone={setNewAgentPhone}
-        />
       </div>
     </Wrapper>
   );
