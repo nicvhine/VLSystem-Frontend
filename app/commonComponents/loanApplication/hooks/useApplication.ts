@@ -38,8 +38,8 @@ export interface Application {
   appLoanPurpose?: string;
   appLoanAmount?: string;
   appLoanTerms?: string;
-  appInterest?: number;
-  appTotalInterest?: number;
+  appInterestRate?: number;
+  appTotalInterestAmount?: number;
   appTotalPayable?: number;
   appMonthlyDue?: number;
   collateralDescription?: string;

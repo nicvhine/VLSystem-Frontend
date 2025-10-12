@@ -546,7 +546,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm font-medium text-gray-500">{t.interestRate}</span>
-                    <span className="text-gray-900">{application?.appInterest || '—'}%</span>
+                    <span className="text-gray-900">{application?.appInterestRate || '—'}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm font-medium text-gray-500">{t.loanTerm}</span>
@@ -557,7 +557,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
                 <div className="pt-4 border-t border-gray-200 space-y-3">
                   {(() => {
                     const principal = Number(application?.appLoanAmount || 0);
-                    const interestRate = Number(application?.appInterest || 0);
+                    const interestRate = Number(application?.appInterestRate || 0);
                     const terms = Number(application?.appLoanTerms || 1);
 
 
@@ -565,7 +565,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
                       <>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">{t.totalInterest}</span>
-                          <span className="text-gray-900">{formatCurrency(application?.appTotalInterest)}</span>
+                          <span className="text-gray-900">{formatCurrency(application?.appTotalInterestAmount)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-sm font-medium text-gray-500">{t.totalPayable}</span>

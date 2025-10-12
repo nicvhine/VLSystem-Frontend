@@ -48,19 +48,19 @@ interface LoanDetails {
   name: string;
   loanType: string;
   borrowersId: string;
-  dateOfBirth?: string;
-  maritalStatus?: string;
-  spouseName?: string;
-  spouseOccupation?: string;
-  numberOfChildren?: number;
+  appDob?: string;
+  appMarital?: string;
+  appSpouseName?: string;
+  appSpouseOccupation?: string;
+  appChildren?: number;
   contactNumber?: string;
   emailAddress?: string;
   address?: string;
-  incomeSource?: string;
+  sourceOfIncome?: string;
   
   // Employment information
-  employmentStatus?: string;
-  occupation?: string;
+  appEmploymentStatus?: string;
+  appOccupation?: string;
   
   // Business information
   businessType: string;
@@ -72,11 +72,11 @@ interface LoanDetails {
   principal: string;
 
   // Additional loan information
-  monthlyIncome?: number;
+  appMonthlyIncome?: number;
   score?: number;
-  activeLoan?: "Yes" | "No";
-  numberOfLoans?: number;
-  characterReferences?: CharacterReference[];
+  status?: string;
+  totalLoans?: number;
+  references?: CharacterReference[];
   currentLoan?: CurrentLoan;
   profilePic?: ProfilePic;
   previousLoans?: CurrentLoan[];
@@ -247,15 +247,15 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                 </h3>
                 <div className="space-y-2">
                   <DetailRow label="Address" value={client.address || "—"} />
-                  <DetailRow label="Date of Birth" value={client.dateOfBirth || "—"} />
-                  <DetailRow label="Marital Status" value={client.maritalStatus || "—"} />
-                  {client.maritalStatus === "Married" && (
+                  <DetailRow label="Date of Birth" value={client.appDob || "—"} />
+                  <DetailRow label="Marital Status" value={client.appMarital || "—"} />
+                  {client.appMarital === "Married" && (
                     <>
-                      <DetailRow label="Spouse Name" value={client.spouseName || "—"} />
-                      <DetailRow label="Spouse Occupation" value={client.spouseOccupation || "—"} />
+                      <DetailRow label="Spouse Name" value={client.appSpouseName || "—"} />
+                      <DetailRow label="Spouse Occupation" value={client.appSpouseOccupation || "—"} />
                     </>
                   )}
-                  <DetailRow label="Number of Children" value={client.numberOfChildren ?? "—"} />
+                  <DetailRow label="Number of Children" value={client.appChildren ?? "—"} />
                 </div>
               </div>
 
@@ -280,10 +280,10 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
               <div className="space-y-2">
                 <DetailRow
                   label="Source of Income"
-                  value={capitalizeWords(client.incomeSource)}
+                  value={capitalizeWords(client.sourceOfIncome)}
                 />
 
-                {client.incomeSource?.toLowerCase() === "business" && (
+                {client.sourceOfIncome?.toLowerCase() === "business" && (
                   <>
                     <DetailRow label="Business Type" value={capitalizeWords(client.businessType)} />
                     <DetailRow label="Date Started" value={formatDate(client.dateStarted)} />
@@ -291,14 +291,14 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                   </>
                 )}
 
-                {client.incomeSource?.toLowerCase() === "employed" && (
+                {client.sourceOfIncome?.toLowerCase() === "employed" && (
                   <>
-                    <DetailRow label="Occupation" value={capitalizeWords(client.occupation)} />
-                    <DetailRow label="Employment Status" value={capitalizeWords(client.employmentStatus)} />
+                    <DetailRow label="Occupation" value={capitalizeWords(client.appOccupation)} />
+                    <DetailRow label="Employment Status" value={capitalizeWords(client.appEmploymentStatus)} />
                   </>
                 )}
 
-                <DetailRow label="Monthly Income" value={formatCurrency(client.monthlyIncome)} />
+                <DetailRow label="Monthly Income" value={formatCurrency(client.appMonthlyIncome)} />
               </div>
             </div>
 
@@ -310,9 +310,9 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
                   Character References
                 </h3>
                 <div className="space-y-2">
-                  {client.characterReferences?.length ? (
+                  {client.references?.length ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {client.characterReferences.map((ref, i) => (
+                      {client.references.map((ref, i) => (
                         <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors">
                           <p className="font-semibold text-gray-800">{ref.name}</p>
                           <p className="text-sm text-gray-600">📞 {ref.contact}</p>
@@ -358,30 +358,33 @@ export default function LoansDetailPage({ params }: { params: { id: string } }) 
         {/* Total Loans */}
         <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 text-center shadow hover:shadow-md transition-all">
           <span className="text-sm text-blue-600 font-semibold uppercase tracking-wide">Total Loans</span>
-          <p className="text-2xl font-bold text-blue-700 mt-1">{client.numberOfLoans}</p>
+          <p className="text-2xl font-bold text-blue-700 mt-1">{client.totalLoans}</p>
         </div>
 
         {/* Borrower Status */}
         <div
           className={`${
-            client.activeLoan === "Yes" ? "bg-gradient-to-r from-green-50 to-green-100" : "bg-gradient-to-r from-gray-50 to-gray-100"
+            client.status === "Active"
+              ? "bg-gradient-to-r from-green-50 to-green-100"
+              : "bg-gradient-to-r from-gray-50 to-gray-100"
           } rounded-lg p-4 text-center shadow hover:shadow-md transition-all`}
         >
           <span
             className={`text-sm font-semibold uppercase tracking-wide ${
-              client.activeLoan === "Yes" ? "text-green-600" : "text-gray-600"
+              client.status === "Active" ? "text-green-600" : "text-gray-600"
             }`}
           >
             Borrower Status
           </span>
           <p
             className={`text-2xl font-bold mt-1 ${
-              client.activeLoan === "Yes" ? "text-green-700" : "text-gray-700"
+              client.status === "Active" ? "text-green-700" : "text-gray-700"
             }`}
           >
-            {client.activeLoan === "Yes" ? "Active" : "Inactive"}
+            {client.status}
           </p>
         </div>
+
 
         {/* Credit Score */}
         <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4 text-center shadow hover:shadow-md transition-all">
