@@ -104,7 +104,7 @@ export default function ProfileSettingsPanel({
   };
 
   return (
-     <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300`}>
+    <div className={`px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300 max-h-[70vh] overflow-y-auto`}>
     {/* Tab switch buttons */}
       <div className="flex mb-4 bg-white rounded-lg p-1 relative overflow-hidden">
         <div

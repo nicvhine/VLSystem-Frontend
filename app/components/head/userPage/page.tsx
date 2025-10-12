@@ -231,10 +231,11 @@ export default function UsersPage() {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105"
+              className="bg-red-600 text-white rounded-lg h-8 py-0 lzeading-none text-sm flex items-center justify-center gap-2 min-w-[140px] whitespace-nowrap cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105"
             >
-              <FiUserPlus />
-              Create User
+              <span className="flex items-center gap-2 whitespace-nowrap">
+                <FiUserPlus /> Create User
+              </span>
             </button>
           </div>
 

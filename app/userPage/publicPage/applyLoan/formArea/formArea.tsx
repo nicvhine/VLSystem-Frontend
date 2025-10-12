@@ -28,6 +28,15 @@ function ErrorModal({ message, onClose }: { message: string; onClose: () => void
         return () => setAnimateIn(false);
     }, []);
     
+    // Determine header based on error message
+    let header = "Error";
+    if (message.toLowerCase().includes("agent") || message.toLowerCase().includes("does not exist")) {
+        header = "Agent Selection Error";
+    } else if (message.toLowerCase().includes("missing") || message.toLowerCase().includes("required field")) {
+        header = "Missing Fields Error";
+    } else if (message.toLowerCase().includes("upload")) {
+        header = "Document Upload Error";
+    }
     return (
         <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
             <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
@@ -42,8 +51,8 @@ function ErrorModal({ message, onClose }: { message: string; onClose: () => void
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-semibold text-red-600 mb-2">Document Upload Error</h3>
-                    <p className="text-gray-700 mb-4 text-sm">Please fill out the missing fields.</p>
+                    <h3 className="text-lg font-semibold text-red-600 mb-2">{header}</h3>
+                    <p className="text-gray-700 mb-4 text-sm">{message}</p>
                     <button
                         onClick={onClose}
                         className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold transition-colors text-sm"

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import SuccessModal from "../../modals/successModal/modal";
+import ErrorModal from "../../modals/errorModal/modal";
 import emailjs from "emailjs-com";
 
 // API endpoint for loan applications
@@ -31,11 +33,13 @@ const sendEmail = async ({
   email,
   borrower_username,
   borrower_password,
+  onError,
 }: {
   to_name: string;
   email?: string | null;
   borrower_username: string;
   borrower_password: string;
+  onError: (msg: string) => void;
 }) => {
   if (!email) return;
   try {
@@ -48,7 +52,7 @@ const sendEmail = async ({
     console.log("Email sent:", result?.text || result);
   } catch (error: any) {
     console.error("EmailJS error:", error);
-    alert("Email failed: " + (error?.text || error.message || "Unknown error"));
+    onError("Email failed: " + (error?.text || error.message || "Unknown error"));
   }
 };
 
@@ -108,7 +112,9 @@ export default forwardRef(function AccountModal(_, ref) {
   const handleCreateAccount = async () => {
     if (!selectedApp) return;
     if (!selectedCollector) {
-      alert("Please select a collector.");
+      setErrorMessage("Please select a collector.");
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
       return;
     }
 
@@ -146,65 +152,83 @@ export default forwardRef(function AccountModal(_, ref) {
         email: selectedApp.appEmail,
         borrower_username: borrowerData.borrower.username,
         borrower_password: borrowerData.tempPassword,
+        onError: (msg: string) => {
+          setErrorMessage(msg);
+          setErrorOpen(true);
+          setTimeout(() => setErrorOpen(false), 5000);
+        }
       });
 
-      alert("Account created and loan generated successfully.");
-      handleModalClose();
+      setSuccessMessage("Account created and loan generated successfully.");
+      setSuccessOpen(true);
+      setTimeout(() => {
+        setSuccessOpen(false);
+        handleModalClose();
+      }, 5000);
     } catch (error: any) {
       console.error(error);
-      alert(`Error: ${error.message}`);
+  setErrorMessage(`Error: ${error.message}`);
+  setErrorOpen(true);
+  setTimeout(() => setErrorOpen(false), 5000);
     }
   };
 
   if (!isVisible) return null;
 
-  return (
-    <div
-      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
-        isAnimating ? "opacity-100" : "opacity-0"
-      }`}
-      onClick={handleModalClose}
-    >
-      <div
-        className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 ${
-          isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-xl font-semibold mb-4 text-black">Create Account</h2>
-        <p className="mb-2 text-black">
-          <strong>Name:</strong> {selectedApp?.appName}
-        </p>
-        
-        <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
-        <select
-          value={selectedCollector}
-          onChange={(e) => setSelectedCollector(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black"
-        >
-          <option value="">Select a collector</option>
-          {collectors.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </select>
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-        <div className="flex justify-end gap-3 mt-4">
-          <button
-            className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
-            onClick={handleModalClose}
+  return (
+    <>
+      <div
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
+          isAnimating ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleModalClose}
+      >
+        <div
+          className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 ${
+            isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-semibold mb-4 text-black">Create Account</h2>
+          <p className="mb-2 text-black">
+            <strong>Name:</strong> {selectedApp?.appName}
+          </p>
+          <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
+          <select
+            value={selectedCollector}
+            onChange={(e) => setSelectedCollector(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black"
           >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            onClick={handleCreateAccount}
-          >
-            Create Account
-          </button>
+            <option value="">Select a collector</option>
+            {collectors.map((name) => (
+              <option key={name} value={name}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <div className="flex justify-end gap-3 mt-4">
+            <button
+              className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+              onClick={handleModalClose}
+            >
+              Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              onClick={handleCreateAccount}
+            >
+              Create Account
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <SuccessModal isOpen={successOpen} message={successMessage} onClose={() => setSuccessOpen(false)} />
+      <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
+    </>
   );
 });

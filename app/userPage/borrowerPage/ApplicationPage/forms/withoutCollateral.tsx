@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import Common from "./common";
 
 // API endpoint for loan applications without collateral
@@ -37,6 +39,10 @@ interface WithoutCollateralFormProps {
  * @returns JSX element containing the without collateral loan application form
  */
 export default function WithoutCollateralForm({ language, reloanData, onLanguageChange }: WithoutCollateralFormProps) {
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   // Loan-specific form states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
@@ -123,9 +129,11 @@ export default function WithoutCollateralForm({ language, reloanData, onLanguage
 
 const handleSubmit = async () => {
   if (!appLoanPurpose || !selectedLoan) {
-    alert(language === 'en'
+    setErrorMessage(language === 'en'
       ? "Please fill in all required fields."
       : "Palihug pun-a ang tanang kinahanglan nga field.");
+    setErrorOpen(true);
+    setTimeout(() => setErrorOpen(false), 5000);
     return;
   }
 
@@ -144,9 +152,11 @@ const handleSubmit = async () => {
     const borrowersId = reloanData?.borrowersId || borrowerIdFromStorage;
 
     if (!borrowersId) {
-      alert(language === 'en'
+      setErrorMessage(language === 'en'
         ? "Borrower ID missing. Please log in again."
         : "Wala ang Borrower ID. Palihug pag-login pag-usab.");
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
       return;
     }
 
@@ -195,22 +205,27 @@ const handleSubmit = async () => {
     });
 
     if (res.ok) {
-      alert(language === 'en'
+      setSuccessMessage(language === 'en'
         ? "Loan application submitted successfully!"
         : "Malampusong napasa ang aplikasyon!");
-
+      setSuccessOpen(true);
+      setTimeout(() => setSuccessOpen(false), 5000);
       setAppLoanPurpose("");
       setSelectedLoan(null);
     } else {
       const errorText = await res.text();
-      alert(language === 'en'
+      setErrorMessage(language === 'en'
         ? "Failed to submit application. Server says: " + errorText
         : "Napakyas ang pagpasa sa aplikasyon. Sulti sa server: " + errorText);
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
     }
   } catch (error) {
-    alert(language === 'en'
+    setErrorMessage(language === 'en'
       ? "An error occurred. Please try again."
       : "Adunay sayop. Palihug sulayi pag-usab.");
+    setErrorOpen(true);
+    setTimeout(() => setErrorOpen(false), 5000);
   }
 };
 
@@ -218,6 +233,8 @@ const handleSubmit = async () => {
 
   return (
     <>
+      <SuccessModal isOpen={successOpen} message={successMessage} onClose={() => setSuccessOpen(false)} />
+      <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
       {/* Language Toggle - Only show in reloan modal */}
       {reloanData && (
         <div className="flex justify-end mb-4">

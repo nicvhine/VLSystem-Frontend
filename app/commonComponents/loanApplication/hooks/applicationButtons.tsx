@@ -21,8 +21,6 @@ interface ApplicationButtonsProps {
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   modalRef: React.RefObject<any>;
   setIsAgreementOpen: React.Dispatch<React.SetStateAction<"loan" | "release" | null>>;
-  showSuccess: (msg: string) => void;
-  showError: (msg: string) => void;
 }
 
 const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
@@ -34,8 +32,6 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   setIsModalOpen,
   modalRef,
   setIsAgreementOpen,
-  showSuccess,
-  showError,
 }) => {
   const [showDocsDropdown, setShowDocsDropdown] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
@@ -47,13 +43,11 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
 
   if (!application) return null;
 
-  // Handle document type selection and close dropdown
   const handleDocumentClick = (type: "loan" | "release") => {
     setIsAgreementOpen(type);
     setShowDocsDropdown(false);
   };
 
-  // Toggle documents dropdown and position it
   const toggleDropdown = () => {
     if (!showDocsDropdown && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -73,7 +67,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             SET SCHEDULE
           </button>
           <button
-            onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL, showSuccess, showError)}
+            onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             DISMISS
@@ -95,7 +89,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'clear' });
-              setPendingAction(() => () => handleClearedLoan(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleClearedLoan(application, setApplications, authFetch, API_URL));
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
@@ -104,7 +98,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'dismissPending' });
-              setPendingAction(() => () => handleDenyFromCleared(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleDenyFromCleared(application, setApplications, authFetch, API_URL));
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
@@ -137,7 +131,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'approve' });
-              setPendingAction(() => () => handleApproveApplication(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleApproveApplication(application, setApplications, authFetch, API_URL));
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
@@ -146,7 +140,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'deny' });
-              setPendingAction(() => () => handleDenyApplication(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleDenyApplication(application, setApplications, authFetch, API_URL));
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
@@ -179,7 +173,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'disburse' });
-              setPendingAction(() => () => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen, showSuccess, showError));
+              setPendingAction(() => () => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen));
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
