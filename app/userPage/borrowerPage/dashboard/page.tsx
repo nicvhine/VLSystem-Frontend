@@ -88,16 +88,16 @@ interface Collection {
 
 interface Loan {
   loanId: string;
-  type?: string;
+  loanType?: string;
   dateDisbursed?: string;
   totalPayable?: number;
   borrowersId: string;
   paymentProgress?: number;
-  principal: number;
-  interestRate: number;
-  interestAmount: string;
-  totalInterestAmount: string;
-  monthlyDue: string;
+  appLoanAmount: number;
+  appInterestRate: number;
+  appInterestAmount: string;
+  appTotalInterestAmount: string;
+  appMonthlyDue: string;
 }
 
 interface Payments {
@@ -358,7 +358,7 @@ async function handlePay(collection: Collection) {
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Loan Type</span>
-                  <span className="ml-auto font-semibold text-gray-800 text-right break-words max-w-[160px] md:max-w-none whitespace-normal">{activeLoan?.type}</span>
+                  <span className="ml-auto font-semibold text-gray-800 text-right break-words max-w-[160px] md:max-w-none whitespace-normal">{activeLoan?.loanType}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Date Disbursed</span>
@@ -366,7 +366,7 @@ async function handlePay(collection: Collection) {
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Interest Rate</span>
-                  <span className="ml-auto font-semibold text-gray-800">{activeLoan?.interestRate}%</span>
+                  <span className="ml-auto font-semibold text-gray-800">{activeLoan?.appInterestRate}%</span>
                 </div>
               </div>
 
@@ -374,23 +374,23 @@ async function handlePay(collection: Collection) {
               <div className="flex flex-col gap-2 md:gap-4 md:pl-4">
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Principal</span>
-                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.principal?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.appLoanAmount?.toLocaleString() ?? '0'}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Interest Amount</span>
-                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.interestAmount?.toLocaleString()}</span>
+                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.appInterestAmount?.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Total Interest</span>
-                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.totalInterestAmount?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.appTotalInterestAmount?.toLocaleString() ?? '0'}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Total Payable</span>
-                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.appTotalPayable?.toLocaleString() ?? '0'}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Monthly Due</span>
-                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.monthlyDue?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.appMonthlyDue?.toLocaleString() ?? '0'}</span>
                 </div>
               </div>
             </div>
