@@ -1,13 +1,11 @@
 'use client';
 
-// Agents page: list, search, sort, and add agent (loan officer)
 import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal";
-import firstAgentTranslation from "./translations/first";
 
 interface Agent {
   agentId: string;
@@ -26,27 +24,26 @@ export default function AgentPage() {
   const [showModal, setShowModal] = useState(false);
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentPhone, setNewAgentPhone] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
 
   useEffect(() => {
     const currentRole = getUserRole();
     setRole(currentRole);
-    if (currentRole === "loan officer") {
-      fetchAgents();
-      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb' | null;
-      if (storedLanguage) setLanguage(storedLanguage);
-    }
+
+    fetchAgents();
   }, []);
 
   const fetchAgents = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        setError("No token found. Please log in again.");
+        return;
+      }
       const res = await fetch("http://localhost:3001/agents", {
         method: "GET",
         headers: {
@@ -54,10 +51,12 @@ export default function AgentPage() {
           Authorization: `Bearer ${token}`,
         },
       });
+      if (!res.ok) throw new Error("Failed to fetch agents");
       const data = await res.json();
       setAgents(data.agents || []);
     } catch (err) {
       setAgents([]);
+      setError((err as Error).message || "Server error");
     } finally {
       setLoading(false);
     }
@@ -74,7 +73,6 @@ export default function AgentPage() {
       const token = localStorage.getItem("token");
       if (!token) {
         setError("No token found. Please log in again.");
-        setLoading(false);
         return;
       }
       const res = await fetch("http://localhost:3001/agents", {
@@ -101,14 +99,24 @@ export default function AgentPage() {
     }
   };
 
-  if (!role) return null;
-  let Wrapper;
-  if (role === "loan officer") Wrapper = LoanOfficer;
-  else if (role === "head") Wrapper = Head;
-  else Wrapper = Manager;
-  const t = firstAgentTranslation[language];
+  if (!role) return <div className="text-center py-8">Loading role...</div>;
 
-  // Filter and sort
+  let Wrapper;
+  switch (role) {
+    case "loan officer":
+      Wrapper = LoanOfficer;
+      break;
+    case "head":
+      Wrapper = Head;
+      break;
+    case "manager":
+      Wrapper = Manager;
+      break;
+    default:
+      return <div className="text-center py-8 text-red-500">Unauthorized</div>;
+  }
+
+  // Filter and sort agents
   const filteredAgents = agents.filter(agent => {
     const q = searchQuery.toLowerCase();
     return (
@@ -117,6 +125,7 @@ export default function AgentPage() {
       agent.agentId.toLowerCase().includes(q)
     );
   });
+
   const sortedAgents = [...filteredAgents].sort((a, b) => {
     if (sortBy === 'handled') return b.handledLoans - a.handledLoans;
     if (sortBy === 'amount') return b.totalLoanAmount - a.totalLoanAmount;
@@ -128,39 +137,45 @@ export default function AgentPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
-            <button
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-              onClick={() => setShowModal(true)}
-            >
-              {t.addBtn}
-            </button>
+            <h1 className="text-2xl font-semibold text-gray-800">Agents</h1>
+
+            {/* Only show Add button for loan officers */}
+            {role === "loan officer" && (
+              <button
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => setShowModal(true)}
+              >
+                Add Agent
+              </button>
+            )}
           </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <div className="relative w-full">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder={t.searchPlaceholder}
+                placeholder="Search agents..."
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
             <div className="relative w-full sm:w-[200px]">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                <option value="">{t.sortBy}</option>
-                <option value="handled">{t.sort1}</option>
-                <option value="amount">{t.sort2}</option>
+                <option value="">Sort by</option>
+                <option value="handled">Handled Loans</option>
+                <option value="amount">Total Loan Amount</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
           </div>
-          {/* Agents Table - match loan applications style */}
+
           <div className="w-full">
             <div className="rounded-lg bg-white shadow-sm border border-gray-100">
               <div className="overflow-x-auto">
@@ -201,6 +216,7 @@ export default function AgentPage() {
               </div>
             </div>
           </div>
+
           <AddAgentModal
             show={showModal}
             onClose={() => setShowModal(false)}
