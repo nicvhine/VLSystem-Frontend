@@ -209,6 +209,18 @@ export default function ApplicationsPage() {
       return application.displayStatus === activeFilter;
     });
 
+  // Pagination
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / pageSize));
+  const paginatedApplications = filteredApplications.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalCount = filteredApplications.length;
+  const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
+
   const filterOptions = [
   { key: "All", label: t.tab1 },
   { key: "Applied", label: t.tab2 },
@@ -252,7 +264,7 @@ export default function ApplicationsPage() {
             <div className="block sm:hidden relative">
             <select
               value={activeFilter}
-              onChange={(e) => setActiveFilter(e.target.value)}
+              onChange={(e) => { setActiveFilter(e.target.value); setCurrentPage(1); }}
               className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
                 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
                 appearance-none transition-all"
@@ -274,7 +286,7 @@ export default function ApplicationsPage() {
               {filterOptions.map(({ key, label }) => (
                 <button
                   key={key}
-                  onClick={() => setActiveFilter(key)}
+                  onClick={() => { setActiveFilter(key); setCurrentPage(1); }}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                     activeFilter === key
                       ? "bg-blue-50 text-blue-600 shadow-sm"
@@ -298,14 +310,14 @@ export default function ApplicationsPage() {
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </div>
 
             <div className="relative w-full sm:w-[200px]">
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
                   appearance-none transition-all"
@@ -345,7 +357,7 @@ export default function ApplicationsPage() {
               </thead>
 
               <tbody className="divide-y divide-gray-200 bg-white">
-                {filteredApplications.map((application) => (
+                {paginatedApplications.map((application) => (
                   <tr
                     key={application.applicationId}
                     className="hover:bg-gray-50 transition-colors cursor-pointer"
@@ -469,6 +481,50 @@ export default function ApplicationsPage() {
               </tbody>
             </table>
 
+          </div>
+          {/* Pagination + Summary */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
+            <div className="text-sm text-gray-700">
+              {totalCount === 0 ? (
+                <>Showing 0 of 0</>
+              ) : (
+                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <span className="px-1 py-1 text-gray-700">
+                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

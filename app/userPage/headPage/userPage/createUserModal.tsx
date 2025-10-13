@@ -15,7 +15,7 @@ interface CreateUserModalProps {
       role: "head" | "manager" | "loan officer" | "collector";
       status?: "Active" | "Inactive";
     }
-  ) => void;
+  ) => Promise<{ success: boolean; fieldErrors?: { email?: string }; message?: string }> | void;
 }
 
 /**
@@ -109,8 +109,24 @@ export default function CreateUserModal({
     setShowConfirm(true);
   };
 
-  const handleConfirmCreate = () => {
-    onCreate(newUser);
+  const handleConfirmCreate = async () => {
+    // Clear previous errors
+    setErrors((prev) => ({ ...prev, email: undefined }));
+    const result = await Promise.resolve(onCreate(newUser) as any);
+    if (result && typeof result === 'object' && result.success === false) {
+      // Show inline field errors and keep modal open
+      if (result.fieldErrors) {
+        setErrors((prev) => ({
+          ...prev,
+          ...(result.fieldErrors.email ? { email: result.fieldErrors.email } : {}),
+          ...(result.fieldErrors.phoneNumber ? { phoneNumber: result.fieldErrors.phoneNumber } : {}),
+          ...(result.fieldErrors.name ? { name: result.fieldErrors.name } : {}),
+        }));
+      }
+      setShowConfirm(false);
+      return;
+    }
+    // Success path: close and reset form
     handleModalClose();
     setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
     setShowConfirm(false);

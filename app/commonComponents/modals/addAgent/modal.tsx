@@ -9,9 +9,12 @@ import ConfirmModal from "../confirmModal/ConfirmModal";
 interface AddAgentModalProps {
   show: boolean;
   onClose: () => void;
-  onAddAgent: () => void;
+  onAddAgent: () => Promise<{
+    success: boolean;
+    fieldErrors?: { name?: string; phoneNumber?: string };
+    message?: string;
+  }>;
   loading: boolean;
-  error: string;
   newAgentName: string;
   setNewAgentName: (name: string) => void;
   newAgentPhone: string;
@@ -39,13 +42,14 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
   onClose,
   onAddAgent,
   loading,
-  error,
   newAgentName,
   setNewAgentName,
   newAgentPhone,
   setNewAgentPhone,
 }) => {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phoneNumber?: string }>({});
+  const [genericError, setGenericError] = useState<string>("");
 
   const [animateIn, setAnimateIn] = useState(false);
 
@@ -63,13 +67,20 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 
   // Show confirmation modal before adding agent
   const handleAddClick = () => {
+    setGenericError("");
+    setFieldErrors({});
     setShowConfirm(true);
   };
 
   // Confirm and proceed with adding agent
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setShowConfirm(false);
-    onAddAgent();
+    setGenericError("");
+    const result = await onAddAgent();
+    if (!result.success) {
+      if (result.fieldErrors) setFieldErrors(result.fieldErrors);
+      if (result.message) setGenericError(result.message);
+    }
   };
 
   // Cancel adding agent
@@ -94,17 +105,32 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
               type="text"
               placeholder="Full Name"
               value={newAgentName}
-              onChange={e => setNewAgentName(e.target.value)}
-              className="border p-2 rounded-md"
+              onChange={e => {
+                setNewAgentName(e.target.value);
+                if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: undefined }));
+              }}
+              className="border p-2 rounded-md bg-white text-black placeholder-gray-500"
             />
+            {fieldErrors.name && (
+              <p className="text-red-500 text-sm -mt-2">{fieldErrors.name}</p>
+            )}
             <input
               type="text"
               placeholder="Phone Number"
               value={newAgentPhone}
-              onChange={e => setNewAgentPhone(e.target.value)}
-              className="border p-2 rounded-md"
+              onChange={e => {
+                const digitsOnly = e.target.value.replace(/\D/g, "");
+                const limited = digitsOnly.slice(0, 11);
+                setNewAgentPhone(limited);
+                if (fieldErrors.phoneNumber) setFieldErrors(prev => ({ ...prev, phoneNumber: undefined }));
+              }}
+              maxLength={11}
+              className="border p-2 rounded-md bg-white text-black placeholder-gray-500"
             />
-            {error && <p className="text-red-500">{error}</p>}
+            {fieldErrors.phoneNumber && (
+              <p className="text-red-500 text-sm -mt-2">{fieldErrors.phoneNumber}</p>
+            )}
+            {genericError && <p className="text-red-500 text-sm">{genericError}</p>}
             <button
               onClick={handleAddClick}
               disabled={loading}

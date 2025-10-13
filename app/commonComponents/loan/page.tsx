@@ -118,7 +118,7 @@ export default function LoansPage() {
 
 
   // Pagination state
-  const ITEMS_PER_PAGE = 10;
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch loans list from backend
@@ -166,12 +166,15 @@ export default function LoansPage() {
   });
 
   // Pagination logic
-  const totalPages = Math.ceil(sortedLoans.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(sortedLoans.length / pageSize));
   // Compute current page slice
   const paginatedLoans = sortedLoans.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
+  const totalCount = sortedLoans.length;
+  const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
   // Format amounts in PHP currency
   const formatCurrency = (amount: number) =>
@@ -203,26 +206,19 @@ export default function LoansPage() {
 
           {/* Filter Tabs */}
           <div className="flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-auto">
-            {["All", "Active", "Overdue", "Closed"].map((status) => {
-              let label = status;
-              if (status === "All") label = t.all || "All";
-              else if (status === "Active") label = t.active || "Active";
-              else if (status === "Overdue") label = t.overdue || "Overdue";
-              else if (status === "Closed") label = t.closed || "Closed";
-              return (
-                <button
-                  key={status}
-                  onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
-                    activeFilter === status
-                        ? "bg-blue-50 text-blue-600 shadow-sm"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+            {["All", "Active", "Overdue", "Closed"].map((status) => (
+              <button
+                key={status}
+                onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+                  activeFilter === status
+                      ? "bg-blue-50 text-blue-600 shadow-sm"
+                      : "text-gray-600 hover:bg-gray-100"
+                  }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
 
           {/* Search and Sort */}
@@ -231,7 +227,7 @@ export default function LoansPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder={t.searchPlaceholder}
+                placeholder={t.search}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -240,12 +236,12 @@ export default function LoansPage() {
             <div className="relative w-full sm:w-[200px]">
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                <option value="">{t.sortBy}</option>
-                <option value="date">{t.disburseDate}</option>
-                <option value="amount">{t.balance}</option>
+                <option value="">Sort by</option>
+                <option value="date">Disburse Date</option>
+                <option value="amount">Balance</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -256,7 +252,7 @@ export default function LoansPage() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {[t.id, t.name, t.disburseDate, t.principal, t.balance, t.status, t.actions].map((heading) => (
+                  {["ID", "Name", "Disburse Date", "Principal", "Balance", "Status", "Actions"].map((heading) => (
                     <th
                       key={heading}
                       className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
@@ -293,25 +289,49 @@ export default function LoansPage() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex justify-end mt-4 gap-2 text-black">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-            >
-{t.previous}
-            </button>
-            <span className="px-3 py-1 text-gray-700">
-{t.page} <span className="font-medium">{currentPage}</span> {t.of} <span className="font-medium">{totalPages}</span>
-            </span>
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-            >
-{t.next}
-            </button>
+          {/* Pagination + Summary */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
+            <div className="text-sm text-gray-700">
+              {totalCount === 0 ? (
+                <>Showing 0 of 0</>
+              ) : (
+                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <span className="px-1 py-1 text-gray-700">
+                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

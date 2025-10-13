@@ -2,6 +2,7 @@
 
 // Collections page: filter, stats, payment and note modals, and print sheet
 import { useState, useEffect, useRef, Suspense } from "react";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import ConfirmModal from "../modals/confirmModal/ConfirmModal";
 import useIsMobile from "@/app/commonComponents/utils/useIsMobile";
 import DatePicker from "react-datepicker";
@@ -66,6 +67,9 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
   const [noteText, setNoteText] = useState(""); 
   const [role, setRole] = useState<string | null>(null);
   const [printMode, setPrintMode] = useState(false); // Add a print mode state
+  // Inline error modal state for feedback instead of alert()
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   
   // Language state
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -301,7 +305,8 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
       );
     } catch (err) {
       console.error("Saving note failed:", err);
-      alert("Failed to save note.");
+      setErrorMsg("Failed to save note.");
+      setShowErrorModal(true);
     } finally {
       handleNoteModalClose();
     }
@@ -338,7 +343,8 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
       );
     } catch (err) {
       console.error("Payment failed:", err);
-      alert("Payment failed.");
+      setErrorMsg("Payment failed.");
+      setShowErrorModal(true);
     } finally {
       setPaymentLoading(false);
       setShowPaymentConfirm(false);
@@ -533,7 +539,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                         <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodBalance)}</td>
                         <td className="px-6 py-4">
                           <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                             col.status === "Paid" ? "bg-green-100 text-green-800" :
@@ -590,7 +596,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                           <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.loanBalance)}</td>
                           <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                           <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
-                          <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.balance)}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodBalance)}</td>
                           <td className="px-6 py-4">
                             <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                               col.status === "Paid" ? "bg-green-100 text-green-800" :
@@ -603,7 +609,7 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
                           <td className="px-6 py-4 text-sm text-gray-900">{col.note}</td>
                           {role === "collector" && (
                             <td className="px-6 py-4 flex flex-col gap-1">
-                              {col.balance > 0 ? (
+                              {col.periodBalance > 0 ? (
                                 <button
                                   onClick={() => handleMakePayment(col)}
                                   className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
@@ -730,6 +736,9 @@ export default function CollectionsPage({ onModalStateChange }: { onModalStateCh
             </div>
           )}
         </div>
+        {showErrorModal && (
+          <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
+        )}
       </div>
     </Wrapper>
   );

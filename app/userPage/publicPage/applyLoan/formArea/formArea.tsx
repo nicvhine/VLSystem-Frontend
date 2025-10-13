@@ -245,6 +245,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [showTosContent, setShowTosContent] = useState(false);
     const [showPrivacyContent, setShowPrivacyContent] = useState(false);
+    const [tosRead, setTosRead] = useState(false);
+    const [privacyRead, setPrivacyRead] = useState(false);
 
         const loanTypeParam = loanType === (language === "en" ? "Regular Loan With Collateral" : "Regular nga Pahulam (Naay Kolateral)")
             ? "with"
@@ -504,6 +506,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 onCancel={() => setShowTermsModal(false)}
                 onOpenTos={() => setShowTosContent(true)}
                 onOpenPrivacy={() => setShowPrivacyContent(true)}
+                tosRead={tosRead}
+                privacyRead={privacyRead}
                 onAccept={() => {
                     setShowTermsModal(false);
                     performSubmit();
@@ -511,10 +515,10 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
             />
         )}
         {showTosContent && (
-            <TermsContentModal language={language} onClose={() => setShowTosContent(false)} />
+            <TermsContentModal language={language} onClose={() => setShowTosContent(false)} onReadComplete={() => setTosRead(true)} />
         )}
         {showPrivacyContent && (
-            <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} />
+            <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} onReadComplete={() => setPrivacyRead(true)} />
         )}
 
         {showSuccessModal && (

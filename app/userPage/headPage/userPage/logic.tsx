@@ -21,6 +21,7 @@ export function useUsersLogic() {
   const [roleFilter, setRoleFilter] = useState<"" | User["role"]>("");
   const [errorMessage, setErrorMessage] = useState("");
   const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
@@ -87,11 +88,28 @@ export function useUsersLogic() {
   };
 
   const handleCreateUser = async (
-    input: Omit<User, "userId" | "lastActive" | "status"> & {
-      status?: User["status"];
-    }
-  ) => {
+    input: Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }
+  ): Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> => {
     try {
+      // Client-side duplicate checks for better UX
+      const normalizedEmail = input.email.trim().toLowerCase();
+      const normalizedName = input.name.trim().toLowerCase().replace(/\s+/g, " ");
+      const existingEmail = users.some(u => u.email?.toLowerCase() === normalizedEmail);
+      const existingPhone = users.some(u => u.phoneNumber === input.phoneNumber);
+      const existingName = users.some(u => (u.name || "").trim().toLowerCase().replace(/\s+/g, " ") === normalizedName);
+
+      if (existingEmail || existingPhone || existingName) {
+        return {
+          success: false,
+          fieldErrors: {
+            ...(existingEmail ? { email: "Email is already taken." } : {}),
+            ...(existingPhone ? { phoneNumber: "Phone number is already in use." } : {}),
+            ...(existingName ? { name: "A user with this name already exists." } : {}),
+          },
+          message: "Duplicate fields detected.",
+        };
+      }
+
       const payload = {
         name: input.name,
         email: input.email,
@@ -109,15 +127,41 @@ export function useUsersLogic() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(await res.text() || "Failed to create user");
+      if (!res.ok) {
+        // Try to parse message and status for more specific handling
+        let rawText = "";
+        try { rawText = await res.text(); } catch {}
+        const msg = rawText || "Failed to create user";
+        // If duplicate email (commonly 409), surface as field error and do not open global modal
+        const emailDup = res.status === 409 || /email/i.test(msg) && /(exists|taken|duplicate|already)/i.test(msg);
+        const phoneDup = /phone|number/i.test(msg) && /(exists|taken|duplicate|already|in use)/i.test(msg);
+        const nameDup = /name/i.test(msg) && /(exists|duplicate|already)/i.test(msg);
+        if (emailDup || phoneDup || nameDup) {
+          return {
+            success: false,
+            fieldErrors: {
+              ...(emailDup ? { email: "Email is already taken." } : {}),
+              ...(phoneDup ? { phoneNumber: "Phone number is already in use." } : {}),
+              ...(nameDup ? { name: "A user with this name already exists." } : {}),
+            },
+            message: msg,
+          };
+        }
+        // Other errors: open global error modal and return failure
+        setErrorMessage(msg);
+        setErrorModalOpen(true);
+        return { success: false, message: msg };
+      }
 
       const { user: createdUser, credentials } = await res.json();
       setUsers((prev) => [...prev, createdUser]);
+      // Show success immediately upon user creation
+  setSuccessMessage("User created successfully.");
 
       if (!credentials?.password) {
         setErrorMessage("User created, but login credentials were not returned.");
         setErrorModalOpen(true);
-        return;
+        return { success: true }; // Skip email sending when no credentials
       }
 
       await sendEmail(
@@ -132,9 +176,13 @@ export function useUsersLogic() {
           setErrorModalOpen(true);
         }
       );
+      // Optionally we could update success message to include email notification; keeping it simple for now.
+      return { success: true };
     } catch (error: any) {
-      setErrorMessage(error.message || "Failed to create user.");
+      const msg = error?.message || "Failed to create user.";
+      setErrorMessage(msg);
       setErrorModalOpen(true);
+      return { success: false, message: msg };
     }
   };
 
@@ -161,6 +209,7 @@ export function useUsersLogic() {
   
           setUsers((prev) => prev.filter((u) => u.userId !== userId));
           setDecisionModalOpen(false);
+          setSuccessMessage("User deleted successfully.");
         } catch (err: any) {
           console.error("Error deleting user:", err);
           setErrorMessage(err.message || "Failed to delete user");
@@ -215,6 +264,7 @@ export function useUsersLogic() {
           setEditFormData({});
           setEditingUserId(null);
           setDecisionModalOpen(false);
+          setSuccessMessage("User updated successfully.");
         } catch (err: any) {
           console.error("Error saving user:", err);
           setErrorMessage(err.message || "Failed to save user");
@@ -258,6 +308,8 @@ export function useUsersLogic() {
     errorModalOpen,
     setErrorModalOpen,
     setErrorMessage,
+    successMessage,
+    setSuccessMessage,
     sortedUsers,
     handleCreateUser,
     handleDeleteUser,

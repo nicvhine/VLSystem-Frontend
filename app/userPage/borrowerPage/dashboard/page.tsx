@@ -124,6 +124,8 @@ export default function BorrowerDashboard() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showTosContent, setShowTosContent] = useState(false);
   const [showPrivacyContent, setShowPrivacyContent] = useState(false);
+  const [tosRead, setTosRead] = useState(false);
+  const [privacyRead, setPrivacyRead] = useState(false);
   useEffect(() => {
     // Show terms reminder if not seen within last 24 hours
     try {
@@ -591,6 +593,8 @@ export default function BorrowerDashboard() {
             }}
             onOpenTos={() => setShowTosContent(true)}
             onOpenPrivacy={() => setShowPrivacyContent(true)}
+            tosRead={tosRead}
+            privacyRead={privacyRead}
             onAccept={() => {
               setShowTermsModal(false);
               try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch (_) {}
@@ -598,10 +602,10 @@ export default function BorrowerDashboard() {
           />
         )}
         {showTosContent && (
-          <TermsContentModal language={language} onClose={() => setShowTosContent(false)} />
+          <TermsContentModal language={language} onClose={() => setShowTosContent(false)} onReadComplete={() => setTosRead(true)} />
         )}
         {showPrivacyContent && (
-          <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} />
+          <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} onReadComplete={() => setPrivacyRead(true)} />
         )}
       </Borrower>
     );
