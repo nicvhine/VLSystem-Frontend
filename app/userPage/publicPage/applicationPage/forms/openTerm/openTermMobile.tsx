@@ -119,6 +119,8 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
   // Error modal state
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  // Terms agreement state
+  const [agreedPolicies, setAgreedPolicies] = useState(false);
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
   const validTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -209,6 +211,15 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
       setErrorMessage(language === 'en'
         ? "Please fill in all required fields including collateral information."
         : "Palihug pun-a ang tanang kinahanglan nga field lakip ang impormasyon sa kolateral."
+      );
+      setShowErrorModal(true);
+      return;
+    }
+    if (!agreedPolicies) {
+      setErrorMessage(
+        language === 'en'
+          ? 'Please agree to the Terms of Service and Privacy Policy to continue.'
+          : 'Palihug mouyon sa Terms of Service ug Privacy Policy aron makapadayon.'
       );
       setShowErrorModal(true);
       return;
@@ -589,9 +600,33 @@ export default function OpenTermMobile({ language, onLanguageChange }: OpenTermM
       )}
       </div>
 
+      {/* Terms & Privacy Agreement */}
+      <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4">
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={agreedPolicies}
+            onChange={(e) => setAgreedPolicies(e.target.checked)}
+            className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded"
+          />
+          <span>
+            {language === 'en'
+              ? (
+                <>I have read and agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.</>
+              ) : (
+                <>Nabasa ug gisugot nako ang <a href="#" className="underline">Terms of Service</a> ug <a href="#" className="underline">Privacy Policy</a>.</>
+              )}
+          </span>
+        </label>
+      </div>
+
       <button
         onClick={handleSubmit}
-        className="w-full bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 font-semibold text-lg transition-colors shadow-sm"
+        disabled={!agreedPolicies}
+        className={`w-full bg-red-600 text-white px-6 py-4 rounded-lg font-semibold text-lg transition-colors shadow-sm ${
+          agreedPolicies ? 'hover:bg-red-700 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+        }`}
+        aria-disabled={!agreedPolicies}
       >
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>

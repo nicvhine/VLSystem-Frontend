@@ -6,6 +6,7 @@ import Head from "../page";
 import { useUsersLogic } from "./logic";
 import type { User } from "./logic";
 import React from "react";
+// Removed portal-based dropdown; actions will be inline
 import CreateUserModal from "./createUserModal";
 import DecisionModal from "./modal";
 import headTranslations from "../components/translation"; 
@@ -65,32 +66,11 @@ export default function Page() {
   } = useUsersLogic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Pure CSS/JS dropdown state for three-dot menu
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const menuRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const buttonRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  // Inline actions now; no dropdown state needed
   
-  useEffect(() => {
-    if (!openMenuId) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        openMenuId == null ||
-        (!menuRefs.current[openMenuId]?.contains(e.target as Node) &&
-        !buttonRefs.current[openMenuId]?.contains(e.target as Node))
-      ) {
-        setOpenMenuId(null);
-      }
-    }
-    function handleEsc(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpenMenuId(null);
-    }
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleEsc);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleEsc);
-    };
-  }, [openMenuId]);
+  // No outside-click handling needed without dropdown
+
+  // No scroll handling needed without dropdown
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.userId);
@@ -178,10 +158,10 @@ export default function Page() {
             </div>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="bg-red-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 shadow-md cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transform hover:scale-105 font-medium text-sm w-full sm:w-auto"
+              className="bg-red-600 text-white rounded-lg px-4 py-[14px] flex items-center gap-2 shadow-sm cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 font-medium text-sm w-auto whitespace-nowrap"
             >
               <FiUserPlus className="w-4 h-4" />
-              <span>{t.createUser}</span>
+              <span className="leading-none">{t.createUser}</span>
             </button>
           </div>
           {/* Table */}
@@ -189,13 +169,21 @@ export default function Page() {
             {loading ? (
               <LoadingSpinner />
             ) : (
-              <table className="min-w-full">
+              <table className="min-w-full table-fixed">
+                <colgroup>
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col />
+                  <col className="w-[180px]" />
+                </colgroup>
                 <thead>
                   <tr>
                     {[t.id, t.name, t.email, t.phoneNumber, t.role, t.actions].map((heading) => (
                       <th
                         key={heading}
-                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center" : " text-left"}`}
+                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center w-[180px]" : " text-left"}`}
                       >
                         {heading}
                       </th>
@@ -225,19 +213,25 @@ export default function Page() {
                               <option value="collector">Collector</option>
                             </select>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right relative">
-                            <div className="flex gap-2 justify-end">
-                              <button   
-                                onClick={handleSaveEdit}
-                                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
-                                {t.save}
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="text-gray-600 font-medium hover:underline"
-                              >
-                                {t.cancel}
-                              </button>
+                          <td className="px-6 py-4 whitespace-nowrap text-center w-[180px]">
+                            <div className="relative grid grid-cols-2 items-center w-full">
+                              <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 h-5 w-px bg-gray-300" aria-hidden></span>
+                              <div className="flex justify-end pr-[10px]">
+                                <button
+                                  onClick={handleSaveEdit}
+                                  className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+                                >
+                                  {t.save}
+                                </button>
+                              </div>
+                              <div className="flex justify-start pl-2">
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="text-sm text-red-600 hover:text-red-700 hover:underline"
+                                >
+                                  {t.cancel}
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </>
@@ -263,48 +257,28 @@ export default function Page() {
                               {capitalizeWords(user.role)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right relative">
-                            <div className="flex justify-center items-center">
-                              <button
-                                ref={el => {
-                                  buttonRefs.current[user.userId] = el;
-                                }}
-                                onClick={() => setOpenMenuId(openMenuId === user.userId ? null : user.userId)}
-                                className="p-2 rounded-full hover:bg-gray-100 focus:outline-none"
-                              >
-                                <FiMoreVertical className="w-5 h-5 text-gray-500" />
-                              </button>
+                          <td className="px-6 py-4 whitespace-nowrap text-center w-[180px]">
+                            <div className="relative grid grid-cols-2 items-center w-full">
+                              <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 h-5 w-px bg-gray-300" aria-hidden></span>
+                              <div className="flex justify-end pr-[10px]">
+                                <button
+                                  onClick={() => handleEditClick(user)}
+                                  className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+                                  aria-label={t.edit}
+                                >
+                                  {t.edit}
+                                </button>
+                              </div>
+                              <div className="flex justify-start pl-2">
+                                <button
+                                  onClick={() => handleDeleteUser(user.userId)}
+                                  className="text-sm text-red-600 hover:text-red-700 hover:underline"
+                                  aria-label={t.delete}
+                                >
+                                  {t.delete}
+                                </button>
+                              </div>
                             </div>
-                            {openMenuId === user.userId && (
-                              <div
-                                ref={el => { menuRefs.current[user.userId] = el; }}
-                                className="fixed w-20 border border-gray-300 rounded-lg shadow-2xl z-[9999]"
-                                style={{
-                                  top: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().bottom ?? 0) + 8}px`,
-                                  left: `${(buttonRefs.current[user.userId]?.getBoundingClientRect().left ?? 0) - 20}px`,
-                                  backgroundColor: '#d4d4d4'
-                                }}
-                              >
-                                  <button
-                                    onClick={() => {
-                                      handleEditClick(user);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-300 rounded-t-lg"
-                                  >
-{t.edit}
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      handleDeleteUser(user.userId);
-                                      setOpenMenuId(null);
-                                    }}
-                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-300 rounded-b-lg"
-                                  >
-{t.delete}
-                                  </button>
-                                </div>
-                              )}
                           </td>
                         </>
                       )}

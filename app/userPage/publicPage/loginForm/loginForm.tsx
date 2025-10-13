@@ -113,20 +113,20 @@ export default function LoginFormWithSMS({
         <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
         {/* Login modal */}
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-8 rounded-md shadow-lg w-96 max-w-full relative">
+          <div className="bg-white p-6 md:p-7 rounded-2xl shadow-lg w-full max-w-lg relative">
             <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
               onClick={onClose}
             >
               &times;
             </button>
-            <h2 className="text-2xl font-semibold mb-2 text-center">Welcome Back</h2>
-            <p className="mb-6 text-center text-gray-600">Login to your VLSystem account</p>
+            <h2 className="text-2xl font-semibold mb-1 text-center">Welcome Back</h2>
+            <p className="mb-4 text-center text-gray-600">Login to your VLSystem account</p>
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
                 placeholder="Username"
-                className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                className="w-full px-4 py-2.5 mb-3 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
               />
@@ -134,7 +134,7 @@ export default function LoginFormWithSMS({
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -147,7 +147,7 @@ export default function LoginFormWithSMS({
                 </button>
               </div>
               <p
-                className="text-sm text-blue-600 hover:underline cursor-pointer text-center mb-4"
+                className="text-sm text-blue-600 hover:underline cursor-pointer text-center mb-3"
                 onClick={() => {
                   setShowForgotModal(true);
                   setForgotRole('');
@@ -158,7 +158,7 @@ export default function LoginFormWithSMS({
               <div className="flex justify-center">
                 <button
                   type="submit"
-                  className="w-20 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                  className="w-24 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                 >
                   {language === 'en' ? 'Login' : 'Sulod'}
                 </button>

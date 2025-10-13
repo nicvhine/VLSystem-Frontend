@@ -121,7 +121,50 @@ export default function LoanDetails({
         {/* Loan Amount */}
         <div>
           <label className="block font-medium mb-2 text-gray-700">
-            {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
+            <span className="inline-flex items-center gap-2">
+              {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
+              {/* Info tooltip */}
+              {(() => {
+                const options = getLoanOptions();
+                const hasOptions = options.length > 0;
+                const minAmount = hasOptions ? Math.min(...options.map(o => o.amount)) : null;
+                const maxAmount = hasOptions ? Math.max(...options.map(o => o.amount)) : null;
+                const formatAmt = (n: number | null) => (n === null ? "—" : formatCurrency(n));
+
+                const tipMain = language === 'en'
+                  ? (loanType === 'open-term'
+                      ? `Allowed range: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Interest adjusts by amount. No fixed term.`
+                      : `Allowed range: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Interest and term adjust based on your amount.`)
+                  : (loanType === 'open-term'
+                      ? `Pwede nga kantidad: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Ang interest mosunod sa kantidad. Wala'y fixed nga termino.`
+                      : `Pwede nga kantidad: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Ang interest ug termino mo-depende sa imong kantidad.`);
+
+                const tipNote = language === 'en'
+                  ? `Tip: Amounts above the maximum use the highest bracket's rate.`
+                  : `Tip: Kung molapas sa maximum, gamiton ang rate sa pinakataas nga bracket.`;
+
+                return (
+                  <span className="relative inline-flex group align-middle">
+                    <button
+                      type="button"
+                      aria-label={language === 'en' ? 'Loan amount information' : 'Impormasyon sa kantidad sa pahulam'}
+                      className="h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-[10px] leading-5 font-semibold inline-flex items-center justify-center select-none focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
+                      tabIndex={0}
+                    >
+                      i
+                    </button>
+                    <div
+                      role="tooltip"
+                      className="absolute z-30 left-1/2 -translate-x-1/2 top-full mt-2 w-64 max-w-[70vw] rounded-md bg-gray-900 text-white text-xs p-3 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none"
+                    >
+                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                      <p className="leading-snug">{tipMain}</p>
+                      <p className="mt-1 text-[10px] text-gray-300">{tipNote}</p>
+                    </div>
+                  </span>
+                );
+              })()}
+            </span>
           </label>
           <input
             type="number"

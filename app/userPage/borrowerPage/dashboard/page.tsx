@@ -1,6 +1,9 @@
 'use client';
 
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
+import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
+import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
 
 type Payment = {
   _id?: string;
@@ -88,16 +91,16 @@ interface Collection {
 
 interface Loan {
   loanId: string;
-  loanType?: string;
+  type?: string;
   dateDisbursed?: string;
   totalPayable?: number;
   borrowersId: string;
   paymentProgress?: number;
-  appLoanAmount: number;
-  appInterestRate: number;
-  appInterestAmount: string;
-  appTotalInterestAmount: string;
-  appMonthlyDue: string;
+  principal: number;
+  interestRate: number;
+  interestAmount: string;
+  totalInterestAmount: string;
+  monthlyDue: string;
 }
 
 interface Payments {
@@ -108,6 +111,34 @@ interface Payments {
 }
 
 export default function BorrowerDashboard() {
+  // Language for modals (default to 'en', read from localStorage if available)
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('language');
+      if (stored === 'ceb') setLanguage('ceb');
+    }
+  }, []);
+
+  // Terms/Privacy reminder modals (shown on login/visit)
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showTosContent, setShowTosContent] = useState(false);
+  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
+  useEffect(() => {
+    // Show terms reminder if not seen within last 24 hours
+    try {
+      const key = 'termsReminderSeenAt';
+      const lastSeen = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
+      const now = Date.now();
+      const thresholdMs = 24 * 60 * 60 * 1000; // 24 hours
+      if (!lastSeen || now - Number(lastSeen) > thresholdMs) {
+        setShowTermsModal(true);
+      }
+    } catch (_) {
+      // Fallback: show if storage fails
+      setShowTermsModal(true);
+    }
+  }, []);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentModalAnimateIn, setPaymentModalAnimateIn] = useState(false);
 
@@ -191,11 +222,12 @@ export default function BorrowerDashboard() {
   // Fetch collection schedule for the loan
   useEffect(() => {
     if (!activeLoan?.loanId || !borrowersId) return;
+    const loanIdLocal = activeLoan.loanId; // capture after guard to satisfy TS
     async function fetchCollections() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`);
+        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${loanIdLocal}`);
         if (!res.ok) throw new Error('Failed to fetch collections');
         const data: Collection[] = await res.json();
         setCollections(data);
@@ -226,59 +258,6 @@ export default function BorrowerDashboard() {
   
 
     // Handle payment through PayMongo gateway
-async function handlePay(collection: Collection) {
-  if (!activeLoan) return;
-
-  const amountToPay = collection.periodAmount ?? 0;
-
-  if (amountToPay <= 0) {
-    setErrorMsg('This collection has no amount due.');
-    setShowErrorModal(true);
-    return;
-  }
-
-  try {
-    console.log('Paying collection:', {
-      amount: amountToPay,
-      collectionNumber: collection.collectionNumber,
-      referenceNumber: collection.referenceNumber,
-      borrowersId: activeLoan.borrowersId
-    });
-
-    const res = await fetch(`http://localhost:3001/payments/paymongo/gcash`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: amountToPay,
-        collectionNumber: collection.collectionNumber,
-        referenceNumber: collection.referenceNumber,
-        borrowersId: activeLoan.borrowersId
-      })
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json();
-      console.error('Backend error:', errorData);
-      setErrorMsg(`Payment failed: ${errorData.error || 'Unknown error'}`);
-      setShowErrorModal(true);
-      return;
-    }
-
-    const data = await res.json();
-    if (data.checkout_url) {
-      window.location.href = data.checkout_url;
-    } else {
-      setErrorMsg('Failed to create payment.');
-      setShowErrorModal(true);
-    }
-  } catch (err) {
-    console.error(err);
-    setErrorMsg('Error connecting to payment gateway.');
-    setShowErrorModal(true);
-  }
-}
-
-
   // Handle payment modal animation timing
   useEffect(() => {
     if (isPaymentModalOpen) {
@@ -300,12 +279,13 @@ async function handlePay(collection: Collection) {
     });
   };
 
-  // Alternative payment handler (duplicate function - should be removed)
+  // Payment handler
   async function handlePay(collection: Collection) {
     if (!activeLoan) return;
     const amountToPay = collection.periodAmount ?? 0;
     if (amountToPay <= 0) {
-      alert('This collection has no amount due.');
+      setErrorMsg('This collection has no amount due.');
+      setShowErrorModal(true);
       return;
     }
 
@@ -323,15 +303,20 @@ async function handlePay(collection: Collection) {
 
       if (!res.ok) {
         const errorData = await res.json();
-        alert(`Payment failed: ${errorData.error || 'Unknown error'}`);
+        setErrorMsg(`Payment failed: ${errorData.error || 'Unknown error'}`);
+        setShowErrorModal(true);
         return;
       }
 
       const data = await res.json();
       if (data.checkout_url) window.location.href = data.checkout_url;
-      else alert('Failed to create payment.');
+      else {
+        setErrorMsg('Failed to create payment.');
+        setShowErrorModal(true);
+      }
     } catch (err) {
-      alert('Error connecting to payment gateway.');
+      setErrorMsg('Error connecting to payment gateway.');
+      setShowErrorModal(true);
     }
   }
 
@@ -358,7 +343,7 @@ async function handlePay(collection: Collection) {
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Loan Type</span>
-                  <span className="ml-auto font-semibold text-gray-800 text-right break-words max-w-[160px] md:max-w-none whitespace-normal">{activeLoan?.loanType}</span>
+                  <span className="ml-auto font-semibold text-gray-800 text-right break-words max-w-[160px] md:max-w-none whitespace-normal">{activeLoan?.type}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Date Disbursed</span>
@@ -366,7 +351,7 @@ async function handlePay(collection: Collection) {
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Interest Rate</span>
-                  <span className="ml-auto font-semibold text-gray-800">{activeLoan?.appInterestRate}%</span>
+                  <span className="ml-auto font-semibold text-gray-800">{activeLoan?.interestRate}%</span>
                 </div>
               </div>
 
@@ -374,23 +359,23 @@ async function handlePay(collection: Collection) {
               <div className="flex flex-col gap-2 md:gap-4 md:pl-4">
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Principal</span>
-                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.appLoanAmount?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.principal?.toLocaleString() ?? '0'}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Interest Amount</span>
-                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.appInterestAmount?.toLocaleString()}</span>
+                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.interestAmount?.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Total Interest</span>
-                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.appTotalInterestAmount?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-semibold text-gray-800">₱{activeLoan?.totalInterestAmount?.toLocaleString() ?? '0'}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Total Payable</span>
-                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.appTotalPayable?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.totalPayable?.toLocaleString() ?? '0'}</span>
                 </div>
                 <div className="flex items-center group transition">
                   <span className="font-medium text-gray-500">Monthly Due</span>
-                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.appMonthlyDue?.toLocaleString() ?? '0'}</span>
+                  <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">₱{activeLoan?.monthlyDue?.toLocaleString() ?? '0'}</span>
                 </div>
               </div>
             </div>
@@ -596,6 +581,28 @@ async function handlePay(collection: Collection) {
       )}
 
         </div>
+        {/* Terms & Privacy reminder modals */}
+        {showTermsModal && (
+          <TermsGateModal
+            language={language}
+            onCancel={() => {
+              setShowTermsModal(false);
+              try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch (_) {}
+            }}
+            onOpenTos={() => setShowTosContent(true)}
+            onOpenPrivacy={() => setShowPrivacyContent(true)}
+            onAccept={() => {
+              setShowTermsModal(false);
+              try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch (_) {}
+            }}
+          />
+        )}
+        {showTosContent && (
+          <TermsContentModal language={language} onClose={() => setShowTosContent(false)} />
+        )}
+        {showPrivacyContent && (
+          <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} />
+        )}
       </Borrower>
     );
   }

@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { formToJSON } from "axios";
+import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
+import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
+import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
 
 // Form section components
 import BasicInformation from "./sections/basicInformation";
@@ -96,6 +99,7 @@ function DocumentUploadErrorModal({ message, onClose }: { message: string; onClo
     );
 }
 
+
 interface SuccessModalWithAnimationProps {
     language: string;
     loanId: string | null;
@@ -173,6 +177,10 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     }
 
     export default function FormArea({ loanType, language, isMobile }: FormAreaProps) {
+        // Branding and versioning
+        const COMPANY_NAME = 'Vistula Lending Corporation';
+        const TERMS_VERSION = '1.0-draft';
+        const PRIVACY_VERSION = '1.0-draft';
         const router = useRouter();
         const [loanId, setLoanId] = useState<string | null>(null);
         const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -233,6 +241,10 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         // Uploads
         const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
         const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+    // Terms/Privacy modals
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showTosContent, setShowTosContent] = useState(false);
+    const [showPrivacyContent, setShowPrivacyContent] = useState(false);
 
         const loanTypeParam = loanType === (language === "en" ? "Regular Loan With Collateral" : "Regular nga Pahulam (Naay Kolateral)")
             ? "with"
@@ -299,8 +311,12 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 setShowErrorModal(true);
                 return;
             }
+            // Open terms modal first; submission proceeds on accept
+            setShowTermsModal(true);
+        };
 
-            // If all required fields are filled, proceed as before
+        // Actual submit logic after accepting terms
+        const performSubmit = async () => {
             try {
                 const formData = new FormData();
                 // ...existing code for appending fields...
@@ -345,6 +361,12 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 }
                 uploadedFiles.forEach(file => formData.append("documents", file));
                 if (photo2x2[0]) formData.append("profilePic", photo2x2[0]);
+                // Append consent metadata for audit trail
+                formData.append('companyName', COMPANY_NAME);
+                formData.append('termsAcceptedAt', new Date().toISOString());
+                formData.append('termsVersion', TERMS_VERSION);
+                formData.append('privacyVersion', PRIVACY_VERSION);
+                formData.append('consentToTerms', 'true');
                 const res = await fetch(API_URL, { method: "POST", body: formData });
                 const data = await res.json();
                 if (res.ok) {
@@ -469,12 +491,31 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
 
         <div className={`mt-6 flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
             <button
-            onClick={handleSubmit}
-            className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700"
+                onClick={handleSubmit}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700"
             >
-            {language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"}
+                {language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"}
             </button>
         </div>
+
+        {showTermsModal && (
+            <TermsGateModal
+                language={language}
+                onCancel={() => setShowTermsModal(false)}
+                onOpenTos={() => setShowTosContent(true)}
+                onOpenPrivacy={() => setShowPrivacyContent(true)}
+                onAccept={() => {
+                    setShowTermsModal(false);
+                    performSubmit();
+                }}
+            />
+        )}
+        {showTosContent && (
+            <TermsContentModal language={language} onClose={() => setShowTosContent(false)} />
+        )}
+        {showPrivacyContent && (
+            <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} />
+        )}
 
         {showSuccessModal && (
             <SuccessModalWithAnimation
