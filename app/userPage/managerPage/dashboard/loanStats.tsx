@@ -86,57 +86,65 @@ export default function LoanStatsDashboard() {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-
+  
     const fetchStats = async () => {
       try {
-        const [typeRes, loanRes, collectionRes, appRes] = await Promise.all([
-          fetch("http://localhost:3001/loans/loan-type-stats", { headers: { Authorization: `Bearer ${token}` }}),
-          fetch("http://localhost:3001/loans/loan-stats", { headers: { Authorization: `Bearer ${token}` }}),
-          fetch("http://localhost:3001/collections/collection-stats", { headers: { Authorization: `Bearer ${token}` }}),
-          fetch("http://localhost:3001/loan-applications/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` }})
-        ]);
-
-        const typeData: LoanTypeStat[] = await typeRes.json();
-        const loanData: Omit<LoanStats, "typeStats"> = await loanRes.json();
-        const collectionData: CollectionStats = await collectionRes.json();
-        const appData: ApplicationStats = await appRes.json();
-
+        const urls = [
+          "http://localhost:3001/loans/loan-type-stats",
+          "http://localhost:3001/loans/loan-stats",
+          "http://localhost:3001/collections/collection-stats",
+          "http://localhost:3001/loan-applications/applicationStatus-stats"
+        ];
+  
+        const responses = await Promise.all(
+          urls.map((url) =>
+            fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+          )
+        );
+  
+        // Check for non-OK responses
+        for (let i = 0; i < responses.length; i++) {
+          if (!responses[i].ok) {
+            const text = await responses[i].text();
+            throw new Error(
+              `Failed to fetch ${urls[i]}: ${responses[i].status} - ${text}`
+            );
+          }
+        }
+  
+        // Parse JSON
+        const typeData: LoanTypeStat[] = await responses[0].json();
+        const loanData: Omit<LoanStats, "typeStats"> = await responses[1].json();
+        const collectionData: CollectionStats = await responses[2].json();
+        const appData: ApplicationStats = await responses[3].json();
+  
         const withCollateral = typeData.find((t) => t.loanType === "Regular Loan With Collateral")?.count || 0;
         const withoutCollateral = typeData.find((t) => t.loanType === "Regular Loan Without Collateral")?.count || 0;
         const openTerm = typeData.find((t) => t.loanType === "Open-Term Loan")?.count || 0;
-
-        setLoanStats({
-          typeStats: typeData,
-          ...loanData,
-        });
-
+  
+        setLoanStats({ typeStats: typeData, ...loanData });
         setCollectionStats({
           totalCollectables: collectionData.totalCollectables || 0,
           totalCollected: collectionData.totalCollected || 0,
           totalUnpaid: collectionData.totalUnpaid || 0,
         });
-
         setApplicationStats({
           applied: appData.applied || 0,
           approved: appData.approved || 0,
           denied: appData.denied || 0,
         });
-
-        setTypeStats({
-          withCollateral,
-          withoutCollateral,
-          openTerm,
-        });
-
+        setTypeStats({ withCollateral, withoutCollateral, openTerm });
+  
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch loan stats:", err);
         setLoading(false);
       }
     };
-
+  
     fetchStats();
   }, []);
+  
 
   // listen for global language changes
   useEffect(() => {

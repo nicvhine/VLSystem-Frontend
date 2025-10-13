@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from "react-icons/fi";
 import { createPortal } from "react-dom";
+import { useParams } from "next/navigation";
+
 
 // Success modal component
 import SuccessModal from '../../modals/successModal/modal';
@@ -36,14 +38,15 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
-
 /**
  * Application details page component with profile, income, references, collateral, and modals
  * Displays comprehensive application information in a tabbed interface with action buttons
  * @param params - Route parameters containing the application ID
  * @returns JSX element containing the application details interface
  */
-export default function ApplicationDetailsPage({ params }: { params: { id: string } }) {
+export default function ApplicationDetailsPage() {
+  const params = useParams();
+  const id = params?.id; // id from the route
   // Success modal state
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -154,7 +157,7 @@ export default function ApplicationDetailsPage({ params }: { params: { id: strin
     }
   };
 
-  const application = applications.find(app => app.applicationId === params.id);
+  const application = applications.find(app => app.applicationId === id);
 
   const formatCurrency = (amount?: number | string) => {
     if (!amount) return "₱0.00";

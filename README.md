@@ -35,20 +35,22 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-USER'S:
-
-HEAD
-marmagdadaro
-Magdadaro25!
+```bash
+ACCOUNTS
 
 MANAGER
-josmagabilin
+managerjoseph 
 Magabilin25!
 
 LOAN OFFICER
-kaivritra
-R@ynor24
+Loan officerdarren
+Espanto25!
 
-BORROWER
-raybuhian
-R@ynor24
+HEAD
+headmark
+Magdadaro25!
+
+COLLECTOR
+rosgeller	
+Geller25!
+```

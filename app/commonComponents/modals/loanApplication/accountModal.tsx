@@ -64,7 +64,11 @@ export default forwardRef(function AccountModal(_, ref) {
   const [collectors, setCollectors] = useState<string[]>([]);
   const [selectedCollector, setSelectedCollector] = useState("");
   const [generatedUsername, setGeneratedUsername] = useState<string>(""); 
-
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  
   // Expose openModal to parent via ref
   useImperativeHandle(ref, () => ({
     openModal(app: Application) {
@@ -174,11 +178,6 @@ export default forwardRef(function AccountModal(_, ref) {
   };
 
   if (!isVisible) return null;
-
-  const [errorOpen, setErrorOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successOpen, setSuccessOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   return (
     <>
