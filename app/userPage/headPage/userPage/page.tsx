@@ -9,6 +9,7 @@ import React from "react";
 // Removed portal-based dropdown; actions will be inline
 import CreateUserModal from "./createUserModal";
 import DecisionModal from "./modal";
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import headTranslations from "../components/translation"; 
 
 function LoadingSpinner() {
@@ -63,9 +64,22 @@ export default function Page() {
     setEditingUserId, 
     editFormData,   
     setEditFormData,
+    successMessage,
+    setSuccessMessage,
   } = useUsersLogic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Pagination
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / pageSize));
+  const paginatedUsers = sortedUsers.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalCount = sortedUsers.length;
+  const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
   // Inline actions now; no dropdown state needed
   
   // No outside-click handling needed without dropdown
@@ -115,7 +129,7 @@ export default function Page() {
             <div className="block sm:hidden relative max-w-full">
               <select
                 value={roleFilter || "All"}
-                onChange={(e) => setRoleFilter(e.target.value === "All" ? "" : e.target.value as any)}
+                onChange={(e) => { setRoleFilter(e.target.value === "All" ? "" : e.target.value as any); setCurrentPage(1); }}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
                 {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => (
@@ -131,7 +145,7 @@ export default function Page() {
               {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => (
                 <button
                   key={roleOption}
-                  onClick={() => setRoleFilter(roleOption === "All" ? "" : roleOption as any)}
+                  onClick={() => { setRoleFilter(roleOption === "All" ? "" : roleOption as any); setCurrentPage(1); }}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
                     (roleFilter === roleOption || (!roleFilter && roleOption === "All"))
                       ? "bg-blue-50 text-blue-600 shadow-sm"
@@ -153,7 +167,7 @@ export default function Page() {
                 placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </div>
             <button
@@ -191,7 +205,7 @@ export default function Page() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {sortedUsers.map((user) => (
+                  {paginatedUsers.map((user) => (
                     <tr key={user.userId} className="hover:bg-gray-50 transition-colors cursor-pointer">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
                       {editingUserId === user.userId ? (
@@ -295,7 +309,54 @@ export default function Page() {
               </table>
             )}
           </div>
+          {/* Pagination + Summary */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
+            <div className="text-sm text-gray-700">
+              {totalCount === 0 ? (
+                <>Showing 0 of 0</>
+              ) : (
+                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <span className="px-1 py-1 text-gray-700">
+                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
           <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
+          {successMessage && (
+            <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={() => setSuccessMessage("")} />
+          )}
         </div>
       </div>
 

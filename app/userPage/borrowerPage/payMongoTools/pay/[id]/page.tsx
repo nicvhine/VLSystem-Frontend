@@ -1,27 +1,43 @@
 "use client";
 
 import { useState } from "react";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 
 export default function PayPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleCheckout = async () => {
-    setLoading(true);
-    const res = await fetch("/api/payments/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: params.id }), // dynamic from URL
-    });
+    try {
+      setLoading(true);
+      const res = await fetch("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: params.id }), // dynamic from URL
+      });
 
-    const data = await res.json();
+      // Try to parse JSON but tolerate non-JSON error responses
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        data = null;
+      }
 
-    if (data.data?.attributes?.checkout_url) {
-      window.location.href = data.data.attributes.checkout_url;
-    } else {
-      alert("Failed to create checkout session");
+      const checkoutUrl = data?.data?.attributes?.checkout_url;
+      if (res.ok && checkoutUrl) {
+        window.location.href = checkoutUrl as string;
+      } else {
+        setErrorMsg("Failed to create checkout session");
+        setShowErrorModal(true);
+      }
+    } catch (e) {
+      setErrorMsg("Network error. Please try again.");
+      setShowErrorModal(true);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -34,6 +50,10 @@ export default function PayPage({ params }: { params: { id: string } }) {
       >
         {loading ? "Redirecting..." : "Checkout with PayMongo"}
       </button>
+
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
+      )}
     </div>
   );
 }

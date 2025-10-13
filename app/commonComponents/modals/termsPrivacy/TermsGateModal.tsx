@@ -7,12 +7,16 @@ export default function TermsGateModal({
   onCancel,
   onOpenTos,
   onOpenPrivacy,
+  tosRead,
+  privacyRead,
 }: {
   language: "en" | "ceb";
   onAccept: () => void;
   onCancel: () => void;
   onOpenTos: () => void;
   onOpenPrivacy: () => void;
+  tosRead?: boolean;
+  privacyRead?: boolean;
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -53,18 +57,33 @@ export default function TermsGateModal({
           </div>
         </div>
         <label className="mt-4 flex items-start gap-3 text-sm text-gray-700">
-          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded" />
+          <input
+            type="checkbox"
+            checked={agree}
+            onChange={(e) => setAgree(e.target.checked)}
+            disabled={!tosRead || !privacyRead}
+            title={!tosRead || !privacyRead ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
+            className={`mt-1 h-4 w-4 border-gray-300 rounded ${(!tosRead || !privacyRead) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
+          />
           <span>
             {language === 'en'
               ? 'I have read and agree to the Terms of Service and Privacy Policy.'
               : 'Nabasa ug nisugot ko sa Terms of Service ug Privacy Policy.'}
           </span>
         </label>
+        <div className="mt-2 text-xs text-gray-500">
+          {!tosRead && (
+            <div>• {language === 'en' ? 'Please open and scroll the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
+          )}
+          {!privacyRead && (
+            <div>• {language === 'en' ? 'Please open and scroll the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
+          )}
+        </div>
         <div className="mt-4 flex justify-end gap-3">
           <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
             {language === 'en' ? 'Cancel' : 'Kanselahon'}
           </button>
-          <button onClick={onAccept} disabled={!agree} className={`px-4 py-2 rounded-lg text-white ${agree ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'}`}>
+          <button onClick={onAccept} disabled={!agree || !tosRead || !privacyRead} className={`px-4 py-2 rounded-lg text-white ${agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'}`}>
             {language === 'en' ? 'Accept and Submit' : 'Mouyon ug Isumite'}
           </button>
         </div>

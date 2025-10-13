@@ -1,7 +1,10 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
 import Common from "./common";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 
 const API_URL = "http://localhost:3001/loan-applications/open-term";
 
@@ -60,6 +63,12 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
 
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
+
+  // Local modals for feedback
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
 
   useEffect(() => {
     if (reloanData) {
@@ -126,7 +135,8 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
 
   const handleSubmit = async () => {
     if (!appLoanPurpose) {
-      alert(language === 'en' ? 'Please fill in all required fields.' : 'Palihug pun-a ang tanang kinahanglan nga field.');
+      setErrorMsg(language === 'en' ? 'Please fill in all required fields.' : 'Palihug pun-a ang tanang kinahanglan nga field.');
+      setShowErrorModal(true);
       return;
     }
 
@@ -135,7 +145,8 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
     
     if (useCustomTerms) {
       if (!customLoanAmount || !customLoanTerms || !customInterestRate) {
-        alert(language === 'en' ? 'Please fill in all custom loan details.' : 'Palihug pun-a ang tanang detalye sa custom nga loan.');
+        setErrorMsg(language === 'en' ? 'Please fill in all custom loan details.' : 'Palihug pun-a ang tanang detalye sa custom nga loan.');
+        setShowErrorModal(true);
         return;
       }
       loanAmount = customLoanAmount;
@@ -143,7 +154,8 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
       interestRate = customInterestRate;
     } else {
       if (!selectedLoan) {
-        alert(language === 'en' ? 'Please select a loan option or use custom terms.' : 'Palihug pili og loan option o gamita ang custom nga terms.');
+        setErrorMsg(language === 'en' ? 'Please select a loan option or use custom terms.' : 'Palihug pili og loan option o gamita ang custom nga terms.');
+        setShowErrorModal(true);
         return;
       }
       loanAmount = selectedLoan.amount;
@@ -187,7 +199,8 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
       });
 
       if (res.ok) {
-        alert(language === 'en' ? 'Open-term loan application submitted successfully!' : 'Malampusong napasa ang open-term nga aplikasyon!');
+        setSuccessMsg(language === 'en' ? 'Open-term loan application submitted successfully!' : 'Malampusong napasa ang open-term nga aplikasyon!');
+        setShowSuccessModal(true);
         // Reset form
         setAppLoanPurpose("");
         setSelectedLoan(null);
@@ -199,10 +212,14 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
         setSpecialConditions("");
       } else {
         const errorText = await res.text();
-        alert(language === 'en' ? 'Failed to submit application. Server says: ' : 'Napakyas ang pagpasa sa aplikasyon. Sulti sa server: ' + errorText);
+        const msgEn = `Failed to submit application. Server says: ${errorText}`;
+        const msgCeb = `Napakyas ang pagpasa sa aplikasyon. Sulti sa server: ${errorText}`;
+        setErrorMsg(language === 'en' ? msgEn : msgCeb);
+        setShowErrorModal(true);
       }
     } catch (error) {
-      alert(language === 'en' ? 'An error occurred. Please try again.' : 'Adunay sayop. Palihug sulayi pag-usab.');
+      setErrorMsg(language === 'en' ? 'An error occurred. Please try again.' : 'Adunay sayop. Palihug sulayi pag-usab.');
+      setShowErrorModal(true);
     }
   };
 
@@ -391,6 +408,14 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
       >
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
+
+      {/* Feedback Modals */}
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
+      )}
+      {showSuccessModal && (
+        <SuccessModal isOpen={showSuccessModal} message={successMsg} onClose={() => setShowSuccessModal(false)} />
+      )}
     </>
   );
 }

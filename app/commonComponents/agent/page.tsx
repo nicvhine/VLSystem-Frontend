@@ -9,6 +9,7 @@ import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal";
+import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import firstAgentTranslation from "./translations/first";
 
 interface Agent {
@@ -30,7 +31,10 @@ export default function AgentPage() {
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  // Pagination
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Load role from localStorage on mount
   useEffect(() => {
@@ -87,38 +91,120 @@ export default function AgentPage() {
 
   const t = firstAgentTranslation[language];
 
-  const handleAddAgent = async () => {
-    if (!newAgentName || !newAgentPhone) {
-      setError("Please fill in all fields.");
-      return;
+  const handleAddAgent = async (): Promise<{
+    success: boolean;
+    fieldErrors?: { name?: string; phoneNumber?: string };
+    message?: string;
+  }> => {
+    // Local validations and duplicate checks
+    const nameRaw = newAgentName ?? "";
+    const phoneRaw = newAgentPhone ?? "";
+
+    const nameTrim = nameRaw.trim();
+    const phoneTrim = phoneRaw.trim();
+    const normalizeName = (s: string) => s.trim().replace(/\s+/g, " ").toLowerCase();
+    const normalizePhone = (s: string) => s.replace(/\D/g, "");
+
+    const errors: { name?: string; phoneNumber?: string } = {};
+    if (!nameTrim) errors.name = "Name is required";
+    if (!phoneTrim) errors.phoneNumber = "Phone number is required";
+    // Require at least two words for full name
+    if (nameTrim) {
+      const wordCount = nameTrim.split(/\s+/).filter(Boolean).length;
+      if (wordCount < 2) {
+        errors.name = "Please enter at least two words (first and last name).";
+      }
     }
+
+    const nameNorm = normalizeName(nameTrim);
+    const phoneNorm = normalizePhone(phoneTrim);
+
+    // Phone must start with 09 and be exactly 11 digits
+    if (phoneNorm) {
+      if (!phoneNorm.startsWith("09")) {
+        errors.phoneNumber = "Phone number must start with 09.";
+      } else if (phoneNorm.length !== 11) {
+        errors.phoneNumber = "Phone number must be exactly 11 digits.";
+      }
+    }
+
+    // Preflight: check duplicates against already loaded agents
+  const agentNameClash = agents.some(a => normalizeName(a.name) === nameNorm);
+  const agentPhoneClash = agents.some(a => normalizePhone(a.phoneNumber) === phoneNorm);
+
+    if (agentNameClash) {
+      errors.name = errors.name || "An agent with this name already exists.";
+    }
+    if (agentPhoneClash) {
+      errors.phoneNumber = errors.phoneNumber || "This phone number is already used by another agent.";
+    }
+
+    if (errors.name || errors.phoneNumber) {
+      return { success: false, fieldErrors: errors };
+    }
+
     setLoading(true);
     setError("");
     try {
       const token = localStorage.getItem("token");
       if (!token) {
+
+        return { success: false, message: "No token found. Please log in again." };
+=======
         setError("No token found. Please log in again.");
         return;
       }
+        
       const res = await fetch("http://localhost:3001/agents", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: newAgentName, phoneNumber: newAgentPhone }),
+        body: JSON.stringify({ name: nameTrim, phoneNumber: phoneTrim }),
       });
-      const data = await res.json();
+
+      // Attempt to parse JSON safely
+      let data: any = null;
+      try { data = await res.json(); } catch { data = null; }
+
       if (!res.ok) {
-        setError(data.message || "Failed to add agent");
-      } else {
-        setAgents(prev => [...prev, data.agent]);
-        setNewAgentName("");
-        setNewAgentPhone("");
-        setShowModal(false);
+        const msg = (data && (data.message || data.error)) || "Failed to add agent";
+        // Map server messages to field errors when possible
+        if (typeof msg === "string") {
+          const lower = msg.toLowerCase();
+          const fe: { name?: string; phoneNumber?: string } = {};
+          if (lower.includes("full name")) {
+            fe.name = "Please enter a full name (first and last).";
+          }
+          if (lower.includes("already exists") || lower.includes("already in use")) {
+            // Backend currently enforces duplicate on name+phone pair
+            // Mark both fields to guide the user
+            fe.name = fe.name || "This agent already exists with the same phone number.";
+            fe.phoneNumber = fe.phoneNumber || "This phone number is already used with the same name.";
+          }
+          if (fe.name || fe.phoneNumber) {
+            return { success: false, fieldErrors: fe };
+          }
+        }
+        return { success: false, message: msg };
       }
+
+      // Success
+      const created = data?.agent;
+      if (created) {
+        setAgents(prev => [...prev, created]);
+      } else {
+        // Fallback: refetch if response shape is unexpected
+        await fetchAgents();
+      }
+      setNewAgentName("");
+      setNewAgentPhone("");
+      setShowModal(false);
+      setSuccessMessage("Agent added successfully");
+      return { success: true };
     } catch (err) {
-      setError("Server error");
+      return { success: false, message: "Server error" };
     } finally {
       setLoading(false);
     }
@@ -140,6 +226,14 @@ export default function AgentPage() {
     if (sortBy === 'amount') return b.totalLoanAmount - a.totalLoanAmount;
     return 0;
   });
+  const totalPages = Math.max(1, Math.ceil(sortedAgents.length / pageSize));
+  const paginatedAgents = sortedAgents.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  const totalCount = sortedAgents.length;
+  const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
   let Wrapper;
   if (role === "loan officer") Wrapper = LoanOfficer;
@@ -171,14 +265,14 @@ export default function AgentPage() {
                 placeholder={t.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
             </div>
 
             <div className="relative w-full sm:w-[200px]">
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
+                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
                 <option value="">{t.sortBy}</option>
@@ -213,7 +307,7 @@ export default function AgentPage() {
                         <td colSpan={6} className="text-center py-8 text-gray-500 text-lg">No agents found.</td>
                       </tr>
                     ) : (
-                      sortedAgents.map((agent) => (
+                      paginatedAgents.map((agent) => (
                         <tr key={agent.agentId} className="hover:bg-gray-50 transition-colors">
                           <td className="px-6 py-4 text-sm text-gray-900">{agent.agentId}</td>
                           <td className="px-6 py-4 text-sm text-gray-900">{agent.name}</td>
@@ -235,12 +329,61 @@ export default function AgentPage() {
             onClose={() => setShowModal(false)}
             onAddAgent={handleAddAgent}
             loading={loading}
-            error={error}
             newAgentName={newAgentName}
             setNewAgentName={setNewAgentName}
             newAgentPhone={newAgentPhone}
             setNewAgentPhone={setNewAgentPhone}
           />
+          {/* Success Toast */}
+          <SuccessModal
+            isOpen={!!successMessage}
+            message={successMessage}
+            onClose={() => setSuccessMessage("")}
+          />
+          {/* Pagination + Summary */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
+            <div className="text-sm text-gray-700">
+              {totalCount === 0 ? (
+                <>Showing 0 of 0</>
+              ) : (
+                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={15}>15</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <span className="px-1 py-1 text-gray-700">
+                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </Wrapper>

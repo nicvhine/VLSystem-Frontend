@@ -1,14 +1,33 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function PrivacyContentModal({ language, onClose }: { language: 'en' | 'ceb'; onClose: () => void }) {
+export default function PrivacyContentModal({ language, onClose, onReadComplete }: { language: 'en' | 'ceb'; onClose: () => void; onReadComplete?: () => void }) {
   const [animateIn, setAnimateIn] = useState(false);
+  const [hasReachedEnd, setHasReachedEnd] = useState(false);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => { setAnimateIn(true); return () => setAnimateIn(false); }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const threshold = 24;
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+      if (atEnd && !hasReachedEnd) {
+        setHasReachedEnd(true);
+        onReadComplete?.();
+      }
+    };
+    el.addEventListener('scroll', onScroll);
+    onScroll();
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [hasReachedEnd, onReadComplete]);
+
   return (
     <div className={`fixed inset-0 z-60 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         <button onClick={onClose} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
-        <div className="p-6 overflow-y-auto h-[80vh] pt-10">
+        <div ref={scrollRef} className="p-6 overflow-y-auto h-[80vh] pt-10">
           <h2 className="text-xl font-semibold mb-2">{language === 'en' ? 'Privacy Policy' : 'Palisiya sa Privacy'}</h2>
           <p className="text-sm text-gray-500 mb-4">Effective Date: {new Date().toLocaleDateString()}</p>
           <div className="prose prose-sm max-w-none text-gray-700">
@@ -37,6 +56,11 @@ export default function PrivacyContentModal({ language, onClose }: { language: '
             <h3>12. Contact</h3>
             <p>For privacy inquiries or complaints, contact our Data Protection Officer via the contact details in the app.</p>
           </div>
+          {!hasReachedEnd && (
+            <div className="mt-4 text-xs text-gray-500 text-center">
+              {language === 'en' ? 'Scroll to the bottom to mark as read' : 'I-scroll sa ubos aron ma-mark nga nabasa'}
+            </div>
+          )}
         </div>
       </div>
     </div>
