@@ -136,6 +136,8 @@ const showError = (msg: string) => {
   // Success Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loanId, setLoanId] = useState<string | null>(null);
+  // Terms agreement state
+  const [agreedPolicies, setAgreedPolicies] = useState(false);
 
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -211,6 +213,15 @@ const showError = (msg: string) => {
       );
       return;
     }
+
+    if (!agreedPolicies) {
+      showError(
+        language === 'en'
+          ? 'Please agree to the Terms of Service and Privacy Policy to continue.'
+          : 'Palihug mouyon sa Terms of Service ug Privacy Policy aron makapadayon.'
+      );
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("appName", appName);
@@ -231,6 +242,15 @@ const showError = (msg: string) => {
       formData.append("appEmploymentStatus", appEmploymentStatus);
       formData.append("appCompanyName", appCompanyName);
       formData.append("sourceOfIncome", sourceOfIncome);
+      // Ensure a valid loan has been selected before submitting
+      if (!selectedLoan) {
+        showError(
+          language === 'en'
+            ? 'Please select a valid loan amount.'
+            : 'Palihug pagpili ug balido nga kantidad sa pahulam.'
+        );
+        return;
+      }
       formData.append("appLoanAmount", String(selectedLoan.amount));
       formData.append("appInterest", String(selectedLoan.interest));
       formData.append("appLoanPurpose", appLoanPurpose);
@@ -269,12 +289,6 @@ const showError = (msg: string) => {
       }
     } catch (error) {
       showError(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
-    }
-  <ErrorModal
-    isOpen={errorModalOpen}
-    message={errorModalMessage}
-    onClose={() => setErrorModalOpen(false)}
-  />
     }
   };
 
@@ -567,9 +581,33 @@ const showError = (msg: string) => {
       )}
       </div>
 
+      {/* Terms & Privacy Agreement */}
+      <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4">
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={agreedPolicies}
+            onChange={(e) => setAgreedPolicies(e.target.checked)}
+            className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded"
+          />
+          <span>
+            {language === 'en'
+              ? (
+                <>I have read and agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.</>
+              ) : (
+                <>Nabasa ug gisugot nako ang <a href="#" className="underline">Terms of Service</a> ug <a href="#" className="underline">Privacy Policy</a>.</>
+              )}
+          </span>
+        </label>
+      </div>
+
       <button
         onClick={handleSubmit}
-        className="w-full bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 font-semibold text-lg transition-colors shadow-sm"
+        disabled={!agreedPolicies}
+        className={`w-full bg-red-600 text-white px-6 py-4 rounded-lg font-semibold text-lg transition-colors shadow-sm ${
+          agreedPolicies ? 'hover:bg-red-700 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+        }`}
+        aria-disabled={!agreedPolicies}
       >
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
@@ -582,6 +620,12 @@ const showError = (msg: string) => {
         onClose={() => setShowSuccessModal(false)}
       />
     )}
+
+    <ErrorModal
+      isOpen={errorModalOpen}
+      message={errorModalMessage}
+      onClose={() => setErrorModalOpen(false)}
+    />
 
     </>
   );

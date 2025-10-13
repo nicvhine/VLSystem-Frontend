@@ -30,10 +30,33 @@ export default function LandingPage() {
   // Page animation state
   const [pageLoaded, setPageLoaded] = useState(false);
 
-  // Modal visibility states
+  // Modal visibility states (exclusive)
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
+
+  // Ensure only one modal is open at a time
+  const openLogin = (open: boolean) => {
+    setIsLoginOpen(open);
+    if (open) {
+      setIsCalculationOpen(false);
+      setIsTrackOpen(false);
+    }
+  };
+  const openCalculation = (open: boolean) => {
+    setIsCalculationOpen(open);
+    if (open) {
+      setIsLoginOpen(false);
+      setIsTrackOpen(false);
+    }
+  };
+  const openTrack = (open: boolean) => {
+    setIsTrackOpen(open);
+    if (open) {
+      setIsLoginOpen(false);
+      setIsCalculationOpen(false);
+    }
+  };
 
   // Trigger page fade-in animation on component mount
   useEffect(() => {
@@ -66,16 +89,16 @@ export default function LandingPage() {
           setLanguage={setLanguage}
           onLogoClick={handleLogoClick}
           isLoginOpen={isLoginOpen}
-          setIsLoginOpen={setIsLoginOpen}
+          setIsLoginOpen={openLogin}
           isCalculationOpen={isCalculationOpen}
-          setIsCalculationOpen={setIsCalculationOpen}
+          setIsCalculationOpen={openCalculation}
         />
 
         {/* Main sections */}
         <HeroSection
           language={language}
           isTrackOpen={isTrackOpen}
-          setIsTrackOpen={setIsTrackOpen}
+          setIsTrackOpen={openTrack}
         />
         <FeatureSection language={language} />
         <TestimonialSection language={language} />
@@ -96,17 +119,17 @@ export default function LandingPage() {
       {/* Modals: login, simulator, tracker */}
       <LoginModal
         isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
+        onClose={() => openLogin(false)}
         language={language}
       />
       <SimulatorModal
         isOpen={isCalculationOpen}
-        onClose={() => setIsCalculationOpen(false)}
+        onClose={() => openCalculation(false)}
         language={language}
       />
       <TrackModal
         isOpen={isTrackOpen}
-        onClose={() => setIsTrackOpen(false)}
+        onClose={() => openTrack(false)}
         language={language}
       />
     </>

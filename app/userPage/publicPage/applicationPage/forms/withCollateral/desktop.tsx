@@ -149,6 +149,8 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
   // Success Modal State
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loanId, setLoanId] = useState<string | null>(null);
+  // Terms agreement state
+  const [agreedPolicies, setAgreedPolicies] = useState(false);
 
   // Close Modal Function
   const closeModal = () => {
@@ -243,6 +245,15 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       );
       return;
     }
+
+    if (!agreedPolicies) {
+      showError(
+        language === 'en'
+          ? 'Please agree to the Terms of Service and Privacy Policy to continue.'
+          : 'Palihug mouyon sa Terms of Service ug Privacy Policy aron makapadayon.'
+      );
+      return;
+    }
   
     try {
       const formData = new FormData();
@@ -265,6 +276,9 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       formData.append("appCompanyName", appCompanyName);
       formData.append("sourceOfIncome", sourceOfIncome);
   
+      if (!selectedLoan) {
+        return; // Type safety: should be unreachable due to earlier guard
+      }
       formData.append("appLoanAmount", String(selectedLoan.amount));
       formData.append("appLoanTerms", String(selectedLoan.months));
       formData.append("appInterest", String(selectedLoan.interest));
@@ -411,7 +425,7 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
               type="number" 
               value={collateralValue}
               onChange={(e) => setCollateralValue(parseFloat(e.target.value))}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${ownershipStatus === '' && showErrorModal ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent border-gray-200`}
               placeholder={language === 'en' ? 'Enter estimated value' : 'Isulod ang gibanabanang kantidad'} 
             />
           </div>
@@ -632,9 +646,33 @@ export default function WithCollateralForm(props: WithCollateralFormProps) {
       )}
       </div>
 
+      {/* Terms & Privacy Agreement */}
+      <div className="bg-white rounded-lg border border-gray-100 p-4 mb-4">
+        <label className="flex items-start gap-3 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={agreedPolicies}
+            onChange={(e) => setAgreedPolicies(e.target.checked)}
+            className="mt-1 h-4 w-4 text-red-600 border-gray-300 rounded"
+          />
+          <span>
+            {language === 'en'
+              ? (
+                <>I have read and agree to the <a href="#" className="underline">Terms of Service</a> and <a href="#" className="underline">Privacy Policy</a>.</>
+              ) : (
+                <>Nabasa ug gisugot nako ang <a href="#" className="underline">Terms of Service</a> ug <a href="#" className="underline">Privacy Policy</a>.</>
+              )}
+          </span>
+        </label>
+      </div>
+
       <button
         onClick={handleSubmit}
-        className="w-full bg-red-600 text-white px-6 py-4 rounded-lg hover:bg-red-700 font-semibold text-lg transition-colors shadow-sm"
+        disabled={!agreedPolicies}
+        className={`w-full bg-red-600 text-white px-6 py-4 rounded-lg font-semibold text-lg transition-colors shadow-sm ${
+          agreedPolicies ? 'hover:bg-red-700 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+        }`}
+        aria-disabled={!agreedPolicies}
       >
         {language === 'en' ? 'Submit Application' : 'Isumite ang Aplikasyon'}
       </button>
