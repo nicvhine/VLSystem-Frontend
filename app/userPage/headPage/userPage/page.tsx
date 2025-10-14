@@ -69,6 +69,34 @@ export default function Page() {
   } = useUsersLogic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openActionId, setOpenActionId] = useState<string | null>(null);
+  const actionPopoverRef = useRef<HTMLDivElement | null>(null);
+  const actionButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!openActionId) return;
+      const popoverEl = actionPopoverRef.current;
+      const trigger = actionButtonRefs.current[openActionId];
+      if (!popoverEl || !event.target) return;
+      const target = event.target as Node;
+      if (popoverEl.contains(target)) return;
+      if (trigger && trigger.contains(target)) return;
+      setOpenActionId(null);
+    };
+
+    const closeOnScroll = () => setOpenActionId(null);
+    const closeOnResize = () => setOpenActionId(null);
+
+    window.addEventListener("mousedown", handleClickOutside);
+    window.addEventListener("scroll", closeOnScroll, true);
+    window.addEventListener("resize", closeOnResize);
+    return () => {
+      window.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("scroll", closeOnScroll, true);
+      window.removeEventListener("resize", closeOnResize);
+    };
+  }, [openActionId]);
   // Pagination
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,6 +133,19 @@ export default function Page() {
   const handleCancelEdit = () => {
     setEditingUserId(null);
     setEditFormData({});
+  };
+
+  const toggleActions = (userId: string) => {
+    setOpenActionId((prev) => (prev === userId ? null : userId));
+  };
+
+  const handleAction = (action: "edit" | "delete", user: User) => {
+    setOpenActionId(null);
+    if (action === "edit") {
+      handleEditClick(user);
+    } else {
+      handleDeleteUser(user.userId);
+    }
   };
 
   function capitalizeWords(str: string) {
@@ -190,14 +231,14 @@ export default function Page() {
                   <col />
                   <col />
                   <col />
-                  <col className="w-[180px]" />
+                  <col className="w-[120px]" />
                 </colgroup>
                 <thead>
                   <tr>
                     {[t.id, t.name, t.email, t.phoneNumber, t.role, t.actions].map((heading) => (
                       <th
                         key={heading}
-                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center w-[180px]" : " text-left"}`}
+                        className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center" : " text-left"}`}
                       >
                         {heading}
                       </th>
@@ -227,25 +268,20 @@ export default function Page() {
                               <option value="collector">Collector</option>
                             </select>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center w-[180px]">
-                            <div className="relative grid grid-cols-2 items-center w-full">
-                              <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 h-5 w-px bg-gray-300" aria-hidden></span>
-                              <div className="flex justify-end pr-[10px]">
-                                <button
-                                  onClick={handleSaveEdit}
-                                  className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
-                                >
-                                  {t.save}
-                                </button>
-                              </div>
-                              <div className="flex justify-start pl-2">
-                                <button
-                                  onClick={handleCancelEdit}
-                                  className="text-sm text-red-600 hover:text-red-700 hover:underline"
-                                >
-                                  {t.cancel}
-                                </button>
-                              </div>
+                          <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
+                            <div className="flex items-center justify-center gap-3">
+                              <button
+                                onClick={handleSaveEdit}
+                                className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
+                              >
+                                {t.save}
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-sm text-red-600 hover:text-red-700 hover:underline"
+                              >
+                                {t.cancel}
+                              </button>
                             </div>
                           </td>
                         </>
@@ -271,27 +307,51 @@ export default function Page() {
                               {capitalizeWords(user.role)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center w-[180px]">
-                            <div className="relative grid grid-cols-2 items-center w-full">
-                              <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 h-5 w-px bg-gray-300" aria-hidden></span>
-                              <div className="flex justify-end pr-[10px]">
-                                <button
-                                  onClick={() => handleEditClick(user)}
-                                  className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
-                                  aria-label={t.edit}
-                                >
-                                  {t.edit}
-                                </button>
-                              </div>
-                              <div className="flex justify-start pl-2">
-                                <button
-                                  onClick={() => handleDeleteUser(user.userId)}
-                                  className="text-sm text-red-600 hover:text-red-700 hover:underline"
-                                  aria-label={t.delete}
-                                >
-                                  {t.delete}
-                                </button>
-                              </div>
+                          <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
+                            <div className="relative inline-flex items-center justify-center">
+                              <button
+                                ref={(el) => { actionButtonRefs.current[user.userId] = el; }}
+                                onClick={() => toggleActions(user.userId)}
+                                className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 text-gray-600"
+                                aria-haspopup="menu"
+                                aria-expanded={openActionId === user.userId}
+                                aria-label={t.actions}
+                              >
+                                <FiMoreVertical className="w-5 h-5" />
+                              </button>
+                              {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
+                                const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
+                                const style: React.CSSProperties = {
+                                  position: "fixed",
+                                  top: rect.bottom + 8,
+                                  left: rect.right - 128,
+                                  width: 128,
+                                  zIndex: 40,
+                                };
+                                return (
+                                  <div
+                                    ref={actionPopoverRef}
+                                    style={style}
+                                    className="rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+                                    role="menu"
+                                  >
+                                    <button
+                                      onClick={() => handleAction("edit", user)}
+                                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                      role="menuitem"
+                                    >
+                                      {t.edit}
+                                    </button>
+                                    <button
+                                      onClick={() => handleAction("delete", user)}
+                                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                      role="menuitem"
+                                    >
+                                      {t.delete}
+                                    </button>
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </td>
                         </>

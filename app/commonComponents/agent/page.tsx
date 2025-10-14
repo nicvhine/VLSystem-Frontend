@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 
 // Role-based page wrappers
@@ -11,6 +11,17 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import firstAgentTranslation from "./translations/first";
+
+const normalizeAgent = (raw: any): Agent => ({
+  agentId: typeof raw?.agentId === "string" ? raw.agentId : String(raw?.agentId ?? ""),
+  name: typeof raw?.name === "string" ? raw.name : String(raw?.name ?? ""),
+  phoneNumber: typeof raw?.phoneNumber === "string" ? raw.phoneNumber : String(raw?.phoneNumber ?? ""),
+  handledLoans: Number.isFinite(Number(raw?.handledLoans)) ? Number(raw?.handledLoans) : 0,
+  totalLoanAmount: Number.isFinite(Number(raw?.totalLoanAmount)) ? Number(raw?.totalLoanAmount) : 0,
+  totalCommission: Number.isFinite(Number(raw?.totalCommission)) ? Number(raw?.totalCommission) : 0,
+});
+
+type Language = 'en' | 'ceb';
 
 interface Agent {
   agentId: string;
@@ -35,49 +46,76 @@ export default function AgentPage() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [successMessage, setSuccessMessage] = useState("");
+  const [language, setLanguage] = useState<Language>('en');
 
   // Load role from localStorage on mount
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
-    if (storedRole) setRole(storedRole);
+    if (storedRole) {
+      setRole(storedRole);
+
+      if (storedRole === "head") {
+        const storedLanguage = localStorage.getItem("headLanguage") as Language | null;
+        if (storedLanguage) setLanguage(storedLanguage);
+      } else if (storedRole === "loan officer") {
+        const storedLanguage = localStorage.getItem("loanOfficerLanguage") as Language | null;
+        if (storedLanguage) setLanguage(storedLanguage);
+      } else if (storedRole === "manager") {
+        const storedLanguage = localStorage.getItem("managerLanguage") as Language | null;
+        if (storedLanguage) setLanguage(storedLanguage);
+      }
+    } else {
+      setRole(null);
+    }
   }, []);
+
+  const fetchAgents = useCallback(async () => {
+    if (!role) return;
+
+    setLoading(true);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No token found. Please log in again.");
+        setAgents([]);
+        return;
+      }
+
+      const res = await fetch("http://localhost:3001/agents", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch agents");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setAgents(data.map(normalizeAgent));
+      } else if (Array.isArray(data?.agents)) {
+        setAgents(data.agents.map(normalizeAgent));
+      } else {
+        setAgents([]);
+      }
+    } catch (err) {
+      setAgents([]);
+      setError((err as Error).message || "Server error");
+    } finally {
+      setLoading(false);
+    }
+  }, [role]);
 
   // Fetch agents whenever role changes
   useEffect(() => {
     if (!role) return;
-
-    const fetchAgents = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("No token found. Please log in again.");
-          return;
-        }
-        const res = await fetch("http://localhost:3001/agents", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch agents");
-        const data = await res.json();
-        setAgents(data.agents || []);
-      } catch (err) {
-        setAgents([]);
-        setError((err as Error).message || "Server error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAgents();
-  }, [role]);
+  }, [role, fetchAgents]);
 
   // Language listener
   useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
+    const handleLanguageChange = (event: CustomEvent<{ userType: string; language: Language }>) => {
       if ((role === "head" && event.detail.userType === 'head') || 
           (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
           (role === "manager" && event.detail.userType === 'manager')) {
@@ -89,7 +127,7 @@ export default function AgentPage() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, [role]);
 
-  const t = firstAgentTranslation[language];
+  const t = firstAgentTranslation[language] || firstAgentTranslation.en;
 
   const handleAddAgent = async (): Promise<{
     success: boolean;
@@ -129,8 +167,8 @@ export default function AgentPage() {
     }
 
     // Preflight: check duplicates against already loaded agents
-  const agentNameClash = agents.some(a => normalizeName(a.name) === nameNorm);
-  const agentPhoneClash = agents.some(a => normalizePhone(a.phoneNumber) === phoneNorm);
+    const agentNameClash = agents.some(a => normalizeName(a.name) === nameNorm);
+    const agentPhoneClash = agents.some(a => normalizePhone(a.phoneNumber) === phoneNorm);
 
     if (agentNameClash) {
       errors.name = errors.name || "An agent with this name already exists.";
@@ -148,11 +186,8 @@ export default function AgentPage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-
-        return { success: false, message: "No token found. Please log in again." };
-=======
         setError("No token found. Please log in again.");
-        return;
+        return { success: false, message: "No token found. Please log in again." };
       }
         
       const res = await fetch("http://localhost:3001/agents", {
@@ -193,7 +228,7 @@ export default function AgentPage() {
       // Success
       const created = data?.agent;
       if (created) {
-        setAgents(prev => [...prev, created]);
+  setAgents(prev => [...prev, normalizeAgent(created)]);
       } else {
         // Fallback: refetch if response shape is unexpected
         await fetchAgents();
@@ -204,6 +239,7 @@ export default function AgentPage() {
       setSuccessMessage("Agent added successfully");
       return { success: true };
     } catch (err) {
+      setError("Server error");
       return { success: false, message: "Server error" };
     } finally {
       setLoading(false);
@@ -256,6 +292,12 @@ export default function AgentPage() {
               </button>
             )}
           </div>
+
+          {error && (
+            <div className="mb-6 text-sm text-red-600">
+              {error}
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
             <div className="relative w-full">
