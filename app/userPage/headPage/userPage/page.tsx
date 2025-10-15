@@ -72,6 +72,7 @@ export default function Page() {
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const actionPopoverRef = useRef<HTMLDivElement | null>(null);
   const actionButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const paginationRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -321,12 +322,28 @@ export default function Page() {
                               </button>
                               {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
                                 const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
+                                const menuWidth = 128;
+                                const menuHeight = 96; // approximate height for two options
+                                const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+                                let top: number;
+                                if (rect.bottom + menuHeight + 8 > paginationTop) {
+                                  top = rect.top - menuHeight - 12;
+                                } else {
+                                  top = rect.bottom + 8;
+                                }
+                                if (top < 8) {
+                                  top = 8;
+                                }
+                                let left = rect.right - menuWidth;
+                                if (left + menuWidth > window.innerWidth - 8) {
+                                  left = window.innerWidth - menuWidth - 8;
+                                }
                                 const style: React.CSSProperties = {
                                   position: "fixed",
-                                  top: rect.bottom + 8,
-                                  left: rect.right - 128,
-                                  width: 128,
-                                  zIndex: 40,
+                                  top,
+                                  left,
+                                  width: menuWidth,
+                                  zIndex: 9999,
                                 };
                                 return (
                                   <div
@@ -370,7 +387,7 @@ export default function Page() {
             )}
           </div>
           {/* Pagination + Summary */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black" ref={paginationRef}>
             <div className="text-sm text-gray-700">
               {totalCount === 0 ? (
                 <>Showing 0 of 0</>

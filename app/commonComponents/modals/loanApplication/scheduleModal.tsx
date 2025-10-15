@@ -54,6 +54,7 @@ export default function SetScheduleModal({
   const [animateIn, setAnimateIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Precompute office-hour time slots (09:00 to 18:00)
   // Format HH:mm to 12-hour clock for email text
   function formatTimeTo12Hour(time: string) {
     const [hourStr, minute] = time.split(":");
@@ -210,8 +211,6 @@ export default function SetScheduleModal({
               type="time"
               value={interviewTime}
               onChange={(e) => setInterviewTime(e.target.value)}
-              min="09:00"
-              max="18:00"
               className="mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-red-500"
             />
           </label>

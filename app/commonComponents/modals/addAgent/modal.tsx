@@ -1,7 +1,6 @@
 'use client';
 
 import { FC, useState, useEffect } from "react";
-import { FiX } from "react-icons/fi";
 
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
@@ -50,20 +49,33 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
   const [showConfirm, setShowConfirm] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ name?: string; phoneNumber?: string }>({});
   const [genericError, setGenericError] = useState<string>("");
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
-  const [animateIn, setAnimateIn] = useState(false);
-
-  // Handle modal animation timing
   useEffect(() => {
     if (show) {
-      const timer = setTimeout(() => setAnimateIn(true), 10);
+      setIsVisible(true);
+      const timer = setTimeout(() => setIsAnimating(true), 10);
       return () => clearTimeout(timer);
     } else {
-      setAnimateIn(false);
+      setIsAnimating(false);
+      const timer = setTimeout(() => setIsVisible(false), 150);
+      return () => clearTimeout(timer);
     }
   }, [show]);
 
-  if (!show) return null;
+  if (!isVisible) return null;
+
+  const handleModalClose = () => {
+    setIsAnimating(false);
+    setTimeout(() => {
+      onClose();
+      setIsVisible(false);
+      setShowConfirm(false);
+      setFieldErrors({});
+      setGenericError("");
+    }, 150);
+  };
 
   // Show confirmation modal before adding agent
   const handleAddClick = () => {
@@ -90,55 +102,93 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 
   return (
     <>
-      <div className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-        <div className={`bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}> 
-          <button
-            className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-            onClick={onClose}
-          >
-            <FiX size={20} />
-          </button>
-          <h2 className="text-xl font-semibold mb-4 text-black">Add New Agent</h2>
+      <div
+        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+          isAnimating ? 'opacity-100' : 'opacity-0'
+        }`}
+        onClick={handleModalClose}
+      >
+        <div
+          className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-150 ${
+            isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-semibold mb-2">Add New Agent</h2>
+          <p className="text-sm text-gray-500 mb-4">
+            Provide the agent’s complete name and mobile number to add them to the roster.
+          </p>
 
-          <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={newAgentName}
-              onChange={e => {
-                setNewAgentName(e.target.value);
-                if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: undefined }));
-              }}
-              className="border p-2 rounded-md bg-white text-black placeholder-gray-500"
-            />
-            {fieldErrors.name && (
-              <p className="text-red-500 text-sm -mt-2">{fieldErrors.name}</p>
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleAddClick(); }}>
+            <div>
+              <label htmlFor="agent-name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                id="agent-name"
+                type="text"
+                placeholder="e.g. Maria Dela Cruz"
+                value={newAgentName}
+                onChange={e => {
+                  setNewAgentName(e.target.value);
+                  if (fieldErrors.name) setFieldErrors(prev => ({ ...prev, name: undefined }));
+                }}
+                className={`mt-1 w-full rounded-md border px-4 py-2 text-sm ${fieldErrors.name ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-red-500 focus:ring-red-200'} focus:outline-none focus:ring-2`}
+                autoComplete="off"
+              />
+              {fieldErrors.name && (
+                <p className="mt-1 text-xs text-red-500" role="alert">{fieldErrors.name}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="agent-phone" className="block text-sm font-medium text-gray-700">
+                Mobile Number
+              </label>
+              <input
+                id="agent-phone"
+                type="text"
+                inputMode="numeric"
+                placeholder="09XXXXXXXXX"
+                value={newAgentPhone}
+                onChange={e => {
+                  const digitsOnly = e.target.value.replace(/\D/g, "");
+                  const limited = digitsOnly.slice(0, 11);
+                  setNewAgentPhone(limited);
+                  if (fieldErrors.phoneNumber) setFieldErrors(prev => ({ ...prev, phoneNumber: undefined }));
+                }}
+                maxLength={11}
+                className={`mt-1 w-full rounded-md border px-4 py-2 text-sm ${fieldErrors.phoneNumber ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-red-500 focus:ring-red-200'} focus:outline-none focus:ring-2`}
+                autoComplete="off"
+              />
+              {fieldErrors.phoneNumber && (
+                <p className="mt-1 text-xs text-red-500" role="alert">{fieldErrors.phoneNumber}</p>
+              )}
+            </div>
+
+            {genericError && (
+              <p className="text-sm text-red-600" role="alert">
+                {genericError}
+              </p>
             )}
-            <input
-              type="text"
-              placeholder="Phone Number"
-              value={newAgentPhone}
-              onChange={e => {
-                const digitsOnly = e.target.value.replace(/\D/g, "");
-                const limited = digitsOnly.slice(0, 11);
-                setNewAgentPhone(limited);
-                if (fieldErrors.phoneNumber) setFieldErrors(prev => ({ ...prev, phoneNumber: undefined }));
-              }}
-              maxLength={11}
-              className="border p-2 rounded-md bg-white text-black placeholder-gray-500"
-            />
-            {fieldErrors.phoneNumber && (
-              <p className="text-red-500 text-sm -mt-2">{fieldErrors.phoneNumber}</p>
-            )}
-            {genericError && <p className="text-red-500 text-sm">{genericError}</p>}
-            <button
-              onClick={handleAddClick}
-              disabled={loading}
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-            >
-              {loading ? "Adding..." : "Add Agent"}
-            </button>
-          </div>
+
+            <div className="flex justify-end gap-4 pt-2">
+              <button
+                type="button"
+                onClick={handleModalClose}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-md disabled:cursor-not-allowed disabled:bg-red-400"
+              >
+                {loading ? "Saving..." : "Save Agent"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
       <ConfirmModal
