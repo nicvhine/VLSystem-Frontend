@@ -73,10 +73,10 @@ export default function TermsGateModal({
         </label>
         <div className="mt-2 text-xs text-gray-500">
           {!tosRead && (
-            <div>• {language === 'en' ? 'Please open and scroll the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
+            <div>• {language === 'en' ? 'Please open and read the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
           )}
           {!privacyRead && (
-            <div>• {language === 'en' ? 'Please open and scroll the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
+            <div>• {language === 'en' ? 'Please open and read the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
           )}
         </div>
         <div className="mt-4 flex justify-end gap-3">

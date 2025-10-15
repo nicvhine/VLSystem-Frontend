@@ -13,6 +13,7 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import headTranslations from "@/app/userPage/headPage/components/translation";
 import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
 import managerTranslations from "@/app/userPage/managerPage/components/translation";
+import { application } from "express";
 
 // API endpoint for loans data
 const API_URL = "http://localhost:3001/loans";
@@ -28,6 +29,7 @@ interface LoanDetails {
   balance: number;
   status: string;
   dateDisbursed: string;
+  appLoanAmount: number;
 }
 
 /**
@@ -268,7 +270,7 @@ export default function LoansPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">{loan.loanId}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{loan.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{formatDate(loan.dateDisbursed)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.principal)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.appLoanAmount)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{formatCurrency(loan.balance)}</td>
                     <td className="px-6 py-4">
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
