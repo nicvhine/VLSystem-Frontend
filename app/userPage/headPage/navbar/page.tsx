@@ -311,18 +311,24 @@ const {
 
             {/* Profile Dropdown */}
             <div className="relative">
-              <div
-                className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
-                onClick={handleToggleDropdown}
-              >
+            <div
+              className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
+              onClick={handleToggleDropdown}
+            >
+              {previewPic || profilePic ? (
                 <Image
                   src={previewPic || profilePic || '/idPic.jpg'}
                   alt="Profile"
-                  width={36}
-                  height={36}
-                  className="object-cover w-full h-full"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full rounded-full"
                 />
-              </div>
+              ) : (
+                <span className="text-gray-700 font-semibold text-sm">
+                  {name ? name.charAt(0).toUpperCase() : "U"}
+                </span>
+              )}
+            </div>
 
               {isDropdownOpen && (
               <ProfileDropdown

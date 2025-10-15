@@ -186,6 +186,8 @@ export default function AgentPage() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
+
+        return { success: false, message: "No token found. Please log in again." };
         setError("No token found. Please log in again.");
         return { success: false, message: "No token found. Please log in again." };
       }
