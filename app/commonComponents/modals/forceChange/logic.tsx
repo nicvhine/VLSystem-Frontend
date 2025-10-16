@@ -21,6 +21,9 @@ export function useChangePassword(
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [passwordChanged, setPasswordChanged] = useState<boolean | null>(null);
@@ -57,9 +60,9 @@ export function useChangePassword(
   }, [role, borrowersId, userId, token]);
 
   // Prevent copy/paste
-  const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); }, []);
-  const preventCopy = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); }, []);
-  const preventCut = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); }, []);
+  const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => e.preventDefault(), []);
+  const preventCopy = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => e.preventDefault(), []);
+  const preventCut = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => e.preventDefault(), []);
 
   // Change password handler
   const handleChange = async () => {
@@ -83,10 +86,13 @@ export function useChangePassword(
       return;
     }
 
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
       setError(
+        'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
+      );
+      setErrorOpen(true);
+      setErrorMessage(
         'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
       );
       return;
@@ -118,6 +124,7 @@ export function useChangePassword(
           setSuccessOpen(false);
           localStorage.removeItem('forcePasswordChange');
           onClose();
+          if (onSuccess) onSuccess();
         }, 3000);
       } else {
         setErrorMessage(result.message || 'Failed to change password');
@@ -129,11 +136,11 @@ export function useChangePassword(
       setErrorOpen(true);
     }
   };
-  
 
   const handleModalClose = () => {
     if (passwordChanged === false) {
       setError('You must change your password before closing this modal.');
+      setErrorOpen(true);
       return;
     }
     setSuccessOpen(false);
@@ -142,7 +149,9 @@ export function useChangePassword(
 
   // Clear missing field error when user starts typing
   const clearMissingField = useCallback((field: string) => {
-    setMissingFields((prev) => (prev.includes(field) ? prev.filter((name) => name !== field) : prev));
+    setMissingFields((prev) =>
+      prev.includes(field) ? prev.filter((name) => name !== field) : prev
+    );
   }, []);
 
   return {
