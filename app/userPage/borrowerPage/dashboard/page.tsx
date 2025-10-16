@@ -127,8 +127,30 @@ export default function BorrowerDashboard() {
   const [showPrivacyContent, setShowPrivacyContent] = useState(false);
   const [tosRead, setTosRead] = useState(false);
   const [privacyRead, setPrivacyRead] = useState(false);
+  const [termsReady, setTermsReady] = useState(false);
+
   useEffect(() => {
-    // Show terms reminder if not seen within last 24 hours
+    if (typeof window === 'undefined') return;
+
+    const evaluate = () => {
+      const mustChange = localStorage.getItem('forcePasswordChange') === 'true';
+      if (!mustChange) {
+        setTermsReady(true);
+      }
+    };
+
+    evaluate();
+
+    const handleCompleted = () => {
+      evaluate();
+    };
+
+    window.addEventListener('forcePasswordChangeCompleted', handleCompleted);
+    return () => window.removeEventListener('forcePasswordChangeCompleted', handleCompleted);
+  }, []);
+
+  useEffect(() => {
+    if (!termsReady) return;
     try {
       const key = 'termsReminderSeenAt';
       const lastSeen = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
@@ -138,10 +160,9 @@ export default function BorrowerDashboard() {
         setShowTermsModal(true);
       }
     } catch (_) {
-      // Fallback: show if storage fails
       setShowTermsModal(true);
     }
-  }, []);
+  }, [termsReady]);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentModalAnimateIn, setPaymentModalAnimateIn] = useState(false);
 

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import useInactivityLogout from "@/app/commonComponents/modals/inactivity/modal";
+import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
 import BorrowerNavbar from "./navbar/page";
@@ -40,7 +40,10 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
             <BorrowerNavbar />
             
             {showChangePasswordModal && (
-                <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+                <ChangePasswordModal
+                    onClose={() => setShowChangePasswordModal(false)}
+                    onSuccess={() => setShowChangePasswordModal(false)}
+                />
             )}
 
             {children}

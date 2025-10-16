@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
 import ConfirmModal from "@/app/commonComponents/modals/confirmModal/ConfirmModal";
 
 // Props interface for CreateUserModal component
@@ -42,7 +43,7 @@ export default function CreateUserModal({
   
   // Form validation errors
   const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
-  
+
   // Modal state management
   const [showConfirm, setShowConfirm] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -65,6 +66,7 @@ export default function CreateUserModal({
     setTimeout(() => {
       onClose();
       setIsVisible(false);
+      setShowConfirm(false);
     }, 150);
   };
 
@@ -135,26 +137,27 @@ export default function CreateUserModal({
   if (!isVisible) return null;
 
   return (
-    <div 
+    <div
       className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
         isAnimating ? 'opacity-100' : 'opacity-0'
       }`}
       onClick={handleModalClose}
     >
-      <div 
-        className={`bg-white p-6 text-black rounded-lg shadow-lg w-96 max-w-full transition-all duration-150 ${
+      <div
+        className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-150 ${
           isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-4">Create New User</h2>
-  <form onSubmit={handleSubmit}>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Create New User</h2>
+        <p className="text-sm text-gray-500 mb-4">Fill out the details below to add a new team member.</p>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
             <input
               type="text"
               name="name"
               placeholder="Enter Name"
-              className={`w-full px-4 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.name}
               onChange={handleChange}
               minLength={2}
@@ -170,7 +173,7 @@ export default function CreateUserModal({
               type="email"
               name="email"
               placeholder="Enter Email"
-              className={`w-full px-4 py-2 border rounded-md ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.email}
               onChange={handleChange}
               required
@@ -183,7 +186,7 @@ export default function CreateUserModal({
               type="tel"
               name="phoneNumber"
               placeholder="Enter Phone Number"
-              className={`w-full px-4 py-2 border rounded-md ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+              className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.phoneNumber}
               onChange={handleChange}
               minLength={11}
@@ -196,7 +199,7 @@ export default function CreateUserModal({
           </div>
           <select
             name="role"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4"
+            className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
             value={newUser.role}
             onChange={handleChange}
           >
@@ -205,7 +208,7 @@ export default function CreateUserModal({
             <option value="loan officer">Loan Officer</option>
             <option value="collector">Collector</option>
           </select>
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-end gap-4 pt-2">
             <button
               type="button"
               onClick={handleModalClose}

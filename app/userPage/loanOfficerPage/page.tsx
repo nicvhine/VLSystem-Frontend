@@ -4,10 +4,15 @@ import { useState, useEffect} from "react";
 import { useRouter } from 'next/navigation';
 import LoanOfficerNavbar from "./navbar/page";
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
-import useInactivityLogout from "@/app/commonComponents/modals/inactivity/modal";
+import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
 
-export default function LoanOfficer({ children }: { children?: React.ReactNode }){
+interface LoanOfficerProps {
+  children?: React.ReactNode;
+  isNavbarBlurred?: boolean;
+}
+
+export default function LoanOfficer({ children, isNavbarBlurred = false }: LoanOfficerProps){
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
@@ -35,7 +40,7 @@ export default function LoanOfficer({ children }: { children?: React.ReactNode }
   }
     return(
         <div className="min-h-screen bg-white">
-          <LoanOfficerNavbar />
+          <LoanOfficerNavbar isBlurred={isNavbarBlurred} />
             {showChangePasswordModal && (
               <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
             )}

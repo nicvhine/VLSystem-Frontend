@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ErrorModal from "../errorModal/modal";
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
@@ -13,6 +13,7 @@ interface InterviewModalProps {
   currentTime?: string;
   onSave: (date: string, time: string) => void;
   onView: (applicationId: string) => void;
+  appliedDate?: string;
 }
 
 /**
@@ -35,14 +36,28 @@ export default function InterviewModal({
   currentTime,
   onSave,
   onView,
+  appliedDate,
 }: InterviewModalProps) {
   // Form state management
   const [date, setDate] = useState(currentDate || "");
   const [time, setTime] = useState(currentTime || "");
   const [showConfirm, setShowConfirm] = useState(false);
-  const [animateIn, setAnimateIn] = useState(false);
-    const [errorOpen, setErrorOpen] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Scheduling window: today through seven days after application date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const appliedDateObj = appliedDate ? new Date(appliedDate) : new Date(today);
+  appliedDateObj.setHours(0, 0, 0, 0);
+  const minDateObj = new Date(today);
+  const maxDateObj = new Date(appliedDateObj);
+  maxDateObj.setDate(maxDateObj.getDate() + 7);
+  const minDate = minDateObj.toISOString().split("T")[0];
+  const maxDate = maxDateObj.toISOString().split("T")[0];
 
   // Update form fields when props change
   useEffect(() => {
@@ -50,24 +65,66 @@ export default function InterviewModal({
     setTime(currentTime || "");
   }, [currentDate, currentTime]);
 
-  // Handle modal animation timing
   useEffect(() => {
     if (show) {
-      const timer = setTimeout(() => setAnimateIn(true), 10);
+      setIsVisible(true);
+      const timer = setTimeout(() => setIsAnimating(true), 10);
       return () => clearTimeout(timer);
-    } else {
-      setAnimateIn(false);
     }
+
+    setIsAnimating(false);
+    const timer = setTimeout(() => setIsVisible(false), 150);
+    return () => clearTimeout(timer);
   }, [show]);
 
-  if (!show) return null;
+  useEffect(() => {
+    return () => {
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+    };
+  }, []);
+  if (!isVisible) return null;
+
+  const handleModalClose = () => {
+    setIsAnimating(false);
+    setTimeout(() => {
+      onClose();
+      setIsVisible(false);
+      setShowConfirm(false);
+    }, 150);
+  };
 
   // Validate and show confirmation before saving
   const handleSave = () => {
-    if (!date || !time) {
-      setErrorMessage("Please set both date and time before saving.");
+    const showError = (message: string) => {
+      setErrorMessage(message);
       setErrorOpen(true);
-      setTimeout(() => setErrorOpen(false), 2000);
+      if (errorTimerRef.current) {
+        clearTimeout(errorTimerRef.current);
+      }
+      errorTimerRef.current = setTimeout(() => setErrorOpen(false), 2000);
+    };
+
+    if (!date || !time) {
+      showError("Please set both date and time before saving.");
+      return;
+    }
+
+    const selectedDate = new Date(`${date}T00:00:00`);
+    if (selectedDate < minDateObj || selectedDate > maxDateObj) {
+      showError("Interview date must be within seven days of the application and not in the past.");
+      return;
+    }
+
+    const [hour, minute] = time.split(":").map(Number);
+    if (Number.isNaN(hour) || Number.isNaN(minute)) {
+      showError("Please provide a valid interview time.");
+      return;
+    }
+
+    if (hour < 9 || hour > 18 || (hour === 18 && minute > 0)) {
+      showError("Interview time must be between 9:00 AM and 6:00 PM.");
       return;
     }
     setShowConfirm(true);
@@ -87,56 +144,65 @@ export default function InterviewModal({
   return (
     <>
       <div
-        className={`fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}
-        style={{
-          backgroundColor: "rgba(0,0,0,0.3)",
-          backdropFilter: "blur(8px)",
-        }}
+        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+          isAnimating ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleModalClose}
       >
-        <div className={`bg-white rounded-lg shadow-lg p-6 w-150 text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-          <h2 className="text-xl font-semibold mb-4">Edit Interview Schedule</h2>
-
-          {/* Date Input */}
+        <div
+          className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-150 ${
+            isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          }`}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="mb-4">
-            <label className="block mb-1 font-medium">Date</label>
-            <input
-              type="date"
-              value={date}
-              placeholder="Set scheduled"
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full border rounded p-2"
-            />
+            <h2 className="text-xl font-semibold text-gray-900">Edit Interview Schedule</h2>
+            <p className="text-sm text-gray-500">Update the borrower’s interview date and time.</p>
           </div>
 
-          {/* Time Input */}
-          <div className="mb-4">
-            <label className="block mb-1 font-medium">Time</label>
-            <input
-              type="time"
-              value={time}
-              placeholder="Set scheduled"
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full border rounded p-2"
-            />
+          <div className="space-y-4">
+            <label className="block text-sm font-medium text-gray-700">
+              Interview Date
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                min={minDate}
+                max={maxDate}
+                className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
+              />
+            </label>
+
+            <label className="block text-sm font-medium text-gray-700">
+              Interview Time
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
+              />
+            </label>
           </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-6">
             <button
+              type="button"
+              onClick={handleModalClose}
               className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
-              onClick={onClose}
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              type="button"
               onClick={handleSave}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
             >
               Save Changes
             </button>
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              type="button"
               onClick={() => onView(applicationId)}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
             >
               View Application
             </button>

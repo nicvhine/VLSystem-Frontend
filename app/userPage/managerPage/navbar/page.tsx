@@ -234,11 +234,11 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
 
               {showNotifs && (
                 <div
-                  className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 overflow-hidden"
+                  className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-80 mt-3 overflow-hidden"
                   style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999 }}
                 >
-                  <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
-                    <h3 className="text-sm font-semibold text-gray-700">
+                  <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50">
+                    <h3 className="text-xs font-semibold text-gray-700">
                       {language === 'ceb' ? 'Mga Notipikasyon' : 'Notifications'}
                     </h3>
                     {notifications.some((n) => !n.read) && (
@@ -255,19 +255,19 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                             console.error('Failed to mark all as read:', err);
                           }
                         }}
-                        className="text-xs text-blue-600 hover:underline"
+                        className="text-[11px] text-blue-600 hover:underline"
                       >
                         {language === 'ceb' ? 'Markahi tanan nga nabasa' : 'Mark all as read'}
                       </button>
                     )}
                   </div>
 
-                  <div className="max-h-80 overflow-y-auto">
+                  <div className="max-h-64 overflow-y-auto">
                     {notifications.length > 0 ? (
                       notifications.map((notif, idx) => (
                         <div
                           key={idx}
-                          className={`px-4 py-3 border-b last:border-none cursor-pointer transition-colors duration-150 ${
+                          className={`px-3 py-2.5 border-b last:border-none cursor-pointer transition-colors duration-150 ${
                             !notif.read ? 'bg-blue-50' : 'hover:bg-gray-50'
                           }`}
                           onClick={async () => {
@@ -293,33 +293,33 @@ export default function ManagerNavbar({ isBlurred = false }: { isBlurred?: boole
                             }
                           }}
                         >
-                          <div className="flex items-start gap-4 mb-2">
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0">
+                          <div className="flex items-start gap-3 mb-1.5">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center flex-shrink-0">
                               {notif.actorProfilePic ? (
                                 <Image
                                   src={notif.actorProfilePic}
                                   alt={notif.actorName || 'Profile'}
-                                  width={48}
-                                  height={48}
+                                  width={40}
+                                  height={40}
                                   className="object-cover w-full h-full"
                                 />
                               ) : (
-                                <span className="text-gray-400 text-2xl font-bold">
+                                <span className="text-gray-400 text-lg font-semibold">
                                   {notif.actorName ? notif.actorName.charAt(0).toUpperCase() : 'U'}
                                 </span>
                               )}
                             </div>
                             <div className="flex flex-col justify-center flex-1">
-                              <div className="font-semibold text-base text-gray-900 leading-tight">
+                              <div className="font-semibold text-sm text-gray-900 leading-tight">
                                 {capitalizeWords(notif.actorName) || 'Unknown'}
                               </div>
-                              <div className="text-xs text-gray-500 mb-2">
+                              <div className="text-[11px] text-gray-500 mb-1.5">
                                 {notif.actorRole ? capitalizeWords(notif.actorRole) : 'Loan Officer'}
                               </div>
-                              <div className="text-sm text-gray-800 mb-1">
+                              <div className="text-xs text-gray-800 mb-1">
                                 {translateNotificationMessage(notif, language)}
                               </div>
-                              <div className="text-xs text-gray-400">
+                              <div className="text-[11px] text-gray-400">
                                 {new Date(notif.createdAt).toLocaleString()}
                               </div>
                             </div>

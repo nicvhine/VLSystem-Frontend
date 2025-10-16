@@ -1,95 +1,65 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+interface AreYouStillThereModalProps {
+  countdown: number;
+  onStay: () => void;
+  onLogout: () => void;
+}
 
 /**
- * Custom hook for handling user inactivity and automatic logout
- * Monitors user activity and shows warning modal before logout
- * @param timeout - Inactivity timeout in milliseconds (default: 6000000ms = 100 minutes)
- * @param modalTimeout - Modal countdown timeout in milliseconds (default: 10000ms = 10 seconds)
- * @returns Object containing modal state and countdown
+ * Dialog shown when inactivity timer is about to log the user out.
+ * Matches the shared modal styling used across the app.
  */
-export default function useInactivityLogout(timeout = 6000000, modalTimeout = 10000) {
-  const router = useRouter();
-  const [showModal, setShowModal] = useState(false);
-  const [countdown, setCountdown] = useState(modalTimeout / 1000);
-
-  // Timer references for cleanup
-  const activityTimer = useRef<NodeJS.Timeout | null>(null);
-  const modalTimer = useRef<NodeJS.Timeout | null>(null);
-  const countdownInterval = useRef<NodeJS.Timeout | null>(null);
-
-  /**
-   * Logout function that clears localStorage and redirects to home
-   */
-  const logout = () => {
-    localStorage.clear();
-    router.push('/');
-  };
-
-  /**
-   * Reset countdown timer to initial value
-   */
-  const resetCountdown = () => {
-    setCountdown(modalTimeout / 1000);
-    if (countdownInterval.current) clearInterval(countdownInterval.current);
-  };
-
-  /**
-   * Show inactivity warning modal with countdown
-   */
-  const showInactivityModal = () => {
-    setShowModal(true);
-    let remaining = modalTimeout / 1000;
-    setCountdown(remaining);
-
-    countdownInterval.current = setInterval(() => {
-      remaining -= 1;
-      setCountdown(remaining);
-      if (remaining <= 0) {
-        clearInterval(countdownInterval.current!);
-      }
-    }, 1000);
-
-    modalTimer.current = setTimeout(() => {
-      logout();
-    }, modalTimeout);
-  };
-
-  const startInactivityTimer = () => {
-    if (activityTimer.current) clearTimeout(activityTimer.current);
-    activityTimer.current = setTimeout(() => {
-      showInactivityModal();
-    }, timeout);
-  };
-
-  const stayLoggedIn = () => {
-    setShowModal(false);
-    resetCountdown();
-    if (modalTimer.current) clearTimeout(modalTimer.current);
-    startInactivityTimer();
-  };
+export default function AreYouStillThereModal({ countdown, onStay, onLogout }: AreYouStillThereModalProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    startInactivityTimer();
+    setIsAnimating(true);
+  }, []);
 
-    const handleActivity = () => {
-      if (!showModal) {
-        startInactivityTimer(); // Only reset inactivity if modal is not showing
-      }
-    };
+  const handleClose = (action: () => void) => {
+    setIsAnimating(false);
+    setTimeout(() => {
+      setIsVisible(false);
+      action();
+    }, 150);
+  };
 
-    const events = ['mousemove', 'keydown', 'scroll'];
-    events.forEach((e) => window.addEventListener(e, handleActivity));
+  if (!isVisible) return null;
 
-    return () => {
-      events.forEach((e) => window.removeEventListener(e, handleActivity));
-      if (activityTimer.current) clearTimeout(activityTimer.current);
-      if (modalTimer.current) clearTimeout(modalTimer.current);
-      if (countdownInterval.current) clearInterval(countdownInterval.current);
-    };
-  }, [showModal]); // rebind when modal state changes
-
-  return { showModal, countdown, stayLoggedIn, logout };
+  return (
+    <div
+      className={`fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+        isAnimating ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className={`w-full max-w-sm rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
+          isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+        }`}
+      >
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Are you still there?</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          You have been inactive for a while. You will be logged out in <span className="font-semibold text-red-600">{countdown}</span> seconds.
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
+            onClick={() => handleClose(onLogout)}
+          >
+            Logout Now
+          </button>
+          <button
+            className="px-4 py-2 bg-red-600 text-white rounded-md"
+            onClick={() => handleClose(onStay)}
+          >
+            Stay Logged In
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

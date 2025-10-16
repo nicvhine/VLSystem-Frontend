@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
-import useInactivityLogout from "@/app/commonComponents/modals/inactivity/modal";
+import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
 import Dashboard from "./dashboard/page";
 import ManagerNavbar from "./navbar/page";
