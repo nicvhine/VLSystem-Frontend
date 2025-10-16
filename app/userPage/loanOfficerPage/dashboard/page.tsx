@@ -12,9 +12,10 @@ export default function LoanOfficerDashboard() {
     }
     return false;
   });
+  const [isNavbarBlurred, setIsNavbarBlurred] = useState(false);
 
   return (
-    <LoanOfficer>
+    <LoanOfficer isNavbarBlurred={isNavbarBlurred}>
       <div className="min-h-screen bg-white relative z-10">
         <div className="bg-white px-6">
         </div>
@@ -25,7 +26,7 @@ export default function LoanOfficerDashboard() {
               <LoanStatsDashboard />
             </div>
             <div className="flex-1 min-w-0">
-              <InterviewCalendar />
+              <InterviewCalendar onModalToggle={setIsNavbarBlurred} />
             </div>
           </div>
         </div>

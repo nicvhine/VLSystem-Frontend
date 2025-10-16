@@ -2,11 +2,17 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import SuccessModal from '../successModal/modal';
+import ErrorModal from '../errorModal/modal';
 
+/**
+ * Custom hook for password change functionality
+ * Handles validation, security features, and API communication
+ */
 export function useChangePassword(
   id: string | null,
   role: 'user' | 'borrower',
-  onClose: () => void
+  onClose: () => void,
+  onSuccess?: () => void
 ) {
   const [newPassword, setNewPassword] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -57,8 +63,23 @@ export function useChangePassword(
 
   // Change password handler
   const handleChange = async () => {
+    const missing: string[] = [];
+    if (!currentPassword.trim()) missing.push('currentPassword');
+    if (!newPassword.trim()) missing.push('newPassword');
+    if (!confirm.trim()) missing.push('confirmPassword');
+
+    if (missing.length > 0) {
+      setMissingFields(missing);
+      setErrorMessage('Please fill in all required fields.');
+      setErrorOpen(true);
+      return;
+    }
+
+    setMissingFields([]);
+
     if (newPassword !== confirm) {
-      setError('New Password and Confirm Password do not match.');
+      setErrorMessage('New Password and Confirm Password do not match.');
+      setErrorOpen(true);
       return;
     }
 
@@ -99,11 +120,13 @@ export function useChangePassword(
           onClose();
         }, 3000);
       } else {
-        setError(result.message || 'Failed to change password');
+        setErrorMessage(result.message || 'Failed to change password');
+        setErrorOpen(true);
       }
     } catch (err) {
       console.error('Password change error:', err);
-      setError('Something went wrong. Please try again.');
+      setErrorMessage('Something went wrong. Please try again.');
+      setErrorOpen(true);
     }
   };
   
@@ -117,13 +140,19 @@ export function useChangePassword(
     onClose();
   };
 
+  // Clear missing field error when user starts typing
+  const clearMissingField = useCallback((field: string) => {
+    setMissingFields((prev) => (prev.includes(field) ? prev.filter((name) => name !== field) : prev));
+  }, []);
+
   return {
     newPassword, setNewPassword,
     currentPassword, setCurrentPassword,
     confirm, setConfirm,
     showNew, setShowNew,
     showConfirm, setShowConfirm,
-    error, setError,
+    showCurrent, setShowCurrent,
+    missingFields,
     handleChange,
     preventCopy, preventCut, preventCopyPaste,
     successOpen, setSuccessOpen,
@@ -136,5 +165,20 @@ export function useChangePassword(
         onClose={handleModalClose}
       />
     ),
+    ErrorModalComponent: (
+      <ErrorModal
+        isOpen={errorOpen}
+        message={errorMessage}
+        onClose={() => {
+          setErrorOpen(false);
+          setErrorMessage('');
+        }}
+      />
+    ),
+    clearError: () => {
+      setErrorOpen(false);
+      setErrorMessage('');
+    },
+    clearMissingField,
   };
 }

@@ -13,6 +13,7 @@ type LoanOption = {
   interest: number;
 };
 
+// Predefined loan options with amounts and interest rates
 const loanOptions: LoanOption[] = [
   { amount: 50000, interest: 6 },
   { amount: 100000, interest: 5 },
@@ -25,8 +26,12 @@ interface OpenTermLoanFormProps {
   reloanData?: any;
 }
 
+/**
+ * Open-term loan application form component
+ * Supports both predefined and custom loan terms
+ */
 export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormProps) {
-  // Common form states
+  // Personal information states
   const [appName, setAppName] = useState("");
   const [appDob, setAppDob] = useState("");
   const [appContact, setAppContact] = useState("");
@@ -45,7 +50,7 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
   const [appCompanyName, setAppCompanyName] = useState("");
   const [sourceOfIncome, setSourceOfIncome] = useState("");
 
-  // Open-term specific states
+  // Open-term specific loan states
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
   const [customLoanAmount, setCustomLoanAmount] = useState<number>(0);
@@ -55,6 +60,7 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
   const [repaymentSchedule, setRepaymentSchedule] = useState("");
   const [specialConditions, setSpecialConditions] = useState("");
 
+  // Character references array
   const [appReferences, setAppReferences] = useState([
    { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" },
@@ -64,12 +70,13 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
   // File upload state
   const [uploadedFiles, setUploadedFiles] = useState<FileList | null>(null);
 
-  // Local modals for feedback
+  // Modal states for user feedback
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
+  // Populate form with existing data for reloan
   useEffect(() => {
     if (reloanData) {
       const { personalInfo, characterReferences } = reloanData;
@@ -119,7 +126,7 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
     }
   }, [reloanData]);
 
-  // Translations for select options
+  // Repayment schedule options with translations
   const repaymentOptions = [
     { value: '', label: language === 'en' ? 'Select schedule' : 'Pilia ang iskedyul' },
     { value: 'monthly', label: language === 'en' ? 'Monthly' : 'Matag Buwan' },
@@ -129,10 +136,12 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
     { value: 'flexible', label: language === 'en' ? 'Flexible' : 'Flexible' },
   ];
 
+  // Handle file upload selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUploadedFiles(e.target.files);
   };
 
+  // Validate and submit loan application
   const handleSubmit = async () => {
     if (!appLoanPurpose) {
       setErrorMsg(language === 'en' ? 'Please fill in all required fields.' : 'Palihug pun-a ang tanang kinahanglan nga field.');
@@ -140,10 +149,11 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
       return;
     }
 
-    // Determine loan details based on whether custom terms are used
+    // Determine loan details based on custom vs predefined terms
     let loanAmount, loanTerms, interestRate;
     
     if (useCustomTerms) {
+      // Validate custom terms
       if (!customLoanAmount || !customLoanTerms || !customInterestRate) {
         setErrorMsg(language === 'en' ? 'Please fill in all custom loan details.' : 'Palihug pun-a ang tanang detalye sa custom nga loan.');
         setShowErrorModal(true);
@@ -153,6 +163,7 @@ export default function OpenTermForm({ language, reloanData }: OpenTermLoanFormP
       loanTerms = customLoanTerms;
       interestRate = customInterestRate;
     } else {
+      // Validate predefined loan selection
       if (!selectedLoan) {
         setErrorMsg(language === 'en' ? 'Please select a loan option or use custom terms.' : 'Palihug pili og loan option o gamita ang custom nga terms.');
         setShowErrorModal(true);

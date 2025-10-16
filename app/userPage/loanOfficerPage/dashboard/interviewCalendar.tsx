@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
+// @ts-ignore: react-big-calendar lacks bundled TypeScript definitions in this project
 import { Calendar as RBC, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
@@ -29,8 +30,10 @@ interface Application {
   interviewTime?: string;
   status?: string;
   applicationId: string;
+  appliedDate?: string;
 }
 
+// Calendar localization setup
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
   format,
@@ -40,7 +43,15 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-export default function InterviewCalendar() {
+interface InterviewCalendarProps {
+  onModalToggle?: (isOpen: boolean) => void;
+}
+
+/**
+ * Interview calendar component for loan officers
+ * Displays scheduled interviews and allows scheduling management
+ */
+export default function InterviewCalendar({ onModalToggle }: InterviewCalendarProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
@@ -58,6 +69,32 @@ export default function InterviewCalendar() {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Convert applications with interview data to calendar events
+  const mapApplicationsToEvents = (apps: Application[]): InterviewEvent[] =>
+    apps
+      .filter(app => app.interviewDate && app.interviewTime)
+      .map(app => {
+        const [hourStr = "0", minuteStr = "0"] = (app.interviewTime ?? "00:00").split(":");
+        const [yearStr = "1970", monthStr = "1", dayStr = "1"] = (app.interviewDate ?? "1970-01-01").split("-");
+        const start = new Date(
+          Number(yearStr) || 1970,
+          (Number(monthStr) || 1) - 1,
+          Number(dayStr) || 1,
+          Number(hourStr) || 0,
+          Number(minuteStr) || 0
+        );
+        const end = new Date(start);
+        end.setHours(end.getHours() + 1);
+
+        return {
+          title: `${app.appName}`,
+          start,
+          end,
+          applicationId: app.applicationId,
+        };
+      });
+
+  // Listen for language changes
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (event.detail.userType === 'loanOfficer') {
@@ -71,9 +108,7 @@ export default function InterviewCalendar() {
 
   const t = loanOfficerTranslations[language];
 
-  // (moved above)
-
-
+  // Fetch interview data from API
   useEffect(() => {
     async function fetchInterviews() {
       try {
@@ -89,24 +124,7 @@ export default function InterviewCalendar() {
 
         const data: Application[] = await res.json();
 
-        const mappedEvents: InterviewEvent[] = data
-          .filter(app => app.interviewDate && app.interviewTime)
-          .map(app => {
-            const [hours, minutes] = app.interviewTime!.split(":").map(Number);
-            const [year, month, day] = app.interviewDate!.split("-").map(Number);
-            const start = new Date(year, month - 1, day, hours, minutes);
-            const end = new Date(start);
-            end.setHours(end.getHours() + 1);
-
-            return { 
-              title: `${app.appName}`, 
-              start, 
-              end,
-              applicationId: app.applicationId
-            };
-          });
-
-        setEvents(mappedEvents);
+        setEvents(mapApplicationsToEvents(data));
         setApplications(data);
       } catch (err) {
         console.error("Error fetching interviews:", err);
@@ -116,13 +134,22 @@ export default function InterviewCalendar() {
     fetchInterviews();
   }, []);
 
+  // Handle event selection to open interview modal
   const handleSelectEvent = (event: InterviewEvent) => {
     const app = applications.find(a => a.applicationId === event.applicationId);
     if (!app) return;
     setSelectedApp(app);
     setShowModal(true);
+    onModalToggle?.(true);
   };
 
+  // Close interview modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    onModalToggle?.(false);
+  };
+
+  // Save interview schedule changes
   const handleSaveChanges = async (date: string, time: string) => {
     if (!selectedApp) return;
   
@@ -140,7 +167,15 @@ export default function InterviewCalendar() {
       if (res.ok) {
         setModalMsg("Schedule updated!");
         setShowSuccessModal(true);
-        setShowModal(false);
+        const updatedApplications = applications.map(app =>
+          app.applicationId === selectedApp.applicationId
+            ? { ...app, interviewDate: date, interviewTime: time }
+            : app
+        );
+        setApplications(updatedApplications);
+        setEvents(mapApplicationsToEvents(updatedApplications));
+        setSelectedApp(prev => (prev ? { ...prev, interviewDate: date, interviewTime: time } : prev));
+        handleCloseModal();
       } else {
         setModalMsg("Failed to update schedule");
         setShowErrorModal(true);
@@ -150,6 +185,7 @@ export default function InterviewCalendar() {
     }
   };
 
+  // Navigate to application details page
   const handleViewApplication = (applicationId: string) => {
     window.location.href = `/commonComponents/loanApplication/${applicationId}`;
   };
@@ -173,14 +209,14 @@ export default function InterviewCalendar() {
   selectable
   views={['month', 'week', 'day', 'agenda']}
   view={view}
-  onView={(newView) => {
+  onView={(newView: View) => {
     // Only allow supported views
     if (['month', 'week', 'day', 'agenda'].includes(newView)) {
-      setView(newView as typeof view);
+      setView(newView);
     }
   }}
   date={date}
-  onNavigate={(newDate) => setDate(newDate)}
+  onNavigate={(newDate: Date) => setDate(newDate)}
   popup
   style={{ height: "75vh" }}
   onSelectEvent={handleSelectEvent}
@@ -250,12 +286,13 @@ export default function InterviewCalendar() {
       </div>
       <InterviewModal
         show={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={handleCloseModal}
         applicationId={selectedApp?.applicationId || ""}
         currentDate={selectedApp?.interviewDate}
         currentTime={selectedApp?.interviewTime}
         onSave={handleSaveChanges}
         onView={handleViewApplication}
+        appliedDate={selectedApp?.appliedDate}
       />
     </div>
   );

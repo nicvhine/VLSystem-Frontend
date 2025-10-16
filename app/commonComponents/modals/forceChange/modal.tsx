@@ -6,7 +6,12 @@ import { useChangePassword } from './logic';
 /**
  * Modal component for forced password change
  */
-export default function ChangePasswordModal({ onClose }: { onClose: () => void }) {
+interface ChangePasswordModalProps {
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswordModalProps) {
   const role = typeof window !== "undefined" ? localStorage.getItem('role') as "user" | "borrower" : "user";
   const id =
     role === "borrower"
@@ -20,20 +25,19 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
     showNew, setShowNew,
     showConfirm, setShowConfirm,
     showCurrent, setShowCurrent,
-    error, setError,
     handleChange,
     preventCopy, preventCut, preventCopyPaste,
-  } = useChangePassword(id, role, onClose);
+    SuccessModalComponent,
+    ErrorModalComponent,
+    clearError,
+    missingFields,
+    clearMissingField,
+  } = useChangePassword(id, role, onClose, onSuccess);
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
         <h2 className="text-2xl font-bold text-gray-900 text-center">Change Your Password</h2>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 text-sm rounded-lg">{error}</div>
-        )}
-
         <div className="space-y-4 mt-6">
           {/* Current Password */}
           <div>
@@ -45,13 +49,14 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
                 id="currentPassword"
                 type={showCurrent ? 'text' : 'password'}
                 placeholder="Enter current password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-12 
+                className={`w-full border ${missingFields.includes('currentPassword') ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2.5 pr-12 
                            focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none 
-                           transition placeholder:text-gray-500 text-gray-900"
+                           transition placeholder:text-gray-500 text-gray-900`}
                 value={currentPassword}
                 onChange={(e) => {
                   setCurrentPassword(e.target.value);
-                  setError('');
+                  clearMissingField('currentPassword');
+                  clearError();
                 }}
                 autoComplete="current-password"
                 onContextMenu={(e) => e.preventDefault()}
@@ -79,13 +84,14 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
                 id="newPassword"
                 type={showNew ? 'text' : 'password'}
                 placeholder="Enter new password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-12 
+                className={`w-full border ${missingFields.includes('newPassword') ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2.5 pr-12 
                            focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none 
-                           transition placeholder:text-gray-500 text-gray-900"
+                           transition placeholder:text-gray-500 text-gray-900`}
                 value={newPassword}
                 onChange={(e) => {
                   setNewPassword(e.target.value);
-                  setError('');
+                  clearMissingField('newPassword');
+                  clearError();
                 }}
                 autoComplete="new-password"
                 onContextMenu={(e) => e.preventDefault()}
@@ -113,13 +119,14 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
                 id="confirmPassword"
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Confirm your password"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-12 
+                className={`w-full border ${missingFields.includes('confirmPassword') ? 'border-red-500' : 'border-gray-300'} rounded-lg px-4 py-2.5 pr-12 
                            focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none 
-                           transition placeholder:text-gray-700 text-gray-900"
+                           transition placeholder:text-gray-700 text-gray-900`}
                 value={confirm}
                 onChange={(e) => {
                   setConfirm(e.target.value);
-                  setError('');
+                  clearMissingField('confirmPassword');
+                  clearError();
                 }}
                 onPaste={preventCopyPaste}
                 onCopy={preventCopy}
@@ -143,7 +150,6 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
           <button
             onClick={handleChange}
             className="w-full bg-red-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-red-700 transition"
-            disabled={!currentPassword || !newPassword || !confirm || newPassword !== confirm}
           >
             Change Password
           </button>
@@ -165,6 +171,8 @@ export default function ChangePasswordModal({ onClose }: { onClose: () => void }
           </button>
         </div>
       </div>
+      {SuccessModalComponent}
+      {ErrorModalComponent}
     </div>
   );
 }

@@ -608,17 +608,12 @@ export default function ApplicationDetailsPage() {
             message={successMessage}
             onClose={() => setSuccessModalOpen(false)}
           />
-          <ErrorModal
-            isOpen={errorModalOpen}
-            message={errorMessage}
-            onClose={() => setErrorModalOpen(false)}
-          />
 
 {isAgreementOpen === "loan" && (
   <LoanAgreementModal
     isOpen={true}
     onClose={() => setIsAgreementOpen(null)}
-    application={application ?? null}
+    application={(application as any) ?? null}
   />
 )}
 
@@ -626,7 +621,7 @@ export default function ApplicationDetailsPage() {
   <ReleaseForm
     isOpen={true}
     onClose={() => setIsAgreementOpen(null)}
-    application={application ?? null}
+    application={(application as any) ?? null}
   />
 )}
 

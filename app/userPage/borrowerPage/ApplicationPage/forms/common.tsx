@@ -10,7 +10,11 @@ import axios from "axios";
 //   { ssr: false }
 // );
 
-// Props interface for Common form component
+/**
+ * Common form component for loan applications
+ * Handles personal info, income source, and references
+ * Includes geocoding functionality for address validation
+ */
 interface CommonProps {
   // Applicant personal information
   appName: string;
@@ -88,6 +92,7 @@ interface CommonProps {
 
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
  
+  // Populate form with existing data for reloan applications
   useEffect(() => {
     if (props.reloanData) {
       const { personalInfo } = props.reloanData;
@@ -110,17 +115,17 @@ interface CommonProps {
     }
   }, [props.reloanData]);
 
-
+  // Update character reference fields
   const handleReferenceChange = (index: number, field: 'name' | 'contact' | 'relation', value: string) => {
   const updated = [...props.appReferences];
   updated[index][field] = value;
   props.setAppReferences(updated);
   };
 
-
+  // Handle address input with geocoding
   const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     props.setAppAddress(e.target.value);
-    // Geocode the address to update the marker
+    // Geocode address using OpenStreetMap Nominatim API
     try {
       const response = await axios.get("https://nominatim.openstreetmap.org/search", {
         params: { q: e.target.value, format: "json", limit: 1 },
@@ -130,7 +135,7 @@ interface CommonProps {
         setMarkerPosition([parseFloat(lat), parseFloat(lon)]);
       }
     } catch {
-      // Ignore geocode errors
+      // Ignore geocode errors silently
     }
   };
 

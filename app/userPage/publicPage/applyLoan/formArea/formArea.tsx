@@ -30,6 +30,10 @@ function ErrorModal({ message, onClose }: { message: string; onClose: () => void
         setAnimateIn(true);
         return () => setAnimateIn(false);
     }, []);
+    const handleClose = () => {
+        setAnimateIn(false);
+        setTimeout(() => onClose(), 150);
+    };
     
     // Determine header based on error message
     let header = "Error";
@@ -41,24 +45,24 @@ function ErrorModal({ message, onClose }: { message: string; onClose: () => void
         header = "Document Upload Error";
     }
     return (
-        <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-            <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-                <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 text-red-500 hover:text-red-700 transition text-2xl"
-                    aria-label="Close"
-                >×</button>
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
-                    <h3 className="text-lg font-semibold text-red-600 mb-2">{header}</h3>
-                    <p className="text-gray-700 mb-4 text-sm">{message}</p>
+        <div
+            className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+                animateIn ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={handleClose}
+        >
+            <div
+                className={`w-full max-w-sm rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
+                    animateIn ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">{header}</h3>
+                <p className="text-sm text-gray-600 mb-4">{message}</p>
+                <div className="flex justify-end">
                     <button
-                        onClick={onClose}
-                        className="w-full bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 font-semibold transition-colors text-sm"
+                        onClick={handleClose}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md"
                     >Close</button>
                 </div>
             </div>
@@ -73,25 +77,29 @@ function DocumentUploadErrorModal({ message, onClose }: { message: string; onClo
         setAnimateIn(true);
         return () => setAnimateIn(false);
     }, []);
+    const handleClose = () => {
+        setAnimateIn(false);
+        setTimeout(() => onClose(), 150);
+    };
     return (
-        <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-            <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xs p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-                <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition text-2xl"
-                    aria-label="Close"
-                >×</button>
-                <div className="text-center">
-                    <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01" />
-                        </svg>
-                    </div>
-                    <h3 className="text-lg font-semibold text-yellow-600 mb-2">Document Upload Error</h3>
-                    <p className="text-gray-700 mb-4 text-sm">{message}</p>
+        <div
+            className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+                animateIn ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={handleClose}
+        >
+            <div
+                className={`w-full max-w-sm rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
+                    animateIn ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Document Upload Issue</h3>
+                <p className="text-sm text-gray-600 mb-4">{message}</p>
+                <div className="flex justify-end">
                     <button
-                        onClick={onClose}
-                        className="w-full bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 font-semibold transition-colors text-sm"
+                        onClick={handleClose}
+                        className="px-4 py-2 bg-red-600 text-white rounded-md"
                     >Close</button>
                 </div>
             </div>
@@ -116,51 +124,52 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     }, []);
 
     const handleClose = () => {
-        onClose();
-        router.push('/');
+        setAnimateIn(false);
+        setTimeout(() => {
+            onClose();
+            router.push('/');
+        }, 150);
     };
     
 
     return (
-        <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-            <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-8 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-                <button
-                    onClick={handleClose}
-                    className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition text-2xl"
-                    aria-label="Close"
-                >
-                    ×
-                </button>
-                <div className="text-center">
-                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+        <div
+            className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+                animateIn ? 'opacity-100' : 'opacity-0'
+            }`}
+            onClick={handleClose}
+        >
+            <div
+                className={`w-full max-w-md rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
+                    animateIn ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                }`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {language === 'en' ? 'Application Submitted' : 'Napasa ang Aplikasyon'}
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                    {language === 'en'
+                        ? 'Your loan application has been received and is now being processed.'
+                        : 'Nadawat na ang imong aplikasyon ug gi-proseso na karon.'}
+                </p>
+                {loanId && (
+                    <div className="mb-4 rounded-md border border-gray-100 bg-gray-50 p-4">
+                        <p className="text-xs text-gray-500 mb-1">
+                            {language === 'en' ? 'Application ID' : 'Application ID'}
+                        </p>
+                        <p className="text-lg font-semibold text-red-600">{loanId}</p>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                        {language === 'en' ? 'Application Submitted Successfully!' : 'Malampusong Napasa ang Aplikasyon!'}
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                        {language === 'en'
-                            ? 'Your loan application has been received and is being processed.'
-                            : 'Nadawat na ang imong aplikasyon ug gi-proseso na.'}
-                    </p>
-                    {loanId && (
-                        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                            <p className="text-sm text-gray-600 mb-1">
-                                {language === 'en' ? 'Your Application ID:' : 'Imong Application ID:'}
-                            </p>
-                            <p className="text-lg font-semibold text-red-600">{loanId}</p>
-                        </div>
-                    )}
-                    <span className="block text-xs text-gray-500 mb-6">
-                        {language === 'en'
-                            ? 'We will soon notify you for the next step of your application through your provided contact details. Stay tuned for the updates.'
-                            : 'Amo kang pahibaw-an sa sunod nga lakang sa imong aplikasyon pinaagi sa imong gihatag nga contact details. Pabilin sa pagpaminaw para sa mga update.'}
-                    </span>
+                )}
+                <p className="text-xs text-gray-500 mb-6">
+                    {language === 'en'
+                        ? 'We will contact you using your provided details for the next steps. Please keep your lines open.'
+                        : 'Amo kang kontakon pinaagi sa imong contact details para sa sunod nga lakang. Palihug hulat sa among mensahe.'}
+                </p>
+                <div className="flex justify-end">
                     <button
                         onClick={handleClose}
-                        className="w-full bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 font-semibold transition-colors"
+                        className="px-4 py-2 bg-red-600 text-white rounded-md"
                     >
                         {language === 'en' ? 'Close' : 'Sirado'}
                     </button>
@@ -229,6 +238,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         const [collateralDescription, setCollateralDescription] = useState("");
         const [ownershipStatus, setOwnershipStatus] = useState("");
         const collateralTypeOptions = [
+            { value: "", label: language === "en" ? "Choose Collateral Type" : "Pilia ang klase sa kolateral" },
             { value: "vehicle", label: language === "en" ? "Vehicle" : "Sakyanan" },
             { value: "land", label: language === "en" ? "Land" : "Yuta" },
             { value: "house", label: language === "en" ? "House" : "Balay" },
