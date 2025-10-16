@@ -3,11 +3,16 @@
 import { useState } from "react";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 
+/**
+ * Payment checkout page for specific loan amount
+ * Redirects to PayMongo checkout session
+ */
 export default function PayPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Create checkout session and redirect to PayMongo
   const handleCheckout = async () => {
     try {
       setLoading(true);
@@ -17,7 +22,7 @@ export default function PayPage({ params }: { params: { id: string } }) {
         body: JSON.stringify({ amount: params.id }), // dynamic from URL
       });
 
-      // Try to parse JSON but tolerate non-JSON error responses
+      // Parse response, handle both JSON and text errors
       let data: any = null;
       try {
         data = await res.json();

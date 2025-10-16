@@ -18,9 +18,14 @@ export interface LoanPaymentDetails {
   canMakePayment: boolean;
 }
 
+/**
+ * Service class for handling payment operations
+ * Integrates with backend API for PayMongo payment processing
+ */
 class PaymentService {
   private baseUrl = 'http://localhost:3001';
 
+  // Get authorization headers with stored token
   private getAuthHeaders() {
     const token = localStorage.getItem('token');
     return {
@@ -29,6 +34,7 @@ class PaymentService {
     };
   }
 
+  // Fetch loan payment details and history
   async getLoanPaymentDetails(loanId: string): Promise<LoanPaymentDetails> {
     const response = await fetch(`${this.baseUrl}/payments/loan/${loanId}`, {
       headers: this.getAuthHeaders()
@@ -41,6 +47,7 @@ class PaymentService {
     return response.json();
   }
 
+  // Create payment intent with PayMongo
   async createPayment(paymentData: PaymentData): Promise<PaymentResponse> {
     const response = await fetch(`${this.baseUrl}/payments/create-payment-intent`, {
       method: 'POST',
@@ -56,6 +63,7 @@ class PaymentService {
     return response.json();
   }
 
+  // Check payment status by ID
   async checkPaymentStatus(paymentId: string) {
     const response = await fetch(`${this.baseUrl}/payments/status/${paymentId}`, {
       headers: this.getAuthHeaders()

@@ -33,6 +33,7 @@ interface Application {
   appliedDate?: string;
 }
 
+// Calendar localization setup
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
   format,
@@ -46,6 +47,10 @@ interface InterviewCalendarProps {
   onModalToggle?: (isOpen: boolean) => void;
 }
 
+/**
+ * Interview calendar component for loan officers
+ * Displays scheduled interviews and allows scheduling management
+ */
 export default function InterviewCalendar({ onModalToggle }: InterviewCalendarProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -64,6 +69,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Convert applications with interview data to calendar events
   const mapApplicationsToEvents = (apps: Application[]): InterviewEvent[] =>
     apps
       .filter(app => app.interviewDate && app.interviewTime)
@@ -88,6 +94,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         };
       });
 
+  // Listen for language changes
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (event.detail.userType === 'loanOfficer') {
@@ -101,9 +108,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
 
   const t = loanOfficerTranslations[language];
 
-  // (moved above)
-
-
+  // Fetch interview data from API
   useEffect(() => {
     async function fetchInterviews() {
       try {
@@ -129,6 +134,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     fetchInterviews();
   }, []);
 
+  // Handle event selection to open interview modal
   const handleSelectEvent = (event: InterviewEvent) => {
     const app = applications.find(a => a.applicationId === event.applicationId);
     if (!app) return;
@@ -137,11 +143,13 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     onModalToggle?.(true);
   };
 
+  // Close interview modal
   const handleCloseModal = () => {
     setShowModal(false);
     onModalToggle?.(false);
   };
 
+  // Save interview schedule changes
   const handleSaveChanges = async (date: string, time: string) => {
     if (!selectedApp) return;
   
@@ -177,6 +185,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     }
   };
 
+  // Navigate to application details page
   const handleViewApplication = (applicationId: string) => {
     window.location.href = `/commonComponents/loanApplication/${applicationId}`;
   };
