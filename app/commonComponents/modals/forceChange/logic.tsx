@@ -5,6 +5,10 @@ import type { ClipboardEvent } from 'react';
 import SuccessModal from '../successModal/modal';
 import ErrorModal from '../errorModal/modal';
 
+/**
+ * Custom hook for password change functionality
+ * Handles validation, security features, and API communication
+ */
 export function useChangePassword(
   id: string | null,
   role: 'user' | 'borrower',
@@ -27,7 +31,7 @@ export function useChangePassword(
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : ''; // <-- get token
 
-  // Disallow copy/paste for basic hardening
+  // Security: Prevent copy/paste operations
   const preventCopyPaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
   const preventCopy = useCallback((e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
   const preventCut = useCallback((e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
@@ -54,6 +58,7 @@ export function useChangePassword(
       return;
     }
 
+    // Validate password strength requirements
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
       setErrorMessage('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
@@ -82,6 +87,7 @@ export function useChangePassword(
         setSuccessMessage('Password changed successfully.');
         setSuccessOpen(true);
         setErrorOpen(false);
+        // Clear force password change flag and notify completion
         setTimeout(() => {
           setSuccessOpen(false);
           if (typeof window !== 'undefined') {
@@ -102,6 +108,7 @@ export function useChangePassword(
     }
   };
 
+  // Clear missing field error when user starts typing
   const clearMissingField = useCallback((field: string) => {
     setMissingFields((prev) => (prev.includes(field) ? prev.filter((name) => name !== field) : prev));
   }, []);

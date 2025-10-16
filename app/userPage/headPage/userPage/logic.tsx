@@ -13,6 +13,10 @@ export interface User {
   lastActive: string;
 }
 
+/**
+ * Custom hook for user management operations
+ * Handles CRUD operations, email notifications, and validation
+ */
 export function useUsersLogic() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +30,7 @@ export function useUsersLogic() {
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
 
+  // Modal state for confirmation dialogs
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
   const [decisionConfig, setDecisionConfig] = useState<{
     title: string;
@@ -36,7 +41,7 @@ export function useUsersLogic() {
     error?: string;
   } | null>(null);
   
-
+  // Fetch all users from API
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -59,6 +64,7 @@ export function useUsersLogic() {
     fetchUsers();
   }, []);
 
+  // Send user credentials via EmailJS
   const sendEmail = async (
     {
       to_name,
@@ -87,11 +93,12 @@ export function useUsersLogic() {
     }
   };
 
+  // Create new user with validation and email notification
   const handleCreateUser = async (
     input: Omit<User, "userId" | "lastActive" | "status"> & { status?: User["status"] }
   ): Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> => {
     try {
-      // Client-side duplicate checks for better UX
+      // Client-side duplicate validation for better UX
       const normalizedEmail = input.email.trim().toLowerCase();
       const normalizedName = input.name.trim().toLowerCase().replace(/\s+/g, " ");
       const existingEmail = users.some(u => u.email?.toLowerCase() === normalizedEmail);
@@ -186,6 +193,7 @@ export function useUsersLogic() {
     }
   };
 
+  // Delete user with confirmation modal
   const handleDeleteUser = (userId: string) => {
     setDecisionConfig({
       title: "Delete User?",
@@ -220,6 +228,7 @@ export function useUsersLogic() {
     setDecisionModalOpen(true);
   };
 
+  // Save user edits with validation
   const handleSaveEdit = () => {
     if (!editingUserId) return;
   
@@ -282,6 +291,7 @@ export function useUsersLogic() {
  
 
 
+  // Filter and sort users based on search and role filters
   const filteredUsers = users
     .filter((user) =>
       Object.values(user).some((value) =>
