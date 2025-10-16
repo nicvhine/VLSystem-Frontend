@@ -154,7 +154,17 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
             Change Password
           </button>
           <button
-            onClick={onClose}
+            onClick={() => {
+              const passwordChanged = localStorage.getItem("passwordChanged") === "true";
+              const isFirstLogin = localStorage.getItem("isFirstLogin") === "true";
+
+              if (!passwordChanged || isFirstLogin) {
+                setError("You must change your password before closing this window.");
+                return;
+              }
+
+              onClose();
+            }}
             className="w-full border border-gray-300 bg-white text-gray-700 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-50 transition"
           >
             Cancel

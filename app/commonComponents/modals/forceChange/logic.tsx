@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-import type { ClipboardEvent } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import SuccessModal from '../successModal/modal';
 import ErrorModal from '../errorModal/modal';
 
@@ -21,22 +20,48 @@ export function useChangePassword(
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
+  const [error, setError] = useState('');
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [errorOpen, setErrorOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [passwordChanged, setPasswordChanged] = useState<boolean | null>(null);
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : '';
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : ''; // <-- get token
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
 
-  // Security: Prevent copy/paste operations
-  const preventCopyPaste = useCallback((e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
-  const preventCopy = useCallback((e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
-  const preventCut = useCallback((e: ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); return false; }, []);
+  // Fetch passwordChanged status on mount
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const endpoint =
+          role === 'borrower'
+            ? `http://localhost:3001/borrowers/${borrowersId}`
+            : `http://localhost:3001/users/${userId}`;
 
-  // Validate and submit password change to backend
+        const res = await fetch(endpoint, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const result = await res.json();
+
+        if (res.ok) {
+          setPasswordChanged(result.passwordChanged);
+        } else {
+          console.error('Failed to fetch passwordChanged status');
+        }
+      } catch (err) {
+        console.error('Error fetching passwordChanged:', err);
+      }
+    };
+
+    fetchStatus();
+  }, [role, borrowersId, userId, token]);
+
+  // Prevent copy/paste
+  const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); }, []);
+  const preventCopy = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); }, []);
+  const preventCut = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => { e.preventDefault(); }, []);
+
+  // Change password handler
   const handleChange = async () => {
     const missing: string[] = [];
     if (!currentPassword.trim()) missing.push('currentPassword');
@@ -58,11 +83,12 @@ export function useChangePassword(
       return;
     }
 
-    // Validate password strength requirements
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
-      setErrorMessage('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
-      setErrorOpen(true);
+      setError(
+        'Password must be at least 8 characters and include uppercase, lowercase, number, and special character.'
+      );
       return;
     }
 
@@ -76,7 +102,7 @@ export function useChangePassword(
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ newPassword, currentPassword }),
       });
@@ -84,17 +110,13 @@ export function useChangePassword(
       const result = await res.json();
 
       if (res.ok) {
+        setPasswordChanged(true);
         setSuccessMessage('Password changed successfully.');
         setSuccessOpen(true);
-        setErrorOpen(false);
-        // Clear force password change flag and notify completion
+
         setTimeout(() => {
           setSuccessOpen(false);
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('forcePasswordChange');
-            window.dispatchEvent(new Event('forcePasswordChangeCompleted'));
-          }
-          if (onSuccess) onSuccess();
+          localStorage.removeItem('forcePasswordChange');
           onClose();
         }, 3000);
       } else {
@@ -106,6 +128,16 @@ export function useChangePassword(
       setErrorMessage('Something went wrong. Please try again.');
       setErrorOpen(true);
     }
+  };
+  
+
+  const handleModalClose = () => {
+    if (passwordChanged === false) {
+      setError('You must change your password before closing this modal.');
+      return;
+    }
+    setSuccessOpen(false);
+    onClose();
   };
 
   // Clear missing field error when user starts typing
@@ -123,11 +155,14 @@ export function useChangePassword(
     missingFields,
     handleChange,
     preventCopy, preventCut, preventCopyPaste,
+    successOpen, setSuccessOpen,
+    successMessage, setSuccessMessage,
+    passwordChanged,
     SuccessModalComponent: (
       <SuccessModal
         isOpen={successOpen}
         message={successMessage}
-        onClose={() => setSuccessOpen(false)}
+        onClose={handleModalClose}
       />
     ),
     ErrorModalComponent: (
