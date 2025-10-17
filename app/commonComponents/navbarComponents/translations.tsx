@@ -1,4 +1,3 @@
-// Static labels for navbar tabs per language
 const navbarTranslations = {
     en: {
       tab1: "Loans",

@@ -8,7 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { Navigation, Autoplay, EffectFade } from 'swiper/modules';
 import { motion } from 'framer-motion';
-import landingPageTranslation from '@/app/commonComponents/translations/landingPage'; 
+import translations from '@/app/commonComponents/Translation'; 
 
 // Props interface for hero section component
 interface HeroSectionProps {
@@ -37,7 +37,7 @@ export default function HeroSection({
   const setIsTrackOpen = parentSetIsTrackOpen || setLocalIsTrackOpen;
 
   // Get translations for current language
-  const t = landingPageTranslation[language];
+  const t = translations.landingPageTranslation[language];
 
   // Image slides data for the carousel
   const slides = [

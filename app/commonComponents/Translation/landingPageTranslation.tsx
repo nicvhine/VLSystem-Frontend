@@ -1,4 +1,3 @@
-// Translation strings for landing page content
 const landingPageTranslation = {
     en: {
         //hero section

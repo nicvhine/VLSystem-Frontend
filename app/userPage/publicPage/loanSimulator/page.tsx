@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import translations from '@/app/commonComponents/Translation';
 
-// Loan simulator modal: quick what-if calculator (static tables)
 interface SimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -158,20 +158,18 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   if (!showModal) return null;
 
+  const t = translations.loanTermsTranslator[language];
+  const s = translations.simulatorTranslator[language];
+
   const resultLabels = {
-    principalAmount: language === 'en' ? 'Principal Amount:' : 'Pangunang Kantidad:',
-    interestRate: language === 'en' ? 'Interest Rate:' : 'Porsyento sa Interes:',
-    interest: language === 'en' ? 'Interest:' : 'Interes:',
-    totalPayment: language === 'en' ? 'Total Payment:' : 'Kinatibuk-ang Bayad:',
-    loanTerm: language === 'en' ? 'Loan Term:' : 'Gidugayon sa Pahulam:',
-    paymentPerPeriod: language === 'en' ? 'Payment Per Period:' : 'Bayad Matag Panahon:',
-    paymentPeriod: language === 'en' ? 'Payment Period:' : 'Panahon sa Pagbayad:',
-    monthly: language === 'en' ? 'Monthly (12 months per year)' : 'Matag Bulan (12 ka bulan sa tuig)',
-    fifteenth: language === 'en' ? '15th of the Month' : 'Ika-15 sa Bulan',
-    summary: language === 'en' ? 'Loan Summary' : 'Sumada sa Pahulam',
-    explanation: language === 'en' 
-      ? 'Computed as: Total Payment ÷ Loan Term'
-      : 'Gikalkula isip: Kinatibuk-ang Bayad ÷ Gidugayon sa Pahulam'
+    principalAmount: t.l4 + ':',
+    interestRate: t.l5 + ':',
+    interest: t.l6 + ':',
+    totalPayment: t.l7 + ':',
+    loanTerm: t.l8 + ':',
+    paymentPerPeriod: t.l9 + ':',
+    summary: s.s2,
+    explanation: s.s3,
   };
 
   return (
@@ -264,14 +262,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 <div className="mb-4">
                   <div className="font-semibold">{resultLabels.paymentPerPeriod}</div>
                   <div>{result.paymentPerPeriod}
-                    <span className="text-sm text-gray-500 block">
-                      ({language === 'en' ? 'Divided over' : 'Gibahin ngadto sa'} {result.loanTerm})
-                    </span>
                   </div>
-                </div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.paymentPeriod}</div>
-                  <div>{result.paymentPeriod}</div>
                 </div>
               </div>
             </div>

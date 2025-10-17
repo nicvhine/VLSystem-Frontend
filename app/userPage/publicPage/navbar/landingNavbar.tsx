@@ -1,9 +1,8 @@
 'use client';
 
-// Public landing navbar: handles language, section navigation, and login modal
-
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { getLandingNavItems, LandingNavItem } from '@/app/commonComponents/navbarComponents/navItems';
 
 interface LandingNavbarProps {
   language: 'en' | 'ceb';
@@ -50,15 +49,8 @@ export default function LandingNavbar({
     }
   };
 
-  const navItems = [
-    { name: language === 'en' ? 'Loan Simulator' : 'Simulasyon sa Utang', href: '#', onClick: () => {
-      console.log('Loan Simulator clicked! Setting state to true');
-      setIsCalculationOpen(true);
-    } },
-    { name: 'Team', href: '#team', onClick: () => smoothScrollTo('team') },
-    { name: language === 'en' ? 'About Us' : 'Mahitungod Kanamo', href: '#about', onClick: () => smoothScrollTo('about') },
-    { name: language === 'en' ? 'Contact Us' : 'Kontaka Kami', href: '#footer', onClick: () => smoothScrollTo('footer') },
-  ];
+  const navItems: LandingNavItem[] = getLandingNavItems(language, smoothScrollTo, setIsCalculationOpen);
+
 
   return (
     <header className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-md sticky top-0 z-50">
@@ -96,7 +88,7 @@ export default function LandingNavbar({
             <button
               onClick={(e) => {
                 e.preventDefault();
-                navItems[0].onClick();
+                navItems[0].onClick && navItems[0].onClick();
               }}
               className="text-sm font-medium text-black hover:text-gray-900 transition"
             >
@@ -169,7 +161,7 @@ export default function LandingNavbar({
             <button
               onClick={(e) => {
                 e.preventDefault();
-                navItems[0].onClick();
+                navItems[0].onClick && navItems[0].onClick();
                 setIsMenuOpen(false); // Close mobile menu
               }}
               className="text-base font-medium text-gray-900 hover:text-gray-700 text-left"
@@ -183,7 +175,7 @@ export default function LandingNavbar({
                 onClick={(e) => {
                   e.preventDefault();
                   if (item.onClick) item.onClick();
-                  setIsMenuOpen(false); // Close mobile menu
+                  setIsMenuOpen(false); 
                 }}
                 className="text-base font-medium text-gray-900 hover:text-gray-700 text-left"
               >
