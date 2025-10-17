@@ -10,7 +10,10 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 import AddAgentModal from "@/app/commonComponents/modals/addAgent/modal";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
-import firstAgentTranslation from "./translations/first";
+import Pagination from "../pagination";
+import translations from "../Translation";
+
+type Language = 'en' | 'ceb';
 
 const normalizeAgent = (raw: any): Agent => ({
   agentId: typeof raw?.agentId === "string" ? raw.agentId : String(raw?.agentId ?? ""),
@@ -20,8 +23,6 @@ const normalizeAgent = (raw: any): Agent => ({
   totalLoanAmount: Number.isFinite(Number(raw?.totalLoanAmount)) ? Number(raw?.totalLoanAmount) : 0,
   totalCommission: Number.isFinite(Number(raw?.totalCommission)) ? Number(raw?.totalCommission) : 0,
 });
-
-type Language = 'en' | 'ceb';
 
 interface Agent {
   agentId: string;
@@ -46,8 +47,21 @@ export default function AgentPage() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [successMessage, setSuccessMessage] = useState("");
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
+    // Listen for language changes based on active role
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if ((role === "head" && event.detail.userType === 'head') || 
+          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
+          (role === "manager" && event.detail.userType === 'manager')) {
+        setLanguage(event.detail.language);
+      }
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+  
   // Load role from localStorage on mount
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
@@ -107,27 +121,8 @@ export default function AgentPage() {
     }
   }, [role]);
 
-  // Fetch agents whenever role changes
-  useEffect(() => {
-    if (!role) return;
-    fetchAgents();
-  }, [role, fetchAgents]);
 
-  // Language listener
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent<{ userType: string; language: Language }>) => {
-      if ((role === "head" && event.detail.userType === 'head') || 
-          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
-          (role === "manager" && event.detail.userType === 'manager')) {
-        setLanguage(event.detail.language);
-      }
-    };
-
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
-
-  const t = firstAgentTranslation[language] || firstAgentTranslation.en;
+  const t = translations.loanTermsTranslator[language];
 
   const handleAddAgent = async (): Promise<{
     success: boolean;
@@ -283,14 +278,14 @@ export default function AgentPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">{t.h1}</h1>
+            <h1 className="text-2xl font-semibold text-gray-800">{t.Agents}</h1>
 
             {role === "loan officer" && (
               <button
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                 onClick={() => setShowModal(true)}
               >
-                {t.addBtn}
+                {t.l39}
               </button>
             )}
           </div>
@@ -306,7 +301,7 @@ export default function AgentPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder={t.searchPlaceholder}
+                placeholder={t.l22}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -319,9 +314,9 @@ export default function AgentPage() {
                 onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                <option value="">{t.sortBy}</option>
-                <option value="handled">{t.sort1}</option>
-                <option value="amount">{t.sort2}</option>
+                <option value="">{t.l38}</option>
+                <option value="handled">{t.l19}</option>
+                <option value="amount">{t.l4}</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -333,12 +328,12 @@ export default function AgentPage() {
                 <table className="min-w-full">
                   <thead>
                     <tr>
-                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.th1}</th>
-                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.th2}</th>
-                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.th3}</th>
-                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.th4}</th>
-                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.th5}</th>
-                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.th6}</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.l11}</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.l12}</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.l18}</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.l19}</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.l4}</th>
+                      <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.l20}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -384,50 +379,17 @@ export default function AgentPage() {
             message={successMessage}
             onClose={() => setSuccessMessage("")}
           />
-          {/* Pagination + Summary */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
-            <div className="text-sm text-gray-700">
-              {totalCount === 0 ? (
-                <>Showing 0 of 0</>
-              ) : (
-                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Rows per page:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Previous
-                </button>
-                <span className="px-1 py-1 text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
-                </span>
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
+          
+          <Pagination
+            totalCount={totalCount}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setCurrentPage={setCurrentPage}
+            setPageSize={setPageSize}
+            language={language}
+          />
+
         </div>
       </div>
     </Wrapper>

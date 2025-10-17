@@ -10,9 +10,10 @@ import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 // Translation and modal components
-import firstLoanApplicationTranslation from "./translation/first";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import Pagination from "../pagination";
+import translations from "../Translation";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
@@ -76,25 +77,7 @@ export default function ApplicationsPage() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, [role]);
 
-  const getTranslations = () => {
-    return firstLoanApplicationTranslation[language];
-  };
-
-  const t = getTranslations();
-
-  // Function to translate loan types
-  const translateLoanType = (loanType: string) => {
-    switch (loanType) {
-      case "Regular Loan Without Collateral":
-        return t.loanType1;
-      case "Regular Loan With Collateral":
-        return t.loanType2;
-      case "Open-Term Loan":
-        return t.loanType3;
-      default:
-        return loanType;
-    }
-  };
+  const t = translations.loanTermsTranslator[language];
 
   // Persisted active filter
   const [activeFilter, setActiveFilter] = useState<string>(() => {
@@ -222,13 +205,13 @@ export default function ApplicationsPage() {
   const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
   const filterOptions = [
-  { key: "All", label: t.tab1 },
-  { key: "Applied", label: t.tab2 },
-  { key: "Pending", label: t.tab3 },
-  { key: "Cleared", label: t.tab4 },
-  { key: "Approved", label: t.tab5 },
-  { key: "Disbursed", label: t.tab6 },
-  { key: "Denied", label: t.tab7 },
+  { key: "All", label: t.l23 },
+  { key: "Applied", label: t.l27 },
+  { key: "Pending", label: t.l28 },
+  { key: "Cleared", label: t.l29 },
+  { key: "Approved", label: t.l30 },
+  { key: "Disbursed", label: t.l31 },
+  { key: "Denied", label: t.l32 },
 ];
 
     
@@ -254,7 +237,7 @@ export default function ApplicationsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-800">
-              {t.h1}
+              {t.Application}
             </h1>
           </div>
 
@@ -306,7 +289,7 @@ export default function ApplicationsPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder={t.searchPlaceholder}
+                placeholder={t.l22}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
@@ -322,9 +305,9 @@ export default function ApplicationsPage() {
                   focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
                   appearance-none transition-all"
               >
-                <option value="">{t.sortBy}</option>
-                <option value="date">{t.sort1}</option>
-                <option value="amount">{t.sort2}</option>
+                <option value="">{t.l38}</option>
+                <option value="date">{t.l17}</option>
+                <option value="amount">{t.l4}</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -336,15 +319,15 @@ export default function ApplicationsPage() {
               <thead>
                 <tr>
                   {[
-                    t.th1,
-                    t.th2,
-                    t.th3,
-                    t.th4,
-                    t.th5,
-                    t.th6,
-                    t.th7,
-                    t.th8,
-                    t.th9,
+                    t.l11,
+                    t.l12,
+                    t.l10,
+                    t.l17,
+                    t.l4,
+                    t.l5,
+                    t.l7,
+                    t.l15,
+                    t.l16,
                   ].map((heading) => (
                     <th
                       key={heading}
@@ -379,7 +362,7 @@ export default function ApplicationsPage() {
                     {/* Loan Type */}
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {translateLoanType(application.loanType)}
+                        {application.loanType}
                       </div>
                     </td>
 
@@ -419,7 +402,7 @@ export default function ApplicationsPage() {
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
-                          {t.actionBtn}
+                          {t.view}
                         </Link>
 
                       {/* Accept Reloan */}
@@ -482,50 +465,17 @@ export default function ApplicationsPage() {
             </table>
 
           </div>
-          {/* Pagination + Summary */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
-            <div className="text-sm text-gray-700">
-              {totalCount === 0 ? (
-                <>Showing 0 of 0</>
-              ) : (
-                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Rows per page:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Previous
-                </button>
-                <span className="px-1 py-1 text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
-                </span>
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
+          
+          <Pagination
+            totalCount={totalCount}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setCurrentPage={setCurrentPage}
+            setPageSize={setPageSize}
+            language={language}
+          />
+
         </div>
       </div>
     </Wrapper>

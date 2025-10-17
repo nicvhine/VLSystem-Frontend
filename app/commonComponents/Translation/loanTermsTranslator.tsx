@@ -25,7 +25,9 @@ const loanTermsTranslator = {
       l20: "Commission",
   
       // Page Headers
-      l21: "Loans",
+      Loans: "Loans",
+      Application: "Applications",
+      Agents: "Agents",
       view: "View",
   
       // Search
@@ -41,7 +43,19 @@ const loanTermsTranslator = {
       l29: "Cleared",
       l30: "Approved",
       l31: "Disbursed",
-      l32: "Denied"
+      l32: "Denied",
+
+      //Pagination
+      l33: "Rows per page:",
+      l34: "Previous",
+      l35: "Page",
+      l36: "Next",
+      l37: "of",
+
+      //Sort
+      l38: "Sort by",
+      l39: "Add Agent"
+
     },
     ceb: {
       // Loan Type
@@ -69,7 +83,9 @@ const loanTermsTranslator = {
       l20: "Komisyon",
   
       // Page Headers
-      l21: "Mga Pautang",
+      Loans: "Mga Pautang",
+      Application: "Mga Aplikasyon",
+      Agents: "Mga Ahente",
       view: "Tan-awa",
   
       // Search
@@ -85,7 +101,17 @@ const loanTermsTranslator = {
       l29: "Nalikay",
       l30: "Gi-aprubahan",
       l31: "Gihatag",
-      l32: "Gidumili"
+      l32: "Gidumili",
+
+      //Pagination
+      l33: "Mga han-ay kada pahina:",
+      l34: "Sa Wala",
+      l35: "Pahina",
+      l36: "Sunod",
+      l37: "sa",
+
+      l38: "Pagpili base sa",
+      l39: "Pag-puno ug Ahente"
     }
   };
   
