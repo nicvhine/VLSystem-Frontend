@@ -7,8 +7,8 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
-import loanOfficerTranslations from '../components/translation';
 import InterviewModal from "@/app/commonComponents/modals/calendarModal/modal";
+import translations from "@/app/commonComponents/Translation";
 
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
@@ -106,7 +106,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
 
-  const t = loanOfficerTranslations[language];
+  const t = translations.calendarTranslation[language];
 
   // Fetch interview data from API
   useEffect(() => {
@@ -199,7 +199,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
       )}
       <div className="bg-white p-4 rounded shadow text-black">
-  <h2 className="text-xl font-semibold mb-4 text-black">{t.scheduledInterviews}</h2>
+  <h2 className="text-xl font-semibold mb-4 text-black">{t.c1}</h2>
   {/* @ts-ignore: react-big-calendar type incompatibility with React 18+ */}
   <RBC
   localizer={localizer}
@@ -221,17 +221,17 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   style={{ height: "75vh" }}
   onSelectEvent={handleSelectEvent}
   messages={{
-    today: t.today,
-    previous: t.back,
-    next: t.next,
-    month: t.month,
-    week: t.week,
-    day: t.day,
-    agenda: t.agenda,
-    date: t.date,
-    time: t.time,
-    event: t.event,
-    noEventsInRange: t.noEventsInRange,
+    today: t.c2,
+    previous: t.c3,
+    next: t.c4,
+    month: t.c5,
+    week: t.c6,
+    day: t.c7,
+    agenda: t.c8,
+    date: t.c9,
+    time: t.c10,
+    event: t.c11,
+    noEventsInRange: t.c12,
     showMore: (total: number) => `+${total} more`
   }}
   eventPropGetter={(event: InterviewEvent) => {

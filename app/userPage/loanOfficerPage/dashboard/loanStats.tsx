@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { FiFileText, FiClock, FiCheckCircle, FiXCircle, FiShield, FiDollarSign, FiCalendar } from 'react-icons/fi';
-import loanOfficerTranslations from '../components/translation';
+import translations from '@/app/commonComponents/Translation';
 
 interface LoanTypeStat {
   loanType: string;
@@ -42,7 +42,8 @@ export default function LoanStatsDashboard() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
 
-  const t = loanOfficerTranslations[language];
+  const t = translations.statisticTranslation[language];
+  const l = translations.loanTermsTranslator[language];
 
   const [typeStats, setTypeStats] = useState<TypeStats>({
     withCollateral: 0,
@@ -118,13 +119,6 @@ export default function LoanStatsDashboard() {
     </div>
   );
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p className="text-gray-500 text-lg">{t.loadingStats}</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-6 h-full">
@@ -132,10 +126,10 @@ export default function LoanStatsDashboard() {
       <section className="bg-gray-50 rounded-lg p-5">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">{t.applicationStatus}</h2>
         <div className="flex flex-col gap-3">
-          <StatCard label={t.applied} value={applicationStats.applied} icon={FiFileText} />
-          <StatCard label={t.pending} value={applicationStats.pending} icon={FiClock} />
-          <StatCard label={t.approved} value={applicationStats.approved} icon={FiCheckCircle} />
-          <StatCard label={t.denied} value={applicationStats.denied} icon={FiXCircle} />
+          <StatCard label={t.s1} value={applicationStats.applied} icon={FiFileText} />
+          <StatCard label={t.s2} value={applicationStats.pending} icon={FiClock} />
+          <StatCard label={t.s3} value={applicationStats.approved} icon={FiCheckCircle} />
+          <StatCard label={t.s4} value={applicationStats.denied} icon={FiXCircle} />
         </div>
       </section>
 
@@ -143,9 +137,9 @@ export default function LoanStatsDashboard() {
       <section className="bg-gray-50 rounded-lg p-5">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">{t.loanTypes}</h2>
         <div className="flex flex-col gap-3">
-          <StatCard label={t.withCollateral} value={typeStats.withCollateral} icon={FiShield} />
-          <StatCard label={t.withoutCollateral} value={typeStats.withoutCollateral} icon={FiDollarSign} />
-          <StatCard label={t.openTerm} value={typeStats.openTerm} icon={FiCalendar} />
+          <StatCard label={l.l1} value={typeStats.withCollateral} icon={FiShield} />
+          <StatCard label={l.l2} value={typeStats.withoutCollateral} icon={FiDollarSign} />
+          <StatCard label={l.l3} value={typeStats.openTerm} icon={FiCalendar} />
         </div>
       </section>
     </div>
