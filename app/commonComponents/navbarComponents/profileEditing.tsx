@@ -1,8 +1,8 @@
 'use client';
 
-// Account settings panel shown inside profile dropdown
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
+import translations from '../Translation';
 
 interface Props {
   username: string;
@@ -94,6 +94,24 @@ export default function ProfileSettingsPanel({
   // Confirmation modal state
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Listen for language changes based on active role
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if ((role === "head" && event.detail.userType === 'head') || 
+          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
+          (role === "manager" && event.detail.userType === 'manager')) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+
+  const t = translations.navbarTranslation[language];
 
   // Wrapped save handler
   const handleSaveWithConfirm = async () => {
@@ -120,7 +138,7 @@ export default function ProfileSettingsPanel({
             activeSettingsTab === 'account' ? 'text-white' : 'text-gray-600'
           }`}
         >
-          Account
+          {t.t8}
         </button>
         <button
           onClick={() => setActiveSettingsTab('notifications')}
@@ -128,7 +146,7 @@ export default function ProfileSettingsPanel({
             activeSettingsTab === 'notifications' ? 'text-white' : 'text-gray-600'
           }`}
         >
-          Notifications
+          {t.t9}
         </button>
       </div>
 
@@ -144,13 +162,13 @@ export default function ProfileSettingsPanel({
         >
           <div className="space-y-4">
             <div>
-              <span className="text-sm text-gray-700">Username</span>
+              <span className="text-sm text-gray-700">{t.t10}</span>
               <div className="text-base text-gray-900">{username}</div>
             </div>
 
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-700">Email Address</span>
+                <span className="text-sm text-gray-700">{t.t11}</span>
                 <button
                   onClick={() => {
                     setIsEditingEmailField(!isEditingEmailField);
@@ -183,7 +201,7 @@ export default function ProfileSettingsPanel({
                     onClick={sendVerificationCode}
                     className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
                   >
-                    Send Verification Code
+                    {t.t12}
                   </button>
 
                   {emailVerificationSent && (
@@ -199,7 +217,7 @@ export default function ProfileSettingsPanel({
                         onClick={verifyEmailCode}
                         className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
                       >
-                        Verify Code
+                        {t.t13}
                       </button>
                     </div>
                   )}
@@ -209,7 +227,7 @@ export default function ProfileSettingsPanel({
 
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-700">Phone Number</span>
+                <span className="text-sm text-gray-700">{t.t14}</span>
                 <button
                  onClick={() => {
                   if (isEditingPhoneField) {
@@ -246,7 +264,7 @@ export default function ProfileSettingsPanel({
                     onClick={sendSmsVerificationCode}
                     className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
                   >
-                    Send Verification Code
+                    {t.t12}
                   </button>
 
                    {smsVerificationSent && (
@@ -262,7 +280,7 @@ export default function ProfileSettingsPanel({
                         onClick={verifySmsCode}
                         className="mt-2 px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
                       >
-                        Verify Code
+                        {t.t13}
                       </button>
                     </div>
                   )}
@@ -319,7 +337,7 @@ export default function ProfileSettingsPanel({
                   onClick={() => setShowConfirm(true)}
                   className="w-full bg-red-600 text-white py-2 rounded-lg"
                 >
-                  Save Changes
+                  {t.t15}
                 </button>
                 <ConfirmModal
                   show={showConfirm}
@@ -344,7 +362,7 @@ export default function ProfileSettingsPanel({
           <div className="space-y-4">
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-3">
-                Notification Preferences
+                {t.t16}
               </h4>
               <div className="space-y-4">
                 {/* Email Toggle */}
@@ -354,8 +372,8 @@ export default function ProfileSettingsPanel({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 7.89a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Email Notifications</span>
-                      <p className="text-xs text-gray-500">Receive notifications via email</p>
+                      <span className="text-sm font-medium text-gray-700">{t.t17}</span>
+                      <p className="text-xs text-gray-500">{t.t18}</p>
                     </div>
                   </div>
                   <label className="inline-flex items-center cursor-pointer">
@@ -382,8 +400,8 @@ export default function ProfileSettingsPanel({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                     <div>
-                      <span className="text-sm font-medium text-gray-700">SMS Notifications</span>
-                      <p className="text-xs text-gray-500">Receive notifications via text message</p>
+                      <span className="text-sm font-medium text-gray-700">{t.t19}</span>
+                      <p className="text-xs text-gray-500">{t.t20}</p>
                     </div>
                   </div>
                   <label className="inline-flex items-center cursor-pointer">

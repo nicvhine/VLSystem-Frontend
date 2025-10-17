@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
 import { useState, useEffect } from 'react';
+import translations from '../Translation';
 
 interface ProfileDropdownProps {
   name: string;
@@ -87,6 +88,24 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     verifySmsCode,
   } = useProfileDropdownLogic(setIsEditing);
 
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  // Listen for language changes based on active role
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if ((role === "head" && event.detail.userType === 'head') || 
+          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
+          (role === "manager" && event.detail.userType === 'manager')) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+
+  const t = translations.navbarTranslation[language];
+
   return (
     <div className="relative">
       <div
@@ -114,7 +133,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
       )}
 
       <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
-        Change
+        {t.t1}
       </div>
       <input
         type="file"
@@ -139,11 +158,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
               <button
                 onClick={handleSaveProfilePic}
                 className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
-              >Save</button>
+              >{t.t2}</button>
               <button
                 onClick={handleCancelUpload}
                 className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded hover:bg-gray-300 transition"
-              >Cancel</button>
+              >{t.t3}</button>
             </div>
           )}
         </div>
@@ -154,7 +173,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
             className="flex items-center w-full px-2 py-3 font-medium text-left hover:bg-gray-100 hover:text-black transition rounded-lg"
             onClick={toggleEdit}
           >
-            <span>Account Settings</span>
+            <span>{t.t4}</span>
           </button>
           {/* Expandable Account Settings */}
           <div
@@ -163,7 +182,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           >
             <div className="pt-3 pb-0 px-4">
               <div className="mb-2 flex justify-center items-center pt-2">
-                <p className="text-xs text-gray-500 m-0 text-center w-full">Manage your email, phone, and password</p>
+                <p className="text-xs text-gray-500 m-0 text-center w-full">{t.t5}</p>
               </div>
               <div className="h-px w-full bg-gray-200 mb-1" />
               <ProfileSettingsPanel
@@ -214,11 +233,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
             className="flex items-center w-full px-2 py-3 text-red-600 hover:bg-gray-100 transition rounded-lg"
             onClick={handleLogout}
           >
-            Log Out
+          {t.t6}
           </button>
         </div>
   <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-100 mt-0.5">
-          Privacy Policy · Terms of Service
+          {t.t7}
         </div>
       </div>
     </div>

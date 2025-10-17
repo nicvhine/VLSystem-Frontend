@@ -10,6 +10,7 @@ import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 import translations from "../Translation";
+import Pagination from "../pagination";
 
 // API endpoint for loans data
 const API_URL = "http://localhost:3001/loans";
@@ -184,7 +185,7 @@ export default function LoansPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">{t.l21}</h1>
+            <h1 className="text-2xl font-semibold text-gray-800">{t.Loans}</h1>
           </div>
 
           {/* Filter Tabs */}
@@ -222,9 +223,9 @@ export default function LoansPage() {
                 onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
                 className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
               >
-                <option value="">Sort by</option>
-                <option value="date">Disburse Date</option>
-                <option value="amount">Balance</option>
+                <option value="">{t.l38}</option>
+                <option value="date">{t.l13}</option>
+                <option value="amount">{t.l14}</option>
               </select>
               <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
             </div>
@@ -263,7 +264,7 @@ export default function LoansPage() {
                           href={`/commonComponents/loan/${loan.loanId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
-{t.view}
+                        {t.view}
                         </Link>
                     </td>
                   </tr>
@@ -272,50 +273,16 @@ export default function LoansPage() {
             </table>
           </div>
 
-          {/* Pagination + Summary */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
-            <div className="text-sm text-gray-700">
-              {totalCount === 0 ? (
-                <>Showing 0 of 0</>
-              ) : (
-                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Rows per page:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Previous
-                </button>
-                <span className="px-1 py-1 text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
-                </span>
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
+          <Pagination
+            totalCount={totalCount}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setCurrentPage={setCurrentPage}
+            setPageSize={setPageSize}
+            language={language}
+          />
+
         </div>
       </div>
     </Wrapper>

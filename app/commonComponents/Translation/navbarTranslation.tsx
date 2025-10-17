@@ -1,29 +1,72 @@
 const navbarTranslation = {
-    en: {
-      tab1: "Loans",
-      tab2: "Applications",
-      tab3: "Collections",
-      tab4: "Agents",
-      tab5: "Users",
-      tab6: "Loan Simulation",
-      tab7: "Team",
-      tab8: "About Us",
-      tab9: "Contact Us",
-      tab10: "Login"
-    },
-    ceb: {
-      tab1: "Mga Pautang",
-      tab2: "Mga Aplikasyon",
-      tab3: "Mga Koleksyon",
-      tab4: "Mga Ahente",
-      tab5: "Mga Tiggamit",
-      tab6: "Simulasyon sa Utang",
-      tab7: "Team",          
-      tab8: "Mahitungod Kanamo",
-      tab9: "Kontaka Kami",
-      tab10: "Sulod"
-    }
-  };
-  
-  export default navbarTranslation;
-  
+  en: {
+    tab1: "Loans",
+    tab2: "Applications",
+    tab3: "Collections",
+    tab4: "Agents",
+    tab5: "Users",
+    tab6: "Loan Simulation",
+    tab7: "Team",
+    tab8: "About Us",
+    tab9: "Contact Us",
+    tab10: "Login",
+
+    //Dropdown
+    t1: "Change",
+    t2: "Save",
+    t3: "Cancel",
+    t4: "Account Settings",
+    t5: "Manage your phone, email, and password.",
+    t6: "Log Out",
+    t7: "Privacy Policy · Terms of Service",
+    t8: "Account",
+    t9: "Notifications",
+    t10: "Username",
+    t11: "Email Address",
+    t12: "Send Verification Code",
+    t13: "Verify Code",
+    t14: "Phone Number",
+    t15: "Save Changes",
+    t16: "Notification Preferences",
+    t17: "Email Notifications",
+    t18: "Receive notifications via email",
+    t19: "SMS Notifications",
+    t20: "Receive notifications via text message",
+  },
+  ceb: {
+    tab1: "Mga Pautang",
+    tab2: "Mga Aplikasyon",
+    tab3: "Mga Koleksyon",
+    tab4: "Mga Ahente",
+    tab5: "Mga Tiggamit",
+    tab6: "Simulasyon sa Utang",
+    tab7: "Team",
+    tab8: "Mahitungod Kanamo",
+    tab9: "Kontaka Kami",
+    tab10: "Sulod",
+
+    //Dropdown
+    t1: "Ilisi",
+    t2: "I-save",
+    t3: "I-cancel",
+    t4: "Settings sa Account",
+    t5: "Pagdumala sa imong telepono, email, ug password.",
+    t6: "Pag-gawas",
+    t7: "Privacy Policy · Terms of Service",
+    t8: "Account",
+    t9: "Mga Notipikasyon",
+    t10: "Username",
+    t11: "Email Address",
+    t12: "Ipadala ang Verification Code",
+    t13: "I-verify ang Code",
+    t14: "Numero sa Telepono",
+    t15: "I-save ang Mga Kausaban",
+    t16: "Mga Preference sa Notipikasyon",
+    t17: "Email Notifications",
+    t18: "Pagdawat og notipikasyon pinaagi sa email",
+    t19: "SMS Notifications",
+    t20: "Pagdawat og notipikasyon pinaagi sa text message"
+  }
+};
+
+export default navbarTranslation;
