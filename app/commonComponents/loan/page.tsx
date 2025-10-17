@@ -9,11 +9,7 @@ import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
-// Translation modules for different roles
-import headTranslations from "@/app/userPage/headPage/components/translation";
-import loanOfficerTranslations from "@/app/userPage/loanOfficerPage/components/translation";
-import managerTranslations from "@/app/userPage/managerPage/components/translation";
-import { application } from "express";
+import translations from "../Translation";
 
 // API endpoint for loans data
 const API_URL = "http://localhost:3001/loans";
@@ -77,22 +73,7 @@ export default function LoansPage() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, [role]);
 
-  /**
-   * Get translations based on current user role
-   * @returns Translation object for the current role and language
-   */
-  const getTranslations = () => {
-    if (role === "head") {
-      return headTranslations[language];
-    } else if (role === "loan officer") {
-      return loanOfficerTranslations[language];
-    } else if (role === "manager") {
-      return managerTranslations[language];
-    }
-    return headTranslations[language]; // default to head translations
-  };
-
-  const t = getTranslations();
+  const t = translations.loanTermsTranslator[language];
 
   // Initialize role and language from localStorage
   useEffect(() => {
@@ -203,12 +184,12 @@ export default function LoansPage() {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">{t.loans}</h1>
+            <h1 className="text-2xl font-semibold text-gray-800">{t.l21}</h1>
           </div>
 
           {/* Filter Tabs */}
           <div className="flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-auto">
-            {["All", "Active", "Overdue", "Closed"].map((status) => (
+            {[t.l23, t.l24, t.l25, t.l26].map((status) => (
               <button
                 key={status}
                 onClick={() => { setActiveFilter(status); setCurrentPage(1); }}
@@ -229,7 +210,7 @@ export default function LoansPage() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder={t.search}
+                placeholder={t.l22}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -252,18 +233,18 @@ export default function LoansPage() {
           {/* Loans Table */}
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
             <table className="min-w-full">
-              <thead>
-                <tr>
-                  {["ID", "Name", "Disburse Date", "Principal", "Balance", "Status", "Actions"].map((heading) => (
-                    <th
-                      key={heading}
-                      className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                    >
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+            <thead>
+              <tr>
+                {[t.l11, t.l12, t.l13, t.l4, t.l14, t.l15, t.l16].map((heading, index) => (
+                  <th
+                    key={index}
+                    className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                  >
+                    {heading}
+                  </th>
+                ))}
+              </tr>
+            </thead>
               <tbody className="divide-y divide-gray-200">
                 {paginatedLoans.map((loan) => (
                   <tr key={loan.loanId} className="hover:bg-blue-50/60 transition-colors">
