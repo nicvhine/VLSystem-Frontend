@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import translations from '@/app/commonComponents/Translation';
 
 interface SimulatorModalProps {
