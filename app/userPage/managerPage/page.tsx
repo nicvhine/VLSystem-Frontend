@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
 import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
-import Dashboard from "./dashboard/page";
-import ManagerNavbar from "./navbar/page";
+import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 
 export default function Manager({ children, isNavbarBlurred = false }: { children?: React.ReactNode; isNavbarBlurred?: boolean }) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -37,7 +36,7 @@ export default function Manager({ children, isNavbarBlurred = false }: { childre
 
   return (
     <div className="min-h-screen bg-white">
-      <ManagerNavbar isBlurred={isNavbarBlurred} />
+      <Navbar role="manager" isBlurred={isNavbarBlurred} />
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}

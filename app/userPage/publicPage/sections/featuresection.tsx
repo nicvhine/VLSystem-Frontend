@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import landingPageTranslation from '@/app/commonComponents/translations/landingPage';
+import translations from '@/app/commonComponents/Translation'; 
 
 // Props interface for feature section component
 export interface FeatureSectionProps {
@@ -17,7 +17,7 @@ export interface FeatureSectionProps {
  */
 const FeatureSection: React.FC<FeatureSectionProps> = ({ language }) => {
   // Get translations for current language
-  const t = landingPageTranslation[language];
+  const t = translations.landingPageTranslation[language];
 
   // Feature data array with translations
   const features = [

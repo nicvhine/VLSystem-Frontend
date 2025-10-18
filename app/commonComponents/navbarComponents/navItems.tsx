@@ -1,9 +1,13 @@
-import navbarTranslations from "./translations";
+import navbarTranslation from "../Translation/navbarTranslation";
 
-// Role-specific nav item generators
+export interface LandingNavItem {
+  name: string;
+  href: string;
+  onClick?: () => void;
+}
 
 export const getHeadNavItems = (language: 'en' | 'ceb') => {
-  const t = navbarTranslations[language];
+  const t = navbarTranslation[language];
   return [
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
@@ -14,7 +18,7 @@ export const getHeadNavItems = (language: 'en' | 'ceb') => {
 };
 
 export const getManagerNavItems = (language: 'en' | 'ceb') => {
-  const t = navbarTranslations[language];
+  const t = navbarTranslation[language];
   return [
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
@@ -24,10 +28,24 @@ export const getManagerNavItems = (language: 'en' | 'ceb') => {
 };
 
 export const getLoanOfficerNavItems = (language: 'en' | 'ceb') => {
-  const t = navbarTranslations[language];
+  const t = navbarTranslation[language];
   return [
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
     { name: t.tab4, href: '/commonComponents/agent' },
+  ];
+};
+
+export const getLandingNavItems = (
+  language: 'en' | 'ceb',
+  smoothScrollTo: (id: string) => void,
+  setIsCalculationOpen: (open: boolean) => void
+): LandingNavItem[] => {
+  const t = navbarTranslation[language]; 
+  return [
+    { name: t.tab6, href: '#', onClick: () => setIsCalculationOpen(true) },
+    { name: t.tab7, href: '#team', onClick: () => smoothScrollTo('team') },
+    { name: t.tab8, href: '#about', onClick: () => smoothScrollTo('about') },
+    { name: t.tab9, href: '#footer', onClick: () => smoothScrollTo('footer') },
   ];
 };

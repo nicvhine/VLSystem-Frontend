@@ -3,14 +3,14 @@
 import { useRef, useState, useEffect } from "react";
 import { FiSearch, FiUserPlus, FiChevronDown, FiLoader, FiMoreVertical } from "react-icons/fi";
 import Head from "../page";
-import { useUsersLogic } from "./logic";
-import type { User } from "./logic";
+import { useUsersLogic } from "./hooks";
+import { User } from "./types";
+
 import React from "react";
-// Removed portal-based dropdown; actions will be inline
 import CreateUserModal from "./createUserModal";
 import DecisionModal from "./modal";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
-import headTranslations from "../components/translation"; 
+import translations from "@/app/commonComponents/Translation";
 
 function LoadingSpinner() {
   return (
@@ -40,7 +40,8 @@ export default function Page() {
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
 
-  const t = headTranslations[language];
+  const t = translations.loanTermsTranslator[language];
+  const b = translations.buttonTranslation[language];
 
   const {
     roleFilter,
@@ -109,11 +110,6 @@ export default function Page() {
   const totalCount = sortedUsers.length;
   const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
-  // Inline actions now; no dropdown state needed
-  
-  // No outside-click handling needed without dropdown
-
-  // No scroll handling needed without dropdown
 
   const handleEditClick = (user: User) => {
     setEditingUserId(user.userId);
@@ -195,7 +191,7 @@ export default function Page() {
                   }`}
                   style={{ minWidth: 100 }}
                 >
-                  {roleOption === "All" ? t.allRoles : (roleOption === "head" ? t.head : roleOption === "manager" ? t.manager : roleOption === "loan officer" ? t.loanOfficer : t.collector)}
+                  {roleOption === "All" ? b.b6 : (roleOption === "head" ? b.b7 : roleOption === "manager" ? b.b8 : roleOption === "loan officer" ? b.b9 : b.b10)}
                 </button>
               ))}
             </div>
@@ -206,7 +202,7 @@ export default function Page() {
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
               <input
                 type="text"
-                placeholder={t.searchPlaceholder}
+                placeholder={t.l22}
                 className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -217,7 +213,7 @@ export default function Page() {
               className="bg-red-600 text-white rounded-lg px-4 py-[14px] flex items-center gap-2 shadow-sm cursor-pointer hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 font-medium text-sm w-auto whitespace-nowrap"
             >
               <FiUserPlus className="w-4 h-4" />
-              <span className="leading-none">{t.createUser}</span>
+              <span className="leading-none">{b.b1}</span>
             </button>
           </div>
           {/* Table */}
@@ -236,7 +232,7 @@ export default function Page() {
                 </colgroup>
                 <thead>
                   <tr>
-                    {[t.id, t.name, t.email, t.phoneNumber, t.role, t.actions].map((heading) => (
+                    {[t.l11, t.l12, "Email", t.l18, t.l40, t.l16].map((heading) => (
                       <th
                         key={heading}
                         className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center" : " text-left"}`}
@@ -275,13 +271,13 @@ export default function Page() {
                                 onClick={handleSaveEdit}
                                 className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
                               >
-                                {t.save}
+                                {b.b4}
                               </button>
                               <button
                                 onClick={handleCancelEdit}
                                 className="text-sm text-red-600 hover:text-red-700 hover:underline"
                               >
-                                {t.cancel}
+                                {b.b5}
                               </button>
                             </div>
                           </td>
@@ -316,7 +312,7 @@ export default function Page() {
                                 className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 text-gray-600"
                                 aria-haspopup="menu"
                                 aria-expanded={openActionId === user.userId}
-                                aria-label={t.actions}
+                                aria-label={t.l16}
                               >
                                 <FiMoreVertical className="w-5 h-5" />
                               </button>
@@ -357,14 +353,14 @@ export default function Page() {
                                       className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                       role="menuitem"
                                     >
-                                      {t.edit}
+                                      {b.b2}
                                     </button>
                                     <button
                                       onClick={() => handleAction("delete", user)}
                                       className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                       role="menuitem"
                                     >
-                                      {t.delete}
+                                      {b.b3}
                                     </button>
                                   </div>
                                 );

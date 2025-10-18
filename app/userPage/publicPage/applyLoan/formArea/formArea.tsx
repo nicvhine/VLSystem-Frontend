@@ -238,6 +238,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         const [collateralDescription, setCollateralDescription] = useState("");
         const [ownershipStatus, setOwnershipStatus] = useState("");
         const collateralTypeOptions = [
+            { value: "", label: language === "en" ? "Choose Collateral Type" : "Pilia ang klase sa kolateral" },
             { value: "vehicle", label: language === "en" ? "Vehicle" : "Sakyanan" },
             { value: "land", label: language === "en" ? "Land" : "Yuta" },
             { value: "house", label: language === "en" ? "House" : "Balay" },

@@ -1,137 +1,40 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiSearch, FiChevronDown } from "react-icons/fi";
 import Link from "next/link";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 
-// Role-based page wrappers
+import { Application } from "./types";
+import translations from "../Translation";
+import { authFetch, formatCurrency, formatDate, filterApplications } from "./function";
+import { useLoanApplicationPage } from "./hooks";
+
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
-
-// Translation and modal components
-import firstLoanApplicationTranslation from "./translation/first";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import Pagination from "../pagination";
+import useIsMobile from "../utils/useIsMobile";
+import Filter from "../utils/sortAndSearch";
 
-// API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
 
-// Interface for loan application data structure
-interface Application {
-  applicationId: string;
-  appName: string;
-  appEmail: string;
-  dateApplied: string;
-  appLoanAmount: number;
-  appInterestRate: number;
-  appTotalPayable: number;
-  loanType: string;
-  status: string;
-  appLoanTerms: number;
-  totalPayable: number;
-  isReloan?: boolean;
-  borrowersId: string;
-}
-
-/**
- * Loan applications listing page with filters, search, sort, and reloan acceptance
- * Displays applications in a table format with role-based access control
- * @returns JSX element containing the applications listing interface
- */
 export default function ApplicationsPage() {
-  // Data state
+  const { role, language, activeFilter, setActiveFilter } = useLoanApplicationPage();
+  const t = translations.loanTermsTranslator[language];
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
-  
-  // Modal state
-  const [showModal, setShowModal] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [generatedUsername, setGeneratedUsername] = useState("");
-  const [collectors, setCollectors] = useState<string[]>([]);
-  const [selectedCollector, setSelectedCollector] = useState<string>("");
-  const [role, setRole] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
-  
-  // Language state
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Listen for language changes
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      if ((role === "head" && event.detail.userType === 'head') || 
-          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
-          (role === "manager" && event.detail.userType === 'manager')) {
-        setLanguage(event.detail.language);
-      }
-    };
-
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
-
-  const getTranslations = () => {
-    return firstLoanApplicationTranslation[language];
-  };
-
-  const t = getTranslations();
-
-  // Function to translate loan types
-  const translateLoanType = (loanType: string) => {
-    switch (loanType) {
-      case "Regular Loan Without Collateral":
-        return t.loanType1;
-      case "Regular Loan With Collateral":
-        return t.loanType2;
-      case "Open-Term Loan":
-        return t.loanType3;
-      default:
-        return loanType;
-    }
-  };
-
-  // Persisted active filter
-  const [activeFilter, setActiveFilter] = useState<string>(() => {
-    return localStorage.getItem("activeFilter") || "Cleared";
-  });
-
-  // Modal animation states
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModalAnimating, setIsModalAnimating] = useState(false);
-
-  // Effects
-  useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
-    
-    // Initialize language from localStorage
-    if (storedRole === "head") {
-      const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    } else if (storedRole === "loan officer") {
-      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    } else if (storedRole === "manager") {
-      const storedLanguage = localStorage.getItem("managerLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("activeFilter", activeFilter);
-  }, [activeFilter]);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -148,98 +51,26 @@ export default function ApplicationsPage() {
     fetchApplications();
   }, []);
 
-  // Helpers
-  async function authFetch(url: string, options: RequestInit = {}) {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token found in localStorage");
-
-    return fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  }
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(amount);
-
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-PH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-  const collectableAmount = (
-    principal: number,
-    interestRate: number,
-    termMonths: number
-  ) => {
-    const termYears = termMonths / 12;
-    const total = principal + principal * (interestRate / 100) * termYears;
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(total);
-  };
-
-  // Filters
-  const filteredApplications = applications
-    .map((application) => ({
-      ...application,
-      displayStatus:
-        application.status === "Endorsed" ? "Pending" : application.status,
-    }))
-    .filter((application) => {
-      const matchesSearch = Object.values({
-        ...application,
-        status: application.displayStatus,
-      }).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      if (!matchesSearch) return false;
-      if (activeFilter === "All") return true;
-
-      return application.displayStatus === activeFilter;
-    });
-
-  // Pagination
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const filteredApplications = filterApplications(applications, searchQuery, activeFilter);
   const totalPages = Math.max(1, Math.ceil(filteredApplications.length / pageSize));
   const paginatedApplications = filteredApplications.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-  const totalCount = filteredApplications.length;
-  const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
   const filterOptions = [
-  { key: "All", label: t.tab1 },
-  { key: "Applied", label: t.tab2 },
-  { key: "Pending", label: t.tab3 },
-  { key: "Cleared", label: t.tab4 },
-  { key: "Approved", label: t.tab5 },
-  { key: "Disbursed", label: t.tab6 },
-  { key: "Denied", label: t.tab7 },
-];
+    { key: "All", label: t.l23 },
+    { key: "Applied", label: t.l27 },
+    { key: "Pending", label: t.l28 },
+    { key: "Cleared", label: t.l29 },
+    { key: "Approved", label: t.l30 },
+    { key: "Disbursed", label: t.l31 },
+    { key: "Denied", label: t.l32 },
+  ];
 
-    
-  let Wrapper;
-  if (role === "loan officer") {
-    Wrapper = LoanOfficer;
-  } else if (role === "head") {
-    Wrapper = Head;
-  } else {
-    Wrapper = Manager;
-  }
+  const isMobile = useIsMobile();
+  const Wrapper = role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
+
 
   return (
     <Wrapper isNavbarBlurred={isModalVisible}>
@@ -254,7 +85,7 @@ export default function ApplicationsPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
             <h1 className="text-2xl font-semibold text-gray-800">
-              {t.h1}
+              {t.Application}
             </h1>
           </div>
 
@@ -301,34 +132,24 @@ export default function ApplicationsPage() {
           </div>
 
           {/* Search + Sort */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <div className="relative w-full">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-              <input
-                type="text"
-                placeholder={t.searchPlaceholder}
-                className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                  focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              />
-            </div>
-
-            <div className="relative w-full sm:w-[200px]">
-              <select
-                value={sortBy}
-                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                  focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                  appearance-none transition-all"
-              >
-                <option value="">{t.sortBy}</option>
-                <option value="date">{t.sort1}</option>
-                <option value="amount">{t.sort2}</option>
-              </select>
-              <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div>
-          </div>
+          <Filter
+            searchQuery={searchQuery}
+            setSearchQuery={(value) => {
+              setSearchQuery(value);
+              setCurrentPage(1); 
+            }}
+            sortBy={sortBy}
+            setSortBy={(value) => {
+              setSortBy(value);
+              setCurrentPage(1);
+            }}
+            sortOptions={[
+              { value: "date", label: t.l17 }, 
+              { value: "amount", label: t.l4 },  
+            ]}
+            t={t}
+            isMobile={isMobile}
+          />
 
           {/* Table */}
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
@@ -336,15 +157,15 @@ export default function ApplicationsPage() {
               <thead>
                 <tr>
                   {[
-                    t.th1,
-                    t.th2,
-                    t.th3,
-                    t.th4,
-                    t.th5,
-                    t.th6,
-                    t.th7,
-                    t.th8,
-                    t.th9,
+                    t.l11,
+                    t.l12,
+                    t.l10,
+                    t.l17,
+                    t.l4,
+                    t.l5,
+                    t.l7,
+                    t.l15,
+                    t.l16,
                   ].map((heading) => (
                     <th
                       key={heading}
@@ -379,7 +200,7 @@ export default function ApplicationsPage() {
                     {/* Loan Type */}
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {translateLoanType(application.loanType)}
+                        {application.loanType}
                       </div>
                     </td>
 
@@ -419,7 +240,7 @@ export default function ApplicationsPage() {
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
                           className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
-                          {t.actionBtn}
+                          {t.view}
                         </Link>
 
                       {/* Accept Reloan */}
@@ -482,50 +303,17 @@ export default function ApplicationsPage() {
             </table>
 
           </div>
-          {/* Pagination + Summary */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
-            <div className="text-sm text-gray-700">
-              {totalCount === 0 ? (
-                <>Showing 0 of 0</>
-              ) : (
-                <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Rows per page:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  className="px-2 py-1 bg-white border border-gray-300 rounded-md text-sm"
-                >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Previous
-                </button>
-                <span className="px-1 py-1 text-gray-700">
-                  Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
-                </span>
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
+          
+          <Pagination
+            totalCount={filteredApplications.length}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setCurrentPage={setCurrentPage}
+            setPageSize={setPageSize}
+            language={language}
+          />
+
         </div>
       </div>
     </Wrapper>

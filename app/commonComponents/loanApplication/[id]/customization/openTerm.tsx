@@ -1,22 +1,12 @@
 'use client';
 import React from 'react';
+import { capitalizeWords, formatCurrency } from '@/app/commonComponents/utils/formatters';
 
 interface Props {
   application: any;
-  formatCurrency: (amount: number) => string;
 }
 
-export default function OpenTerm({ application, formatCurrency }: Props) {
-
-    // Capitalize first letter of each word
-    const capitalizeWords = (text?: string) => {
-        if (!text) return "—";
-        return text
-          .toLowerCase()
-          .split(" ")
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-      };
+export default function OpenTerm({ application }: Props) {
 
   return (
     <section>

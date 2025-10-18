@@ -1,9 +1,6 @@
-"use client";
-
 import React, { useState, useEffect } from 'react';
-import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import translations from '@/app/commonComponents/Translation';
 
-// Loan simulator modal: quick what-if calculator (static tables)
 interface SimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -36,9 +33,6 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [showResult, setShowResult] = useState(false);
-  const [errorOpen, setErrorOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [showErrors, setShowErrors] = useState(false);
 
   // Debug: log when props change
   useEffect(() => {
@@ -109,23 +103,12 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
     setShowResult(false);
   }, [loanType]);
 
-  const calculateLoan = (e: React.FormEvent<HTMLFormElement>) => {
+  const calculateLoan = (e: React.FormEvent) => {
     e.preventDefault();
-    setShowErrors(true);
 
-    if (!loanType) {
+    if (!loanType || !selectedLoanAmount) {
       setResult(null);
       setShowResult(false);
-      setErrorMessage(language === 'en' ? 'Please select a loan type.' : 'Palihug pagpili ug klase sa pahulam.');
-      setErrorOpen(true);
-      return;
-    }
-
-    if (!selectedLoanAmount) {
-      setResult(null);
-      setShowResult(false);
-      setErrorMessage(language === 'en' ? 'Please select a loan amount.' : 'Palihug pagpili ug kantidad sa pahulam.');
-      setErrorOpen(true);
       return;
     }
 
@@ -175,24 +158,21 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   if (!showModal) return null;
 
+  const t = translations.loanTermsTranslator[language];
+  const s = translations.simulatorTranslator[language];
+
   const resultLabels = {
-    principalAmount: language === 'en' ? 'Principal Amount:' : 'Pangunang Kantidad:',
-    interestRate: language === 'en' ? 'Interest Rate:' : 'Porsyento sa Interes:',
-    interest: language === 'en' ? 'Interest:' : 'Interes:',
-    totalPayment: language === 'en' ? 'Total Payment:' : 'Kinatibuk-ang Bayad:',
-    loanTerm: language === 'en' ? 'Loan Term:' : 'Gidugayon sa Pahulam:',
-    paymentPerPeriod: language === 'en' ? 'Payment Per Period:' : 'Bayad Matag Panahon:',
-    paymentPeriod: language === 'en' ? 'Payment Period:' : 'Panahon sa Pagbayad:',
-    monthly: language === 'en' ? 'Monthly (12 months per year)' : 'Matag Bulan (12 ka bulan sa tuig)',
-    fifteenth: language === 'en' ? '15th of the Month' : 'Ika-15 sa Bulan',
-    summary: language === 'en' ? 'Loan Summary' : 'Sumada sa Pahulam',
-    explanation: language === 'en' 
-      ? 'Computed as: Total Payment ÷ Loan Term'
-      : 'Gikalkula isip: Kinatibuk-ang Bayad ÷ Gidugayon sa Pahulam'
+    principalAmount: t.l4 + ':',
+    interestRate: t.l5 + ':',
+    interest: t.l6 + ':',
+    totalPayment: t.l7 + ':',
+    loanTerm: t.l8 + ':',
+    paymentPerPeriod: t.l9 + ':',
+    summary: s.s2,
+    explanation: s.s3,
   };
 
   return (
-    <>
     <div className={`fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6 transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         <button
@@ -204,12 +184,9 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
           </svg>
         </button>
 
-        <h2 className="text-2xl font-bold mb-1 text-gray-800">
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
           {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
         </h2>
-        <p className="text-sm text-gray-600 mb-5">
-          {language === 'en' ? 'Enter loan details to preview your payment summary.' : 'Ibutang ang detalye sa pahulam aron makita ang bayranan.'}
-        </p>
 
         <form onSubmit={calculateLoan} className="space-y-6">
           <div className="space-y-4">
@@ -217,11 +194,8 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
               <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Loan Type' : 'Klase sa Pahulam'}</label>
               <select
                 value={loanType}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setLoanType(e.target.value)}
-                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500 ${
-                  showErrors && !loanType ? 'border-red-500' : 'border-gray-300'
-                }`}
-                aria-invalid={showErrors && !loanType}
+                onChange={(e) => setLoanType(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
               >
                 <option value="">{language === 'en' ? 'Select loan type' : 'Pilia ang klase sa pahulam'}</option>
                 <option value="regularWithout">{language === 'en' ? 'Regular (Without Collateral)' : 'Regular (Walay Kolateral)'}</option>
@@ -234,15 +208,12 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Loan Amount' : 'Kantidad sa Pahulam'}</label>
                 <select
-                  className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500 ${
-                    showErrors && !selectedLoanAmount ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
                   value={selectedLoanAmount}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedLoanAmount(e.target.value)}
-                  aria-invalid={showErrors && !selectedLoanAmount}
+                  onChange={(e) => setSelectedLoanAmount(e.target.value)}
                 >
                   <option value="">{language === 'en' ? 'Select amount' : 'Pilia ang kantidad'}</option>
-                  {loanOptions.map((amt: number) => (
+                  {loanOptions.map((amt) => (
                     <option key={amt} value={amt}>
                       ₱{amt.toLocaleString()}
                     </option>
@@ -252,14 +223,12 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
             )}
           </div>
 
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="px-5 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
-            >
-              {language === 'en' ? 'Calculate' : 'Kalkulaha'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
+          >
+            {language === 'en' ? 'Calculate' : 'Kalkulaha'}
+          </button>
         </form>
 
         {result && (
@@ -293,14 +262,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 <div className="mb-4">
                   <div className="font-semibold">{resultLabels.paymentPerPeriod}</div>
                   <div>{result.paymentPerPeriod}
-                    <span className="text-sm text-gray-500 block">
-                      ({language === 'en' ? 'Divided over' : 'Gibahin ngadto sa'} {result.loanTerm})
-                    </span>
                   </div>
-                </div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.paymentPeriod}</div>
-                  <div>{result.paymentPeriod}</div>
                 </div>
               </div>
             </div>
@@ -312,8 +274,5 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
         )}
       </div>
     </div>
-    <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
-    </>
   );
 }
-
