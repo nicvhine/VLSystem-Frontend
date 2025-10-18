@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "../errorModal/modal";
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
@@ -46,6 +47,7 @@ export default function InterviewModal({
   const [errorMessage, setErrorMessage] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Scheduling window: today through seven days after application date
@@ -87,6 +89,7 @@ export default function InterviewModal({
   if (!isVisible) return null;
 
   const handleModalClose = () => {
+    if (isSaving) return; // prevent closing while saving
     setIsAnimating(false);
     setTimeout(() => {
       onClose();
@@ -131,9 +134,14 @@ export default function InterviewModal({
   };
 
   // Confirm and save schedule changes
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     setShowConfirm(false);
-    onSave(date, time);
+    try {
+      setIsSaving(true);
+      await onSave(date, time);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Cancel saving changes
@@ -188,21 +196,24 @@ export default function InterviewModal({
             <button
               type="button"
               onClick={handleModalClose}
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition"
+              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSaving}
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSave}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+              disabled={isSaving}
             >
-              Save Changes
+              {isSaving ? <ButtonContentLoading label="Saving..." /> : "Save Changes"}
             </button>
             <button
               type="button"
               onClick={() => onView(applicationId)}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSaving}
             >
               View Application
             </button>

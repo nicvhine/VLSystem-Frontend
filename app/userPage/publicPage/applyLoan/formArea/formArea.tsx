@@ -154,7 +154,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                         : 'Nadawat na ang imong aplikasyon ug gi-proseso na karon.'}
                 </p>
                 {loanId && (
-                    <div className="mb-4 rounded-md border border-gray-100 bg-gray-50 p-4">
+                    <div className="mb-4 rounded-md border border-gray-100 bg-gray-50 p-4 text-center">
                         <p className="text-xs text-gray-500 mb-1">
                             {language === 'en' ? 'Application ID' : 'Application ID'}
                         </p>

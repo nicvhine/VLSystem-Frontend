@@ -128,7 +128,19 @@ export default function References({
               type="text"
               value={appReferences[i]?.contact || ""}
               maxLength={11}
-              onChange={e => handleReferenceChange(i, "contact", e.target.value)}
+              onChange={e => {
+                const val = e.target.value;
+                if (/^\d*$/.test(val)) {
+                  handleReferenceChange(i, "contact", val.slice(0, 11));
+                }
+              }}
+              onBlur={() => {
+                const val = (appReferences[i]?.contact || "").trim();
+                // If non-empty, enforce 11 digits and starting with 09
+                if (val && (!/^09\d{9}$/.test(val))) {
+                  // keep refErrors via memo; no state needed here
+                }
+              }}
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${refErrors[i] || missingFields.includes(`Reference ${i + 1} Contact`) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
             />
