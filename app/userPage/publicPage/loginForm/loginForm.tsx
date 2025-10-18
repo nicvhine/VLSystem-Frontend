@@ -4,6 +4,7 @@
 import { FormEvent, useState } from 'react';
 import { loginHandler } from './loginHandlers';
 import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
+import { ButtonContentLoading } from '@/app/commonComponents/utils/loading';
 
 interface Props {
   onClose: () => void;
@@ -23,10 +24,13 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
   const [codeInput, setCodeInput] = useState('');
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   if (!isVisible) return null;
 
   const handleVerify = () => {
+    if (isVerifying) return;
+    setIsVerifying(true);
     const savedCode = sessionStorage.getItem('verificationCode');
     const role = sessionStorage.getItem('userRole');
 
@@ -49,6 +53,7 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
       setErrorMsg('Incorrect verification code.');
       setShowErrorModal(true);
     }
+    setIsVerifying(false);
   };
 
   return (
@@ -64,9 +69,10 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
         />
         <button
           onClick={handleVerify}
-          className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+          disabled={isVerifying}
+          className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Verify
+          {isVerifying ? <ButtonContentLoading label="Verifying..." /> : 'Verify'}
         </button>
         {showErrorModal && (
           <div className="fixed bottom-4 right-4 z-50">
@@ -96,6 +102,7 @@ export default function LoginFormWithSMS({
   const [showSMSModal, setShowSMSModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     const handleSubmit = (e: FormEvent) => {
       e.preventDefault();
@@ -104,7 +111,10 @@ export default function LoginFormWithSMS({
         setShowErrorModal(true);
         return;
       }
-      loginHandler({ username, password, onClose, setErrorMsg, setShowErrorModal, setShowSMSModal, router });
+      if (isLoggingIn) return;
+      setIsLoggingIn(true);
+      loginHandler({ username, password, onClose, setErrorMsg, setShowErrorModal, setShowSMSModal, router })
+        .finally(() => setIsLoggingIn(false));
     };
 
     return (
@@ -158,9 +168,14 @@ export default function LoginFormWithSMS({
               <div className="flex justify-center">
                 <button
                   type="submit"
-                  className="w-24 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                  disabled={isLoggingIn}
+                  className="w-28 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  {language === 'en' ? 'Login' : 'Sulod'}
+                  {isLoggingIn ? (
+                    <ButtonContentLoading label={language === 'en' ? 'Logging in...' : 'Nag-log in...'} />
+                  ) : (
+                    language === 'en' ? 'Login' : 'Sulod'
+                  )}
                 </button>
               </div>
             </form>

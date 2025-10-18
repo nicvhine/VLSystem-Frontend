@@ -8,6 +8,7 @@ import { enUS } from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 import InterviewModal from "@/app/commonComponents/modals/calendarModal/modal";
+import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import translations from "@/app/commonComponents/Translation";
 
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
@@ -68,6 +69,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   const [date, setDate] = useState(new Date());
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Convert applications with interview data to calendar events
   const mapApplicationsToEvents = (apps: Application[]): InterviewEvent[] =>
@@ -128,6 +130,8 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         setApplications(data);
       } catch (err) {
         console.error("Error fetching interviews:", err);
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -192,6 +196,12 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
 
   return (
     <div className="p-4">
+      {isLoading ? (
+        <div className="py-10 flex justify-center">
+          <LoadingSpinner size={6} />
+        </div>
+      ) : (
+      <>
       {showSuccessModal && (
         <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
       )}
@@ -294,6 +304,8 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         onView={handleViewApplication}
         appliedDate={selectedApp?.appliedDate}
       />
+      </>
+      )}
     </div>
   );
 }

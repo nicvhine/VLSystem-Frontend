@@ -29,16 +29,27 @@ export default function UploadSection({
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmType, setConfirmType] = useState<'profile' | 'document' | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
+  const [confirmMessage, setConfirmMessage] = useState<string>("");
 
   // Wrapped remove handlers
   const handleRemoveProfile = (index: number) => {
     setRemoveIndex(index);
     setConfirmType('profile');
+    setConfirmMessage(
+      language === 'en'
+        ? 'Are you sure you want to remove this photo?'
+        : 'Sigurado ka nga gusto nimo tangtangon ang litrato?'
+    );
     setShowConfirm(true);
   };
   const handleRemoveDocument = (index: number) => {
     setRemoveIndex(index);
     setConfirmType('document');
+    setConfirmMessage(
+      language === 'en'
+        ? 'Are you sure you want to remove this document?'
+        : 'Sigurado ka nga gusto nimo tangtangon ang dokumento?'
+    );
     setShowConfirm(true);
   };
 
@@ -49,15 +60,21 @@ export default function UploadSection({
     } else if (confirmType === 'document') {
       removeDocument(removeIndex);
     }
+    // Close modal first, then clear state after animation
     setShowConfirm(false);
-    setRemoveIndex(null);
-    setConfirmType(null);
+    setTimeout(() => {
+      setRemoveIndex(null);
+      setConfirmType(null);
+    }, 300);
   };
 
   const handleCancelRemove = () => {
+    // Close modal first, then clear state after animation
     setShowConfirm(false);
-    setRemoveIndex(null);
-    setConfirmType(null);
+    setTimeout(() => {
+      setRemoveIndex(null);
+      setConfirmType(null);
+    }, 300);
   };
 
   return (
@@ -72,11 +89,13 @@ export default function UploadSection({
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
-            multiple
+            // Only one 2x2 photo allowed
             onChange={handleProfileChange}
-            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
-                      file:rounded-lg file:border-0 file:text-sm file:font-medium
-                      file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+            disabled={photo2x2.length > 0}
+            className={`block w-full text-sm text-gray-600 cursor-pointer
+                      file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium
+                      file:bg-red-50 file:text-red-600 hover:file:bg-red-100
+                      ${photo2x2.length > 0 ? 'opacity-50 cursor-not-allowed file:bg-gray-100 file:text-gray-400 hover:file:bg-gray-100' : ''}`}
           />
         </div>
 
@@ -144,22 +163,19 @@ export default function UploadSection({
                 >
                   {language === 'en' ? 'Remove' : 'Tangtangon'}
                 </button>
-      {/* Confirmation Modal for Remove */}
-      <ConfirmModal
-        show={showConfirm}
-        message={
-          confirmType === 'profile'
-            ? (language === 'en' ? 'Are you sure you want to remove this photo?' : 'Sigurado ka nga gusto nimo tangtangon ang litrato?')
-            : (language === 'en' ? 'Are you sure you want to remove this document?' : 'Sigurado ka nga gusto nimo tangtangon ang dokumento?')
-        }
-        onConfirm={handleConfirmRemove}
-        onCancel={handleCancelRemove}
-      />
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal for Remove (top-level so it always renders) */}
+      <ConfirmModal
+        show={showConfirm}
+        message={confirmMessage}
+        onConfirm={handleConfirmRemove}
+        onCancel={handleCancelRemove}
+      />
     </div>
   );
 }
