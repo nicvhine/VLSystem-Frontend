@@ -11,7 +11,7 @@ import { useParams } from "next/navigation";
 import SuccessModal from '../../modals/successModal/modal';
 
 // Navigation component
-import LoanOfficerNavbar from "@/app/userPage/loanOfficerPage/navbar/page";
+import Navbar from "../../navbarComponents/navbar";
 
 // Customization components
 import WithCollateral from './customization/withCollateral';
@@ -25,16 +25,18 @@ import ReleaseForm from "../../modals/loanAgreement/releaseForm";
 import ErrorModal from '../../modals/errorModal/modal';
 
 // Custom hooks
-import ApplicationButtons from "../hooks/applicationButtons";
-import { useApplications } from "../hooks/useApplication";
+import ApplicationButtons from "./components/applicationButtons";
+import { useApplications } from "./hooks";
 
-// Translation module
-import secondLoanApplicationTranslation from "../translation/second";
+//Formatter
+import { capitalizeWords, formatCurrency } from "../../utils/formatters";
 
 // Role-based page wrappers
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+
+import translations from "../../Translation";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
@@ -137,21 +139,19 @@ export default function ApplicationDetailsPage() {
   }, [role]);
 
   // Get translations
-  const getTranslations = () => {
-    return secondLoanApplicationTranslation[language];
-  };
+  const t = translations.loanTermsTranslator[language];
+  const l = translations.viewApplicationTranslation[language];
 
-  const t = getTranslations();
 
   // Function to translate loan types
   const translateLoanType = (loanType: string) => {
     switch (loanType) {
       case "Regular Loan Without Collateral":
-        return t.loanType1;
+        return t.l1;
       case "Regular Loan With Collateral":
-        return t.loanType2;
+        return t.l2;
       case "Open-Term Loan":
-        return t.loanType3;
+        return t.l3;
       default:
         return loanType;
     }
@@ -159,24 +159,10 @@ export default function ApplicationDetailsPage() {
 
   const application = applications.find(app => app.applicationId === id);
 
-  const formatCurrency = (amount?: number | string) => {
-    if (!amount) return "₱0.00";
-    return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(Number(amount));
-  };
-
-  const capitalizeWords = (text?: string) => {
-    if (!text) return "—";
-    return text
-      .toLowerCase()
-      .split(" ")
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
-
   if (!application && !loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <LoanOfficerNavbar />
+        <Navbar role="loanOfficer" />
         <div className="p-10 text-center text-gray-600 text-lg">{t.applicationNotFound}</div>
       </div>
     );
@@ -232,7 +218,7 @@ export default function ApplicationDetailsPage() {
               {/*HEADER*/}
                 <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {t.applicantProfile} | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
+                  {l.t34} | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
                 </h1>
                   <div className="flex items-center space-x-4 mt-1">
                     <span className={`px-2 py-1 rounded text-xs font-medium uppercase ${
@@ -306,19 +292,19 @@ export default function ApplicationDetailsPage() {
               {/* BASIC INFORMATION CARD*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">{t.basicInformation}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{l.t1}</h3>
                 </div>
                 <div className="p-6 space-y-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-500">{t.dateOfBirth}</p>
+                    <p className="text-sm font-medium text-gray-500">{l.t5}</p>
                     <p className="text-gray-900">{application?.appDob || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">{t.address}</p>
+                    <p className="text-sm font-medium text-gray-500">{l.t6}</p>
                     <p className="text-gray-900">{application?.appAddress || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-500">{t.maritalStatus}</p>
+                    <p className="text-sm font-medium text-gray-500">{l.t7}</p>
                     <p className="text-gray-900">{application?.appMarital || '—'}</p>
                   </div>
                   
@@ -326,18 +312,18 @@ export default function ApplicationDetailsPage() {
                   {application?.appMarital === "Married" && (
                     <>
                       <div>
-                        <p className="text-sm font-medium text-gray-500">{t.spouseName}</p>
+                        <p className="text-sm font-medium text-gray-500">{l.t8}</p>
                         <p className="text-gray-900">{application?.appSpouseName || '—'}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-500">{t.spouseOccupation}</p>
+                        <p className="text-sm font-medium text-gray-500">{l.t9}</p>
                         <p className="text-gray-900">{application?.appSpouseOccupation || '—'}</p>
                       </div>
                     </>
                   )}
                   
                   <div>
-                    <p className="text-sm font-medium text-gray-500">{t.children}</p>
+                    <p className="text-sm font-medium text-gray-500">{l.t10}</p>
                     <p className="text-gray-900">{application?.appChildren || '—'}</p>
                   </div>
                 </div>
@@ -359,7 +345,7 @@ export default function ApplicationDetailsPage() {
                           : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      {t.incomeInformation}
+                      {l.t2}
                     </button>
                     <button
                       onClick={() => setActiveTab('references')}
@@ -369,7 +355,7 @@ export default function ApplicationDetailsPage() {
                           : 'border-transparent text-gray-500 hover:text-gray-700'
                       }`}
                     >
-                      {t.characterReferences}
+                      {l.t3}
                     </button>
                     {(application?.loanType === "Regular Loan With Collateral" || application?.loanType === "Open-Term Loan") && (
                       <button
@@ -380,7 +366,7 @@ export default function ApplicationDetailsPage() {
                             : 'border-transparent text-gray-500 hover:text-gray-700'
                         }`}
                       >
-                        {t.collateralDetails}
+                        {l.t4}
                       </button>
                     )}
                   </div>
@@ -393,22 +379,22 @@ export default function ApplicationDetailsPage() {
                   {activeTab === 'income' && (
                     <div className="space-y-4 h-full">
                       <div>
-                        <p className="text-sm font-medium text-gray-500">{t.sourceOfIncome}</p>
+                        <p className="text-sm font-medium text-gray-500">{l.t11}</p>
                         <p className="text-gray-900">{capitalizeWords(application?.sourceOfIncome) || '—'}</p>
                       </div>
                       
                       {application?.sourceOfIncome?.toLowerCase() === 'employed' && (
                         <>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.occupation}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t12}</p>
                             <p className="text-gray-900">{capitalizeWords(application?.appOccupation) || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.company}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t13}</p>
                             <p className="text-gray-900">{capitalizeWords(application?.appCompanyName) || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.employmentStatus}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t14}</p>
                             <p className="text-gray-900">{capitalizeWords(application?.appEmploymentStatus) || '—'}</p>
                           </div>
                         </>
@@ -417,26 +403,26 @@ export default function ApplicationDetailsPage() {
                       {application?.sourceOfIncome?.toLowerCase() === 'business' && (
                         <>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.businessType}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t15}</p>
                             <p className="text-gray-900">{application?.appTypeBusiness || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.businessName}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t16}</p>
                             <p className="text-gray-900">{application?.appBusinessName || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.dateStarted}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t17}</p>
                             <p className="text-gray-900">{application?.appDateStarted || '—'}</p>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-gray-500">{t.businessLocation}</p>
+                            <p className="text-sm font-medium text-gray-500">{l.t18}</p>
                             <p className="text-gray-900">{application?.appBusinessLoc || '—'}</p>
                           </div>
                         </>
                       )}
                       
                       <div className="pt-4 border-t border-gray-200">
-                        <p className="text-sm font-medium text-gray-500">{t.monthlyIncome}</p>
+                        <p className="text-sm font-medium text-gray-500">{l.t19}</p>
                         <p className="text-lg font-bold text-green-600">{formatCurrency(application?.appMonthlyIncome)}</p>
                       </div>
                     </div>
@@ -451,13 +437,13 @@ export default function ApplicationDetailsPage() {
                             <div key={i} className="p-4 bg-gray-50 rounded-lg">
                               <div className="flex items-center mb-2">
                                 <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
-                                  {t.reference} {i + 1}
+                                  {l.t20} {i + 1}
                                 </span>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{t.name}</span> <span className="text-gray-900">{ref.name}</span></p>
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{t.contact}</span> <span className="text-gray-900">{ref.contact}</span></p>
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{t.relationship}</span> <span className="text-gray-900">{ref.relation}</span></p>
+                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{l.t21}:</span> <span className="text-gray-900">{ref.name}</span></p>
+                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{l.t22}:</span> <span className="text-gray-900">{ref.contact}</span></p>
+                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{l.t23}:</span> <span className="text-gray-900">{ref.relation}</span></p>
                               </div>
                             </div>
                           ))}
@@ -488,7 +474,7 @@ export default function ApplicationDetailsPage() {
               {/* FILES*/}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6 flex-shrink-0">
                 <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">{t.files}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{l.t24}</h3>
                 </div>
                 <div className="p-6">
                   {application?.documents && application.documents.length > 0 ? (
@@ -534,26 +520,26 @@ export default function ApplicationDetailsPage() {
             <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-md mx-auto">
               {/* Card Header */}
               <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">{t.loanComputation}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{t.l25}</h3>
               </div>
               <div className="p-6 space-y-6">
                 <div className="space-y-3">
                     <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{t.loanPurpose}</span>
+                    <span className="text-sm font-medium text-gray-500">{l.t26}</span>
                     <span className="text-gray-900 break-words text-sm leading-relaxed">{application?.appLoanPurpose || '—'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{t.loanAmount}</span>
+                    <span className="text-sm font-medium text-gray-500">{l.t27}</span>
                     <span className="text-gray-900">{formatCurrency(application?.appLoanAmount)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{t.interestRate}</span>
+                    <span className="text-sm font-medium text-gray-500">{l.t28}</span>
                     <span className="text-gray-900">{application?.appInterestRate || '—'}%</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{t.loanTerm}</span>
-                    <span className="text-gray-900">{application?.appLoanTerms || '—'} {t.months}</span>
+                    <span className="text-sm font-medium text-gray-500">{l.t29}</span>
+                    <span className="text-gray-900">{application?.appLoanTerms || '—'} {l.t33}</span>
                   </div>
                 </div>
 
@@ -567,15 +553,15 @@ export default function ApplicationDetailsPage() {
                     return (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">{t.totalInterest}</span>
+                          <span className="text-sm font-medium text-gray-500">{l.t30}</span>
                           <span className="text-gray-900">{formatCurrency(application?.appTotalInterestAmount)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">{t.totalPayable}</span>
+                          <span className="text-sm font-medium text-gray-500">{l.t31}</span>
                           <span className="text-gray-900 font-semibold text-lg">{formatCurrency(application?.appTotalPayable)}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">{t.monthlyDue}</span>
+                          <span className="text-sm font-medium text-gray-500">{l.t32}</span>
                           <span className="text-gray-900">{formatCurrency(application?.appMonthlyDue)}</span>
                         </div>
                       </>

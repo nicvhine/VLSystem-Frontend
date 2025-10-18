@@ -28,6 +28,7 @@ const loanTermsTranslator = {
       Loans: "Loans",
       Application: "Applications",
       Agents: "Agents",
+      Collection: "Collections",
       view: "View",
   
       // Search
@@ -54,8 +55,13 @@ const loanTermsTranslator = {
 
       //Sort
       l38: "Sort by",
-      l39: "Add Agent"
+      l39: "Add Agent",
 
+      l40: "Role",
+      l41: "Period Balance",
+      l42: "Paid Amount",
+      l43: "Reference Number",
+      l44: "Note",
     },
     ceb: {
       // Loan Type
@@ -85,6 +91,7 @@ const loanTermsTranslator = {
       // Page Headers
       Loans: "Mga Pautang",
       Application: "Mga Aplikasyon",
+      Collection: "Mga Koleksyon",
       Agents: "Mga Ahente",
       view: "Tan-awa",
   
@@ -111,7 +118,13 @@ const loanTermsTranslator = {
       l37: "sa",
 
       l38: "Pagpili base sa",
-      l39: "Pag-puno ug Ahente"
+      l39: "Pag-puno ug Ahente",
+
+      l40: "Katungdanan",
+      l41: "Balanse sa Panahon",
+      l42: "Bayad nga Kantidad",
+      l43: "Reperensya",
+      l44: "Mensahe"
     }
   };
   
