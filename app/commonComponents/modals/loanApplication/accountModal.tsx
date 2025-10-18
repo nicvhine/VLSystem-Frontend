@@ -4,6 +4,7 @@ import React, { useState, useEffect, forwardRef, useImperativeHandle } from "rea
 import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import SuccessModal from "../../modals/successModal/modal";
 import ErrorModal from "../../modals/errorModal/modal";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import emailjs from "emailjs-com";
 
 // API endpoint for loan applications
@@ -191,6 +192,9 @@ export default forwardRef(function AccountModal(_, ref) {
 
   return (
     <>
+      {isProcessing && (
+        <SubmitOverlayToast label="Processing..." />
+      )}
       <div
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
           isAnimating ? "opacity-100" : "opacity-0"

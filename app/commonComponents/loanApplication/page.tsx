@@ -36,6 +36,19 @@ export default function ApplicationsPage() {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  // Toast helpers (mutually exclusive)
+  const showSuccess = (msg: string) => {
+    setShowErrorModal(false);
+    setModalMsg(msg);
+    setShowSuccessModal(true);
+    // optional autoclose is handled inside SuccessModal; keep state here simple
+  };
+  const showError = (msg: string) => {
+    setShowSuccessModal(false);
+    setModalMsg(msg);
+    setShowErrorModal(true);
+  };
+
   useEffect(() => {
     const fetchApplications = async () => {
       try {
@@ -284,12 +297,10 @@ export default function ApplicationsPage() {
                                   )
                                 );
 
-                                setModalMsg("Reloan accepted and loan generated successfully.");
-                                setShowSuccessModal(true);
+                                showSuccess("Reloan accepted and loan generated successfully.");
                               } catch (error) {
                                 console.error(error);
-                                setModalMsg("Failed to accept and generate reloan");
-                                setShowErrorModal(true);
+                                showError("Failed to accept and generate reloan");
                               }
                             }}
                           >

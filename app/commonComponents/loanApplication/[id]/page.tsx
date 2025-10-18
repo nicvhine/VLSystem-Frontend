@@ -58,6 +58,8 @@ export default function ApplicationDetailsPage() {
    * @param msg - Success message to display
    */
   const showSuccess = (msg: string) => {
+    // Ensure error toast is closed to avoid mixed messages
+    setErrorModalOpen(false);
     setSuccessMessage(msg);
     setSuccessModalOpen(true);
     setTimeout(() => setSuccessModalOpen(false), 5000);
@@ -163,7 +165,7 @@ export default function ApplicationDetailsPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar role="loanOfficer" />
-        <div className="p-10 text-center text-gray-600 text-lg">{t.applicationNotFound}</div>
+  <div className="p-10 text-center text-gray-600 text-lg">{translations.errorTranslation[language].applicationNotFound}</div>
       </div>
     );
   }
@@ -183,6 +185,8 @@ export default function ApplicationDetailsPage() {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const showError = (msg: string) => {
+    // Ensure success toast is closed first to prevent confusion
+    setSuccessModalOpen(false);
     setErrorMessage(msg);
     setErrorModalOpen(true);
     setTimeout(() => setErrorModalOpen(false), 3000);
@@ -451,7 +455,7 @@ export default function ApplicationDetailsPage() {
                       ) : (
                         <div className="text-center py-8 h-full flex flex-col justify-center">
                           <FiUser className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                          <p className="text-gray-500">{t.noReferences}</p>
+                          <p className="text-gray-500">{language === 'en' ? 'No references available.' : 'Walay mga reference.'}</p>
                         </div>
                       )}
                     </div>
@@ -461,10 +465,10 @@ export default function ApplicationDetailsPage() {
                   {activeTab === 'collateral' && (
                     <div className="h-full">
                       {application?.loanType === "Regular Loan With Collateral" && (
-                        <WithCollateral application={application} formatCurrency={formatCurrency} />
+                        <WithCollateral application={application} />
                       )}
                       {application?.loanType === "Open-Term Loan" && (
-                        <OpenTerm application={application} formatCurrency={formatCurrency} />
+                        <OpenTerm application={application} />
                       )}
                     </div>
                   )}
@@ -507,7 +511,7 @@ export default function ApplicationDetailsPage() {
                   ) : (
                     <div className="text-center py-4">
                       <FiPaperclip className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-gray-500 text-sm">{t.noDocuments}</p>
+                      <p className="text-gray-500 text-sm">{language === 'en' ? 'No documents uploaded.' : 'Walay na-upload nga mga dokumento.'}</p>
                     </div>
                   )}
                 </div>

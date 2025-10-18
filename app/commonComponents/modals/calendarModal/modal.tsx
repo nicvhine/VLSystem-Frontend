@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import ErrorModal from "../errorModal/modal";
 import ConfirmModal from "../confirmModal/ConfirmModal";
 
@@ -151,6 +152,9 @@ export default function InterviewModal({
 
   return (
     <>
+      {isSaving && (
+        <SubmitOverlayToast label="Saving changes..." />
+      )}
       <div
         className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
           isAnimating ? "opacity-100" : "opacity-0"

@@ -83,23 +83,28 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
       });
     }
 
-    // Only load notifications for manager
-    if (role === 'manager') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        fetch(`http://localhost:3001/notifications/manager`, {
-          headers: { Authorization: `Bearer ${token}` },
+    // Load notifications per role (manager, head, loanOfficer, collector)
+    const token = localStorage.getItem('token');
+    const roleEndpointMap: Record<NavbarProps['role'], string | null> = {
+      manager: 'manager',
+      head: 'head',
+      loanOfficer: 'loan-officer',
+      collector: 'collector',
+    };
+    const path = roleEndpointMap[role];
+    if (path && token) {
+      fetch(`http://localhost:3001/notifications/${path}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const normalized = (data || []).map((n: any) => ({
+            ...n,
+            read: n.read ?? n.viewed ?? false,
+          }));
+          setNotifications(normalized);
         })
-          .then((res) => res.json())
-          .then((data) => {
-            const normalized = (data || []).map((n: any) => ({
-              ...n,
-              read: n.read ?? n.viewed ?? false,
-            }));
-            setNotifications(normalized);
-          })
-          .catch(console.error);
-      }
+        .catch(console.error);
     }
   }, [role]);
 
@@ -171,8 +176,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
               <span className="text-gray-900 ml-3 text-sm font-medium">{language === 'en' ? 'English' : 'Cebuano'}</span>
             </label>
 
-            {/* Manager notifications */}
-            {role === 'manager' && (
+            {/* Notifications (manager, head, loan officer, collector) */}
+            {(role === 'manager' || role === 'head' || role === 'loanOfficer' || role === 'collector') && (
               <div className="relative">
                 <button className="relative p-2 rounded-full hover:bg-gray-100" onClick={handleToggleNotifs}>
                   <Bell className="h-5 w-5 text-gray-700" />
@@ -183,8 +188,64 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                   )}
                 </button>
                 {showNotifs && (
-                  <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-80 mt-3 overflow-hidden" style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999 }}>
-                    {/* ...notifications UI same as before */}
+                  <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 overflow-hidden" style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999 }}>
+                    <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+                      <span className="text-sm font-semibold text-gray-800">Notifications</span>
+                      <button
+                        className="text-xs text-red-600 hover:text-red-700"
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem('token');
+                            if (!token) return;
+                            const ep = role === 'manager' ? 'manager' : role === 'head' ? 'head' : role === 'loanOfficer' ? 'loan-officer' : 'collector';
+                            await fetch(`http://localhost:3001/notifications/${ep}/read-all`, {
+                              method: 'PUT',
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                          } catch (e) { console.error(e); }
+                        }}
+                      >
+                        Mark all as read
+                      </button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-4 text-sm text-gray-500">No notifications</div>
+                      ) : (
+                        notifications.map((n, idx) => (
+                          <div key={n._id || n.id || idx} className={`px-4 py-3 border-b hover:bg-gray-50 ${n.read ? 'opacity-80' : ''}`}>
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1">
+                                <p className="text-sm text-gray-800 break-words">{n.message || n.title || 'Notification'}</p>
+                                <p className="text-[11px] text-gray-500 mt-1">{new Date(n.createdAt || n.date || Date.now()).toLocaleString()}</p>
+                              </div>
+                              {!n.read && (
+                                <button
+                                  className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                                  onClick={async () => {
+                                    try {
+                                      const token = localStorage.getItem('token');
+                                      if (!token) return;
+                                      const ep = role === 'manager' ? 'manager' : role === 'head' ? 'head' : role === 'loanOfficer' ? 'loan-officer' : 'collector';
+                                      const id = n._id || n.id;
+                                      if (!id) return;
+                                      await fetch(`http://localhost:3001/notifications/${ep}/${id}/read`, {
+                                        method: 'PUT',
+                                        headers: { Authorization: `Bearer ${token}` },
+                                      });
+                                      setNotifications((prev) => prev.map((x) => ((x._id || x.id) === id ? { ...x, read: true } : x)));
+                                    } catch (e) { console.error(e); }
+                                  }}
+                                >
+                                  Mark read
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

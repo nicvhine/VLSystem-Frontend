@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { Bell } from 'lucide-react';
 import useProfilePic from '../../../commonComponents/navbarComponents/profilePic';
 import useAccountSettings from '../../../commonComponents/navbarComponents/accountSettings';
 import MobileMenu from '../../../commonComponents/navbarComponents/mobileMenu';
@@ -195,6 +196,24 @@ const {
     });
   };
 
+  // Borrower notifications state and fetch
+  const [notifications, setNotifications] = useState<any[]>([]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const borrowersId = localStorage.getItem('borrowersId');
+    if (!borrowersId) return;
+    fetch(`http://localhost:3001/notifications/${borrowersId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const normalized = (data || []).map((n: any) => ({
+          ...n,
+          read: n.read ?? n.viewed ?? false,
+        }));
+        setNotifications(normalized);
+      })
+      .catch(console.error);
+  }, []);
+
   return (
   <div className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${isBlurred ? 'relative z-40' : 'sticky top-0 z-50'} ${isBlurred ? 'blur-sm' : ''} transition-all duration-150`}>
       <div className="w-full px-6 py-3">
@@ -239,6 +258,71 @@ const {
           </button>
 
           <div className="hidden md:flex items-center space-x-8">
+
+            {/* Notifications */}
+            <div className="relative">
+              <button className="relative p-2 rounded-full hover:bg-gray-100" onClick={handleToggleNotifs}>
+                <Bell className="h-5 w-5 text-gray-700" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
+                    {notifications.filter(n => !n.read).length}
+                  </span>
+                )}
+              </button>
+              {showNotifs && (
+                <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 overflow-hidden" style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999 }}>
+                  <div className="flex items-center justify-between px-4 py-2 border-b bg-gray-50">
+                    <span className="text-sm font-semibold text-gray-800">Notifications</span>
+                    <button
+                      className="text-xs text-red-600 hover:text-red-700"
+                      onClick={async () => {
+                        try {
+                          const borrowersId = localStorage.getItem('borrowersId');
+                          if (!borrowersId) return;
+                          await fetch(`http://localhost:3001/notifications/borrower/${borrowersId}/read-all`, { method: 'PUT' });
+                          setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                        } catch (e) { console.error(e); }
+                      }}
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-sm text-gray-500">No notifications</div>
+                    ) : (
+                      notifications.map((n, idx) => (
+                        <div key={n._id || n.id || idx} className={`px-4 py-3 border-b hover:bg-gray-50 ${n.read ? 'opacity-80' : ''}`}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-800 break-words">{n.message || n.title || 'Notification'}</p>
+                              <p className="text-[11px] text-gray-500 mt-1">{new Date(n.createdAt || n.date || Date.now()).toLocaleString()}</p>
+                            </div>
+                            {!n.read && (
+                              <button
+                                className="text-xs text-blue-600 hover:text-blue-700 whitespace-nowrap"
+                                onClick={async () => {
+                                  try {
+                                    const borrowersId = localStorage.getItem('borrowersId');
+                                    if (!borrowersId) return;
+                                    const id = n._id || n.id;
+                                    if (!id) return;
+                                    await fetch(`http://localhost:3001/notifications/borrower/${borrowersId}/read/${id}`, { method: 'PUT' });
+                                    setNotifications((prev) => prev.map((x) => ((x._id || x.id) === (n._id || n.id) ? { ...x, read: true } : x)));
+                                  } catch (e) { console.error(e); }
+                                }}
+                              >
+                                Mark read
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Profile Dropdown */}
             <div className="relative">

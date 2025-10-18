@@ -77,6 +77,10 @@ export default function UploadSection({
     }, 300);
   };
 
+  // Required documents count (adjust as needed or pass as prop later)
+  const REQUIRED_DOCS = 4;
+  const docsDisabled = documents.length >= REQUIRED_DOCS;
+
   return (
     <div>
       {/* 2x2 Upload */}
@@ -127,16 +131,34 @@ export default function UploadSection({
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'I-upload ang mga Dokumento'}
         </h4>
-        <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${missingFields.includes('Document Upload') ? 'border-red-500' : 'border-gray-200'}`}> 
+        <div className={`border-2 border-dashed rounded-lg p-6 transition-colors ${missingFields.includes('Document Upload') ? 'border-red-500' : 'border-gray-200'} ${docsDisabled ? 'opacity-100' : 'hover:border-red-300'}`}> 
+          {/* Hidden native input */}
           <input
+            id="documents-input"
             type="file"
             multiple
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={handleFileChange}
-            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
-                      file:rounded-lg file:border-0 file:text-sm file:font-medium
-                      file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
+            disabled={docsDisabled}
+            className="sr-only"
           />
+
+          {/* Custom control row: button + dynamic count */}
+          <div className="flex items-center justify-start gap-3">
+            <label
+              htmlFor="documents-input"
+              className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition select-none ${docsDisabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none' : 'bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer'}`}
+              aria-disabled={docsDisabled}
+            >
+              {language === 'en' ? 'Choose files' : 'Pilia ang mga file'}
+            </label>
+            <span className="text-sm text-gray-600">
+              {documents.length} {documents.length === 1 ? (language === 'en' ? 'file' : 'file') : (language === 'en' ? 'files' : 'files')}
+            </span>
+            {docsDisabled && (
+              <span className="text-xs text-gray-400">(Max {REQUIRED_DOCS})</span>
+            )}
+          </div>
         </div>
 
         {documents.length > 0 && (

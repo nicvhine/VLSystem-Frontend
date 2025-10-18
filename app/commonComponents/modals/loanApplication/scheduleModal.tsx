@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { FiX, FiFileText } from "react-icons/fi";
 import ErrorModal from '../../modals/errorModal/modal';
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import emailjs from "emailjs-com";
 
 // API endpoint for loan applications
@@ -175,6 +176,7 @@ export default function SetScheduleModal({
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-black transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"}`}
       onMouseDown={onClose} 
     >
+      {loading && <SubmitOverlayToast label="Saving schedule..." />}
       <div
         className={`bg-white rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-out ${animateIn ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"}`}
         onMouseDown={(e) => e.stopPropagation()} 

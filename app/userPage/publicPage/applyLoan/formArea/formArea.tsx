@@ -7,6 +7,7 @@ import { formToJSON } from "axios";
 import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
 import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
 import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
 // Form section components
 import BasicInformation from "./sections/basicInformation";
@@ -526,15 +527,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     return (
     <div className="relative max-w-4xl mx-auto py-0">
         {isSubmitting && (
-            <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                    <span className="sr-only">Submitting…</span>
-                    <div className="flex items-center gap-3 text-gray-700">
-                        <span className="inline-block animate-spin rounded-full border-2 border-gray-300 border-t-red-600" style={{width:'32px',height:'32px'}} />
-                        <span className="font-medium">{language === 'en' ? 'Submitting your application…' : 'Nag-submit sa imong aplikasyon…'}</span>
-                    </div>
-                </div>
-            </div>
+            <SubmitOverlayToast label={language === 'en' ? 'Submitting your application…' : 'Nag-submit sa imong aplikasyon…'} />
         )}
         {showDocumentUploadErrorModal && (
             <DocumentUploadErrorModal
@@ -542,7 +535,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 onClose={() => setShowDocumentUploadErrorModal(false)}
             />
         )}
-        <div className={`${isSubmitting ? 'pointer-events-none opacity-60' : ''}`}>
+    <div className={`${isSubmitting ? 'pointer-events-none' : ''}`}>
         <BasicInformation
             language={language}
             appName={appName} setAppName={setAppName}

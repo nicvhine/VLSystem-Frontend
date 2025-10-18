@@ -9,6 +9,8 @@ export default function TermsGateModal({
   onOpenPrivacy,
   tosRead,
   privacyRead,
+  enforceReading = true,
+  acceptLabel,
 }: {
   language: "en" | "ceb";
   onAccept: () => void;
@@ -17,6 +19,8 @@ export default function TermsGateModal({
   onOpenPrivacy: () => void;
   tosRead?: boolean;
   privacyRead?: boolean;
+  enforceReading?: boolean;
+  acceptLabel?: string;
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -24,6 +28,9 @@ export default function TermsGateModal({
     setAnimateIn(true);
     return () => setAnimateIn(false);
   }, []);
+  const canAgree = enforceReading ? !!(tosRead && privacyRead) : true;
+  const acceptText =
+    acceptLabel ?? (language === 'en' ? 'Accept and Submit' : 'Mouyon ug Isumite');
   return (
     <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
@@ -61,9 +68,9 @@ export default function TermsGateModal({
             type="checkbox"
             checked={agree}
             onChange={(e) => setAgree(e.target.checked)}
-            disabled={!tosRead || !privacyRead}
-            title={!tosRead || !privacyRead ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
-            className={`mt-1 h-4 w-4 border-gray-300 rounded ${(!tosRead || !privacyRead) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
+            disabled={!canAgree ? true : false}
+            title={!canAgree && enforceReading ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
+            className={`mt-1 h-4 w-4 border-gray-300 rounded ${!canAgree ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
           />
           <span>
             {language === 'en'
@@ -71,20 +78,22 @@ export default function TermsGateModal({
               : 'Nabasa ug nisugot ko sa Terms of Service ug Privacy Policy.'}
           </span>
         </label>
-        <div className="mt-2 text-xs text-gray-500">
-          {!tosRead && (
-            <div>• {language === 'en' ? 'Please open and read the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
-          )}
-          {!privacyRead && (
-            <div>• {language === 'en' ? 'Please open and read the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
-          )}
-        </div>
+        {enforceReading && (
+          <div className="mt-2 text-xs text-gray-500">
+            {!tosRead && (
+              <div>• {language === 'en' ? 'Please open and read the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
+            )}
+            {!privacyRead && (
+              <div>• {language === 'en' ? 'Please open and read the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
+            )}
+          </div>
+        )}
         <div className="mt-4 flex justify-end gap-3">
           <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
             {language === 'en' ? 'Cancel' : 'Kanselahon'}
           </button>
-          <button onClick={onAccept} disabled={!agree || !tosRead || !privacyRead} className={`px-4 py-2 rounded-lg text-white ${agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'}`}>
-            {language === 'en' ? 'Accept and Submit' : 'Mouyon ug Isumite'}
+          <button onClick={onAccept} disabled={!agree || (enforceReading && (!tosRead || !privacyRead))} className={`px-4 py-2 rounded-lg text-white ${agree && (!enforceReading || (tosRead && privacyRead)) ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'}`}>
+            {acceptText}
           </button>
         </div>
       </div>
