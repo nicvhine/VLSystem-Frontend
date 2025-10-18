@@ -1,6 +1,3 @@
-// Follow the same pattern as other translation files: default export with en/ceb objects.
-// Use placeholders like {reason}, {minAmount}, {maxAmount}, {maxWords} for dynamic values.
-
 const errorTranslation = {
 	en: {
 		// General/network/system
