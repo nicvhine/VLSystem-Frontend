@@ -4,6 +4,7 @@ import { capitalizeWords, formatCurrency } from '@/app/commonComponents/utils/fo
 
 interface Props {
   application: any;
+  formatCurrency: (amount?: string | number | undefined) => string;
 }
 
 export default function OpenTerm({ application }: Props) {
