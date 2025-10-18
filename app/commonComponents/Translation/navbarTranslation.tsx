@@ -10,6 +10,7 @@ const navbarTranslation = {
     tab8: "About Us",
     tab9: "Contact Us",
     tab10: "Login",
+    tab11: "My Loans",
 
     //Dropdown
     t1: "Change",
@@ -44,6 +45,7 @@ const navbarTranslation = {
     tab8: "Mahitungod Kanamo",
     tab9: "Kontaka Kami",
     tab10: "Sulod",
+    tab11: "Mga Utang",
 
     //Dropdown
     t1: "Ilisi",

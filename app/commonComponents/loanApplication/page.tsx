@@ -14,7 +14,7 @@ import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
-import Pagination from "../pagination";
+import Pagination from "../utils/pagination";
 import useIsMobile from "../utils/useIsMobile";
 import Filter from "../utils/sortAndSearch";
 

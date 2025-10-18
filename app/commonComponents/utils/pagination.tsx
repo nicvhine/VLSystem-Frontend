@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import translations from "./Translation";
+import translations from "../Translation";
 
 interface PaginationProps {
   totalCount: number;
