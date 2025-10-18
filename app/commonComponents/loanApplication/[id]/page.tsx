@@ -1,193 +1,97 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { FiUser, FiDollarSign, FiFileText, FiPaperclip, FiArrowLeft } from "react-icons/fi";
-import { createPortal } from "react-dom";
-import { useParams } from "next/navigation";
+import { useState, useRef } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { FiArrowLeft, FiUser, FiPaperclip, FiFileText } from "react-icons/fi";
 
-
-// Success modal component
-import SuccessModal from '../../modals/successModal/modal';
-
-// Navigation component
+// Components
 import Navbar from "../../navbarComponents/navbar";
-
-// Customization components
-import WithCollateral from './customization/withCollateral';
-import OpenTerm from './customization/openTerm'; 
-
-// Modal components
-import LoanAgreementModal from '@/app/commonComponents/modals/loanAgreement/modal';
-import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
-import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal"; 
+import SuccessModal from "../../modals/successModal/modal";
+import ErrorModal from "../../modals/errorModal/modal";
+import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/modal";
 import ReleaseForm from "../../modals/loanAgreement/releaseForm";
-import ErrorModal from '../../modals/errorModal/modal';
-
-// Custom hooks
+import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
+import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal";
 import ApplicationButtons from "./components/applicationButtons";
-import { useApplications } from "./hooks";
+import WithCollateral from "./customization/withCollateral";
+import OpenTerm from "./customization/openTerm";
 
-//Formatter
-import { capitalizeWords, formatCurrency } from "../../utils/formatters";
-
-// Role-based page wrappers
+// Wrappers
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
-import translations from "../../Translation";
+// Hooks
+import { useApplicationData } from "./hooks";
+import { capitalizeWords, formatCurrency } from "../../utils/formatters";
+import { authFetch } from "../function";
 
-// API endpoint for loan applications
-const API_URL = "http://localhost:3001/loan-applications";
-/**
- * Application details page component with profile, income, references, collateral, and modals
- * Displays comprehensive application information in a tabbed interface with action buttons
- * @param params - Route parameters containing the application ID
- * @returns JSX element containing the application details interface
- */
+// Cards
+import ProfileCard from "./cards/profileCard";
+import BasicInfoCard from "./cards/basicInfoCard";
+import LoanComputationCard from "./cards/loanComputationCard";
+import IncomeCharactedCard from "./cards/incomeCharacterCard";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL 
+
 export default function ApplicationDetailsPage() {
+  const router = useRouter();
   const params = useParams();
-  const id = params?.id; // id from the route
-  // Success modal state
+  const id = params?.id;
+
+  const {
+    applications,
+    setApplications,
+    loading,
+    role,
+    language,
+    t,
+    l,
+    modalContainer,
+  } = useApplicationData("http://localhost:3001/loan-applications");
+
+  const [activeTab, setActiveTab] = useState("income");
+  const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+
+  const modalRef = useRef<any>(null);
+
   const [successModalOpen, setSuccessModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  
-  /**
-   * Show success modal with message
-   * @param msg - Success message to display
-   */
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
     setSuccessModalOpen(true);
     setTimeout(() => setSuccessModalOpen(false), 5000);
   };
-  
-  const router = useRouter();
-  const { applications, setApplications, loading } = useApplications(API_URL);
 
-  // Tab and modal state
-  const [activeTab, setActiveTab] = useState('income');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
-  const [role, setRole] = useState<string | null>(null);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-
-  const modalRef = useRef<any>(null);
-
-
-  async function authFetch(url: string, options: RequestInit = {}) {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token in localStorage");
-
-    return fetch(url, {
-      ...options,
-      headers: { ...options.headers, Authorization: `Bearer ${token}` },
-    });
-  }
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await authFetch(API_URL);
-        const data = await res.json();
-        setApplications(data); 
-      } catch (err) {
-        console.error("Failed to refresh applications:", err);
-      }
-    }, 5000); 
-  
-    return () => clearInterval(interval);
-  }, [setApplications]);
-  
-
-  useEffect(() => {
-    const storedRole = localStorage.getItem("role"); 
-    setRole(storedRole);
-    
-    // Initialize language from localStorage
-    if (storedRole === "head") {
-      const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    } else if (storedRole === "loan officer") {
-      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    } else if (storedRole === "manager") {
-      const storedLanguage = localStorage.getItem("managerLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    }
-  }, []);
-
-  // Listen for language changes
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      if ((role === "head" && event.detail.userType === 'head') || 
-          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
-          (role === "manager" && event.detail.userType === 'manager')) {
-        setLanguage(event.detail.language);
-      }
-    };
-
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
-
-  // Get translations
-  const t = translations.loanTermsTranslator[language];
-  const l = translations.viewApplicationTranslation[language];
-
-
-  // Function to translate loan types
-  const translateLoanType = (loanType: string) => {
-    switch (loanType) {
-      case "Regular Loan Without Collateral":
-        return t.l1;
-      case "Regular Loan With Collateral":
-        return t.l2;
-      case "Open-Term Loan":
-        return t.l3;
-      default:
-        return loanType;
-    }
-  };
-
-  const application = applications.find(app => app.applicationId === id);
-
-  if (!application && !loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar role="loanOfficer" />
-        <div className="p-10 text-center text-gray-600 text-lg">{t.applicationNotFound}</div>
-      </div>
-    );
-  }
-
-  let Wrapper;
-  if (role === "loan officer") Wrapper = LoanOfficer;
-  else if (role === "head") Wrapper = Head;
-  else Wrapper = Manager;
-
-  // Portal host for modals
-  const [modalContainer, setModalContainer] = useState<Element | null>(null);
-  useEffect(() => {
-    setModalContainer(document.getElementById('modal-root'));
-  }, []);
-
-  // Error modal state
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const showError = (msg: string) => {
     setErrorMessage(msg);
     setErrorModalOpen(true);
     setTimeout(() => setErrorModalOpen(false), 3000);
   };
 
+  const Wrapper =
+    role === "head" ? Head : role === "manager" ? Manager : LoanOfficer;
+
+  const application = applications.find((app) => app.applicationId === id);
+
+  if (!application && !loading) {
+    return (
+      <Wrapper>
+        <div className="min-h-screen bg-gray-50">
+          <Navbar role={role || "loanOfficer"} />
+          <div className="p-10 text-center text-gray-600 text-lg">
+            {t.applicationNotFound}
+          </div>
+        </div>
+      </Wrapper>
+    );
+  }
+ 
   return (
   <Wrapper>
     <div className="min-h-screen bg-gray-50">
@@ -230,7 +134,7 @@ export default function ApplicationDetailsPage() {
                     }`}>
                       {application?.status || 'Unknown'}
                     </span>
-                    <span className="text-sm text-gray-500">{translateLoanType(application?.loanType || '')}</span>
+                    <span className="text-sm text-gray-500">{application?.loanType || ''}</span>
                   </div>
                 </div>
               </div>
@@ -261,315 +165,18 @@ export default function ApplicationDetailsPage() {
 
             {/* PROFILE SECTION */}
             <div className="lg:col-span-1 flex flex-col h-full">
-
-              {/* FIRST CARD*/}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 flex-shrink-0">
-                <div className="p-6 text-center">
-                  {/* Profile Image */}
-                  <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100 mb-4 border-4 border-white shadow-lg">
-                    {application?.profilePic && typeof application.profilePic === 'object' && (application.profilePic as any).filePath ? (
-                      <img
-                        src={`http://localhost:3001/${(application.profilePic as any).filePath}`}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/default-profile.png";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <FiUser className="w-16 h-16 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                  {/* Name and Contact */}
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">{application?.appName || '—'}</h2>
-                  <p className="text-red-600 font-medium mb-1">{application?.appContact || '—'}</p>
-                  <p className="text-gray-600 text-sm">{application?.appEmail || '—'}</p>
-                </div>
-              </div>
-
-              {/* BASIC INFORMATION CARD*/}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">{l.t1}</h3>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">{l.t5}</p>
-                    <p className="text-gray-900">{application?.appDob || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">{l.t6}</p>
-                    <p className="text-gray-900">{application?.appAddress || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">{l.t7}</p>
-                    <p className="text-gray-900">{application?.appMarital || '—'}</p>
-                  </div>
-                  
-                  {/* SPOUSE INFO */}
-                  {application?.appMarital === "Married" && (
-                    <>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">{l.t8}</p>
-                        <p className="text-gray-900">{application?.appSpouseName || '—'}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">{l.t9}</p>
-                        <p className="text-gray-900">{application?.appSpouseOccupation || '—'}</p>
-                      </div>
-                    </>
-                  )}
-                  
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">{l.t10}</p>
-                    <p className="text-gray-900">{application?.appChildren || '—'}</p>
-                  </div>
-                </div>
-              </div>
+              <ProfileCard application={application} />
+              <BasicInfoCard application={application} l={l} />
             </div>
 
             {/* MIDDLE */}
             <div className="lg:col-span-1 flex flex-col h-full">
-
-              {/* TAB NAVIGATION*/}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow flex flex-col">
-                <div className="px-6 py-4 border-b border-gray-200 flex-shrink-0">
-                  <div className="flex space-x-8">
-                    <button
-                      onClick={() => setActiveTab('income')}
-                      className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === 'income'
-                          ? 'border-red-500 text-red-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      {l.t2}
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('references')}
-                      className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === 'references'
-                          ? 'border-red-500 text-red-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      {l.t3}
-                    </button>
-                    {(application?.loanType === "Regular Loan With Collateral" || application?.loanType === "Open-Term Loan") && (
-                      <button
-                        onClick={() => setActiveTab('collateral')}
-                        className={`pb-2 text-sm font-medium border-b-2 transition-colors ${
-                          activeTab === 'collateral'
-                            ? 'border-red-500 text-red-600'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                      >
-                        {l.t4}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* TAB CONTENT */}
-                <div className="p-6 flex-grow overflow-y-auto">
-
-                  {/* INCOME INFORMATION */}
-                  {activeTab === 'income' && (
-                    <div className="space-y-4 h-full">
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">{l.t11}</p>
-                        <p className="text-gray-900">{capitalizeWords(application?.sourceOfIncome) || '—'}</p>
-                      </div>
-                      
-                      {application?.sourceOfIncome?.toLowerCase() === 'employed' && (
-                        <>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t12}</p>
-                            <p className="text-gray-900">{capitalizeWords(application?.appOccupation) || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t13}</p>
-                            <p className="text-gray-900">{capitalizeWords(application?.appCompanyName) || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t14}</p>
-                            <p className="text-gray-900">{capitalizeWords(application?.appEmploymentStatus) || '—'}</p>
-                          </div>
-                        </>
-                      )}
-
-                      {application?.sourceOfIncome?.toLowerCase() === 'business' && (
-                        <>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t15}</p>
-                            <p className="text-gray-900">{application?.appTypeBusiness || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t16}</p>
-                            <p className="text-gray-900">{application?.appBusinessName || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t17}</p>
-                            <p className="text-gray-900">{application?.appDateStarted || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-500">{l.t18}</p>
-                            <p className="text-gray-900">{application?.appBusinessLoc || '—'}</p>
-                          </div>
-                        </>
-                      )}
-                      
-                      <div className="pt-4 border-t border-gray-200">
-                        <p className="text-sm font-medium text-gray-500">{l.t19}</p>
-                        <p className="text-lg font-bold text-green-600">{formatCurrency(application?.appMonthlyIncome)}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* CHARACTER REFERENCES */}
-                  {activeTab === 'references' && (
-                    <div className="h-full">
-                      {application?.appReferences && application.appReferences.length > 0 ? (
-                        <div className="space-y-4">
-                          {application.appReferences.map((ref, i) => (
-                            <div key={i} className="p-4 bg-gray-50 rounded-lg">
-                              <div className="flex items-center mb-2">
-                                <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
-                                  {l.t20} {i + 1}
-                                </span>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{l.t21}:</span> <span className="text-gray-900">{ref.name}</span></p>
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{l.t22}:</span> <span className="text-gray-900">{ref.contact}</span></p>
-                                <p className="text-sm break-words"><span className="font-medium text-gray-700">{l.t23}:</span> <span className="text-gray-900">{ref.relation}</span></p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 h-full flex flex-col justify-center">
-                          <FiUser className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                          <p className="text-gray-500">{t.noReferences}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* COLLATERAL DETAILS*/}
-                  {activeTab === 'collateral' && (
-                    <div className="h-full">
-                      {application?.loanType === "Regular Loan With Collateral" && (
-                        <WithCollateral application={application} formatCurrency={formatCurrency} />
-                      )}
-                      {application?.loanType === "Open-Term Loan" && (
-                        <OpenTerm application={application} formatCurrency={formatCurrency} />
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* FILES*/}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 mt-6 flex-shrink-0">
-                <div className="px-6 py-4 border-b border-gray-200">
-                  <h3 className="text-lg font-semibold text-gray-900">{l.t24}</h3>
-                </div>
-                <div className="p-6">
-                  {application?.documents && application.documents.length > 0 ? (
-                    <div className="space-y-3">
-                      {application.documents.map((doc, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <FiFileText className="w-5 h-5 text-red-600" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900 max-w-[180px] break-all whitespace-normal">{doc.fileName}</p>
-                              <p className="text-xs text-gray-500">12.3kb</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <a 
-                              href={`http://localhost:3001/${doc.filePath}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-gray-400 hover:text-gray-600"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                            </a>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-4">
-                      <FiPaperclip className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-gray-500 text-sm">{t.noDocuments}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+            <IncomeCharactedCard application={application} l={l} t={t} />
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="lg:col-span-1 flex flex-col h-full">
-            {/* LOAN COMPUTATION */}
-            <div className="bg-white rounded-lg shadow-md border border-gray-200 w-full max-w-md mx-auto">
-              {/* Card Header */}
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">{t.l25}</h3>
-              </div>
-              <div className="p-6 space-y-6">
-                <div className="space-y-3">
-                    <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{l.t26}</span>
-                    <span className="text-gray-900 break-words text-sm leading-relaxed">{application?.appLoanPurpose || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{l.t27}</span>
-                    <span className="text-gray-900">{formatCurrency(application?.appLoanAmount)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{l.t28}</span>
-                    <span className="text-gray-900">{application?.appInterestRate || '—'}%</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium text-gray-500">{l.t29}</span>
-                    <span className="text-gray-900">{application?.appLoanTerms || '—'} {l.t33}</span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-gray-200 space-y-3">
-                  {(() => {
-                    const principal = Number(application?.appLoanAmount || 0);
-                    const interestRate = Number(application?.appInterestRate || 0);
-                    const terms = Number(application?.appLoanTerms || 1);
-
-
-                    return (
-                      <>
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">{l.t30}</span>
-                          <span className="text-gray-900">{formatCurrency(application?.appTotalInterestAmount)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">{l.t31}</span>
-                          <span className="text-gray-900 font-semibold text-lg">{formatCurrency(application?.appTotalPayable)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium text-gray-500">{l.t32}</span>
-                          <span className="text-gray-900">{formatCurrency(application?.appMonthlyDue)}</span>
-                        </div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
+              <LoanComputationCard application={application} t={t} l={l} />
             </div>
           </div>
         </div>
