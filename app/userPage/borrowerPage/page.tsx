@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
-import BorrowerNavbar from "./navbar/page";
+import Navbar from '@/app/commonComponents/navbarComponents/navbar';
 
 export default function Borrower({ children }: {children?: React.ReactNode }) {
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -37,7 +37,7 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
 
     return (
         <div className="min-h-screen bg-white">
-            <BorrowerNavbar />
+            <Navbar role='borrower' />
             
             {showChangePasswordModal && (
                 <ChangePasswordModal

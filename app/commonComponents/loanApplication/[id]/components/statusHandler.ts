@@ -1,5 +1,7 @@
+const API_URL = "http://localhost:3001/loan-applications";
+
 // Handle clearing a loan application
-export const handleClearedLoan = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleClearedLoan = async (application: any, setApplications: any, authFetch: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
@@ -21,7 +23,7 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
 };
 
 // Handle disbursing a loan application
-export const handleDisburse = async (application: any, setApplications: any, authFetch: any, API_URL: string, setIsAgreementOpen: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleDisburse = async (application: any, setApplications: any, authFetch: any, setIsAgreementOpen: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
@@ -45,7 +47,7 @@ export const handleDisburse = async (application: any, setApplications: any, aut
 };
 
 // Handle denying a loan application
-export const handleDenyApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleDenyApplication = async (application: any, setApplications: any, authFetch: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
@@ -67,7 +69,7 @@ export const handleDenyApplication = async (application: any, setApplications: a
 };
 
 // Handle approving a loan application
-export const handleApproveApplication = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleApproveApplication = async (application: any, setApplications: any, authFetch: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
@@ -91,7 +93,7 @@ export const handleApproveApplication = async (application: any, setApplications
 };
 
 // Handle denying a cleared loan application
-export const handleDenyFromCleared = async (application: any, setApplications: any, authFetch: any, API_URL: string, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleDenyFromCleared = async (application: any, setApplications: any, authFetch: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");

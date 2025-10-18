@@ -341,13 +341,15 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 onClick={handleToggleDropdown}
               >
                 {previewPic || profilePic ? (
-                <Image
-                src={previewPic || profilePic || '/idPic.jpg'}
-                alt="Profile"
-                width={40}
-                height={40}
-                className="object-cover w-full h-full rounded-full"
-              />
+               <Image
+               src={profilePic || '/idPic.jpg'} 
+               alt="Profile"
+               width={40}
+               height={40}
+               className="object-cover w-full h-full rounded-full"
+             />
+             
+                   
                         
                 ) : (
                   <span className="text-gray-700 font-semibold text-sm">
