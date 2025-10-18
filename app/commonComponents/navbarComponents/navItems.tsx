@@ -39,7 +39,7 @@ export const getLoanOfficerNavItems = (language: 'en' | 'ceb') => {
 export function getBorrowerNavItems(language: 'en' | 'ceb') {
   const t = navbarTranslation[language];
   return [
-    { name: t.tab10, href: '/' },
+    { name: t.tab11, href: '/' },
   ];
 }
 
