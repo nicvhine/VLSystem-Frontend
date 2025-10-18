@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
+import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import SuccessModal from "../../modals/successModal/modal";
 import ErrorModal from "../../modals/errorModal/modal";
 import emailjs from "emailjs-com";
@@ -70,6 +70,7 @@ export default forwardRef(function AccountModal(_, ref) {
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isFetchingCollectors, setIsFetchingCollectors] = useState(false);
   
   // Expose openModal to parent via ref
   useImperativeHandle(ref, () => ({
@@ -104,12 +105,15 @@ export default forwardRef(function AccountModal(_, ref) {
   useEffect(() => {
     const fetchCollectors = async () => {
       try {
+        setIsFetchingCollectors(true);
         const res = await authFetch("http://localhost:3001/users/collectors");
         if (!res.ok) throw new Error("Network response was not ok");
         const data = await res.json();
         setCollectors(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching collectors:", error);
+      } finally {
+        setIsFetchingCollectors(false);
       }
     };
     fetchCollectors();
@@ -199,25 +203,33 @@ export default forwardRef(function AccountModal(_, ref) {
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-xl font-semibold mb-1 text-black">Create Account</h2>
-          <p className="text-sm text-gray-600 mb-3">Assign a collector and generate borrower credentials.</p>
-          <p className="mb-2 text-black">
-            <strong>Name:</strong> {selectedApp?.appName}
-          </p>
-          <label className="block text-sm font-medium text-black mb-1">Assign Collector:</label>
-          <select
-            value={selectedCollector}
-            onChange={(e) => setSelectedCollector(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black"
-          >
-            <option value="">Select a collector</option>
-            {collectors.map((name) => (
-              <option key={name} value={name}>
-                {name}
+          <h2 className="text-xl font-semibold text-black mb-2">Create Account</h2>
+          <p className="text-sm text-gray-600 mb-4">Assign a collector and generate borrower credentials.</p>
+          <p className="text-base text-black font-medium mb-3">{selectedApp?.appName}</p>
+          <label className="block text-sm font-medium text-black mb-2">Assign Collector</label>
+          <div className="relative">
+            <select
+              value={selectedCollector}
+              onChange={(e) => setSelectedCollector(e.target.value)}
+              disabled={isFetchingCollectors || isProcessing}
+              className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
+            >
+              <option value="">
+                {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
               </option>
-            ))}
-          </select>
-          <div className="flex justify-end gap-3 mt-4">
+              {collectors.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+            {isFetchingCollectors && (
+              <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                <LoadingSpinner size={4} />
+              </span>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 mt-6">
             <button
               className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleModalClose}

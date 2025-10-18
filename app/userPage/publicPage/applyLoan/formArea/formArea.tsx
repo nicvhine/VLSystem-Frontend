@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
 import { formToJSON } from "axios";
 import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
@@ -192,7 +193,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         const PRIVACY_VERSION = '1.0-draft';
         const router = useRouter();
         const [loanId, setLoanId] = useState<string | null>(null);
-        const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
         // Error modal state
         const [showErrorModal, setShowErrorModal] = useState(false);
         const [errorMessage, setErrorMessage] = useState("");
@@ -441,8 +443,9 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         };
 
         // Actual submit logic after accepting terms
-        const performSubmit = async () => {
+    const performSubmit = async () => {
             try {
+        setIsSubmitting(true);
                 const formData = new FormData();
                 // ...existing code for appending fields...
                 formData.append("appName", appName);
@@ -511,6 +514,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 console.error(error);
                 setDocumentUploadError(language === 'en' ? "An error occurred. Please try again." : "Adunay sayop. Palihug sulayi pag-usab.");
                 setShowDocumentUploadErrorModal(true);
+            } finally {
+                setIsSubmitting(false);
             }
         };
 
@@ -519,13 +524,25 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     const [documentUploadError, setDocumentUploadError] = useState("");
 
     return (
-    <div className="max-w-4xl mx-auto py-0">
+    <div className="relative max-w-4xl mx-auto py-0">
+        {isSubmitting && (
+            <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    <span className="sr-only">Submitting…</span>
+                    <div className="flex items-center gap-3 text-gray-700">
+                        <span className="inline-block animate-spin rounded-full border-2 border-gray-300 border-t-red-600" style={{width:'32px',height:'32px'}} />
+                        <span className="font-medium">{language === 'en' ? 'Submitting your application…' : 'Nag-submit sa imong aplikasyon…'}</span>
+                    </div>
+                </div>
+            </div>
+        )}
         {showDocumentUploadErrorModal && (
             <DocumentUploadErrorModal
                 message={documentUploadError}
                 onClose={() => setShowDocumentUploadErrorModal(false)}
             />
         )}
+        <div className={`${isSubmitting ? 'pointer-events-none opacity-60' : ''}`}>
         <BasicInformation
             language={language}
             appName={appName} setAppName={setAppName}
@@ -595,9 +612,68 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
             language={language}
             photo2x2={photo2x2}
             documents={uploadedFiles}
-            handleProfileChange={(e) => {
+            handleProfileChange={async (e) => {
                 const files = e.target.files ? Array.from(e.target.files) : [];
-                setPhoto2x2(prev => [...prev, ...files]);
+                if (files.length === 0) return;
+                const file = files[0];
+                // Enforce single upload by replacing state
+                // Validate type
+                const allowed = ["image/jpeg", "image/png"];
+                if (!allowed.includes(file.type)) {
+                    setDocumentUploadError(
+                        language === "en"
+                            ? "Only JPG and PNG are allowed for 2x2 photo."
+                            : "JPG ug PNG lang ang madawat para sa 2x2 nga litrato."
+                    );
+                    setShowDocumentUploadErrorModal(true);
+                    e.target.value = "";
+                    return;
+                }
+                // Validate size < 2MB
+                if (file.size > 2 * 1024 * 1024) {
+                    setDocumentUploadError(
+                        language === "en"
+                            ? "2x2 photo must be less than 2MB."
+                            : "Ang 2x2 nga litrato kinahanglan dili molapas og 2MB."
+                    );
+                    setShowDocumentUploadErrorModal(true);
+                    e.target.value = "";
+                    return;
+                }
+                // Validate dimensions (square)
+                try {
+                    const dims = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+                        const img = new Image();
+                        const objectUrl = URL.createObjectURL(file);
+                        img.onload = () => {
+                            URL.revokeObjectURL(objectUrl);
+                            resolve({ width: img.width, height: img.height });
+                        };
+                        img.onerror = () => {
+                            URL.revokeObjectURL(objectUrl);
+                            reject(new Error('image-load-error'));
+                        };
+                        img.src = objectUrl;
+                    });
+                    if (dims.width !== dims.height) {
+                        setDocumentUploadError(
+                            language === "en"
+                                ? "2x2 photo must be square (equal width and height)."
+                                : "Ang 2x2 nga litrato kinahanglan square (parehas ang gilapdon ug gitas-on)."
+                        );
+                        setShowDocumentUploadErrorModal(true);
+                        e.target.value = "";
+                        return;
+                    }
+                } catch (err) {
+                    setDocumentUploadError(
+                        language === "en" ? "Failed to read image. Please try again." : "Napakyas sa pagbasa sa litrato. Palihug sulayi pag-usab."
+                    );
+                    setShowDocumentUploadErrorModal(true);
+                    e.target.value = "";
+                    return;
+                }
+                setPhoto2x2([file]);
             }}
             handleFileChange={(e) => {
                 const files = e.target.files ? Array.from(e.target.files) : [];
@@ -607,6 +683,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
             removeDocument={(index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index))}
             missingFields={missingFields}
         />
+        </div>
                         {showErrorModal && (
                             <ErrorModal
                                 message={errorMessage}
@@ -616,10 +693,15 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
 
         <div className={`mt-6 flex ${isMobile ? 'justify-center' : 'justify-end'}`}>
             <button
-                onClick={handleSubmit}
-                className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700"
+                onClick={isSubmitting ? undefined : handleSubmit}
+                disabled={isSubmitting}
+                className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-                {language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"}
+                {isSubmitting ? (
+                    <ButtonContentLoading label={language === 'en' ? 'Submitting...' : 'Nag-submit...'} />
+                ) : (
+                    language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"
+                )}
             </button>
         </div>
 

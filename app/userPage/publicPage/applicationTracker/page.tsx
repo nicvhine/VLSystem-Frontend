@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
+import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 
 // Application tracker modal: fetch status and show progress
 interface TrackModalProps {
@@ -17,9 +19,12 @@ const progressSteps = {
 export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackModalProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // Replace inline error banner with shared ErrorModal
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [isTracking, setIsTracking] = useState(false);
 
   // Animation timing on open/close
   useEffect(() => {
@@ -34,7 +39,8 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
         setShowModal(false);
         setStatus(null);
         setApplicationId("");
-        setError(null);
+        setShowErrorModal(false);
+        setErrorMsg("");
       }, 300); // Match transition duration
       return () => clearTimeout(timer);
     }
@@ -55,6 +61,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
 
   // Handle smooth close animation
   const handleClose = () => {
+    if (isTracking) return; // prevent closing while processing
     setAnimateIn(false);
     setTimeout(() => {
       onClose();
@@ -63,25 +70,32 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
 
   const handleTrack = async () => {
     if (!applicationId.trim()) {
-      setError(language === 'en' ? "Please enter a valid Application ID." : "Palihug isulod ang balidong Application ID.");
+      setErrorMsg(language === 'en' ? "Please enter a valid Application ID." : "Palihug isulod ang balidong Application ID.");
+      setShowErrorModal(true);
       return;
     }
 
     try {
+      setIsTracking(true);
       // API: fetch application status by ID
       const res = await fetch(`http://localhost:3001/loan-applications/${applicationId}`);
       if (!res.ok) {
         setStatus(null);
-        setError(language === 'en' ? "Application not found." : "Wala makita ang aplikasyon.");
+        setErrorMsg(language === 'en' ? "Application not found." : "Wala makita ang aplikasyon.");
+        setShowErrorModal(true);
         return;
       }
 
       const data = await res.json();
       setStatus(data.status);
-      setError(null);
+      setShowErrorModal(false);
+      setErrorMsg("");
     } catch (err) {
       console.error(err);
-      setError(language === 'en' ? "Something went wrong. Please try again later." : "Adunay problema. Palihug sulayi pag-usab.");
+      setErrorMsg(language === 'en' ? "Something went wrong. Please try again later." : "Adunay problema. Palihug sulayi pag-usab.");
+      setShowErrorModal(true);
+    } finally {
+      setIsTracking(false);
     }
   };
 
@@ -104,29 +118,36 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
   if (!showModal) return null;
 
   return (
-    <div 
-      className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}
-      onClick={handleClose}
-    >
-      <div 
-        className={`bg-white rounded-xl shadow-xl w-full max-w-lg relative p-6 text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
-        onClick={(e) => e.stopPropagation()}
+    <>
+      {/* Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
+          animateIn ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleClose}
       >
-        <button
-          onClick={handleClose}
-          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-300"
+        {/* Container */}
+        <div
+          className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 relative ${
+            animateIn ? "scale-100 opacity-100" : "scale-95 opacity-0"
+          }`}
+          onClick={(e) => e.stopPropagation()}
         >
-          ✖
-        </button>
-        <h2 className="text-xl font-bold text-gray-800 mb-4 text-center">
-          {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
-        </h2>
-        <p className="text-sm text-gray-600 mb-4">
-          {language === 'en' 
-            ? 'Enter your Application ID to track your loan application status'
-            : 'Isulod ang imong Application ID aron masubay ang status sa imong aplikasyon sa pahulam'
-          }
-        </p>
+          <button
+            onClick={handleClose}
+            disabled={isTracking}
+            className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            ✖
+          </button>
+          <h2 className="text-xl font-semibold mb-1 text-black">
+            {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
+          </h2>
+          <p className="text-sm text-gray-600 mb-3">
+            {language === 'en'
+              ? 'Enter your Application ID to track your loan application status'
+              : 'Isulod ang imong Application ID aron masubay ang status sa imong aplikasyon sa pahulam'}
+          </p>
         <input
           type="text"
           placeholder={language === 'en' ? 'APPLICATION ID' : 'APPLICATION ID'}
@@ -134,17 +155,20 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
           value={applicationId}
           onChange={(e) => setApplicationId(e.target.value.toUpperCase())}
         />
-        <div className="flex justify-center mb-4">
+        <div className={`flex justify-center ${status ? 'mb-4' : 'mb-0'}`}>
           <button
-            onClick={handleTrack}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            onClick={isTracking ? undefined : handleTrack}
+            disabled={isTracking}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
+            {isTracking ? (
+              <ButtonContentLoading label={language === 'en' ? 'Tracking...' : 'Nag-subay...'} />
+            ) : (
+              language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'
+            )}
           </button>
         </div>
-
-        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm text-center mb-4">{error}</div>}
-
+        {/* Progress */}
         {status && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
@@ -184,7 +208,15 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+
+      {/* Shared error modal */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMsg}
+        onClose={() => setShowErrorModal(false)}
+      />
+    </>
   );
 }
