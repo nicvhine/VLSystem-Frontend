@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import SuccessModal from "../../modals/successModal/modal";
 import ErrorModal from "../../modals/errorModal/modal";
 import emailjs from "emailjs-com";
@@ -68,6 +69,7 @@ export default forwardRef(function AccountModal(_, ref) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   
   // Expose openModal to parent via ref
   useImperativeHandle(ref, () => ({
@@ -81,6 +83,7 @@ export default forwardRef(function AccountModal(_, ref) {
 
   // Close modal with animation and reset selection
   const handleModalClose = () => {
+    if (isProcessing) return; // prevent closing while processing
     setIsAnimating(false);
     setTimeout(() => {
       setIsVisible(false);
@@ -123,6 +126,7 @@ export default forwardRef(function AccountModal(_, ref) {
     }
 
     try {
+      setIsProcessing(true);
       const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -174,6 +178,8 @@ export default forwardRef(function AccountModal(_, ref) {
   setErrorMessage(`Error: ${error.message}`);
   setErrorOpen(true);
   setTimeout(() => setErrorOpen(false), 5000);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -193,7 +199,8 @@ export default forwardRef(function AccountModal(_, ref) {
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-xl font-semibold mb-4 text-black">Create Account</h2>
+          <h2 className="text-xl font-semibold mb-1 text-black">Create Account</h2>
+          <p className="text-sm text-gray-600 mb-3">Assign a collector and generate borrower credentials.</p>
           <p className="mb-2 text-black">
             <strong>Name:</strong> {selectedApp?.appName}
           </p>
@@ -212,16 +219,18 @@ export default forwardRef(function AccountModal(_, ref) {
           </select>
           <div className="flex justify-end gap-3 mt-4">
             <button
-              className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400"
+              className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleModalClose}
+              disabled={isProcessing}
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
               onClick={handleCreateAccount}
+              disabled={isProcessing}
             >
-              Create Account
+              {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Create Account"}
             </button>
           </div>
         </div>

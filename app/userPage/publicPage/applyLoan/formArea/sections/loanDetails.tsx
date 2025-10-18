@@ -27,6 +27,7 @@ export default function LoanDetails({
 }: LoanDetailsProps) {
   const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
+  const [loanAmountError, setLoanAmountError] = useState<string>("");
 
   // Loan options
   const withCollateralOptions: LoanOption[] = [
@@ -67,24 +68,45 @@ export default function LoanDetails({
 
   const validateLoanAmount = (amount: number) => {
     const options = getLoanOptions();
-  
+
     if (options.length === 0) {
       setSelectedLoan(null);
       onLoanSelect(null);
+      setLoanAmountError("");
       return;
     }
-  
-    const minAmount = Math.min(...options.map(o => o.amount));
+
+    const minAmount = Math.min(...options.map((o) => o.amount));
+    const maxAmount = Math.max(...options.map((o) => o.amount));
+
     if (amount < minAmount) {
       setSelectedLoan(null);
       onLoanSelect(null);
+      setLoanAmountError(
+        language === "en"
+          ? `Amount is below the minimum allowed (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(minAmount)}).`
+          : `Mas ubos sa minimum nga kantidad (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(minAmount)}).`
+      );
       return;
     }
-  
+
+    if (amount > maxAmount) {
+      setSelectedLoan(null);
+      onLoanSelect(null);
+      setLoanAmountError(
+        language === "en"
+          ? `Amount exceeds the maximum allowed (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(maxAmount)}).`
+          : `Molapas sa maximum nga kantidad (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(maxAmount)}).`
+      );
+      return;
+    }
+
+    // Within range: snap to nearest allowed bracket not exceeding amount
     const match = options
       .filter((o) => o.amount <= amount)
       .reduce((prev, curr) => (curr.amount > prev.amount ? curr : prev), options[0]);
-  
+
+    setLoanAmountError("");
     setSelectedLoan(match);
     onLoanSelect({ ...match, amount });
   };
@@ -155,11 +177,11 @@ export default function LoanDetails({
                     </button>
                     <div
                       role="tooltip"
-                      className="absolute z-30 left-1/2 -translate-x-1/2 top-full mt-2 w-64 max-w-[70vw] rounded-md bg-gray-900 text-white text-xs p-3 shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none"
+                      className="absolute z-30 top-1/2 left-full ml-2 -translate-y-1/2 w-64 max-w-[70vw] rounded-md bg-gray-100 text-gray-800 text-xs p-3 shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none"
                     >
-                      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45"></div>
+                      <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-100 rotate-45 border-l border-t border-gray-200"></div>
                       <p className="leading-snug">{tipMain}</p>
-                      <p className="mt-1 text-[10px] text-gray-300">{tipNote}</p>
+                      <p className="mt-1 text-[10px] text-gray-600">{tipNote}</p>
                     </div>
                   </span>
                 );
@@ -176,16 +198,24 @@ export default function LoanDetails({
               else {
                 setSelectedLoan(null);
                 onLoanSelect(null);
+                setLoanAmountError("");
               }
             }}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields && missingFields.includes('Loan Amount') ? 'border-red-500' : selectedLoan === null && customLoanAmount !== "" ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+              (missingFields && missingFields.includes('Loan Amount')) || loanAmountError || (selectedLoan === null && customLoanAmount !== "")
+                ? 'border-red-500'
+                : 'border-gray-200'
+            }`}
             placeholder={
               language === "en"
                 ? "Enter loan amount"
                 : "Isulod ang kantidad sa Pahulam"
             }
           />
-          {selectedLoan === null && customLoanAmount !== "" && (
+          {loanAmountError && (
+            <p className="text-sm text-red-500 mt-1">{loanAmountError}</p>
+          )}
+          {selectedLoan === null && customLoanAmount !== "" && !loanAmountError && (
             <p className="text-sm text-red-500 mt-1">
               {language === "en"
                 ? "Amount not valid for this loan type."
