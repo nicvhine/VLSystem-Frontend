@@ -8,6 +8,7 @@ import AddAgentModal from '@/app/commonComponents/modals/addAgent/modal';
 import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
 import Pagination from '../pagination';
 import { useAgentPage } from './hook';
+import Filter from '../utils/sortAndSearch';
 
 export default function AgentPage() {
   const {
@@ -58,31 +59,18 @@ export default function AgentPage() {
 
           {error && <div className="mb-6 text-sm text-red-600">{error}</div>}
 
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <div className="relative w-full">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-              <input
-                type="text"
-                placeholder={t.l22}
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-                className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-              />
-            </div>
+          <Filter
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortOptions={[
+              { value: "handled", label: t.l19 },
+              { value: "amount", label: t.l4 },
+            ]}
+            t={t}
+          />
 
-            <div className="relative w-full sm:w-[200px]">
-              <select
-                value={sortBy}
-                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
-              >
-                <option value="">{t.l38}</option>
-                <option value="handled">{t.l19}</option>
-                <option value="amount">{t.l4}</option>
-              </select>
-              <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div>
-          </div>
 
           <div className="w-full rounded-lg bg-white shadow-sm border border-gray-100 overflow-x-auto">
             <table className="min-w-full">

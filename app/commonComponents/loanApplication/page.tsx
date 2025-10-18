@@ -15,6 +15,8 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import Pagination from "../pagination";
+import useIsMobile from "../utils/useIsMobile";
+import Filter from "../utils/sortAndSearch";
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -66,6 +68,7 @@ export default function ApplicationsPage() {
     { key: "Denied", label: t.l32 },
   ];
 
+  const isMobile = useIsMobile();
   const Wrapper = role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
 
 
@@ -129,34 +132,24 @@ export default function ApplicationsPage() {
           </div>
 
           {/* Search + Sort */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
-            <div className="relative w-full">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
-              <input
-                type="text"
-                placeholder={t.l22}
-                className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                  focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              />
-            </div>
-
-            <div className="relative w-full sm:w-[200px]">
-              <select
-                value={sortBy}
-                onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
-                className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 
-                  focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 
-                  appearance-none transition-all"
-              >
-                <option value="">{t.l38}</option>
-                <option value="date">{t.l17}</option>
-                <option value="amount">{t.l4}</option>
-              </select>
-              <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
-            </div>
-          </div>
+          <Filter
+            searchQuery={searchQuery}
+            setSearchQuery={(value) => {
+              setSearchQuery(value);
+              setCurrentPage(1); 
+            }}
+            sortBy={sortBy}
+            setSortBy={(value) => {
+              setSortBy(value);
+              setCurrentPage(1);
+            }}
+            sortOptions={[
+              { value: "date", label: t.l17 }, 
+              { value: "amount", label: t.l4 },  
+            ]}
+            t={t}
+            isMobile={isMobile}
+          />
 
           {/* Table */}
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
