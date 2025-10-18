@@ -11,6 +11,7 @@ import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import { formatCurrency } from "../utils/formatters";
 import { CollectionsPageProps, Collection} from "./types";
+import Filter from "../utils/sortAndSearch";
 
 const LoadingSpinner = () => <div className="py-6 text-center">Loading...</div>;
 
@@ -158,35 +159,19 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
           </div>
 
           {/* Filters */}
-          <div className={isMobile ? "flex flex-col gap-2 mb-4" : "flex gap-4 mb-6"}>
-            <div className="relative flex-grow">
-              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400 w-5 h-5" />
-              </div>
-              <input
-                type="text"
-                placeholder={t.l22}
-                className="w-full pl-10 pr-4 py-2.5 bg-white rounded-lg border border-gray-200 text-gray-600"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className={isMobile ? "relative w-full" : "relative min-w-[160px]"}>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white rounded-lg border border-gray-200 text-gray-600"
-              >
-                <option value="">Sort By</option>
-                <option value="amount">{t.l9}</option>
-                <option value="balance">{t.l14}</option>
-                <option value="status">{t.l15}</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                <FiChevronDown className="text-gray-400 w-4 h-4" />
-              </div>
-            </div>
-          </div>
+          <Filter
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortOptions={[
+              { value: "amount", label: t.l9 },
+              { value: "balance", label: t.l14 },
+              { value: "status", label: t.l15 },
+            ]}
+            t={t}
+            isMobile={isMobile}
+          />
 
           {/* Print Button */}
           <div className={isMobile ? "flex justify-end mb-2" : "flex justify-end mb-4"}>
