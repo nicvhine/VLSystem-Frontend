@@ -36,6 +36,14 @@ export const getLoanOfficerNavItems = (language: 'en' | 'ceb') => {
   ];
 };
 
+export function getBorrowerNavItems(language: 'en' | 'ceb') {
+  const t = navbarTranslation[language];
+  return [
+    { name: t.tab10, href: '/' },
+  ];
+}
+
+
 export const getLandingNavItems = (
   language: 'en' | 'ceb',
   smoothScrollTo: (id: string) => void,

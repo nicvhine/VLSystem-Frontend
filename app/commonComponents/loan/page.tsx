@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Head from '@/app/userPage/headPage/page';
 import Manager from '@/app/userPage/managerPage/page';
 import LoanOfficer from '@/app/userPage/loanOfficerPage/page';
-import Pagination from '../pagination';
+import Pagination from '../utils/pagination';
 import { useLoansPage } from './hook';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import Filter from '../utils/sortAndSearch';

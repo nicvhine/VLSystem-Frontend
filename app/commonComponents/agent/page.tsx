@@ -6,7 +6,7 @@ import Manager from '@/app/userPage/managerPage/page';
 import LoanOfficer from '@/app/userPage/loanOfficerPage/page';
 import AddAgentModal from '@/app/commonComponents/modals/addAgent/modal';
 import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
-import Pagination from '../pagination';
+import Pagination from '../utils/pagination';
 import { useAgentPage } from './hook';
 import Filter from '../utils/sortAndSearch';
 

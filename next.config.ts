@@ -15,6 +15,11 @@ const nextConfig = {
         port: '3001',
         pathname: '/Borroweruploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**', 
+      },
     ],
   },
 };
