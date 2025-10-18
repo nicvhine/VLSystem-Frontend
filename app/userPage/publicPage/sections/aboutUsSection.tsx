@@ -1,4 +1,3 @@
-// Props interface for about section component
 export interface AboutSectionProps {
   language: 'en' | 'ceb';
 }

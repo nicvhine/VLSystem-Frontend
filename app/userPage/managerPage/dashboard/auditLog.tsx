@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import managerTranslations from '../components/translation';
-import headTranslations from '@/app/userPage/headPage/components/translation';
 import {
   FiUserCheck,
   FiEdit3,

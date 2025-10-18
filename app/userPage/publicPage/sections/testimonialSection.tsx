@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import landingPageTranslation from '@/app/commonComponents/translations/landingPage';
+import translations from '@/app/commonComponents/Translation';
 
 // Props interface for testimonial section component
 export interface TestimonialSectionProps {
@@ -16,7 +16,7 @@ export interface TestimonialSectionProps {
  */
 const TestimonialSection: React.FC<TestimonialSectionProps> = ({ language }) => {
   // Get translations for current language
-  const t = landingPageTranslation[language];
+  const t = translations.landingPageTranslation[language];
 
   // Testimonial data array with translations
   const testimonials = [

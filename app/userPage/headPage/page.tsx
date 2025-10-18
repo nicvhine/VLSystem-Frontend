@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
-import HeadNavbar from "./navbar/page";
+import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 import useInactivityLogout from '@/app/commonComponents/modals/inactivity/logic';
 import AreYouStillThereModal from '@/app/commonComponents/modals/inactivity/modal';
 
@@ -37,7 +37,7 @@ export default function Head({ children, isNavbarBlurred = false }: { children?:
 
   return (
     <div className="min-h-screen bg-white">
-      <HeadNavbar isBlurred={isNavbarBlurred} />
+      <Navbar role="head" isBlurred={isNavbarBlurred} />
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}

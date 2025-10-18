@@ -11,6 +11,10 @@ interface PaymentModalProps {
   onPaymentSuccess: () => void;
 }
 
+/**
+ * Payment modal component for processing loan payments
+ * Supports multiple payment methods via PayMongo integration
+ */
 export default function PaymentModal({ 
   isOpen, 
   onClose, 
@@ -24,6 +28,7 @@ export default function PaymentModal({
 
   if (!isOpen) return null;
 
+  // Process payment through PayMongo service
   const handlePayment = async () => {
     setIsProcessing(true);
     setError('');
@@ -38,7 +43,7 @@ export default function PaymentModal({
       const response = await paymentService.createPayment(paymentData);
 
       if (response.success) {
-        // For card payments, redirect to PayMongo checkout
+        // Redirect to PayMongo checkout based on payment method
         if (selectedMethod === 'card' && response.checkoutUrl) {
           window.open(response.checkoutUrl, '_blank');
         }
@@ -47,7 +52,6 @@ export default function PaymentModal({
           window.open(response.checkoutUrl, '_blank');
         }
 
-        // Close modal and refresh parent component
         onClose();
         onPaymentSuccess();
       }
@@ -58,6 +62,7 @@ export default function PaymentModal({
     }
   };
 
+  // Format amount as Philippine Peso
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',

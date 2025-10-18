@@ -7,8 +7,8 @@ import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
-import loanOfficerTranslations from '../components/translation';
 import InterviewModal from "@/app/commonComponents/modals/calendarModal/modal";
+import translations from "@/app/commonComponents/Translation";
 
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
@@ -33,6 +33,7 @@ interface Application {
   appliedDate?: string;
 }
 
+// Calendar localization setup
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
   format,
@@ -46,6 +47,10 @@ interface InterviewCalendarProps {
   onModalToggle?: (isOpen: boolean) => void;
 }
 
+/**
+ * Interview calendar component for loan officers
+ * Displays scheduled interviews and allows scheduling management
+ */
 export default function InterviewCalendar({ onModalToggle }: InterviewCalendarProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -64,6 +69,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Convert applications with interview data to calendar events
   const mapApplicationsToEvents = (apps: Application[]): InterviewEvent[] =>
     apps
       .filter(app => app.interviewDate && app.interviewTime)
@@ -88,6 +94,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         };
       });
 
+  // Listen for language changes
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (event.detail.userType === 'loanOfficer') {
@@ -99,11 +106,9 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
 
-  const t = loanOfficerTranslations[language];
+  const t = translations.calendarTranslation[language];
 
-  // (moved above)
-
-
+  // Fetch interview data from API
   useEffect(() => {
     async function fetchInterviews() {
       try {
@@ -129,6 +134,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     fetchInterviews();
   }, []);
 
+  // Handle event selection to open interview modal
   const handleSelectEvent = (event: InterviewEvent) => {
     const app = applications.find(a => a.applicationId === event.applicationId);
     if (!app) return;
@@ -137,11 +143,13 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     onModalToggle?.(true);
   };
 
+  // Close interview modal
   const handleCloseModal = () => {
     setShowModal(false);
     onModalToggle?.(false);
   };
 
+  // Save interview schedule changes
   const handleSaveChanges = async (date: string, time: string) => {
     if (!selectedApp) return;
   
@@ -177,6 +185,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     }
   };
 
+  // Navigate to application details page
   const handleViewApplication = (applicationId: string) => {
     window.location.href = `/commonComponents/loanApplication/${applicationId}`;
   };
@@ -190,7 +199,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
       )}
       <div className="bg-white p-4 rounded shadow text-black">
-  <h2 className="text-xl font-semibold mb-4 text-black">{t.scheduledInterviews}</h2>
+  <h2 className="text-xl font-semibold mb-4 text-black">{t.c1}</h2>
   {/* @ts-ignore: react-big-calendar type incompatibility with React 18+ */}
   <RBC
   localizer={localizer}
@@ -212,17 +221,17 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   style={{ height: "75vh" }}
   onSelectEvent={handleSelectEvent}
   messages={{
-    today: t.today,
-    previous: t.back,
-    next: t.next,
-    month: t.month,
-    week: t.week,
-    day: t.day,
-    agenda: t.agenda,
-    date: t.date,
-    time: t.time,
-    event: t.event,
-    noEventsInRange: t.noEventsInRange,
+    today: t.c2,
+    previous: t.c3,
+    next: t.c4,
+    month: t.c5,
+    week: t.c6,
+    day: t.c7,
+    agenda: t.c8,
+    date: t.c9,
+    time: t.c10,
+    event: t.c11,
+    noEventsInRange: t.c12,
     showMore: (total: number) => `+${total} more`
   }}
   eventPropGetter={(event: InterviewEvent) => {

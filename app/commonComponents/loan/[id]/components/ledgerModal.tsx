@@ -1,8 +1,8 @@
 "use client";
 
-// Modal: loan payment ledger (chronological with running balance)
 import { useEffect, useState } from "react";
 import { FiX } from "react-icons/fi";
+import { formatCurrency } from "@/app/commonComponents/utils/formatters";
 
 interface Payment {
   _id?: string;
@@ -65,15 +65,6 @@ export default function LedgerModal({
   );
 
   let runningBalance = totalPayable;
-
-  // Format amount as Philippine Peso currency
-  const formatCurrency = (amount?: number) =>
-    typeof amount === "number"
-      ? new Intl.NumberFormat("en-PH", {
-          style: "currency",
-          currency: "PHP",
-        }).format(amount)
-      : "—";
 
   return (
   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
