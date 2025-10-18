@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from "react";
-import ConfirmModal from "../../modals/confirmModal/ConfirmModal";
-import { Application } from "./useApplication";
+import ConfirmModal from "../../../modals/confirmModal/ConfirmModal";
+import { Application } from "../types";
 import { 
   handleClearedLoan, 
   handleDisburse, 

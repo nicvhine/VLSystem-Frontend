@@ -32,9 +32,9 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Right Panel - Audit Log (no container) */}
-            <div className="xl:col-span-1">
+            {/* <div className="xl:col-span-1">
               <AuditLog />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

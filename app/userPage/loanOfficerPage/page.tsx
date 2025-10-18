@@ -2,7 +2,7 @@
 
 import { useState, useEffect} from "react";
 import { useRouter } from 'next/navigation';
-import LoanOfficerNavbar from "./navbar/page";
+import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
 import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
@@ -38,22 +38,24 @@ export default function LoanOfficer({ children, isNavbarBlurred = false }: LoanO
   if (isCheckingAuth) {
     return <div className="min-h-screen bg-white"></div>; 
   }
-    return(
-        <div className="min-h-screen bg-white">
-          <LoanOfficerNavbar isBlurred={isNavbarBlurred} />
-            {showChangePasswordModal && (
-              <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
-            )}
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar role="loanOfficer" isBlurred={isNavbarBlurred} />
 
-            {children}
+        {showChangePasswordModal && (
+          <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
+        )}
 
-            {showModal && (
-              <AreYouStillThereModal
-                countdown={countdown}
-                onStay={stayLoggedIn}
-                onLogout={logout}
-              />
-            )}
-        </div>
+        {children}
+
+        {showModal && (
+          <AreYouStillThereModal
+            countdown={countdown}
+            onStay={stayLoggedIn}
+            onLogout={logout}
+          />
+        )}
+      </div>
     );
+
 }

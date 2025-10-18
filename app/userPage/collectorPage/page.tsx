@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
-import HeadNavbar from "./navbar/page";
+import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 import useInactivityLogout from '@/app/commonComponents/modals/inactivity/logic';
 import AreYouStillThereModal from '@/app/commonComponents/modals/inactivity/modal';
-import CollectorNavbar from "./navbar/page";
 
 export default function Collector({ children, isNavbarBlurred = false }: { children?: React.ReactNode; isNavbarBlurred?: boolean }) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -37,7 +36,7 @@ export default function Collector({ children, isNavbarBlurred = false }: { child
 
   return (
     <div className="min-h-screen bg-white">
-      <CollectorNavbar isBlurred={isNavbarBlurred} />
+      <Navbar role="collector" isBlurred={isNavbarBlurred} />
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}

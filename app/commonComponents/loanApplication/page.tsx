@@ -1,120 +1,38 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiSearch, FiChevronDown } from "react-icons/fi";
 import Link from "next/link";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 
-// Role-based page wrappers
+import { Application } from "./types";
+import translations from "../Translation";
+import { authFetch, formatCurrency, formatDate, filterApplications } from "./function";
+import { useLoanApplicationPage } from "./hooks";
+
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
-
-// Translation and modal components
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import Pagination from "../pagination";
-import translations from "../Translation";
 
-// API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
 
-// Interface for loan application data structure
-interface Application {
-  applicationId: string;
-  appName: string;
-  appEmail: string;
-  dateApplied: string;
-  appLoanAmount: number;
-  appInterestRate: number;
-  appTotalPayable: number;
-  loanType: string;
-  status: string;
-  appLoanTerms: number;
-  totalPayable: number;
-  isReloan?: boolean;
-  borrowersId: string;
-}
-
-/**
- * Loan applications listing page with filters, search, sort, and reloan acceptance
- * Displays applications in a table format with role-based access control
- * @returns JSX element containing the applications listing interface
- */
 export default function ApplicationsPage() {
-  // Data state
+  const { role, language, activeFilter, setActiveFilter } = useLoanApplicationPage();
+  const t = translations.loanTermsTranslator[language];
+
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
-  
-  // Modal state
-  const [showModal, setShowModal] = useState(false);
-  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [generatedUsername, setGeneratedUsername] = useState("");
-  const [collectors, setCollectors] = useState<string[]>([]);
-  const [selectedCollector, setSelectedCollector] = useState<string>("");
-  const [role, setRole] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
-  
-  // Language state
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Listen for language changes
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      if ((role === "head" && event.detail.userType === 'head') || 
-          (role === "loan officer" && event.detail.userType === 'loanOfficer') ||
-          (role === "manager" && event.detail.userType === 'manager')) {
-        setLanguage(event.detail.language);
-      }
-    };
-
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
-
-  const t = translations.loanTermsTranslator[language];
-
-  // Persisted active filter
-  const [activeFilter, setActiveFilter] = useState<string>(() => {
-    return localStorage.getItem("activeFilter") || "Cleared";
-  });
-
-  // Modal animation states
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModalAnimating, setIsModalAnimating] = useState(false);
-
-  // Effects
-  useEffect(() => {
-    const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
-    
-    // Initialize language from localStorage
-    if (storedRole === "head") {
-      const storedLanguage = localStorage.getItem("headLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    } else if (storedRole === "loan officer") {
-      const storedLanguage = localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    } else if (storedRole === "manager") {
-      const storedLanguage = localStorage.getItem("managerLanguage") as 'en' | 'ceb';
-      if (storedLanguage) {
-        setLanguage(storedLanguage);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("activeFilter", activeFilter);
-  }, [activeFilter]);
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -131,98 +49,25 @@ export default function ApplicationsPage() {
     fetchApplications();
   }, []);
 
-  // Helpers
-  async function authFetch(url: string, options: RequestInit = {}) {
-    const token = localStorage.getItem("token");
-    if (!token) throw new Error("No token found in localStorage");
-
-    return fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  }
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(amount);
-
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString("en-PH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-
-  const collectableAmount = (
-    principal: number,
-    interestRate: number,
-    termMonths: number
-  ) => {
-    const termYears = termMonths / 12;
-    const total = principal + principal * (interestRate / 100) * termYears;
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(total);
-  };
-
-  // Filters
-  const filteredApplications = applications
-    .map((application) => ({
-      ...application,
-      displayStatus:
-        application.status === "Endorsed" ? "Pending" : application.status,
-    }))
-    .filter((application) => {
-      const matchesSearch = Object.values({
-        ...application,
-        status: application.displayStatus,
-      }).some((value) =>
-        value?.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
-
-      if (!matchesSearch) return false;
-      if (activeFilter === "All") return true;
-
-      return application.displayStatus === activeFilter;
-    });
-
-  // Pagination
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const filteredApplications = filterApplications(applications, searchQuery, activeFilter);
   const totalPages = Math.max(1, Math.ceil(filteredApplications.length / pageSize));
   const paginatedApplications = filteredApplications.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-  const totalCount = filteredApplications.length;
-  const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
   const filterOptions = [
-  { key: "All", label: t.l23 },
-  { key: "Applied", label: t.l27 },
-  { key: "Pending", label: t.l28 },
-  { key: "Cleared", label: t.l29 },
-  { key: "Approved", label: t.l30 },
-  { key: "Disbursed", label: t.l31 },
-  { key: "Denied", label: t.l32 },
-];
+    { key: "All", label: t.l23 },
+    { key: "Applied", label: t.l27 },
+    { key: "Pending", label: t.l28 },
+    { key: "Cleared", label: t.l29 },
+    { key: "Approved", label: t.l30 },
+    { key: "Disbursed", label: t.l31 },
+    { key: "Denied", label: t.l32 },
+  ];
 
-    
-  let Wrapper;
-  if (role === "loan officer") {
-    Wrapper = LoanOfficer;
-  } else if (role === "head") {
-    Wrapper = Head;
-  } else {
-    Wrapper = Manager;
-  }
+  const Wrapper = role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
+
 
   return (
     <Wrapper isNavbarBlurred={isModalVisible}>
@@ -467,7 +312,7 @@ export default function ApplicationsPage() {
           </div>
           
           <Pagination
-            totalCount={totalCount}
+            totalCount={filteredApplications.length}
             currentPage={currentPage}
             totalPages={totalPages}
             pageSize={pageSize}

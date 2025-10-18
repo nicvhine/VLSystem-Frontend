@@ -31,10 +31,10 @@ export default function HeadDashboard() {
               </div>
             </div>
 
-            {/* Right Panel - Audit Log (no container) */}
+            {/* Right Panel - Audit Log (no container)
             <div className="xl:col-span-1">
               <AuditLog />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
