@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+'use client';
+
+import { useState, useEffect, useMemo } from "react";
 import { Loan, Collection, Payments } from "./type";
 import translations from "@/app/commonComponents/Translation";
+
+type Language = 'en' | 'ceb';
 
 export default function useBorrowerDashboard(borrowersId: string | null) {
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -21,19 +25,50 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [role, setRole] = useState<string | null>(null);
+  const [language, setLanguage] = useState<Language>('en');
 
-  const t = translations.loanTermsTranslator[language];
-
-  // Load language preference
+  // Initialize role and language
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('language');
-      if (stored === 'ceb') setLanguage('ceb');
-    }
+    if (typeof window === 'undefined') return;
+
+    const storedRole = localStorage.getItem('role');
+    setRole(storedRole);
+
+    const storedLang = storedRole === 'borrower'
+      ? localStorage.getItem('borrowerLanguage')
+      : storedRole === 'head'
+      ? localStorage.getItem('headLanguage')
+      : storedRole === 'loan officer'
+      ? localStorage.getItem('loanOfficerLanguage')
+      : storedRole === 'manager'
+      ? localStorage.getItem('managerLanguage')
+      : null;
+
+    if (storedLang) setLanguage(storedLang as Language);
   }, []);
 
-  // Check if terms need to be shown
+  // Listen for language change events
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      const { userType, language } = event.detail;
+      if (
+        (role === 'borrower' && userType === 'borrower') ||
+        (role === 'head' && userType === 'head') ||
+        (role === 'loan officer' && userType === 'loanOfficer') ||
+        (role === 'manager' && userType === 'manager')
+      ) {
+        setLanguage(language);
+      }
+    };
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, [role]);
+
+  // Translation object
+  const t = useMemo(() => translations.loanTermsTranslator[language], [language]);
+
+  // Terms modal check
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -49,7 +84,6 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     return () => window.removeEventListener('forcePasswordChangeCompleted', handleCompleted);
   }, []);
 
-  // Show terms modal if needed
   useEffect(() => {
     if (!termsReady) return;
     try {
@@ -203,6 +237,8 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     errorMsg,
     setErrorMsg,
     language,
-    setLanguage
+    setLanguage,
+    role,
+    t
   };
 }
