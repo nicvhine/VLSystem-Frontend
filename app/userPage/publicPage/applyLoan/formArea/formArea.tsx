@@ -7,6 +7,7 @@ import { formToJSON } from "axios";
 import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
 import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
 import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
 // Form section components
 import BasicInformation from "./sections/basicInformation";
@@ -267,6 +268,9 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         : "open-term";
 
     const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
+    // Required docs as specified:
+    // without collateral: 4, with collateral: 6, open-term: 6
+    const requiredDocumentsCount = loanTypeParam === 'with' ? 6 : loanTypeParam === 'open-term' ? 6 : 4;
     const API_URL = `http://localhost:3001/loan-applications/apply/${loanTypeParam}`;
 
         useEffect(() => {
@@ -525,17 +529,10 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
 
     return (
     <div className="relative max-w-4xl mx-auto py-0">
-        {isSubmitting && (
-            <div className="absolute inset-0 z-50 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                    <span className="sr-only">Submitting…</span>
-                    <div className="flex items-center gap-3 text-gray-700">
-                        <span className="inline-block animate-spin rounded-full border-2 border-gray-300 border-t-red-600" style={{width:'32px',height:'32px'}} />
-                        <span className="font-medium">{language === 'en' ? 'Submitting your application…' : 'Nag-submit sa imong aplikasyon…'}</span>
-                    </div>
-                </div>
-            </div>
-        )}
+        <SubmitOverlayToast
+            open={isSubmitting}
+            message={language === 'en' ? 'Submitting your application…' : 'Nag-submit sa imong aplikasyon…'}
+        />
         {showDocumentUploadErrorModal && (
             <DocumentUploadErrorModal
                 message={documentUploadError}
@@ -676,12 +673,42 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 setPhoto2x2([file]);
             }}
             handleFileChange={(e) => {
-                const files = e.target.files ? Array.from(e.target.files) : [];
-                setUploadedFiles(prev => [...prev, ...files]);
+                const input = e.target as HTMLInputElement;
+                const files = input.files ? Array.from(input.files) : [];
+                if (files.length === 0) return;
+                setUploadedFiles(prev => {
+                    const remaining = requiredDocumentsCount - prev.length;
+                    // Already at or above the limit
+                    if (remaining <= 0) {
+                        setDocumentUploadError(
+                            language === 'en'
+                                ? `You can only upload up to ${requiredDocumentsCount} documents for this loan type.`
+                                : `Hangtod ${requiredDocumentsCount} ka dokumento lang ang pwede i-upload para ani nga klase sa loan.`
+                        );
+                        setShowDocumentUploadErrorModal(true);
+                        input.value = "";
+                        return prev;
+                    }
+
+                    // Accept only up to remaining, drop the rest
+                    const toAdd = files.slice(0, Math.max(0, remaining));
+                    if (files.length > remaining) {
+                        setDocumentUploadError(
+                            language === 'en'
+                                ? `Only ${remaining} more ${remaining === 1 ? 'document is' : 'documents are'} allowed (max ${requiredDocumentsCount}). Extra files were not added.`
+                                : `${remaining} na lang ka ${remaining === 1 ? 'dokumento' : 'mga dokumento'} ang pwede (max ${requiredDocumentsCount}). Ang sobra wala gi-dugang.`
+                        );
+                        setShowDocumentUploadErrorModal(true);
+                    }
+
+                    input.value = ""; // allow selecting same files again later
+                    return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+                });
             }}
             removeProfile={(index) => setPhoto2x2(prev => prev.filter((_, i) => i !== index))}
             removeDocument={(index) => setUploadedFiles(prev => prev.filter((_, i) => i !== index))}
             missingFields={missingFields}
+            requiredDocumentsCount={requiredDocumentsCount}
         />
         </div>
                         {showErrorModal && (

@@ -114,6 +114,8 @@
               onOpenPrivacy={() => setShowPrivacyContent(true)}
               tosRead={tosRead}
               privacyRead={privacyRead}
+              enforceReading={false}
+              acceptLabel={language === 'en' ? 'Accept and continue' : 'Mouyon ug mopadayon'}
               onAccept={() => { setShowTermsModal(false); try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch {} }}
             />
           )}

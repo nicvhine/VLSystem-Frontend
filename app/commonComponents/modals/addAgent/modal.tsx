@@ -3,6 +3,7 @@
 import { FC, useState, useEffect } from "react";
 
 import ConfirmModal from "../confirmModal/ConfirmModal";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
 // Props interface for add agent modal component
 interface AddAgentModalProps {
@@ -67,6 +68,7 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
   if (!isVisible) return null;
 
   const handleModalClose = () => {
+    if (loading) return; // prevent closing while processing
     setIsAnimating(false);
     setTimeout(() => {
       onClose();
@@ -97,16 +99,29 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
 
   // Cancel adding agent
   const handleCancel = () => {
+    if (loading) return;
     setShowConfirm(false);
   };
 
+  // Prevent closing with Escape while processing
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && show && !loading) {
+        handleModalClose();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [show, loading]);
+
   return (
     <>
+      <SubmitOverlayToast open={loading} message="Adding agent..." />
       <div
         className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
           isAnimating ? 'opacity-100' : 'opacity-0'
         }`}
-        onClick={handleModalClose}
+        onClick={() => { if (!loading) handleModalClose(); }}
       >
         <div
           className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-150 ${
@@ -176,7 +191,8 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
               <button
                 type="button"
                 onClick={handleModalClose}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
+                className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-md ${loading ? 'opacity-60 cursor-not-allowed' : ''}`}
+                disabled={loading}
               >
                 Cancel
               </button>

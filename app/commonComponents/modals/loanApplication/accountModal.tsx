@@ -5,6 +5,7 @@ import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/uti
 import SuccessModal from "../../modals/successModal/modal";
 import ErrorModal from "../../modals/errorModal/modal";
 import emailjs from "emailjs-com";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
@@ -81,6 +82,17 @@ export default forwardRef(function AccountModal(_, ref) {
       setTimeout(() => setIsAnimating(true), 10);
     },
   }));
+
+  // Prevent closing via Escape while processing
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isVisible && !isProcessing) {
+        handleModalClose();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isVisible, isProcessing]);
 
   // Close modal with animation and reset selection
   const handleModalClose = () => {
@@ -191,6 +203,7 @@ export default forwardRef(function AccountModal(_, ref) {
 
   return (
     <>
+      <SubmitOverlayToast open={isProcessing} message="Processing action..." />
       <div
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
           isAnimating ? "opacity-100" : "opacity-0"

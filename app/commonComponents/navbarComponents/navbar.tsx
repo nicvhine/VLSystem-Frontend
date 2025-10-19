@@ -4,7 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell } from 'lucide-react';
+import { Bell, CheckCircle2, Clock3, XCircle, Banknote, FileCheck2, Info } from 'lucide-react';
+import { formatDistanceToNow, parseISO, isValid as isValidDate, format as formatDateFns } from 'date-fns';
 
 import useProfilePic from './profilePic';
 import useAccountSettings from './accountSettings';
@@ -54,6 +55,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -162,6 +164,51 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     });
   };
 
+  // Helpers for notifications UI
+  const getStatusIcon = (message: string | undefined) => {
+    const m = (message || '').toLowerCase();
+    if (m.includes('denied')) return <XCircle className="h-4 w-4 text-red-600" />;
+    if (m.includes('approved') || m.includes('cleared')) return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
+    if (m.includes('pending')) return <Clock3 className="h-4 w-4 text-amber-600" />;
+    if (m.includes('disbursed') || m.includes('release')) return <Banknote className="h-4 w-4 text-indigo-600" />;
+    if (m.includes('document') || m.includes('agreement')) return <FileCheck2 className="h-4 w-4 text-blue-600" />;
+    return <Info className="h-4 w-4 text-gray-400" />;
+  };
+
+  const formatRelative = (dateLike: any) => {
+    try {
+      const d = typeof dateLike === 'string' ? (isNaN(Date.parse(dateLike)) ? parseISO(dateLike) : new Date(dateLike)) : new Date(dateLike);
+      if (!isValidDate(d)) return '';
+      return formatDistanceToNow(d, { addSuffix: true });
+    } catch {
+      return '';
+    }
+  };
+
+  const formatFull = (dateLike: any) => {
+    try {
+      const d = typeof dateLike === 'string' ? (isNaN(Date.parse(dateLike)) ? parseISO(dateLike) : new Date(dateLike)) : new Date(dateLike);
+      if (!isValidDate(d)) return String(dateLike ?? '');
+      // Example: 10/09/2025, 2:19:50 AM
+      return formatDateFns(d, 'MM/dd/yyyy, h:mm:ss a');
+    } catch {
+      return String(dateLike ?? '');
+    }
+  };
+
+  const pickNotifDate = (notif: any) => {
+    return (
+      notif?.date ||
+      notif?.createdAt ||
+      notif?.created_at ||
+      notif?.timestamp ||
+      notif?.time ||
+      notif?.datetime ||
+      notif?.dateTime ||
+      ''
+    );
+  };
+
   return (
     <div
       className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-sm ${
@@ -261,78 +308,115 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                   </span>
                 )}
               </button>
-              {showNotifs && (
-                <div
-                  className="bg-white border border-gray-200 rounded-2xl shadow-2xl w-80 mt-3 overflow-hidden fixed right-4 top-16 z-[9999]"
-                >
-                  <div className="flex items-center justify-between px-3 py-2 border-b bg-gray-50">
-                    <h3 className="text-xs font-semibold text-gray-700">
-                      {language === 'ceb' ? 'Mga Notipikasyon' : 'Notifications'}
-                    </h3>
-                    {notifications.some((n) => !n.read) && (
-                      <button
-                        onClick={async () => {
-                          try {
-                            const token = localStorage.getItem('token');
-                            await fetch(`http://localhost:3001/notifications/${role}/read-all`, {
-                              method: 'PUT',
-                              headers: { Authorization: `Bearer ${token}` },
-                            });
-                            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-                          } catch (err) {
-                            console.error('Failed to mark all as read:', err);
-                          }
-                        }}
-                        className="text-[11px] text-blue-600 hover:underline"
-                      >
-                        {language === 'ceb' ? 'Markahi tanan nga nabasa' : 'Mark all as read'}
-                      </button>
-                    )}
-                  </div>
+              {/* Notifications dropdown styled like profile dropdown */}
+              <div
+                className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-xl w-96 mt-3 p-0 mr-4 relative transition-all duration-300 ease-out transform
+                  ${showNotifs ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
+                style={{ position: 'fixed', top: '4rem', right: 0, zIndex: 9999, maxHeight: '68vh', overflowY: 'auto' }}
+                aria-hidden={!showNotifs}
+              >
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0">
+                  <h3 className="text-sm font-semibold text-gray-700">
+                    {language === 'ceb' ? 'Mga Notipikasyon' : 'Notifications'}
+                  </h3>
+                  {notifications.some((n) => !n.read) && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('token');
+                          await fetch(`http://localhost:3001/notifications/${role}/read-all`, {
+                            method: 'PUT',
+                            headers: { Authorization: `Bearer ${token}` },
+                          });
+                          setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                        } catch (err) {
+                          console.error('Failed to mark all as read:', err);
+                        }
+                      }}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      {language === 'ceb' ? 'Markahi tanan nga nabasa' : 'Mark all as read'}
+                    </button>
+                  )}
+                </div>
 
-                  <div className="max-h-64 overflow-y-auto">
-                    {notifications.length > 0 ? (
-                      notifications.map((notif, idx) => (
+                <div className="max-h-[52vh] overflow-y-auto">
+                  {notifications.length > 0 ? (
+                    notifications.map((notif, idx) => {
+                      const displayName =
+                        notif.actorName || notif.actor?.name || notif.userName || notif.sender || 'System';
+                      const roleText = (notif.actorRole || notif.actor?.role || notif.role || '').toString();
+                      const initial = (displayName || 'S').toString().trim().charAt(0).toUpperCase();
+                      const dateValue = pickNotifDate(notif);
+                      const rel = formatRelative(dateValue);
+                      const full = formatFull(dateValue);
+                      return (
                         <div
                           key={idx}
-                          className={`px-3 py-2.5 border-b last:border-none cursor-pointer transition-colors duration-150 ${
+                          className={`px-4 py-2 border-b border-gray-100 last:border-none cursor-pointer transition-colors duration-150 ${
                             !notif.read ? 'bg-blue-50' : 'hover:bg-gray-50'
                           }`}
                           onClick={async () => {
-                            try {
-                              const token = localStorage.getItem('token');
-                              const notifId = notif._id || notif.id;
-                              if (!notif.read) {
-                                await fetch(`http://localhost:3001/notifications/${role}/${notifId}/read`, {
-                                  method: 'PUT',
-                                  headers: { Authorization: `Bearer ${token}` },
-                                });
+                          try {
+                            const token = localStorage.getItem('token');
+                            const notifId = notif._id || notif.id;
+                            if (!notif.read) {
+                              await fetch(`http://localhost:3001/notifications/${role}/${notifId}/read`, {
+                                method: 'PUT',
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
                                 setNotifications((prev) =>
-                                  prev.map((n) =>
-                                    (n._id || n.id) === notifId ? { ...n, read: true } : n
-                                  )
+                                  prev.map((n) => ((n._id || n.id) === notifId ? { ...n, read: true } : n))
                                 );
-                              }
-                              if (notif.applicationId) {
-                                router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
-                              }
-                            } catch (err) {
-                              console.error('Failed to mark notification as read:', err);
                             }
+                            if (notif.applicationId) {
+                              router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
+                            }
+                          } catch (err) {
+                            console.error('Failed to mark notification as read:', err);
+                          }
                           }}
                         >
-                          <p className="text-sm text-gray-800">{notif.message}</p>
-                          <p className="text-xs text-gray-500">{notif.date}</p>
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-sm">
+                              {initial}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-sm font-semibold text-gray-900 leading-tight">{displayName}</p>
+                                  {roleText && <p className="text-[11px] text-gray-500 capitalize -mt-0.5">{roleText}</p>}
+                                </div>
+                                <div className="ml-2 shrink-0">{getStatusIcon(notif.message)}</div>
+                              </div>
+                              <p
+                                className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words"
+                                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                                title={notif.message}
+                              >
+                                {notif.message}
+                              </p>
+                              <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500" title={full}>
+                                <span>{full || '-'}</span>
+                                {rel && (
+                                  <>
+                                    <span className="text-[10px] text-gray-400">•</span>
+                                    <span>{rel}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-gray-500 text-center py-4">
-                        {language === 'ceb' ? 'Walay notipikasyon' : 'No notifications'}
-                      </p>
-                    )}
-                  </div>
+                      );
+                    })
+                  ) : (
+                    <p className="text-sm text-gray-500 text-center py-5">
+                      {language === 'ceb' ? 'Walay notipikasyon' : 'No notifications'}
+                    </p>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
             <div className="relative">
@@ -358,8 +442,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 )}
               </div>
 
-              {isDropdownOpen && (
-                <ProfileDropdown
+              {/* Always render ProfileDropdown to allow open/close animation like notifications */}
+              <ProfileDropdown
                   name={name}
                   email={email}
                   phoneNumber={phoneNumber}
@@ -373,10 +457,9 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                   handleFileChange={handleFileChange}
                   handleSaveProfilePic={handleSaveProfilePic}
                   handleCancelUpload={handleCancelUpload}
-                  isEditing={false}
-                  setIsEditing={() => {}}
+                  isEditing={isEditingProfile}
+                  setIsEditing={setIsEditingProfile}
                 />
-              )}
             </div>
           </div>
         </div>

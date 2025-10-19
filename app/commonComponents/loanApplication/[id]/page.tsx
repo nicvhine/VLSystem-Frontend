@@ -63,12 +63,16 @@ export default function ApplicationDetailsPage() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const showSuccess = (msg: string) => {
+    // ensure mutual exclusivity: close error before showing success
+    setErrorModalOpen(false);
     setSuccessMessage(msg);
     setSuccessModalOpen(true);
     setTimeout(() => setSuccessModalOpen(false), 5000);
   };
 
   const showError = (msg: string) => {
+    // ensure mutual exclusivity: close success before showing error
+    setSuccessModalOpen(false);
     setErrorMessage(msg);
     setErrorModalOpen(true);
     setTimeout(() => setErrorModalOpen(false), 3000);
