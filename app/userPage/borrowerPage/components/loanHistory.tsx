@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import PaymentTable from "../dashboard/sections/paymentTable";
 
 interface LoanDetails {
@@ -175,8 +176,10 @@ export default function LoanHistory({ loans, translations, language }: LoanHisto
                 {/* Payment History */}
                 {loadingPayments === loan.loanId ? (
                   <div className="text-center py-4">
-                    <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                    <p className="mt-2 text-sm text-gray-600">{translations[language].loading}</p>
+                    <div className="inline-flex items-center justify-center gap-3">
+                      <LoadingSpinner size={4} />
+                      <p className="text-sm text-gray-600">{translations[language].loading}</p>
+                    </div>
                   </div>
                 ) : (
                   <PaymentTable

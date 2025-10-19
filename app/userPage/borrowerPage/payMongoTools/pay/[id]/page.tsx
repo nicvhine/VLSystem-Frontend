@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 
 /**
  * Payment checkout page for specific loan amount
@@ -51,9 +52,9 @@ export default function PayPage({ params }: { params: { id: string } }) {
       <button
         onClick={handleCheckout}
         disabled={loading}
-        className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+        className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center justify-center"
       >
-        {loading ? "Redirecting..." : "Checkout with PayMongo"}
+        {loading ? <ButtonContentLoading label="Redirecting..." /> : "Checkout with PayMongo"}
       </button>
 
       {showErrorModal && (
