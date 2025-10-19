@@ -33,29 +33,33 @@ export default function LoansDetailPage({ params }: Props) {
       <div className="min-h-screen bg-gray-50 text-gray-900">
         {/* Header */}
         <div className="bg-white border-b border-gray-200">
-          <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-            <Link
-              href="/commonComponents/loan"
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
-            >
-              Back to Loans
-            </Link>
-          </div>
-          <div className="mx-auto flex max-w-6xl items-center gap-4 px-6 pb-6">
-            <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border border-gray-200">
-              <img
-                src={
-                  client.profilePic
-                    ? `http://localhost:3001/${client.profilePic.filePath}`
-                    : "/default-avatar.png"
-                }
-                alt={client.name}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div>
-              <h1 className="text-3xl font-semibold text-gray-900">{client.name}</h1>
-              <p className="text-sm text-gray-500">{client.borrowersId}</p>
+          <div className="mx-auto max-w-6xl px-6 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border border-gray-200">
+                  <img
+                    src={
+                      client.profilePic
+                        ? `http://localhost:3001/${client.profilePic.filePath}`
+                        : "/default-avatar.png"
+                    }
+                    alt={client.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-semibold text-gray-900">{client.name}</h1>
+                  <p className="text-sm text-gray-500">{client.borrowersId}</p>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <Link
+                  href="/commonComponents/loan"
+                  className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  Back to Loans
+                </Link>
+              </div>
             </div>
           </div>
         </div>

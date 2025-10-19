@@ -42,7 +42,19 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
             {showChangePasswordModal && (
                 <ChangePasswordModal
                     onClose={() => setShowChangePasswordModal(false)}
-                    onSuccess={() => setShowChangePasswordModal(false)}
+                    onSuccess={() => {
+                        // Close the change password modal
+                        setShowChangePasswordModal(false);
+                        // Immediately prompt the Terms & Policies modal on borrower dashboard
+                        try {
+                            // Clear any 'seen' timestamp so it will show now
+                            localStorage.removeItem('termsReminderSeenAt');
+                            // Fire the same completion event the dashboard listens for
+                            if (typeof window !== 'undefined') {
+                                window.dispatchEvent(new Event('forcePasswordChangeCompleted'));
+                            }
+                        } catch {}
+                    }}
                 />
             )}
 
