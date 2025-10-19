@@ -69,7 +69,7 @@ NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
 ```
 
 ## 📁 Project Structure
-python
+```bash
 VLSystem-Frontend/
 ├── app/
 │   ├── layout.tsx          # Root layout + font setup
@@ -79,8 +79,8 @@ VLSystem-Frontend/
 ├── components/
 ├── next.config.ts          # Image + API config
 └── package.json
-
-🧩 Integration Notes
+```
+#🧩 Integration Notes
 
 ## 🌐 Backend URL: http://localhost:3001
 
