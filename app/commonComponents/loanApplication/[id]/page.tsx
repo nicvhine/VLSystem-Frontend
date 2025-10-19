@@ -23,7 +23,7 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 // Hooks
 import { useApplicationData } from "./hooks";
-import { capitalizeWords, formatCurrency } from "../../utils/formatters";
+import { capitalizeWords, formatCurrency } from "@/app/commonComponents/utils/formatters";
 import { authFetch } from "../function";
 
 // Cards
@@ -50,6 +50,26 @@ export default function ApplicationDetailsPage() {
     modalContainer,
   } = useApplicationData("http://localhost:3001/loan-applications");
 
+  // Normalize role from localStorage to Navbar's expected union type
+  const uiRole: 'head' | 'manager' | 'loanOfficer' | 'collector' | 'borrower' = (() => {
+    const r = (role || '').toLowerCase();
+    switch (r) {
+      case 'head':
+        return 'head';
+      case 'manager':
+        return 'manager';
+      case 'loan officer':
+      case 'loanofficer':
+        return 'loanOfficer';
+      case 'collector':
+        return 'collector';
+      case 'borrower':
+        return 'borrower';
+      default:
+        return 'loanOfficer';
+    }
+  })();
+
   const [activeTab, setActiveTab] = useState("income");
   const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,6 +81,7 @@ export default function ApplicationDetailsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const notFoundText = language === 'ceb' ? 'Wala nakit-an ang aplikasyon' : 'Application not found';
 
   const showSuccess = (msg: string) => {
     // ensure mutual exclusivity: close error before showing success
@@ -87,9 +108,9 @@ export default function ApplicationDetailsPage() {
     return (
       <Wrapper>
         <div className="min-h-screen bg-gray-50">
-          <Navbar role={role || "loanOfficer"} />
+          <Navbar role={uiRole} />
           <div className="p-10 text-center text-gray-600 text-lg">
-            {t.applicationNotFound}
+            {notFoundText}
           </div>
         </div>
       </Wrapper>
@@ -150,7 +171,7 @@ export default function ApplicationDetailsPage() {
                   role={role}
                   setApplications={setApplications}
                   authFetch={authFetch}
-                  API_URL={API_URL}
+                  API_URL={API_URL ?? "http://localhost:3001/loan-applications"}
                   setIsModalOpen={setIsModalOpen}
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}

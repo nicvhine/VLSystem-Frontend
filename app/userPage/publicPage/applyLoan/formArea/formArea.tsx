@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
+import { ButtonContentLoading, ButtonDotsLoading, SubmitProgressModal } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
 import { formToJSON } from "axios";
 import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
 import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
 import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
-import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
+// Using SubmitProgressModal (system-style modal) instead of bottom-right overlay toast
 
 // Form section components
 import BasicInformation from "./sections/basicInformation";
@@ -196,6 +196,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
         const [loanId, setLoanId] = useState<string | null>(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [progressOpen, setProgressOpen] = useState(false);
+    const [activeStep, setActiveStep] = useState(0);
         // Error modal state
         const [showErrorModal, setShowErrorModal] = useState(false);
         const [errorMessage, setErrorMessage] = useState("");
@@ -450,6 +452,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     const performSubmit = async () => {
             try {
         setIsSubmitting(true);
+        setProgressOpen(true);
+        setActiveStep(0); // Uploading documents
                 const formData = new FormData();
                 // ...existing code for appending fields...
                 formData.append("appName", appName);
@@ -492,6 +496,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                     formData.append("ownershipStatus", ownershipStatus);
                 }
                 uploadedFiles.forEach(file => formData.append("documents", file));
+                // Move to processing step before requesting
+                setActiveStep(1); // Processing application
                 if (photo2x2[0]) formData.append("profilePic", photo2x2[0]);
                 // Append consent metadata for audit trail
                 formData.append('companyName', COMPANY_NAME);
@@ -499,7 +505,10 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 formData.append('termsVersion', TERMS_VERSION);
                 formData.append('privacyVersion', PRIVACY_VERSION);
                 formData.append('consentToTerms', 'true');
-                const res = await fetch(API_URL, { method: "POST", body: formData });
+                // Start request and show waiting step while awaiting
+                const resPromise = fetch(API_URL, { method: "POST", body: formData });
+                setActiveStep(2); // Waiting for the server
+                const res = await resPromise;
                 const data = await res.json();
                 if (res.ok) {
                     setLoanId(data.application?.applicationId || null);
@@ -520,6 +529,8 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 setShowDocumentUploadErrorModal(true);
             } finally {
                 setIsSubmitting(false);
+                setProgressOpen(false);
+                setActiveStep(0);
             }
         };
 
@@ -529,9 +540,17 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
 
     return (
     <div className="relative max-w-4xl mx-auto py-0">
-        <SubmitOverlayToast
-            open={isSubmitting}
-            message={language === 'en' ? 'Submitting your application…' : 'Nag-submit sa imong aplikasyon…'}
+        <SubmitProgressModal
+            open={progressOpen}
+            activeStep={activeStep}
+            title={language === 'en' ? 'Submitting Application' : 'Pag-submit sa Aplikasyon'}
+            subtitle={language === 'en' ? 'Please keep this window open while we process your request.' : 'Palihog ayaw isira kini nga bintana samtang among gi-proseso ang imong hangyo.'}
+            steps={[
+                language === 'en' ? 'Uploading documents' : 'Nag-upload sa mga dokumento',
+                language === 'en' ? 'Processing application' : 'Nagproseso sa aplikasyon',
+                language === 'en' ? 'Waiting for the server' : 'Naghulat sa server',
+            ]}
+            blockDismiss
         />
         {showDocumentUploadErrorModal && (
             <DocumentUploadErrorModal
@@ -725,7 +744,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
                 className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
             >
                 {isSubmitting ? (
-                    <ButtonContentLoading label={language === 'en' ? 'Submitting...' : 'Nag-submit...'} />
+                    <ButtonDotsLoading label={language === 'en' ? 'Submitting' : 'Nag-submit'} />
                 ) : (
                     language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"
                 )}
