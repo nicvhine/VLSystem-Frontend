@@ -3,54 +3,111 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## Getting Started
 
 First, run the development server:
+# VLSystem Frontend
 
-```bash
+This folder contains the Next.js frontend for VLSystem.
+
+Tech stack
+- Next.js (App Router) v15
+- React 19
+- TypeScript
+- Tailwind CSS (v4)
+- Various UI and utility libraries (axios, framer-motion, react-chartjs-2, leaflet, etc.)
+
+Quick start (development)
+```powershell
+cd VLSystem-Frontend
+# install node dependencies
+npm install
+# run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Production
+```powershell
+cd VLSystem-Frontend
+npm install --production
+npm run build
+npm run start
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Scripts
+- `npm run dev` — start Next.js dev server (uses turbopack)
+- `npm run build` — build for production
+- `npm run start` — run built app
+- `npm run lint` — run next lint
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Dependencies (from `package.json`)
+Run `npm install` will install these main dependencies. For reference, the project includes:
 
-## Learn More
+- @headlessui/react
+- axios
+- chart, chart.js, react-chartjs-2
+- date, date-fns
+- emailjs-com
+- face-api.js
+- framer-motion
+- html2canvas
+- jsonwebtoken, jwt-decode
+- jspdf
+- leaflet, react-leaflet
+- lucide-react, react-icons
+- mongodb (client lib used in some utilities)
+- next, react, react-dom
+- react-big-calendar
+- react-circular-progressbar
+- react-datepicker
+- react-hot-toast
+- react-to-print
+- swiper
 
-To learn more about Next.js, take a look at the following resources:
+Dev dependencies (main ones):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- @tailwindcss/postcss
+- @types/leaflet, @types/node, @types/react, @types/react-dom
+- tailwindcss
+- typescript
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Notes
+- Default dev URL: `http://localhost:3000`
+- The frontend expects the backend API to be available at `http://localhost:3001` for many endpoints (see `app/commonComponents/*` where `fetch('http://localhost:3001/...')` is used).
+- `next.config.ts` includes remote image patterns for `http://localhost:3001` and Cloudinary.
 
-## Deploy on Vercel
+Environment variables
+You can add a `.env.local` or `.env` in the frontend folder to declare public variables used at build/runtime; example:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Useful files and folders
+- `app/layout.tsx` — root layout and font config
+- `app/globals.css` — global styles
+- `app/commonComponents/modals/` — shared modals (force-change password, terms, etc.)
+- `app/commonComponents/loan/[id]/page.tsx` — loan detail page
 
-```bash
-ACCOUNTS
+Troubleshooting
+- If images from the backend are blocked, ensure the backend is running and `next.config.ts` allows the origin.
+- If CORS or API errors appear, verify the backend `CORS_OPTIONS` origin in `VLSystem-Backend/config.js`.
 
+Accounts (sample test accounts)
+
+```
 MANAGER
-managerjoseph 
-Magabilin25!
+username: managerjoseph
+password: Magabilin25!
 
 LOAN OFFICER
-Loan officerdarren
-Espanto25!
+username: loanofficerdarren
+password: Espanto25!
 
 HEAD
-headmark
-Magdadaro25!
+username: headmark
+password: Magdadaro25!
 
 COLLECTOR
-rosgeller	
-Geller25!
+username: rosgeller
+password: Geller25!
 ```
+
+If you'd like, I can add a `.env.example` and a short section on how to run the frontend with a custom backend URL.
