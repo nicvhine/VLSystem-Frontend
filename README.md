@@ -80,7 +80,7 @@ VLSystem-Frontend/
 ├── next.config.ts          # Image + API config
 └── package.json
 ```
-# 🧩 Integration Notes
+## 🧩 Integration Notes
 
 🌐 Backend URL: http://localhost:3001
 
