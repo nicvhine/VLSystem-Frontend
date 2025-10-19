@@ -17,7 +17,7 @@ This folder contains the **Next.js** frontend for **VLSystem** — a modern web 
 
 ## 🧰 Getting Started
 
-## 1️⃣ Clone the repository
+1️⃣ Clone the repository
 ```bash
 git clone https://github.com/yourusername/VLSystem-Frontend.git
 cd VLSystem-Frontend
@@ -82,11 +82,11 @@ VLSystem-Frontend/
 ```
 # 🧩 Integration Notes
 
-## 🌐 Backend URL: http://localhost:3001
+🌐 Backend URL: http://localhost:3001
 
-## 🖼️ Remote images: Allowed from localhost:3001 and Cloudinary
+🖼️ Remote images: Allowed from localhost:3001 and Cloudinary
 
-## ⚠️ If API or CORS issues occur:
+⚠️ If API or CORS issues occur:
 
 Check backend CORS_OPTIONS in VLSystem-Backend/config.js
 
