@@ -21,17 +21,16 @@ This folder contains the **Next.js** frontend for **VLSystem** — a modern web 
 ```bash
 git clone https://github.com/yourusername/VLSystem-Frontend.git
 cd VLSystem-Frontend
+```
 2️⃣ Install dependencies
-bash
-Copy code
+```bash
 npm install
+```
 3️⃣ Run the development server
-bash
-Copy code
+```bash
 npm run dev
 Visit 👉 http://localhost:3000
 ```
-
 ## 🏗️ Production Build
 ```bash
 cd VLSystem-Frontend
