@@ -154,6 +154,12 @@ export function useChangePassword(
     );
   }, []);
 
+  // Expose a way for UI to open an error modal with a custom message
+  const showError = useCallback((msg: string) => {
+    setErrorMessage(msg);
+    setErrorOpen(true);
+  }, []);
+
   return {
     newPassword, setNewPassword,
     currentPassword, setCurrentPassword,
@@ -188,6 +194,7 @@ export function useChangePassword(
       setErrorOpen(false);
       setErrorMessage('');
     },
+    showError,
     clearMissingField,
   };
 }

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { FiX, FiFileText } from "react-icons/fi";
-import ErrorModal from '../../modals/errorModal/modal';
 import emailjs from "emailjs-com";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
@@ -78,15 +78,14 @@ export default function SetScheduleModal({
     }
   }, [isOpen]);
 
-  // Close on Escape key
-  // Close on Escape key
+  // Close on Escape key unless processing
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) onClose();
+      if (e.key === "Escape" && isOpen && !loading) onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, loading]);
 
   if (!showModal) return null;
 
@@ -171,9 +170,11 @@ export default function SetScheduleModal({
   };
 
   return (
-    <div
+    <>
+      <SubmitOverlayToast open={loading} message="Saving schedule..." />
+      <div
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-black transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"}`}
-      onMouseDown={onClose} 
+      onMouseDown={() => { if (!loading) onClose(); }}
     >
       <div
         className={`bg-white rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-out ${animateIn ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"}`}
@@ -186,7 +187,11 @@ export default function SetScheduleModal({
             </div>
             <h2 className="text-xl font-semibold text-gray-900">Schedule Interview</h2>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button
+            onClick={() => { if (!loading) onClose(); }}
+            className={`text-gray-500 hover:text-gray-700 ${loading ? 'opacity-50 cursor-not-allowed hover:text-gray-500' : ''}`}
+            disabled={loading}
+          >
             <FiX size={18} />
           </button>
         </div>
@@ -218,9 +223,10 @@ export default function SetScheduleModal({
 
         <div className="mt-6 flex justify-end gap-3">
           <button
-            onClick={onClose}
-            className="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+            onClick={() => { if (!loading) onClose(); }}
+            className={`px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-300'}`}
             type="button"
+            disabled={loading}
           >
             Cancel
           </button>
@@ -234,6 +240,7 @@ export default function SetScheduleModal({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

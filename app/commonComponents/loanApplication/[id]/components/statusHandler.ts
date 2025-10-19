@@ -1,16 +1,25 @@
 const API_URL = "http://localhost:3001/loan-applications";
 
 // Handle clearing a loan application
-export const handleClearedLoan = async (application: any, setApplications: any, authFetch: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleClearedLoan = async (
+  application: any,
+  setApplications: any,
+  authFetch: any,
+  showSuccess: (msg: string) => void,
+  showError: (msg: string) => void
+) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
-
-    await authFetch(`${API_URL}/${id}`, {
+    const res = await authFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Cleared" }),
     });
+    if (!res?.ok) {
+      const msg = await safeErrorMessage(res);
+      throw new Error(msg || "Failed to update status");
+    }
 
     setApplications((prev: any[]) =>
       prev.map((app) => app.applicationId === id ? { ...app, status: "Cleared" } : app)
@@ -23,16 +32,26 @@ export const handleClearedLoan = async (application: any, setApplications: any, 
 };
 
 // Handle disbursing a loan application
-export const handleDisburse = async (application: any, setApplications: any, authFetch: any, setIsAgreementOpen: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleDisburse = async (
+  application: any,
+  setApplications: any,
+  authFetch: any,
+  setIsAgreementOpen: any,
+  showSuccess: (msg: string) => void,
+  showError: (msg: string) => void
+) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
-
-    await authFetch(`${API_URL}/${id}`, {
+    const res = await authFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Disbursed" }),
     });
+    if (!res?.ok) {
+      const msg = await safeErrorMessage(res);
+      throw new Error(msg || "Failed to update status");
+    }
 
     setApplications((prev: any[]) =>
       prev.map((app) => app.applicationId === id ? { ...app, status: "Disbursed" } : app)
@@ -47,16 +66,25 @@ export const handleDisburse = async (application: any, setApplications: any, aut
 };
 
 // Handle denying a loan application
-export const handleDenyApplication = async (application: any, setApplications: any, authFetch: any, showSuccess: (msg: string) => void, showError: (msg: string) => void) => {
+export const handleDenyApplication = async (
+  application: any,
+  setApplications: any,
+  authFetch: any,
+  showSuccess: (msg: string) => void,
+  showError: (msg: string) => void
+) => {
   try {
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
-
-    await authFetch(`${API_URL}/${id}`, {
+    const res = await authFetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Denied" }),
     });
+    if (!res?.ok) {
+      const msg = await safeErrorMessage(res);
+      throw new Error(msg || "Failed to update status");
+    }
 
     setApplications((prev: any[]) =>
       prev.map((app) => app.applicationId === id ? { ...app, status: "Denied" } : app)
@@ -79,7 +107,10 @@ export const handleApproveApplication = async (application: any, setApplications
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Approved" }),
     });
-    if (!response.ok) throw new Error("Failed to update status");
+    if (!response?.ok) {
+      const msg = await safeErrorMessage(response);
+      throw new Error(msg || "Failed to update status");
+    }
 
     setApplications((prev: any[]) =>
       prev.map((app) => (app.applicationId === id ? { ...app, status: "Approved" } : app))
@@ -103,7 +134,10 @@ export const handleDenyFromCleared = async (application: any, setApplications: a
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Denied by LO" }),
     });
-    if (!response.ok) throw new Error("Failed to update status");
+    if (!response?.ok) {
+      const msg = await safeErrorMessage(response);
+      throw new Error(msg || "Failed to update status");
+    }
 
     setApplications((prev: any[]) =>
       prev.map((app) => (app.applicationId === id ? { ...app, status: "Denied by LO" } : app))
@@ -115,3 +149,19 @@ export const handleDenyFromCleared = async (application: any, setApplications: a
     showError("Could not deny application. Try again.");
   }
 };
+
+// Helper: Try to parse a meaningful error message from a Response
+async function safeErrorMessage(res: Response | any): Promise<string | undefined> {
+  try {
+    if (!res) return undefined;
+    const contentType = res.headers?.get?.('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+      return data?.message || data?.error || JSON.stringify(data);
+    }
+    const text = await res.text();
+    return text;
+  } catch {
+    return undefined;
+  }
+}

@@ -12,6 +12,7 @@ interface UploadSectionProps {
   removeProfile: (index: number) => void;
   removeDocument: (index: number) => void;
   missingFields?: string[];
+  requiredDocumentsCount?: number; // max allowed documents based on loan type
 }
 
 export default function UploadSection({
@@ -23,6 +24,7 @@ export default function UploadSection({
   removeProfile,
   removeDocument,
   missingFields = [],
+  requiredDocumentsCount,
 }: UploadSectionProps) {
 
   // State for confirmation modal
@@ -80,7 +82,7 @@ export default function UploadSection({
   return (
     <div>
       {/* 2x2 Upload */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
@@ -127,16 +129,33 @@ export default function UploadSection({
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'I-upload ang mga Dokumento'}
         </h4>
-        <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${missingFields.includes('Document Upload') ? 'border-red-500' : 'border-gray-200'}`}> 
-          <input
-            type="file"
-            multiple
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4
-                      file:rounded-lg file:border-0 file:text-sm file:font-medium
-                      file:bg-red-50 file:text-red-600 hover:file:bg-red-100 cursor-pointer"
-          />
+        <div className={`border-2 border-dashed rounded-lg p-6 hover:border-red-300 transition-colors ${missingFields.includes('Document Upload') ? 'border-red-500' : 'border-gray-200'}`}> 
+          <div className="flex items-center gap-3 w-full">
+            {/* Hidden input with custom trigger to control dynamic message */}
+            <input
+              id="documents-upload"
+              type="file"
+              multiple
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+              disabled={typeof requiredDocumentsCount === 'number' ? (documents.length >= requiredDocumentsCount) : false}
+              className="sr-only"
+            />
+            <label
+              htmlFor="documents-upload"
+              className={`inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors
+                ${typeof requiredDocumentsCount === 'number' && documents.length >= requiredDocumentsCount
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+            >
+              Choose Files
+            </label>
+            <span className="text-sm text-gray-700">
+              {documents.length === 0
+                ? 'No file chosen'
+                : `${documents.length} ${documents.length === 1 ? 'file' : 'files'}`}
+            </span>
+          </div>
         </div>
 
         {documents.length > 0 && (

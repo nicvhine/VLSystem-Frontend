@@ -9,6 +9,8 @@ export default function TermsGateModal({
   onOpenPrivacy,
   tosRead,
   privacyRead,
+  enforceReading = true,
+  acceptLabel,
 }: {
   language: "en" | "ceb";
   onAccept: () => void;
@@ -17,6 +19,8 @@ export default function TermsGateModal({
   onOpenPrivacy: () => void;
   tosRead?: boolean;
   privacyRead?: boolean;
+  enforceReading?: boolean;
+  acceptLabel?: string;
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -61,9 +65,9 @@ export default function TermsGateModal({
             type="checkbox"
             checked={agree}
             onChange={(e) => setAgree(e.target.checked)}
-            disabled={!tosRead || !privacyRead}
-            title={!tosRead || !privacyRead ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
-            className={`mt-1 h-4 w-4 border-gray-300 rounded ${(!tosRead || !privacyRead) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
+            disabled={enforceReading ? (!tosRead || !privacyRead) : false}
+            title={enforceReading && (!tosRead || !privacyRead) ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
+            className={`mt-1 h-4 w-4 border-gray-300 rounded ${enforceReading && (!tosRead || !privacyRead) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
           />
           <span>
             {language === 'en'
@@ -72,10 +76,10 @@ export default function TermsGateModal({
           </span>
         </label>
         <div className="mt-2 text-xs text-gray-500">
-          {!tosRead && (
+          {enforceReading && !tosRead && (
             <div>• {language === 'en' ? 'Please open and read the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
           )}
-          {!privacyRead && (
+          {enforceReading && !privacyRead && (
             <div>• {language === 'en' ? 'Please open and read the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
           )}
         </div>
@@ -83,8 +87,12 @@ export default function TermsGateModal({
           <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
             {language === 'en' ? 'Cancel' : 'Kanselahon'}
           </button>
-          <button onClick={onAccept} disabled={!agree || !tosRead || !privacyRead} className={`px-4 py-2 rounded-lg text-white ${agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'}`}>
-            {language === 'en' ? 'Accept and Submit' : 'Mouyon ug Isumite'}
+          <button
+            onClick={onAccept}
+            disabled={enforceReading ? (!agree || !tosRead || !privacyRead) : !agree}
+            className={`px-4 py-2 rounded-lg text-white ${enforceReading ? (agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed') : (agree ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed')}`}
+          >
+            {acceptLabel ?? (language === 'en' ? 'Accept and Submit' : 'Mouyon ug Isumite')}
           </button>
         </div>
       </div>

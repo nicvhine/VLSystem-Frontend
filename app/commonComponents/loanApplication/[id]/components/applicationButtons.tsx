@@ -11,6 +11,7 @@ import {
   handleDenyFromCleared 
 } from "./statusHandler";
 import { createPortal } from "react-dom";
+import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
 interface ApplicationButtonsProps {
   application: Application;
@@ -43,7 +44,8 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
 
 
   const [showConfirm, setShowConfirm] = useState<{ type: 'approve' | 'deny' | 'disburse' | 'clear' | 'dismissPending' | null }>({ type: null });
-  const [pendingAction, setPendingAction] = useState<() => void>(() => () => {});
+  const [pendingAction, setPendingAction] = useState<() => Promise<void> | void>(() => () => {});
+  const [isActing, setIsActing] = useState(false);
 
   if (!application) return null;
 
@@ -71,7 +73,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             SET SCHEDULE
           </button>
           <button
-            onClick={() => handleDenyApplication(application, setApplications, authFetch, API_URL, showSuccess, showError)}
+            onClick={() => handleDenyApplication(application, setApplications, authFetch, showSuccess, showError)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             DISMISS
@@ -93,7 +95,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'clear' });
-              setPendingAction(() => () => handleClearedLoan(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleClearedLoan(application, setApplications, authFetch, showSuccess, showError));
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
@@ -102,7 +104,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'dismissPending' });
-              setPendingAction(() => () => handleDenyFromCleared(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleDenyFromCleared(application, setApplications, authFetch, showSuccess, showError));
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
@@ -112,18 +114,28 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             show={showConfirm.type === 'clear'}
             applicationId={application.applicationId}
             status="Cleared"
-            onConfirm={() => {
+            onConfirm={async () => {
               setShowConfirm({ type: null });
-              pendingAction();
+              try {
+                setIsActing(true);
+                await Promise.resolve(pendingAction());
+              } finally {
+                setIsActing(false);
+              }
             }}
             onCancel={() => setShowConfirm({ type: null })}
           />
           <ConfirmModal
             show={showConfirm.type === 'dismissPending'}
             message="Do you want to dismiss this pending loan application?"
-            onConfirm={() => {
+            onConfirm={async () => {
               setShowConfirm({ type: null });
-              pendingAction();
+              try {
+                setIsActing(true);
+                await Promise.resolve(pendingAction());
+              } finally {
+                setIsActing(false);
+              }
             }}
             onCancel={() => setShowConfirm({ type: null })}
           />
@@ -135,7 +147,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'approve' });
-              setPendingAction(() => () => handleApproveApplication(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleApproveApplication(application, setApplications, authFetch, showSuccess, showError));
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
@@ -144,7 +156,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'deny' });
-              setPendingAction(() => () => handleDenyApplication(application, setApplications, authFetch, API_URL, showSuccess, showError));
+              setPendingAction(() => () => handleDenyApplication(application, setApplications, authFetch, showSuccess, showError));
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
@@ -154,18 +166,28 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
         show={showConfirm.type === 'approve'}
         applicationId={application.applicationId}
         status="Approved"
-        onConfirm={() => {
+        onConfirm={async () => {
           setShowConfirm({ type: null });
-          pendingAction();
+          try {
+            setIsActing(true);
+            await Promise.resolve(pendingAction());
+          } finally {
+            setIsActing(false);
+          }
         }}
         onCancel={() => setShowConfirm({ type: null })}
       />
       <ConfirmModal
         show={showConfirm.type === 'deny'}
         message="Do you want to deny this loan application?"
-        onConfirm={() => {
+        onConfirm={async () => {
           setShowConfirm({ type: null });
-          pendingAction();
+          try {
+            setIsActing(true);
+            await Promise.resolve(pendingAction());
+          } finally {
+            setIsActing(false);
+          }
         }}
         onCancel={() => setShowConfirm({ type: null })}
       />
@@ -177,7 +199,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <button
             onClick={() => {
               setShowConfirm({ type: 'disburse' });
-              setPendingAction(() => () => handleDisburse(application, setApplications, authFetch, API_URL, setIsAgreementOpen, showSuccess, showError));
+              setPendingAction(() => () => handleDisburse(application, setApplications, authFetch, setIsAgreementOpen, showSuccess, showError));
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
@@ -187,9 +209,14 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             show={showConfirm.type === 'disburse'}
             applicationId={application.applicationId}
             status="Disbursed"
-            onConfirm={() => {
+            onConfirm={async () => {
               setShowConfirm({ type: null });
-              pendingAction();
+              try {
+                setIsActing(true);
+                await Promise.resolve(pendingAction());
+              } finally {
+                setIsActing(false);
+              }
             }}
             onCancel={() => setShowConfirm({ type: null })}
           />
@@ -232,6 +259,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           )}
         </>
       )}
+      <SubmitOverlayToast open={isActing} message="Processing action..." />
     </>
   );
 };
