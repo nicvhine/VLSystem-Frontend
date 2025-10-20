@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Agent, Language } from './types';
 import { fetchAgents as fetchAgentsFn, handleAddAgent as handleAddAgentFn } from './function';
-import translations from '../Translation';
+import translations from '../translation';
 
 export const useAgentPage = () => {
   const [role, setRole] = useState<string | null>(null);

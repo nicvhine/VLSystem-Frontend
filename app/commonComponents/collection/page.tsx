@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from "react";
+import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FiSearch, FiChevronDown, FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
+import { FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 
 import { useCollectionPage } from "./hooks";
@@ -11,17 +11,25 @@ import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import { formatCurrency } from "../utils/formatters";
-import { CollectionsPageProps, Collection} from "./types";
+import { CollectionsPageProps, Collection } from "./types";
 import Filter from "../utils/sortAndSearch";
+import {
+  handleSaveNote,
+  handlePrint,
+  handleMakePayment,
+  handleAddNote,
+  handleNoteModalClose,
+  handleConfirmPayment,
+  handlePaymentModalClose
+} from "./functions";
 
-// Use shared LoadingSpinner from common utils
-
+// Main collections page component
 export default function CollectionsPage({ onModalStateChange }: CollectionsPageProps) {
   const {
     searchQuery, setSearchQuery,
     sortBy, setSortBy,
     selectedDate, setSelectedDate,
-    collections, loading,
+    collections, setCollections,
     filteredCollections,
     selectedCollection, setSelectedCollection,
     paymentAmount, setPaymentAmount,
@@ -33,8 +41,8 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
     printMode, setPrintMode,
     showErrorModal, setShowErrorModal,
     errorMsg, setErrorMsg,
-    isPaymentModalVisible, isPaymentModalAnimating,
-    isNoteModalVisible, isNoteModalAnimating,
+    isPaymentModalVisible, setIsPaymentModalVisible, isPaymentModalAnimating, setIsPaymentModalAnimating,
+    isNoteModalVisible, setIsNoteModalVisible, isNoteModalAnimating, setIsNoteModalAnimating,
     tableRef, Wrapper,
     totalCollected, totalTarget, targetAchieved,
     totalPayments, completedPayments, collectionRate,
@@ -42,46 +50,17 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
     overallTotalPayments, overallCompletedPayments, overallCollectionRate
   } = useCollectionPage(onModalStateChange);
 
-  const handlePrint = () => {
-    setPrintMode(true);
-    setTimeout(() => {
-      window.print();
-      setPrintMode(false);
-    }, 100);
-  };
-
-  const handleMakePayment = (col: Collection) => {
-    setSelectedCollection(col);
-    setPaymentAmount(col.periodBalance);
-    setShowModal(true);
-  };
-
-  const handleAddNote = (col: Collection) => {
-    setSelectedCollection(col);
-    setNoteText(col.note || "");
-    setShowNoteModal(true);
-  };
-
-  const handlePaymentModalClose = () => setShowModal(false);
-  const handleNoteModalClose = () => setShowNoteModal(false);
-
-  const handleConfirmPayment = () => {
-    console.log("Confirm payment for:", selectedCollection);
-    setShowPaymentConfirm(false);
-    setShowModal(false);
-  };
-
-  const handleSaveNote = () => {
-    console.log("Save note for:", selectedCollection, noteText);
-    setShowNoteModal(false);
-  };
+  const [paymentLoading, setPaymentLoading] = React.useState(false); 
+  const [loading, setLoading] = useState(false);
 
   return (
     <Wrapper>
       <div className="min-h-screen bg-gray-50">
         <div className={isMobile ? "mx-auto px-2 py-4" : "mx-auto px-6 py-8"}>
-          {/* Calendar & Stats */}
+
+          {/* Calendar & Stats Section */}
           <div className={isMobile ? "flex flex-col gap-4 mb-4" : "grid grid-cols-12 gap-6 mb-6"}>
+
             {/* Calendar */}
             <div className={isMobile ? "bg-white rounded-xl p-4 shadow-sm" : "col-span-4 bg-white rounded-xl p-6 shadow-sm"}>
               <div className="flex items-center gap-2 mb-4">
@@ -95,7 +74,7 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
                   inline
                   dayClassName={(date) => {
                     const hasCollection = collections.some(col => {
-                      const colDate = new Date(col.dueDate);
+                      const colDate = new Date(col.dueDate || new Date());
                       return colDate.toDateString() === date.toDateString();
                     });
                     return hasCollection ? 'relative has-collection bg-blue-100 text-blue-800 font-semibold rounded-full' : '';
@@ -159,7 +138,7 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
             </div>
           </div>
 
-          {/* Filters */}
+          {/* Filter & Search */}
           <Filter
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -176,12 +155,12 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
 
           {/* Print Button */}
           <div className={isMobile ? "flex justify-end mb-2" : "flex justify-end mb-4"}>
-            <button
-              onClick={handlePrint}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"
-            >
-              {b.b11}
-            </button>
+          <button
+            onClick={() => handlePrint(setPrintMode)}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"
+          >
+            {b.b11}
+          </button>
           </div>
 
           {/* Collections Table */}
@@ -227,9 +206,35 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
                     {role === "collector" && (
                       <td className="px-6 py-4 flex flex-col gap-1">
                         {col.periodBalance > 0 ? (
-                          <button onClick={() => handleMakePayment(col)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium">Make Payment</button>
-                        ) : <span className="text-green-600 text-xs">Paid</span>}
-                        <button onClick={() => handleAddNote(col)} className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs font-medium">{col.note?.trim() ? "Edit Note" : "Add Note"}</button>
+                          <button
+                            onClick={() =>
+                              handleMakePayment(
+                                col, 
+                                setSelectedCollection,
+                                setPaymentAmount,
+                                setShowModal
+                              )
+                            }
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
+                          >
+                            Make Payment
+                          </button>
+                        ) : (
+                          <span className="text-green-600 text-xs">Paid</span>
+                        )}
+                        <button
+                          onClick={() =>
+                            handleAddNote(
+                              col,
+                              setSelectedCollection,
+                              setNoteText,
+                              setShowNoteModal
+                            )
+                          }
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs font-medium"
+                        >
+                          {col.note?.trim() ? "Edit Note" : "Add Note"}
+                        </button>
                       </td>
                     )}
                   </tr>
@@ -247,19 +252,61 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
             setPaymentAmount={setPaymentAmount}
             showPaymentConfirm={showPaymentConfirm}
             setShowPaymentConfirm={setShowPaymentConfirm}
-            handleClose={handlePaymentModalClose}
-            handleConfirmPayment={handleConfirmPayment}
-            paymentLoading={false}
+            paymentLoading={paymentLoading}
+            handleClose={() => handlePaymentModalClose(
+              setIsPaymentModalAnimating,
+              setShowModal,
+              setIsPaymentModalVisible,
+              setSelectedCollection,
+              setPaymentAmount
+            )}
+            handleConfirmPayment={() => handleConfirmPayment(
+              selectedCollection,
+              paymentAmount,
+              setCollections,
+              setPaymentLoading,
+              setShowPaymentConfirm,
+              setErrorMsg,
+              setShowErrorModal,
+              () => handlePaymentModalClose(
+                setIsPaymentModalAnimating,
+                setShowModal,
+                setIsPaymentModalVisible,
+                setSelectedCollection,
+                setPaymentAmount
+              )
+            )}
           />
+
           <NoteModal
             isOpen={isNoteModalVisible}
             isAnimating={isNoteModalAnimating}
             selectedCollection={selectedCollection}
             noteText={noteText}
             setNoteText={setNoteText}
-            handleClose={handleNoteModalClose}
-            handleSaveNote={handleSaveNote}
+            handleClose={() => handlePaymentModalClose(
+              setIsPaymentModalAnimating,
+              setShowModal,
+              setIsPaymentModalVisible,
+              setSelectedCollection,
+              setPaymentAmount
+            )}
+            handleSaveNote={() => handleSaveNote(
+              selectedCollection,
+              noteText,
+              setCollections,
+              setErrorMsg,
+              setShowErrorModal,
+              () => handleNoteModalClose(
+                setIsNoteModalAnimating,
+                setShowNoteModal,
+                setIsNoteModalVisible,
+                setSelectedCollection,
+                setNoteText
+              )
+            )}
           />
+
           {showErrorModal && <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />}
         </div>
       </div>

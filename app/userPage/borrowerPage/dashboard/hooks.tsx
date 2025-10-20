@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Loan, Collection, Payments } from "./type";
-import translations from "@/app/commonComponents/Translation";
+import translations from "@/app/commonComponents/translation";
 
 type Language = 'en' | 'ceb';
 

@@ -4,7 +4,7 @@ import { FiDollarSign, FiTrendingUp, FiCheckCircle, FiXCircle, FiUsers, FiPieCha
 import { useLoanStats } from "@/app/commonComponents/statistics/hooks";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { StatCard } from "@/app/commonComponents/statistics/functions";
-import translations from "@/app/commonComponents/Translation";
+import translations from "@/app/commonComponents/translation";
 
 export default function ManagerLoanStats() {
   const { loading, loanStats, collectionStats, typeStats, applicationStats, language } = useLoanStats("manager");

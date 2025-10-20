@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import useIsMobile from "@/app/commonComponents/utils/useIsMobile";
-import translations from "../Translation";
+import translations from "../translation";
 import { Collection } from "./types";
 
 // Role-based wrappers
@@ -182,8 +182,10 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
         printMode, setPrintMode,
         showErrorModal, setShowErrorModal,
         errorMsg, setErrorMsg,
-        isPaymentModalVisible, isPaymentModalAnimating,
-        isNoteModalVisible, isNoteModalAnimating,
+        isPaymentModalVisible, setIsPaymentModalVisible,
+        isPaymentModalAnimating, setIsPaymentModalAnimating,
+        isNoteModalVisible, setIsNoteModalVisible,
+        isNoteModalAnimating, setIsNoteModalAnimating,
         tableRef,
         showPaymentConfirm, setShowPaymentConfirm,
         paymentLoading, setPaymentLoading,
@@ -192,4 +194,5 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
         overallTotalCollected, overallTotalTarget, overallTargetAchieved,
         Wrapper
     };
+    
 };

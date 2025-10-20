@@ -1,7 +1,7 @@
 'use client';
 
 import { FiFileText, FiClock, FiCheckCircle, FiXCircle, FiUsers } from 'react-icons/fi';
-import translations from '@/app/commonComponents/Translation';
+import translations from '@/app/commonComponents/translation';
 import { StatCard } from '@/app/commonComponents/statistics/functions';
 import { useLoanStats } from '@/app/commonComponents/statistics/hooks';
 import { LoadingSpinner } from '@/app/commonComponents/utils/loading';

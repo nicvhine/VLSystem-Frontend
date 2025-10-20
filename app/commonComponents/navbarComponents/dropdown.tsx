@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
 import { useState, useEffect } from 'react';
-import translations from '../Translation';
+import translations from '../translation';
 
 interface ProfileDropdownProps {
   name: string;
