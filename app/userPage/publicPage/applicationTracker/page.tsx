@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import { TrackModalProps } from "@/app/commonComponents/utils/Types/components";
+import translations from "@/app/commonComponents/translation";
 
 const progressSteps = {
   en: ["Pending", "Endorsed", "Accepted"],
   ceb: ["Nagahulat", "Gipadala", "Gidawat"]
 };
 
-export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackModalProps) {
+export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackModalProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -19,11 +20,11 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
   const [animateIn, setAnimateIn] = useState(false);
   const [isTracking, setIsTracking] = useState(false);
 
-  // Animation timing on open/close
+  const t = translations.trackerApplication[language];
+
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
-      // Small delay to trigger animation after mount
       const timer = setTimeout(() => setAnimateIn(true), 10);
       return () => clearTimeout(timer);
     } else {
@@ -34,7 +35,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
         setApplicationId("");
         setShowErrorModal(false);
         setErrorMsg("");
-      }, 300); // Match transition duration
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -52,18 +53,17 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
 
   if (!showModal) return null;
 
-  // Handle smooth close animation
   const handleClose = () => {
-    if (isTracking) return; // prevent closing while processing
+    if (isTracking) return
     setAnimateIn(false);
     setTimeout(() => {
       onClose();
-    }, 300); // Match transition duration
+    }, 300); 
   };
 
   const handleTrack = async () => {
     if (!applicationId.trim()) {
-      setErrorMsg(language === 'en' ? "Please enter a valid Application ID." : "Palihug isulod ang balidong Application ID.");
+      setErrorMsg(t.er1);
       setShowErrorModal(true);
       return;
     }
@@ -74,7 +74,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
       const res = await fetch(`http://localhost:3001/loan-applications/${applicationId}`);
       if (!res.ok) {
         setStatus(null);
-        setErrorMsg(language === 'en' ? "Application not found." : "Wala makita ang aplikasyon.");
+        setErrorMsg(t.er2);
         setShowErrorModal(true);
         return;
       }
@@ -85,7 +85,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
       setErrorMsg("");
     } catch (err) {
       console.error(err);
-      setErrorMsg(language === 'en' ? "Something went wrong. Please try again later." : "Adunay problema. Palihug sulayi pag-usab.");
+      setErrorMsg(t.er3);
       setShowErrorModal(true);
     } finally {
       setIsTracking(false);
@@ -133,17 +133,11 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
           >
             ✖
           </button>
-          <h2 className="text-xl font-semibold mb-1 text-black">
-            {language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'}
-          </h2>
-          <p className="text-sm text-gray-600 mb-3">
-            {language === 'en'
-              ? 'Enter your Application ID to track your loan application status'
-              : 'Isulod ang imong Application ID aron masubay ang status sa imong aplikasyon sa pahulam'}
-          </p>
+          <h2 className="text-xl font-semibold mb-1 text-black">{t.h2}</h2>
+          <p className="text-sm text-gray-600 mb-3">{t.n1}</p>
         <input
           type="text"
-          placeholder={language === 'en' ? 'APPLICATION ID' : 'APPLICATION ID'}
+          placeholder="Application ID"
           className="w-full p-3 border border-gray-300 rounded-lg mb-4 uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
           value={applicationId}
           onChange={(e) => setApplicationId(e.target.value.toUpperCase())}
@@ -155,20 +149,18 @@ export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackMo
             className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isTracking ? (
-              <ButtonContentLoading label={language === 'en' ? 'Tracking...' : 'Nag-subay...'} />
-            ) : (
-              language === 'en' ? 'Track Application' : 'Subay ang Aplikasyon'
-            )}
+              <ButtonContentLoading label={t.t1} />
+            ) : (t.t2)}
           </button>
         </div>
         {/* Progress */}
         {status && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
-              {language === 'en' ? 'Application Status' : 'Status sa Aplikasyon'}
+              {t.t3}
             </h3>
             <p className="text-center mb-6">
-              {language === 'en' ? 'Current Status:' : 'Kasamtangang Status:'} <span className="text-red-600 font-semibold">{status}</span>
+              {t.t4} <span className="text-red-600 font-semibold">{status}</span>
             </p>
             <div className="flex items-center justify-between gap-2">
               {progressSteps[language].map((step, index) => (
