@@ -7,6 +7,7 @@ import statisticTranslation from "./statisticsTranslation";
 import calendarTranslation from "./calendarTranslation";
 import viewApplicationTranslation from "./viewApplicationTranslation";
 import buttonTranslation from "./buttonTranslation";
+import trackerApplication from "./trackerApplication";
 
 const translations = {
   landingPageTranslation,
@@ -18,6 +19,7 @@ const translations = {
   calendarTranslation,
   viewApplicationTranslation,
   buttonTranslation,
+  trackerApplication,
 };
 
 export default translations;

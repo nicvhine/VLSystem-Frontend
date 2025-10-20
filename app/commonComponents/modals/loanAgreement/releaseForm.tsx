@@ -3,7 +3,7 @@
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-import { Application } from "express";
+import { Application } from "../../utils/Types/application";
 
 interface ReleaseFormProps {
   isOpen: boolean;
