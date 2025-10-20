@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Application } from "./types";
 import { authFetch } from "../../utils/fetch";
-import translations from "../../Translation";
+import translations from "../../translation";
 
 export function useApplicationData(apiUrl: string) {
   const [applications, setApplications] = useState<Application[]>([]);

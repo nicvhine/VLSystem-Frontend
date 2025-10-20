@@ -11,7 +11,7 @@ import React from "react";
 import CreateUserModal from "./createUserModal";
 import DecisionModal from "./modal";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
-import translations from "@/app/commonComponents/Translation";
+import translations from "@/app/commonComponents/translation";
 
 // Use shared LoadingSpinner from common utils
 

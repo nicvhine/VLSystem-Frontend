@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
-import translations from '../Translation';
+import translations from '../translation';
 
 interface Props {
   username: string;

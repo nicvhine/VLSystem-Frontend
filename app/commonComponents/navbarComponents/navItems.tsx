@@ -1,4 +1,4 @@
-import navbarTranslation from "../Translation/navbarTranslation";
+import navbarTranslation from "../translation/navbarTranslation";
 
 export interface LandingNavItem {
   name: string;

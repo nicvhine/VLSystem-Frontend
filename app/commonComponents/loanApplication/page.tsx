@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 
 import { Application } from "./types";
-import translations from "../Translation";
+import translations from "../translation";
 import { authFetch, formatCurrency, formatDate, filterApplications } from "./function";
 import { useLoanApplicationPage } from "./hooks";
 

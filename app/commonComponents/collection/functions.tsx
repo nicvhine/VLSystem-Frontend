@@ -1,5 +1,14 @@
 import { Collection } from "./types";
 
+// Printing Sheet
+export const handlePrint = (setPrintMode: (v: boolean) => void) => {
+  setPrintMode(true);
+  setTimeout(() => {
+    window.print();
+    setPrintMode(false);
+  }, 100);
+};
+
 // Open Payment Modal
 export const handleMakePayment = (
   collection: Collection,

@@ -8,7 +8,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { Navigation, Autoplay, EffectFade } from 'swiper/modules';
 import { motion } from 'framer-motion';
-import translations from '@/app/commonComponents/Translation'; 
+import translations from '@/app/commonComponents/translation'; 
 
 // Props interface for hero section component
 interface HeroSectionProps {

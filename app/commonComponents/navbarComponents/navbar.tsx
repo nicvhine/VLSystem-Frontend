@@ -110,11 +110,12 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
       })
         .then((res) => res.json())
         .then((data) => {
-          const normalized = (data || []).map((n: any) => ({
+          const notificationsArray = data.notifications || [];
+          const normalized = notificationsArray.map((n: any) => ({
             ...n,
             read: n.read ?? n.viewed ?? false,
           }));
-          setNotifications(normalized);
+          setNotifications(normalized);        
         })
         .catch(console.error);
     }
