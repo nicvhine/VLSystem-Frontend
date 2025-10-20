@@ -3,15 +3,8 @@
 import AuditLog from "./auditLog";
 import LoanStatsDashboard from "./loanStats";
 import Head from "../page";
-import { useState } from 'react';
 
 export default function ManagerDashboard() {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true';
-    }
-    return false;
-  });
 
   return (
     <Head>

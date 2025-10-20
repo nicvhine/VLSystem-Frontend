@@ -1,4 +1,3 @@
-// app/MainPage/page.tsx
 import LandingPage from "./userPage/publicPage/page";
 
 /**

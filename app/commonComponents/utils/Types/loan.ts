@@ -1,3 +1,18 @@
+export interface Loan {
+  loanId: string;
+  type?: string;
+  dateDisbursed?: string;
+  appTotalPayable?: number;
+  borrowersId: string;
+  paymentProgress?: number;
+  appLoanAmount: number;
+  appInterestRate: number;
+  appInterestAmount: string;
+  appTotalInterestAmount: string;
+  appMonthlyDue: string;
+  loanType: string;
+}
+
 export interface CharacterReference {
     name: string;
     contact: string;
@@ -59,9 +74,4 @@ export interface CharacterReference {
     collateralDescription: string;
     ownershipStatus: string;
   }
-
-export interface DetailRowProps {
-  label: string;
-  value: string | number;
-}
   

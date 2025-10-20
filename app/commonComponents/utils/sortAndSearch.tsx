@@ -1,18 +1,7 @@
 'use client';
 
 import { FiSearch, FiChevronDown } from "react-icons/fi";
-
-interface FilterProps {
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  sortBy: string;
-  setSortBy: (val: string) => void;
-  sortOptions: { value: string; label: string }[];
-  t?: any;
-  isMobile?: boolean;
-  onSearchChange?: (val: string) => void;
-  onSortChange?: (val: string) => void;
-}
+import { FilterProps } from "./Types/pagination";
 
 export default function Filter({
   searchQuery,

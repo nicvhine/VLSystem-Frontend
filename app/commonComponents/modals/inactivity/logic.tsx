@@ -1,5 +1,5 @@
 'use client';
-// Hook: auto-logout on inactivity with warning countdown modal
+
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 

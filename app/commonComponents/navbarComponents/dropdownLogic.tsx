@@ -57,9 +57,17 @@ export function useProfileDropdownLogic(
     setIsEditingPasswordField(false);
   };
 
-  // Clear session and return to login
+  // Clear session but keep language, set role to 'public', then return to login
   const handleLogout = () => {
+    if (typeof window === 'undefined') return;
+
+    const currentLang = localStorage.getItem('language') || 'en';
+
     localStorage.clear();
+
+    localStorage.setItem('language', currentLang);
+    localStorage.setItem('role', 'public');
+
     window.location.href = '/';
   };
 

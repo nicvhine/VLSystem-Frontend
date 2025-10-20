@@ -5,7 +5,7 @@ import { FiSearch, FiUserPlus, FiChevronDown, FiMoreVertical } from "react-icons
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import Head from "../page";
 import { useUsersLogic } from "./hooks";
-import { User } from "./types";
+import { User } from "@/app/commonComponents/utils/Types/userPage";
 
 import React from "react";
 import CreateUserModal from "./createUserModal";

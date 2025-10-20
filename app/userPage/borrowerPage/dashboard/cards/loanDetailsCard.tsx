@@ -1,12 +1,7 @@
 'use client';
 import React from 'react';
 import { formatDate } from '@/app/commonComponents/utils/formatters';
-import { Loan } from '../type';
-
-interface LoanDetailsCardProps {
-  activeLoan: Loan | null;
-  t: { [key: string]: string };
-}
+import { LoanDetailsCardProps } from '@/app/commonComponents/utils/Types/components';
 
 export default function LoanDetailsCard({ activeLoan, t }: LoanDetailsCardProps) {
   if (!activeLoan) return null;

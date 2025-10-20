@@ -1,6 +1,6 @@
 'use client';
 // Hook: shared account settings state for navbar profile dropdown
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export default function useAccountSettings() {
   const [isEditing, setIsEditing] = useState(false);

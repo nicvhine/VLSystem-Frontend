@@ -1,4 +1,4 @@
-import { Application, Language } from './types';
+import { Application } from "../utils/Types/application";
 
 export async function authFetch(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");

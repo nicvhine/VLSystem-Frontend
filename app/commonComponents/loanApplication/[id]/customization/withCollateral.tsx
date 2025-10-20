@@ -1,13 +1,9 @@
 'use client';
 import React from 'react';
 import { capitalizeWords, formatCurrency } from '@/app/commonComponents/utils/formatters';
+import { ApplicationCardProps } from '@/app/commonComponents/utils/Types/application';
 
-interface Props {
-  application: any;
-  formatCurrency: (amount?: string | number | undefined) => string;
-}
-
-export default function WithCollateral({ application }: Props) {
+export default function WithCollateral({ application }: ApplicationCardProps) {
 
   return (
     <section>

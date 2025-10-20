@@ -1,32 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MapContainer, TileLayer } from "react-leaflet";
 import MapComponent from "../../MapComponent"; 
-
-// Props interface for basic information form section
-interface BasicInformationProps {
-  language: "en" | "ceb";
-  appName: string;
-  setAppName: (value: string) => void;
-  appDob: string;
-  setAppDob: (value: string) => void;
-  appContact: string;
-  setAppContact: (value: string) => void;
-  appEmail: string;
-  setAppEmail: (value: string) => void;
-  appMarital: string;
-  setAppMarital: (value: string) => void;
-  appChildren: number;
-  setAppChildren: (value: number) => void;
-  appSpouseName: string;
-  setAppSpouseName: (value: string) => void;
-  appSpouseOccupation: string;
-  setAppSpouseOccupation: (value: string) => void;
-  appAddress: string;
-  setAppAddress: (value: string) => void;
-  missingFields?: string[];
-}
+import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
 
 /**
  * Basic information form section component

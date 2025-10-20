@@ -2,7 +2,6 @@
 
 import React, { useState, useRef } from "react";
 import ConfirmModal from "../../../modals/confirmModal/ConfirmModal";
-import { Application } from "../types";
 import { 
   handleClearedLoan, 
   handleDisburse, 
@@ -12,19 +11,7 @@ import {
 } from "./statusHandler";
 import { createPortal } from "react-dom";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
-
-interface ApplicationButtonsProps {
-  application: Application;
-  role: string | null;
-  setApplications: React.Dispatch<React.SetStateAction<Application[]>>;
-  authFetch: (url: string, options?: RequestInit) => Promise<Response>;
-  API_URL: string;
-  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  modalRef: React.RefObject<any>;
-  setIsAgreementOpen: React.Dispatch<React.SetStateAction<"loan" | "release" | null>>;
-  showSuccess: (msg: string) => void;
-  showError: (msg: string) => void;
-}
+import { ApplicationButtonsProps } from "@/app/commonComponents/utils/Types/components";
 
 const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   application,

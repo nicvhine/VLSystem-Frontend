@@ -1,6 +1,5 @@
 'use client';
 
-import { FiSearch, FiChevronDown } from 'react-icons/fi';
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import Link from 'next/link';
 import Head from '@/app/userPage/headPage/page';
@@ -10,8 +9,6 @@ import Pagination from '../utils/pagination';
 import { useLoansPage } from './hook';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import Filter from '../utils/sortAndSearch';
-
-// Use shared LoadingSpinner from common utils
 
 export default function LoansPage() {
     const {

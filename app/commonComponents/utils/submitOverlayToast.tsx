@@ -2,11 +2,7 @@
 
 import React from "react";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
-
-interface SubmitOverlayToastProps {
-  open: boolean;
-  message?: string;
-}
+import { SubmitOverlayToastProps } from "./Types/components";
 
 export default function SubmitOverlayToast({ open, message = "Processing..." }: SubmitOverlayToastProps) {
   if (!open) return null;

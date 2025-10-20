@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 
-// Responsive utility: true when viewport width <= 768px (mobile)
 export default function useIsMobile(): boolean {
   const [isMobile, setIsMobile] = useState(false);
 

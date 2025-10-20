@@ -1,11 +1,9 @@
 'use client';
 
-// Modal: release form preview and print
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-
-import { Application } from "./logic";
+import { Application } from "express";
 
 interface ReleaseFormProps {
   isOpen: boolean;

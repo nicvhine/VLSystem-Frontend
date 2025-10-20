@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { LoanDetails, Language } from './types';
+import { LoanDetails } from '../utils/Types/loan';
+import { Language } from '../utils/Types/language';
 import { fetchLoans } from './function';
 import translations from '../translation';
 
@@ -15,37 +16,6 @@ export const useLoansPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [role, setRole] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>('en');
-
-  // Initialize role and language
-  useEffect(() => {
-    const storedRole = localStorage.getItem('role');
-    if (storedRole) setRole(storedRole);
-
-    const storedLang =
-      storedRole === 'head'
-        ? localStorage.getItem('headLanguage')
-        : storedRole === 'loan officer'
-        ? localStorage.getItem('loanOfficerLanguage')
-        : localStorage.getItem('managerLanguage');
-
-    if (storedLang) setLanguage(storedLang as Language);
-  }, []);
-
-  // Listen for language change events
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      const { userType, language } = event.detail;
-      if (
-        (role === 'head' && userType === 'head') ||
-        (role === 'loan officer' && userType === 'loanOfficer') ||
-        (role === 'manager' && userType === 'manager')
-      ) {
-        setLanguage(language);
-      }
-    };
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);

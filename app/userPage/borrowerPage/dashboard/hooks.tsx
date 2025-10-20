@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
-import { Loan, Collection, Payments } from "./type";
+import { Loan } from "@/app/commonComponents/utils/Types/loan";
+import { Collection, Payment } from "@/app/commonComponents/utils/Types/collection";
 import translations from "@/app/commonComponents/translation";
-
-type Language = 'en' | 'ceb';
+import { Language } from "@/app/commonComponents/utils/Types/language";
 
 export default function useBorrowerDashboard(borrowersId: string | null) {
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -21,49 +21,12 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [paymentProgress, setPaymentProgress] = useState(0);
-  const [paidPayments, setPaidPayments] = useState<Payments[]>([]);
+  const [paidPayments, setPaidPayments] = useState<Payment[]>([]);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const [role, setRole] = useState<string | null>(null);
   const [language, setLanguage] = useState<Language>('en');
-
-  // Initialize role and language
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const storedRole = localStorage.getItem('role');
-    setRole(storedRole);
-
-    const storedLang = storedRole === 'borrower'
-      ? localStorage.getItem('borrowerLanguage')
-      : storedRole === 'head'
-      ? localStorage.getItem('headLanguage')
-      : storedRole === 'loan officer'
-      ? localStorage.getItem('loanOfficerLanguage')
-      : storedRole === 'manager'
-      ? localStorage.getItem('managerLanguage')
-      : null;
-
-    if (storedLang) setLanguage(storedLang as Language);
-  }, []);
-
-  // Listen for language change events
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      const { userType, language } = event.detail;
-      if (
-        (role === 'borrower' && userType === 'borrower') ||
-        (role === 'head' && userType === 'head') ||
-        (role === 'loan officer' && userType === 'loanOfficer') ||
-        (role === 'manager' && userType === 'manager')
-      ) {
-        setLanguage(language);
-      }
-    };
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
 
   // Translation object
   const t = useMemo(() => translations.loanTermsTranslator[language], [language]);
@@ -149,7 +112,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
       try {
         const res = await fetch(`http://localhost:3001/payments/${borrowersId}`);
         if (!res.ok) throw new Error('Failed to fetch payments');
-        const data: Payments[] = await res.json();
+        const data: Payment[] = await res.json();
         const uniquePayments = data.filter(
           (payment, index, self) => index === self.findIndex(p => p.referenceNumber === payment.referenceNumber)
         );

@@ -18,11 +18,6 @@ import LoginModal from './loginForm/page';
 import SimulatorModal from './loanSimulator/page';
 import TrackModal from './applicationTracker/page';
 
-/**
- * Main landing page component that orchestrates all sections, navbar, and modals
- * Handles language switching, page animations, and modal state management
- * @returns JSX element containing the complete landing page layout
- */
 export default function LandingPage() {
   // Language state for bilingual support
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -60,6 +55,21 @@ export default function LandingPage() {
 
   // Trigger page fade-in animation on component mount
   useEffect(() => {
+    // Set default localStorage values if not already set
+    if (!localStorage.getItem('role')) {
+      localStorage.setItem('role', 'public');
+    }
+    if (!localStorage.getItem('language')) {
+      localStorage.setItem('language', 'en');
+    }
+
+    // Initialize language state from localStorage
+    const savedLanguage = localStorage.getItem('language') as 'en' | 'ceb';
+    if (savedLanguage) {
+      setLanguage(savedLanguage);
+    }
+
+    // Trigger page fade-in animation
     const timer = setTimeout(() => setPageLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
@@ -70,7 +80,6 @@ export default function LandingPage() {
   const handleLogoClick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
-    // Trigger fade animation by resetting and re-enabling page loaded state
     setPageLoaded(false);
     setTimeout(() => setPageLoaded(true), 100);
   };
@@ -86,7 +95,10 @@ export default function LandingPage() {
         {/* Navigation */}
         <LandingNavbar
           language={language}
-          setLanguage={setLanguage}
+          setLanguage={(lang) => {
+            setLanguage(lang);
+            localStorage.setItem('language', lang);
+          }}
           onLogoClick={handleLogoClick}
           isLoginOpen={isLoginOpen}
           setIsLoginOpen={openLogin}

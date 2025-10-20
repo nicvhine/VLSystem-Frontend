@@ -2,17 +2,7 @@
 
 import { FC, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-
-// Props interface for confirmation modal component
-interface ConfirmModalProps {
-  show: boolean;
-  message?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  loading?: boolean;
-  applicationId?: string;
-  status?: string;
-}
+import { ConfirmModalProps } from "../../utils/Types/modal";
 
 /**
  * Reusable confirmation modal component for sensitive actions

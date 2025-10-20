@@ -1,16 +1,7 @@
 'use client';
 
 import { Dispatch, SetStateAction } from "react";
-
-interface NoteModalProps {
-  isOpen: boolean;
-  isAnimating: boolean;
-  selectedCollection: any;
-  noteText: string;
-  setNoteText: Dispatch<SetStateAction<string>>;
-  handleClose: () => void;
-  handleSaveNote: () => void;
-}
+import { NoteModalProps } from "../../utils/Types/collection";
 
 export default function NoteModal({
   isOpen,

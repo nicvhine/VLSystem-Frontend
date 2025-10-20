@@ -4,9 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, CheckCircle2, Clock3, XCircle, Banknote, FileCheck2, Info } from 'lucide-react';
-import { formatDistanceToNow, parseISO, isValid as isValidDate, format as formatDateFns } from 'date-fns';
-
+import { Bell } from 'lucide-react';
 import useProfilePic from './profilePic';
 import useAccountSettings from './accountSettings';
 import MobileMenu from './mobileMenu';
@@ -17,24 +15,23 @@ import {
   getHeadNavItems,
   getBorrowerNavItems,
 } from './navItems';
-
-interface NavbarProps {
-  role: 'manager' | 'loanOfficer' | 'head' | 'collector' | 'borrower';
-  isBlurred?: boolean;
-}
+import { NavbarProps } from '../utils/Types/navbar';
 
 export default function Navbar({ role, isBlurred = false }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Single language state synced with localStorage
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem(`${role}Language`) as 'en' | 'ceb') || 'en';
+      if (!localStorage.getItem('language')) {
+        localStorage.setItem('language', 'en');
+      }
+      return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
     }
     return 'en';
   });
 
-  // 🌐 Dynamic Nav Items
   const [navItems, setNavItems] = useState(() => {
     switch (role) {
       case 'manager':
@@ -50,7 +47,6 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     }
   });
 
-  // 👤 Profile and dropdown states
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -78,7 +74,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
 
   const { setNotificationPreferences } = useAccountSettings();
 
-  // 🧩 Load user data and notifications
+  // Load user data, role, notifications
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -121,8 +117,11 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     }
   }, [role]);
 
+  // Sync language with localStorage and nav items
   useEffect(() => {
-    localStorage.setItem(`${role}Language`, language);
+    if (typeof window === 'undefined') return;
+
+    localStorage.setItem('language', language);
 
     switch (role) {
       case 'manager':
@@ -165,50 +164,6 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     });
   };
 
-  // Helpers for notifications UI
-  const getStatusIcon = (message: string | undefined) => {
-    const m = (message || '').toLowerCase();
-    if (m.includes('denied')) return <XCircle className="h-4 w-4 text-red-600" />;
-    if (m.includes('approved') || m.includes('cleared')) return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
-    if (m.includes('pending')) return <Clock3 className="h-4 w-4 text-amber-600" />;
-    if (m.includes('disbursed') || m.includes('release')) return <Banknote className="h-4 w-4 text-indigo-600" />;
-    if (m.includes('document') || m.includes('agreement')) return <FileCheck2 className="h-4 w-4 text-blue-600" />;
-    return <Info className="h-4 w-4 text-gray-400" />;
-  };
-
-  const formatRelative = (dateLike: any) => {
-    try {
-      const d = typeof dateLike === 'string' ? (isNaN(Date.parse(dateLike)) ? parseISO(dateLike) : new Date(dateLike)) : new Date(dateLike);
-      if (!isValidDate(d)) return '';
-      return formatDistanceToNow(d, { addSuffix: true });
-    } catch {
-      return '';
-    }
-  };
-
-  const formatFull = (dateLike: any) => {
-    try {
-      const d = typeof dateLike === 'string' ? (isNaN(Date.parse(dateLike)) ? parseISO(dateLike) : new Date(dateLike)) : new Date(dateLike);
-      if (!isValidDate(d)) return String(dateLike ?? '');
-      // Example: 10/09/2025, 2:19:50 AM
-      return formatDateFns(d, 'MM/dd/yyyy, h:mm:ss a');
-    } catch {
-      return String(dateLike ?? '');
-    }
-  };
-
-  const pickNotifDate = (notif: any) => {
-    return (
-      notif?.date ||
-      notif?.createdAt ||
-      notif?.created_at ||
-      notif?.timestamp ||
-      notif?.time ||
-      notif?.datetime ||
-      notif?.dateTime ||
-      ''
-    );
-  };
 
   return (
     <div

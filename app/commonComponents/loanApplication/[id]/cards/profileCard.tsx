@@ -1,10 +1,6 @@
 "use client";
 import { FiUser } from "react-icons/fi";
-import { Application } from "../types";
-
-interface ProfileCardProps {
-  application: Application | undefined;
-}
+import { ProfileCardProps } from "@/app/commonComponents/utils/Types/components";
 
 export default function ProfileCard({ application }: ProfileCardProps) {
   return (

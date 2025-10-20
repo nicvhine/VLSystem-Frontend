@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import useIsMobile from "@/app/commonComponents/utils/useIsMobile";
 import translations from "../translation";
-import { Collection } from "./types";
+import { Collection } from "../utils/Types/collection";
 
 // Role-based wrappers
 import Head from "@/app/userPage/headPage/page";
@@ -44,30 +44,6 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
     const t = useMemo(() => translations.loanTermsTranslator[language], [language]);
     const s = useMemo(() => translations.statisticTranslation[language], [language]);
     const b = useMemo(() => translations.buttonTranslation[language], [language]);
-
-    // Initialize role and language
-    useEffect(() => {
-        const storedRole = localStorage.getItem("role");
-        setRole(storedRole);
-
-        const langKey = storedRole === 'manager' 
-            ? 'managerLanguage' 
-            : storedRole === 'head'
-                ? 'headLanguage'
-                : 'collectorLanguage';
-
-        const storedLanguage = localStorage.getItem(langKey) as 'en' | 'ceb';
-        if (storedLanguage) setLanguage(storedLanguage);
-    }, []);
-
-    // Listen for language changes
-    useEffect(() => {
-        const handleLanguageChange = (event: CustomEvent) => {
-            setLanguage(event.detail.language);
-        };
-        window.addEventListener('languageChange', handleLanguageChange as EventListener);
-        return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-    }, []);
 
     // Load current collector
     useEffect(() => {

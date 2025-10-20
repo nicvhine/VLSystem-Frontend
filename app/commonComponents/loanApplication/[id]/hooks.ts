@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Application } from "./types";
+import { Application } from "../../utils/Types/application";
 import { authFetch } from "../../utils/fetch";
 import translations from "../../translation";
 

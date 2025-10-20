@@ -1,19 +1,7 @@
 'use client';
 
-import { Agent, FieldErrors } from './types';
 import { Dispatch, SetStateAction } from 'react';
-
-interface AddAgentParams {
-  newAgentName: string;
-  newAgentPhone: string;
-  agents: Agent[];
-  setAgents: Dispatch<SetStateAction<Agent[]>>;
-  setShowModal: Dispatch<SetStateAction<boolean>>;
-  setSuccessMessage: Dispatch<SetStateAction<string>>;
-  setLoading: Dispatch<SetStateAction<boolean>>;
-  setError: Dispatch<SetStateAction<string>>;
-  fetchAgents: () => Promise<void>;
-}
+import { AddAgentParams, Agent, FieldErrors } from '../utils/Types/agent';
 
 // Normalize agent object from API
 export const normalizeAgent = (raw: any): Agent => ({

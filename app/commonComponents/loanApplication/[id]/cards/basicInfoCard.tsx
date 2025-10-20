@@ -1,10 +1,5 @@
 "use client";
-import { Application } from "../types";
-
-interface BasicInfoCardProps {
-  application: Application | undefined;
-  l: any;
-}
+import { BasicInfoCardProps } from "@/app/commonComponents/utils/Types/components";
 
 export default function BasicInfoCard({ application, l }: BasicInfoCardProps) {
   return (

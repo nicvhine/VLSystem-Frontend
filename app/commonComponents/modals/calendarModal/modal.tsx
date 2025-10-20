@@ -4,18 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "../errorModal/modal";
 import ConfirmModal from "../confirmModal/ConfirmModal";
-
-// Props interface for interview calendar modal component
-interface InterviewModalProps {
-  show: boolean;
-  onClose: () => void;
-  applicationId: string;
-  currentDate?: string;
-  currentTime?: string;
-  onSave: (date: string, time: string) => void;
-  onView: (applicationId: string) => void;
-  appliedDate?: string;
-}
+import { InterviewModalProps } from "../../utils/Types/modal";
 
 /**
  * Interview calendar modal component for scheduling loan interviews

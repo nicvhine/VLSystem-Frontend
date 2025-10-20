@@ -1,7 +1,5 @@
 'use client';
 
-// Profile dropdown: avatar, account settings panel, and logout
-
 import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';

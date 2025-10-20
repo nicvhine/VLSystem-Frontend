@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Collection } from '../type';
+import { Collection } from '@/app/commonComponents/utils/Types/collection';
 
 interface PaidCollectionCardProps {
   collection: Collection;

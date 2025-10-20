@@ -1,21 +1,9 @@
 'use client';
 
-// Mobile navigation list with language toggle
-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Dispatch, SetStateAction } from 'react';
+import { MobileMenuProps } from '../utils/Types/navbar';
 
-interface NavItem {
-  name: string;
-  href: string;
-}
-
-interface MobileMenuProps {
-  navItems: NavItem[];
-  language: 'en' | 'ceb';
-  setLanguage: Dispatch<SetStateAction<'en' | 'ceb'>>;
-}
 
 export default function MobileMenu({ navItems, language, setLanguage }: MobileMenuProps) {
   const pathname = usePathname();
