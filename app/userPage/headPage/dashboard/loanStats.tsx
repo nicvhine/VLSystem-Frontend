@@ -2,6 +2,7 @@
 
 import { FiDollarSign, FiTrendingUp, FiCheckCircle, FiXCircle, FiUsers, FiPieChart, FiClock } from "react-icons/fi";
 import { useLoanStats } from "@/app/commonComponents/statistics/hooks";
+import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { StatCard } from "@/app/commonComponents/statistics/functions";
 import translations from "@/app/commonComponents/Translation";
 
@@ -10,7 +11,7 @@ export default function HeadLoanStats() {
   const t = translations.statisticTranslation[language];
   const l = translations.loanTermsTranslator[language];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <div className="flex justify-center items-center py-8"><LoadingSpinner /></div>;
   return (
     <div className="space-y-8">
 

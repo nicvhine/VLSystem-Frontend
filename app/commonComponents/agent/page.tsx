@@ -9,6 +9,7 @@ import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
 import Pagination from '../utils/pagination';
 import { useAgentPage } from './hook';
 import Filter from '../utils/sortAndSearch';
+import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
 
 export default function AgentPage() {
   const {
@@ -40,7 +41,7 @@ export default function AgentPage() {
     t,
   } = useAgentPage();
 
-  if (!role) return <div className="text-center py-8">Loading role...</div>;
+  if (!role) return <div className="text-center py-8"><LoadingSpinner /></div>;
 
   const Wrapper = role === 'loan officer' ? LoanOfficer : role === 'head' ? Head : Manager;
 
@@ -86,7 +87,7 @@ export default function AgentPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
-                  <tr><td colSpan={6} className="text-center py-8 text-gray-500 text-lg">Loading...</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500 text-lg"><LoadingSpinner /></td></tr>
                 ) : sortedAgents.length === 0 ? (
                   <tr><td colSpan={6} className="text-center py-8 text-gray-500 text-lg">No agents found.</td></tr>
                 ) : (

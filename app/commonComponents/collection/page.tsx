@@ -4,6 +4,7 @@ import { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiSearch, FiChevronDown, FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
+import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 
 import { useCollectionPage } from "./hooks";
 import PaymentModal from "./modals/paymentModal";
@@ -13,7 +14,7 @@ import { formatCurrency } from "../utils/formatters";
 import { CollectionsPageProps, Collection} from "./types";
 import Filter from "../utils/sortAndSearch";
 
-const LoadingSpinner = () => <div className="py-6 text-center">Loading...</div>;
+// Use shared LoadingSpinner from common utils
 
 export default function CollectionsPage({ onModalStateChange }: CollectionsPageProps) {
   const {

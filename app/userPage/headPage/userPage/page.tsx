@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { FiSearch, FiUserPlus, FiChevronDown, FiLoader, FiMoreVertical } from "react-icons/fi";
+import { FiSearch, FiUserPlus, FiChevronDown, FiMoreVertical } from "react-icons/fi";
+import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import Head from "../page";
 import { useUsersLogic } from "./hooks";
 import { User } from "./types";
@@ -12,13 +13,7 @@ import DecisionModal from "./modal";
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import translations from "@/app/commonComponents/Translation";
 
-function LoadingSpinner() {
-  return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <FiLoader className="w-8 h-8 text-blue-500 animate-spin" />
-    </div>
-  );
-}
+// Use shared LoadingSpinner from common utils
 
 export default function Page() {
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {

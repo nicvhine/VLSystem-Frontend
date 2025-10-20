@@ -7,6 +7,7 @@
   import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
   import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';
   import PaymentHistoryModal from '@/app/commonComponents/modals/paymentHistoryModal/modal';
+  import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
 
   import useBorrowerDashboard from './hooks';
 
@@ -49,7 +50,7 @@
       t
     } = dashboard;
 
-    if (loading) return <p>Loading...</p>;
+  if (loading) return <div className="flex justify-center items-center py-8"><LoadingSpinner /></div>;
     if (error) return <p className="text-red-600">{error}</p>;
 
     const upcoming = activeLoan ? collections.filter(c => c.borrowersId === borrowersId && c.loanId === activeLoan.loanId && c.status !== 'Paid') : [];

@@ -4,6 +4,7 @@ import { FiFileText, FiClock, FiCheckCircle, FiXCircle, FiUsers } from 'react-ic
 import translations from '@/app/commonComponents/Translation';
 import { StatCard } from '@/app/commonComponents/statistics/functions';
 import { useLoanStats } from '@/app/commonComponents/statistics/hooks';
+import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
 
 export default function LoanStatsDashboard() {
   const { loading, typeStats, applicationStats, language } = useLoanStats("loanOfficer");
@@ -11,7 +12,7 @@ export default function LoanStatsDashboard() {
   const t = translations.statisticTranslation[language];
   const l = translations.loanTermsTranslator[language];
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <div className="flex justify-center items-center py-8"><LoadingSpinner /></div>;
 
   return (
     <div className="flex flex-col gap-6 h-full">

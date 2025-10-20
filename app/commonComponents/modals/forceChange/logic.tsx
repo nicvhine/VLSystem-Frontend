@@ -123,6 +123,12 @@ export function useChangePassword(
         setTimeout(() => {
           setSuccessOpen(false);
           localStorage.removeItem('forcePasswordChange');
+          // Notify any listeners (e.g., borrower dashboard) that forced password change is completed
+          try {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new Event('forcePasswordChangeCompleted'));
+            }
+          } catch {}
           onClose();
           if (onSuccess) onSuccess();
         }, 3000);
