@@ -10,7 +10,8 @@ const trackerApplication = {
         t2: "Track Application",
         t3: "Application Status",
         t4: "Current Status",
-    },
+        
+    }, 
     ceb: {
         er1: "Palihug pagsulod ug valid nga Application ID.",
         er2: "Wala makit-i ang aplikasyon.",
