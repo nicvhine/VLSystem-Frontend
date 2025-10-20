@@ -1,36 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-
-export interface LoanTypeStat {
-  loanType: string;
-  count: number;
-}
-
-export interface LoanStats {
-  totalPrincipal: number;
-  totalInterest: number;
-  typeStats: LoanTypeStat[];
-}
-
-export interface CollectionStats {
-  totalCollectables: number;
-  totalCollected: number;
-  totalUnpaid: number;
-}
-
-export interface TypeStats {
-  withCollateral: number;
-  withoutCollateral: number;
-  openTerm: number;
-}
-
-export interface ApplicationStats {
-  applied: number;
-  pending?: number;
-  approved: number;
-  denied: number;
-}
+import { LoanStats, CollectionStats, TypeStats, ApplicationStats, LoanTypeStat,  } from "../utils/Types/statsType";
 
 export function useLoanStats(userType: "manager" | "loanOfficer") {
   const [loading, setLoading] = useState(true);

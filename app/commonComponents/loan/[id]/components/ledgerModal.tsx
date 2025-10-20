@@ -3,27 +3,8 @@
 import { useEffect, useState } from "react";
 import { FiX } from "react-icons/fi";
 import { formatCurrency } from "@/app/commonComponents/utils/formatters";
-
-interface Payment {
-  _id?: string;
-  loanId: string;
-  referenceNumber: string;
-  borrowersId: string;
-  collector?: string;
-  amount: number;
-  balance?: number;
-  paidToCollection?: number;
-  datePaid: string;
-  status: string;
-  mode?: string;
-}
-
-interface LedgerModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  loanId: string | null;
-  totalPayable?: number;
-}
+import { Payment } from "@/app/commonComponents/utils/Types/collection";
+import { LedgerModalProps } from "@/app/commonComponents/utils/Types/modal";
 
 export default function LedgerModal({
   isOpen,

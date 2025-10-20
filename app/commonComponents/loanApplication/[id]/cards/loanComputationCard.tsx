@@ -1,12 +1,7 @@
 "use client";
-import { Application } from "../types";
-import { formatCurrency } from "@/app/commonComponents/utils/formatters";
 
-interface LoanComputationCardProps {
-  application: Application | undefined;
-  t: any;
-  l: any;
-}
+import { formatCurrency } from "@/app/commonComponents/utils/formatters";
+import { LoanComputationCardProps } from "@/app/commonComponents/utils/Types/components";
 
 export default function LoanComputationCard({ application, t, l }: LoanComputationCardProps) {
   return (

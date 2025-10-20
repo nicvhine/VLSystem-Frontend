@@ -2,16 +2,10 @@
 
 import { useState } from "react";
 import { FiUser, FiFileText, FiPaperclip } from "react-icons/fi";
-import { Application } from "../types";
+import { ApplicationDetailsTabsProps } from "@/app/commonComponents/utils/Types/components";
 import { formatCurrency, capitalizeWords } from "@/app/commonComponents/utils/formatters";
 import WithCollateral from "../customization/withCollateral";
 import OpenTerm from "../customization/openTerm";
-
-interface ApplicationDetailsTabsProps {
-  application: Application | undefined;
-  l: any;
-  t: any;
-}
 
 export default function IncomeCharactedCard({ application, l, t }: ApplicationDetailsTabsProps) {
   const [activeTab, setActiveTab] = useState<"income" | "references" | "collateral">("income");

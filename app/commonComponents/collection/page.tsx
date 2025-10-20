@@ -5,13 +5,12 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
-
 import { useCollectionPage } from "./hooks";
 import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import { formatCurrency } from "../utils/formatters";
-import { CollectionsPageProps, Collection } from "./types";
+import { CollectionsPageProps, Collection } from "../utils/Types/collection";
 import Filter from "../utils/sortAndSearch";
 import {
   handleSaveNote,

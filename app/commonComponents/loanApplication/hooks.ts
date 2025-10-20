@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Language } from './types';
+import { Language } from "../utils/Types/language";
 
 // -------------------- Role & Language Hook --------------------
 export function useRoleLanguage() {

@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { FiSearch, FiChevronDown } from "react-icons/fi";
-
-import { Application } from "./types";
+import { FiChevronDown } from "react-icons/fi";
+import { Application } from "../utils/Types/application";
 import translations from "../translation";
 import { authFetch, formatCurrency, formatDate, filterApplications } from "./function";
 import { useLoanApplicationPage } from "./hooks";
-
 import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";

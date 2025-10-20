@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Agent, Language } from './types';
 import { fetchAgents as fetchAgentsFn, handleAddAgent as handleAddAgentFn } from './function';
 import translations from '../translation';
+import { Agent } from '../utils/Types/agent';
+import { Language } from '../utils/Types/language';
 
 export const useAgentPage = () => {
   const [role, setRole] = useState<string | null>(null);
@@ -20,37 +21,6 @@ export const useAgentPage = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [language, setLanguage] = useState<Language>('en');
 
-  // Load role and language from localStorage
-  useEffect(() => {
-    const storedRole = localStorage.getItem('role');
-    if (storedRole) setRole(storedRole);
-
-    const storedLanguageKey =
-      storedRole === 'head'
-        ? 'headLanguage'
-        : storedRole === 'loan officer'
-        ? 'loanOfficerLanguage'
-        : 'managerLanguage';
-
-    const storedLanguage = localStorage.getItem(storedLanguageKey!) as Language | null;
-    if (storedLanguage) setLanguage(storedLanguage);
-  }, []);
-
-  // Listen for language changes
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      const { userType, language } = event.detail;
-      if (
-        (role === 'head' && userType === 'head') ||
-        (role === 'loan officer' && userType === 'loanOfficer') ||
-        (role === 'manager' && userType === 'manager')
-      ) {
-        setLanguage(language);
-      }
-    };
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, [role]);
 
   // Fetch agents
   const fetchAgents = useCallback(async () => {
@@ -77,7 +47,6 @@ export const useAgentPage = () => {
   const paginatedAgents = sortedAgents.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalCount = sortedAgents.length;
 
-  // --- TRANSLATION OBJECT ---
   const t = translations.loanTermsTranslator[language];
 
   return {

@@ -1,5 +1,5 @@
 import React from "react";
-import { LoanDetails } from "../types";
+import { LoanDetails } from "@/app/commonComponents/utils/type";
 import { DetailRow } from "../function";
 import { formatCurrency, formatDate } from "@/app/commonComponents/utils/formatters";
 import LedgerModal from "./ledgerModal";

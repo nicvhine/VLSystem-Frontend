@@ -1,6 +1,5 @@
 'use client';
 
-import { FiSearch, FiChevronDown } from 'react-icons/fi';
 import Head from '@/app/userPage/headPage/page';
 import Manager from '@/app/userPage/managerPage/page';
 import LoanOfficer from '@/app/userPage/loanOfficerPage/page';

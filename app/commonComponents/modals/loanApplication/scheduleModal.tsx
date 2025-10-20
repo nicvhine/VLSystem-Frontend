@@ -4,20 +4,10 @@ import { useState, useEffect } from "react";
 import { FiX, FiFileText } from "react-icons/fi";
 import emailjs from "emailjs-com";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
+import { SetScheduleModalProps } from "../../utils/Types/components";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
-
-// Props interface for schedule modal component
-interface SetScheduleModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  application: any;
-  setApplications: React.Dispatch<React.SetStateAction<any[]>>;
-  authFetch: (url: string, options?: RequestInit) => Promise<any>;
-  showError: (msg: string) => void;
-  showSuccess: (msg: string) => void;
-}
 
 /**
  * Modal component for setting interview schedule on a loan application

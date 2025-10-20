@@ -3,15 +3,7 @@
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-
-// Props interface for release form modal component
-interface ReleaseFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  borrowerName: string;
-  loanAmount: number;
-  releaseDate: string;
-}
+import { ReleaseFormModalProps } from "../../utils/Types/modal";
 
 /**
  * Reusable signature line component for forms

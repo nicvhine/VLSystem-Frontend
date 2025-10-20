@@ -1,4 +1,4 @@
-import { StatCardProps } from "./types";
+import { StatCardProps } from "../utils/Types/statsType";
 
 export function StatCard({ label, value, icon: Icon, isAmount = false }: StatCardProps) {
   return (

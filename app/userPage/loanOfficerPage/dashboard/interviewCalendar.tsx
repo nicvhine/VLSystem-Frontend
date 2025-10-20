@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from "react";
-// @ts-ignore: react-big-calendar lacks bundled TypeScript definitions in this project
 import { Calendar as RBC, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
@@ -10,29 +9,11 @@ import "./calendar.css";
 import InterviewModal from "@/app/commonComponents/modals/calendarModal/modal";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import translations from "@/app/commonComponents/translation";
-
 import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
-
-interface InterviewEvent {
-  title: string;
-  start: Date;
-  end: Date;
-  applicationId: string;
-}
-
-interface Application {
-  _id: string;
-  appName: string;
-  appContact: string;
-  appEmail: string;
-  appAddress: string;
-  interviewDate?: string;
-  interviewTime?: string;
-  status?: string;
-  applicationId: string;
-  appliedDate?: string;
-}
+import { Application } from "@/app/commonComponents/utils/Types/application";
+import { InterviewEvent } from "@/app/commonComponents/utils/Types/application";
+import { InterviewCalendarProps } from "@/app/commonComponents/utils/Types/components";
 
 // Calendar localization setup
 const locales = { "en-US": enUS };
@@ -44,9 +25,6 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-interface InterviewCalendarProps {
-  onModalToggle?: (isOpen: boolean) => void;
-}
 
 /**
  * Interview calendar component for loan officers

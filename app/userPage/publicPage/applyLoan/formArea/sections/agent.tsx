@@ -1,54 +1,8 @@
 'use client';
 
 import { FC, useEffect, useState } from "react";
-function ErrorModal({ message, onClose }: { message: string; onClose: () => void }) {
-  const [animateIn, setAnimateIn] = useState(false);
-  useEffect(() => {
-    setAnimateIn(true);
-    return () => setAnimateIn(false);
-  }, []);
-  const handleClose = () => {
-    setAnimateIn(false);
-    setTimeout(() => onClose(), 150);
-  };
-  return (
-    <div
-      className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
-        animateIn ? 'opacity-100' : 'opacity-0'
-      }`}
-      onClick={handleClose}
-    >
-      <div
-        className={`w-full max-w-sm rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
-          animateIn ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Action Required</h3>
-        <p className="text-sm text-gray-600 mb-4">{message || 'Please fill out the missing fields.'}</p>
-        <div className="flex justify-end">
-          <button
-            onClick={handleClose}
-            className="px-4 py-2 bg-red-600 text-white rounded-md"
-          >Close</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface Agent {
-  agentId: string;
-  name: string;
-}
-
-interface AgentDropdownProps {
-  language: "en" | "ceb";
-  appAgent: string;
-  setAppAgent: (agentId: string) => void;
-  missingError?: boolean;
-}
-
+import { Agent } from "@/app/commonComponents/utils/Types/agent";
+import { AgentDropdownProps } from "@/app/commonComponents/utils/Types/agent";
 
 const AgentDropdown: FC<AgentDropdownProps> = ({
   language,

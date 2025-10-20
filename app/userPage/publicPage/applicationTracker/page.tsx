@@ -3,13 +3,7 @@
 import { useEffect, useState } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
-
-// Application tracker modal: fetch status and show progress
-interface TrackModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  language?: 'en' | 'ceb';
-}
+import { TrackModalProps } from "@/app/commonComponents/utils/Types/components";
 
 const progressSteps = {
   en: ["Pending", "Endorsed", "Accepted"],
@@ -19,7 +13,6 @@ const progressSteps = {
 export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackModalProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState("");
-  // Replace inline error banner with shared ErrorModal
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [showModal, setShowModal] = useState(false);

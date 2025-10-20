@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AddAgentResult, FieldErrors } from "./type";
+import { AddAgentResult, FieldErrors } from "../../utils/Types/agent";
 
 export const useAddAgentLogic = (onAddAgent: () => Promise<AddAgentResult>, show: boolean, loading: boolean) => {
   const [showConfirm, setShowConfirm] = useState(false); 

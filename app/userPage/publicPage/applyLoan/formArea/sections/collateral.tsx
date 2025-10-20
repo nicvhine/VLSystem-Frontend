@@ -1,21 +1,7 @@
 "use client";
 
 import React from "react";
-
-// Props interface for collateral information form section
-interface CollateralProps {
-  language: "en" | "ceb";
-  collateralType: string;
-  setCollateralType: (value: string) => void;
-  collateralValue: number;
-  setCollateralValue: (value: number) => void;
-  collateralDescription: string;
-  setCollateralDescription: (value: string) => void;
-  ownershipStatus: string;
-  setOwnershipStatus: (value: string) => void;
-  collateralTypeOptions: { value: string; label: string }[];
-  missingFields?: string[];
-}
+import { CollateralProps } from "@/app/commonComponents/utils/Types/components";
 
 /**
  * Collateral information form section component

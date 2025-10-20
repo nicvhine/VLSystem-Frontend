@@ -6,12 +6,6 @@ import { useState } from "react";
 import InterviewCalendar from "./interviewCalendar";
 
 export default function LoanOfficerDashboard() {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("darkMode") === "true";
-    }
-    return false;
-  });
   const [isNavbarBlurred, setIsNavbarBlurred] = useState(false);
 
   return (

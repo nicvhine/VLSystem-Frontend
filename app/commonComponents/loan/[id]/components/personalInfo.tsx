@@ -1,11 +1,7 @@
 import React from "react";
-import { LoanDetails } from "../types";
+import { LoanDetails, Props } from "@/app/commonComponents/utils/type";
 import { DetailRow} from "../function";
 import { formatDate, formatCurrency, capitalizeWords } from "@/app/commonComponents/utils/formatters";
-
-interface Props {
-  client: LoanDetails;
-}
 
 export default function PersonalInfo({ client }: Props) {
   return (

@@ -3,7 +3,7 @@
 import { FC } from "react";
 import ConfirmModal from "../confirmModal/ConfirmModal";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
-import { AddAgentModalProps } from "./type";
+import { AddAgentModalProps } from "../../utils/Types/agent";
 import { useAddAgentLogic } from "./logic";
 
 // Modal component for adding an agent

@@ -1,5 +1,5 @@
 import React from "react";
-import { DetailRowProps } from "./types";
+import { DetailRowProps } from "../../utils/Types/components";
 
 export const DetailRow = ({ label, value }: DetailRowProps) => (
   <div className="flex flex-col py-1">

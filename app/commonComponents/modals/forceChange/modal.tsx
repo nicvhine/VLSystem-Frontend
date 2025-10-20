@@ -4,14 +4,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useChangePassword } from './logic';
 import { useState } from 'react';
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
-
-/**
- * Modal component for forced password change
- */
-interface ChangePasswordModalProps {
-  onClose: () => void;
-  onSuccess?: () => void;
-}
+import { ChangePasswordModalProps } from "../../utils/Types/modal";
 
 export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswordModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -1,19 +1,7 @@
 "use client";
 
 import React from "react";
-
-// Props interface for DecisionModal component
-interface DecisionModalProps {
-  isOpen: boolean;
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-  danger?: boolean; // optional for red confirm button
-  error?: string; // optional error message
-}
+import { DecisionModalProps } from "@/app/commonComponents/utils/Types/modal";
 
 /**
  * Decision modal component for user confirmations

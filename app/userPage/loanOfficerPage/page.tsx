@@ -6,11 +6,7 @@ import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
 import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
-
-interface LoanOfficerProps {
-  children?: React.ReactNode;
-  isNavbarBlurred?: boolean;
-}
+import { LoanOfficerProps } from "@/app/commonComponents/utils/Types/components";
 
 export default function LoanOfficer({ children, isNavbarBlurred = false }: LoanOfficerProps){
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);

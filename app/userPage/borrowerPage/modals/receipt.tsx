@@ -3,23 +3,7 @@
 import { Dialog } from '@headlessui/react';
 import { format } from 'date-fns';
 import { Fragment } from 'react';
-
-// Interface for payment data structure
-interface Payment {
-  referenceNumber: string;
-  borrowersId: string;
-  loanId: string;
-  collector: string;
-  amount: number;
-  datePaid: string;
-}
-
-// Props interface for ReceiptModal component
-interface ReceiptModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  payment: Payment | null;
-}
+import { ReceiptModalProps } from '@/app/commonComponents/utils/Types/modal';
 
 /**
  * Receipt modal component for displaying payment receipts

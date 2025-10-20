@@ -1,4 +1,4 @@
-import { Collection } from "./types";
+import { Collection } from "../utils/Types/collection";
 
 // Printing Sheet
 export const handlePrint = (setPrintMode: (v: boolean) => void) => {

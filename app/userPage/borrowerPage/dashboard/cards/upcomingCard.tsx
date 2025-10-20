@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
-import { Collection, Loan } from '../type';
+import { Collection } from '@/app/commonComponents/utils/Types/collection';
+import { Loan } from '@/app/commonComponents/utils/Types/loan';
 import { handlePay } from '../function';
 
 interface UpcomingCollectionCardProps {

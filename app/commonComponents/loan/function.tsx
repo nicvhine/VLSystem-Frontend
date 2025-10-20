@@ -1,4 +1,4 @@
-import { LoanDetails } from './types';
+import { LoanDetails } from "../utils/Types/loan";
 
 const API_URL = "http://localhost:3001/loans";
 

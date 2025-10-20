@@ -3,21 +3,9 @@
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-
-// Utility functions and types from logic module
-import {
-  formatCurrency,
-  capitalizeWords,
-  addMonthsSafe,
-  Application,
-} from "./logic"; 
-
-// Props interface for loan agreement modal
-interface AgreementModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  application: Application | null;
-}
+import { addMonthsSafe } from "./logic";
+import { formatCurrency, capitalizeWords } from "../../utils/formatters";
+import { AgreementModalProps } from "../../utils/type";
 
 /**
  * Signatory section component for loan agreement

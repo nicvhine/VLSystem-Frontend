@@ -1,10 +1,5 @@
 import navbarTranslation from "../translation/navbarTranslation";
-
-export interface LandingNavItem {
-  name: string;
-  href: string;
-  onClick?: () => void;
-}
+import { LandingNavItem } from "../utils/Types/navbar";
 
 export const getHeadNavItems = (language: 'en' | 'ceb') => {
   const t = navbarTranslation[language];

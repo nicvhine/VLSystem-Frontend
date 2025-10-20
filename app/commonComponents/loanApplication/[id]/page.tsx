@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { FiArrowLeft, FiUser, FiPaperclip, FiFileText } from "react-icons/fi";
+import { FiArrowLeft } from "react-icons/fi";
 
 // Components
 import Navbar from "../../navbarComponents/navbar";

@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-// Props interface for error modal component
-interface ErrorModalProps {
-  isOpen: boolean;
-  message: string;
-  onClose: () => void;
-}
+import { ErrorModalProps } from '../../utils/Types/modal';
 
 /**
  * Error modal component with fade animations and auto-close functionality

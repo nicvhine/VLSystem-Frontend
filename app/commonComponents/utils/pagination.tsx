@@ -2,16 +2,7 @@
 
 import React from "react";
 import translations from "../translation";
-
-interface PaginationProps {
-  totalCount: number;
-  currentPage: number;
-  totalPages: number;
-  pageSize: number;
-  setCurrentPage: (page: number) => void;
-  setPageSize: (size: number) => void;
-  language: 'en' | 'ceb';
-}
+import { PaginationProps } from "./Types/pagination";
 
 const Pagination: React.FC<PaginationProps> = ({
   totalCount,

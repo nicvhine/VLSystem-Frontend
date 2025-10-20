@@ -3,19 +3,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { formatCurrency } from "../../utils/formatters";
 import ConfirmModal from "../../modals/confirmModal/ConfirmModal";
-
-interface PaymentModalProps {
-  isOpen: boolean;
-  isAnimating: boolean;
-  selectedCollection: any;
-  paymentAmount: number;
-  setPaymentAmount: Dispatch<SetStateAction<number>>;
-  showPaymentConfirm: boolean;
-  setShowPaymentConfirm: Dispatch<SetStateAction<boolean>>;
-  handleClose: () => void;
-  handleConfirmPayment: () => void;
-  paymentLoading: boolean;
-}
+import { PaymentModalProps } from "../../utils/Types/collection";
 
 export default function PaymentModal({
   isOpen,

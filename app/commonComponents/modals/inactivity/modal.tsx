@@ -1,17 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AreYouStillThereModalProps } from '../../utils/Types/modal';
 
-interface AreYouStillThereModalProps {
-  countdown: number;
-  onStay: () => void;
-  onLogout: () => void;
-}
-
-/**
- * Dialog shown when inactivity timer is about to log the user out.
- * Matches the shared modal styling used across the app.
- */
 export default function AreYouStillThereModal({ countdown, onStay, onLogout }: AreYouStillThereModalProps) {
   const [isVisible, setIsVisible] = useState(true);
   const [isAnimating, setIsAnimating] = useState(false);

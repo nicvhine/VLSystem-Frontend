@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { FiMaximize } from 'react-icons/fi';
-import { Payment } from '../type';
+import { Payment } from '@/app/commonComponents/utils/Types/collection';
 
 interface PaymentHistoryCardProps {
   paidPayments: Payment[];
