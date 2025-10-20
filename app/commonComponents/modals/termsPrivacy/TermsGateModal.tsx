@@ -11,6 +11,8 @@ export default function TermsGateModal({
   privacyRead,
   enforceReading = true,
   acceptLabel,
+  showCloseIcon = true,
+  showCancelButton = true,
 }: {
   language: "en" | "ceb";
   onAccept: () => void;
@@ -21,6 +23,8 @@ export default function TermsGateModal({
   privacyRead?: boolean;
   enforceReading?: boolean;
   acceptLabel?: string;
+  showCloseIcon?: boolean;
+  showCancelButton?: boolean;
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -31,7 +35,9 @@ export default function TermsGateModal({
   return (
     <div className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-        <button onClick={onCancel} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
+        {showCloseIcon && (
+          <button onClick={onCancel} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
+        )}
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
           {language === 'en' ? 'Terms of Service and Privacy Policy' : 'Mga Termino sa Serbisyo ug Palisiya sa Privacy'}
         </h3>
@@ -84,9 +90,11 @@ export default function TermsGateModal({
           )}
         </div>
         <div className="mt-4 flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-            {language === 'en' ? 'Cancel' : 'Kanselahon'}
-          </button>
+          {showCancelButton && (
+            <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+              {language === 'en' ? 'Cancel' : 'Kanselahon'}
+            </button>
+          )}
           <button
             onClick={onAccept}
             disabled={enforceReading ? (!agree || !tosRead || !privacyRead) : !agree}

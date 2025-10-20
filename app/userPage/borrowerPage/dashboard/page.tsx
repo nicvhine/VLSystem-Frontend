@@ -50,6 +50,14 @@
       t
     } = dashboard;
 
+  // Require re-reading each time the terms gate opens
+  React.useEffect(() => {
+    if (showTermsModal) {
+      setTosRead(false);
+      setPrivacyRead(false);
+    }
+  }, [showTermsModal, setTosRead, setPrivacyRead]);
+
   if (loading) return <div className="flex justify-center items-center py-8"><LoadingSpinner /></div>;
     if (error) return <p className="text-red-600">{error}</p>;
 
@@ -110,14 +118,15 @@
           {showTermsModal && (
             <TermsGateModal
               language={language}
-              onCancel={() => { setShowTermsModal(false); try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch {} }}
+              onCancel={() => { /* intentionally disabled in borrower flow */ }}
               onOpenTos={() => setShowTosContent(true)}
               onOpenPrivacy={() => setShowPrivacyContent(true)}
               tosRead={tosRead}
               privacyRead={privacyRead}
-              enforceReading={false}
               acceptLabel={language === 'en' ? 'Accept and continue' : 'Mouyon ug mopadayon'}
               onAccept={() => { setShowTermsModal(false); try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch {} }}
+              showCloseIcon={false}
+              showCancelButton={false}
             />
           )}
 
