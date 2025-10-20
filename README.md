@@ -68,46 +68,8 @@ Create a .env.local (or .env) file in the root directory, example:
 NEXT_PUBLIC_BACKEND_URL=http://localhost:3001
 ```
 
-## 📁 Project Structure
-```bash
-VLSystem-Frontend/
-├── app/
-│   ├── layout.tsx          # Root layout + font setup
-│   ├── globals.css         # Global styles
-│   └── commonComponents/   # Shared UI and API utilities
-├── public/
-├── components/
-├── next.config.ts          # Image + API config
-└── package.json
-```
-## 🧩 Integration Notes
-
-🌐 Backend URL: http://localhost:3001
-
-🖼️ Remote images: Allowed from localhost:3001 and Cloudinary
-
-⚠️ If API or CORS issues occur:
-
-Check backend CORS_OPTIONS in VLSystem-Backend/config.js
-
-Ensure backend is running and accessible
-
-## 🧠 Troubleshooting
-Issue	Possible Fix
-Images not loading	Verify backend is active and next.config.ts allows the source
-CORS or API errors	Update backend CORS config
-Missing dependencies	Run npm install again
-Type errors	Check TypeScript configs and installed @types packages
-
 🪄 Default Development URL
 ```bash
 http://localhost:3000
 ```
-
-## 🌐 Language Support
-The application supports two languages:
-- **English** (default)
-- **Cebuano** (local language)
-
-Built with ❤️ using Next.js and modern web technologies.
 
