@@ -1,4 +1,5 @@
 import { Application } from "../utils/Types/application";
+import { formatCurrency } from "../utils/formatters";
 
 export async function authFetch(url: string, options: RequestInit = {}) {
   const token = localStorage.getItem("token");
@@ -12,19 +13,6 @@ export async function authFetch(url: string, options: RequestInit = {}) {
     },
   });
 }
-
-export const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat("en-PH", {
-    style: "currency",
-    currency: "PHP",
-  }).format(amount);
-
-export const formatDate = (dateString: string) =>
-  new Date(dateString).toLocaleDateString("en-PH", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 
 export const collectableAmount = (principal: number, interestRate: number, termMonths: number) => {
   const termYears = termMonths / 12;

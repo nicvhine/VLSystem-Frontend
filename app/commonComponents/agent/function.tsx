@@ -34,17 +34,21 @@ export const fetchAgents = async (
     }
 
     const res = await fetch('http://localhost:3001/agents', {
-      method: 'GET',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     });
 
     if (!res.ok) throw new Error('Failed to fetch agents');
     const data = await res.json();
 
-    if (Array.isArray(data)) setAgents(data.map(normalizeAgent));
-    else if (Array.isArray(data?.agents)) setAgents(data.agents.map(normalizeAgent));
-    else setAgents([]);
+    const agentsData = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.agents)
+      ? data.agents
+      : [];
+
+    setAgents(agentsData.map(normalizeAgent));
   } catch (err) {
+    console.error('Fetch Agents Error:', err);
     setAgents([]);
     setError((err as Error).message || 'Server error');
   } finally {
@@ -66,33 +70,23 @@ export const handleAddAgent = async ({
 }: AddAgentParams): Promise<{ success: boolean; fieldErrors?: FieldErrors; message?: string }> => {
   const nameTrim = newAgentName.trim();
   const phoneTrim = newAgentPhone.trim();
-  const normalizeName = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
-  const normalizePhone = (s: string) => s.replace(/\D/g, '');
 
   const errors: FieldErrors = {};
   if (!nameTrim) errors.name = 'Name is required';
   if (!phoneTrim) errors.phoneNumber = 'Phone number is required';
 
-  if (nameTrim && nameTrim.split(/\s+/).filter(Boolean).length < 2) {
+  if (nameTrim && nameTrim.split(/\s+/).length < 2)
     errors.name = 'Please enter at least two words (first and last name).';
-  }
+  if (phoneTrim && (!phoneTrim.startsWith('09') || phoneTrim.length !== 11))
+    errors.phoneNumber = 'Phone number must start with 09 and be 11 digits.';
 
-  const nameNorm = normalizeName(nameTrim);
-  const phoneNorm = normalizePhone(phoneTrim);
+  const normalize = (s: string) => s.replace(/\s+/g, '').toLowerCase();
+  if (agents.some((a) => normalize(a.name) === normalize(nameTrim)))
+    errors.name = errors.name || 'Agent with this name already exists.';
+  if (agents.some((a) => a.phoneNumber.replace(/\D/g, '') === phoneTrim.replace(/\D/g, '')))
+    errors.phoneNumber = errors.phoneNumber || 'Phone number already in use.';
 
-  if (phoneNorm && (!phoneNorm.startsWith('09') || phoneNorm.length !== 11)) {
-    errors.phoneNumber = 'Phone number must start with 09 and be exactly 11 digits.';
-  }
-
-  if (agents.some(a => normalizeName(a.name) === nameNorm)) {
-    errors.name = errors.name || 'An agent with this name already exists.';
-  }
-
-  if (agents.some(a => normalizePhone(a.phoneNumber) === phoneNorm)) {
-    errors.phoneNumber = errors.phoneNumber || 'This phone number is already used by another agent.';
-  }
-
-  if (errors.name || errors.phoneNumber) return { success: false, fieldErrors: errors };
+  if (Object.keys(errors).length) return { success: false, fieldErrors: errors };
 
   setLoading(true);
   setError('');
@@ -107,20 +101,14 @@ export const handleAddAgent = async ({
       body: JSON.stringify({ name: nameTrim, phoneNumber: phoneTrim }),
     });
 
-    let data: any = null;
-    try { data = await res.json(); } catch {}
+    const data = await res.json().catch(() => null);
+    if (!res.ok) return { success: false, message: data?.message || 'Failed to add agent' };
 
-    if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || 'Failed to add agent';
-      return { success: false, message: msg };
-    }
-
-    if (data?.agent) setAgents(prev => [...prev, normalizeAgent(data.agent)]);
+    if (data?.agent) setAgents((prev) => [...prev, normalizeAgent(data.agent)]);
     else await fetchAgents();
 
     setShowModal(false);
     setSuccessMessage('Agent added successfully');
-
     return { success: true };
   } catch (err) {
     setError('Server error');

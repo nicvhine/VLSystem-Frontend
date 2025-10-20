@@ -2,39 +2,41 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { fetchAgents as fetchAgentsFn, handleAddAgent as handleAddAgentFn } from './function';
-import translations from '../translation';
 import { Agent } from '../utils/Types/agent';
-import { Language } from '../utils/Types/language';
+import translations from '../translation';
 
 export const useAgentPage = () => {
-  const [role, setRole] = useState<string | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [newAgentName, setNewAgentName] = useState('');
   const [newAgentPhone, setNewAgentPhone] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('');
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [language, setLanguage] = useState<Language>('en');
+  const [role, setRole] = useState<string | null>(null);
+  const [language, setLanguage] = useState<"en" | "ceb">("en");
 
-
-  // Fetch agents
+  // Fetch agent data
   const fetchAgents = useCallback(async () => {
     await fetchAgentsFn(role, setAgents, setLoading, setError);
   }, [role]);
 
   useEffect(() => {
-    fetchAgents();
-  }, [fetchAgents]);
+    if (role) fetchAgents();
+  }, [fetchAgents, role]);
 
-  // Filter and sort agents
+  // Search + Sort
   const filteredAgents = agents.filter((agent) => {
     const q = searchQuery.toLowerCase();
-    return agent.name.toLowerCase().includes(q) || agent.phoneNumber.includes(q) || agent.agentId.toLowerCase().includes(q);
+    return (
+      agent.name.toLowerCase().includes(q) ||
+      agent.phoneNumber.includes(q) ||
+      agent.agentId.toLowerCase().includes(q)
+    );
   });
 
   const sortedAgents = [...filteredAgents].sort((a, b) => {
@@ -43,19 +45,54 @@ export const useAgentPage = () => {
     return 0;
   });
 
+  // Pagination
   const totalPages = Math.max(1, Math.ceil(sortedAgents.length / pageSize));
   const paginatedAgents = sortedAgents.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const totalCount = sortedAgents.length;
 
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+    };
+
+    const langKey = keyMap[storedRole || ""] as keyof typeof keyMap;
+    const storedLanguage = localStorage.getItem(langKey) as "en" | "ceb";
+    if (storedLanguage) {
+      setLanguage(storedLanguage);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (
+        (role === "head" && event.detail.userType === "head") ||
+        (role === "loan officer" && event.detail.userType === "loanOfficer") ||
+        (role === "manager" && event.detail.userType === "manager")
+      ) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () =>
+      window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
+
+  // Translation
   const t = translations.loanTermsTranslator[language];
 
   return {
     role,
+    agents,
     paginatedAgents,
     sortedAgents,
-    filteredAgents,
-    totalPages,
     totalCount,
+    totalPages,
     loading,
     error,
     successMessage,
@@ -68,16 +105,12 @@ export const useAgentPage = () => {
     setPageSize,
     currentPage,
     setCurrentPage,
-    language,
-    setLanguage,
     showModal,
     setShowModal,
     newAgentName,
     setNewAgentName,
     newAgentPhone,
     setNewAgentPhone,
-    fetchAgents,
-    t, 
     handleAddAgent: () =>
       handleAddAgentFn({
         newAgentName,
@@ -90,5 +123,8 @@ export const useAgentPage = () => {
         setError,
         fetchAgents,
       }),
+    t,
+    language,
+    setLanguage,
   };
 };

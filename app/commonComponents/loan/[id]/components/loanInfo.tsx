@@ -1,8 +1,9 @@
 import React from "react";
-import { LoanDetails } from "@/app/commonComponents/utils/type";
+import { LoanDetails } from "@/app/commonComponents/utils/Types/loan";
 import { DetailRow } from "../function";
 import { formatCurrency, formatDate } from "@/app/commonComponents/utils/formatters";
 import LedgerModal from "./ledgerModal";
+import { useLoanDetails } from "../hooks";
 
 interface Props {
   client: LoanDetails;
@@ -11,23 +12,24 @@ interface Props {
 export default function LoanInfo({ client }: Props) {
   const [loanSubTab, setLoanSubTab] = React.useState("active");
   const [showLedger, setShowLedger] = React.useState(false);
+  const { t, s } = useLoanDetails(client.loanId);
 
   return (
     <div className="space-y-6">
       {/* Loan Summary */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Loan Summary</h2>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.h1}</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-md border border-gray-200 p-4">
-            <span className="text-xs uppercase text-gray-500">Total Loans</span>
+            <span className="text-xs uppercase text-gray-500">{s.l45}</span>
             <p className="mt-2 text-2xl font-semibold text-gray-900">{client.totalLoans ?? "-"}</p>
           </div>
           <div className="rounded-md border border-gray-200 p-4">
-            <span className="text-xs uppercase text-gray-500">Borrower Status</span>
+            <span className="text-xs uppercase text-gray-500">{s.l15}</span>
             <p className="mt-2 text-2xl font-semibold text-gray-900">{client.status || "-"}</p>
           </div>
           <div className="rounded-md border border-gray-200 p-4">
-            <span className="text-xs uppercase text-gray-500">Credit Score</span>
+            <span className="text-xs uppercase text-gray-500">{s.l46}</span>
             <p className="mt-2 text-2xl font-semibold text-gray-900">{client.score ?? "-"}</p>
           </div>
         </div>
@@ -36,8 +38,8 @@ export default function LoanInfo({ client }: Props) {
       {/* Loan Tabs */}
       <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-white">
         {[
-          { key: "active", label: "Active Loan" },
-          { key: "past", label: "Past Loans" },
+          { key: "active", label: t.t3 },
+          { key: "past", label: t.t4 },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -59,53 +61,56 @@ export default function LoanInfo({ client }: Props) {
           <section className="rounded-lg border border-gray-200 bg-white p-6">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
-                Current Loan Details
+                {t.h2}
               </h3>
               <button
                 onClick={() => setShowLedger(true)}
                 className="text-sm font-medium text-red-600 transition-colors hover:text-red-700"
               >
-                View Ledger
+                {t.b1}
               </button>
             </div>
             <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3">
-              <DetailRow label="Loan Type" value={client.currentLoan.type} />
+              <DetailRow label={s.l10} value={client.currentLoan.type} />
               <DetailRow label="Loan ID" value={client.loanId} />
-              <DetailRow label="Disbursed Date" value={formatDate(client.currentLoan.dateDisbursed)} />
-              <DetailRow label="Principal Amount" value={formatCurrency(client.currentLoan.principal)} />
-              <DetailRow label="Interest Rate" value={`${client.currentLoan.interestRate}%`} />
-              <DetailRow label="Loan Term" value={`${client.currentLoan.termsInMonths} months`} />
-              <DetailRow label="Total Payable" value={formatCurrency(client.currentLoan.totalPayable)} />
-              <DetailRow label="Paid Amount" value={formatCurrency(client.currentLoan.paidAmount)} />
-              <DetailRow label="Remaining Balance" value={formatCurrency(client.currentLoan.remainingBalance)} />
+              <DetailRow label={s.l13} value={formatDate(client.currentLoan.dateDisbursed)} />
+              <DetailRow label={s.l4} value={formatCurrency(client.currentLoan.principal)} />
+              <DetailRow label={s.l5} value={`${client.currentLoan.interestRate}%`} />
+              <DetailRow label={s.l8} value={`${client.currentLoan.termsInMonths} months`} />
+              <DetailRow label={s.l7} value={formatCurrency(client.currentLoan.totalPayable)} />
+              <DetailRow label={s.l42} value={formatCurrency(client.currentLoan.paidAmount)} />
+              <DetailRow
+                label="Remaining Balance"
+                value={formatCurrency(client.currentLoan.remainingBalance)}
+              />
             </div>
           </section>
         ) : (
-          <section className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-500">
-            No active loan available.
-          </section>
+          <section className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-500">{t.m1}</section>
         )
       )}
 
       {/* Past Loans */}
       {loanSubTab === "past" && (
         <section className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Loan History</h2>
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
+            {t.h3}
+          </h2>
           {client.previousLoans?.length ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {client.previousLoans.map((loan, idx) => (
                 <div key={idx} className="rounded-lg border border-gray-200 p-4">
                   <p className="text-sm font-semibold text-gray-800">{loan.type}</p>
                   <div className="mt-2 space-y-1 text-sm text-gray-600">
-                    <p>Principal: {formatCurrency(loan.principal)}</p>
-                    <p>Released: {formatDate(loan.dateDisbursed)}</p>
-                    {loan.status && <p>Status: {loan.status}</p>}
+                    <p>{s.l4}: {formatCurrency(loan.principal)}</p>
+                    <p>{s.l13}: {formatDate(loan.dateDisbursed)}</p>
+                    {loan.status && <p>{s.l15}: {loan.status}</p>}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400">No previous loans available.</p>
+            <p className="text-sm text-gray-400">{t.m2}</p>
           )}
         </section>
       )}
