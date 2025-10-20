@@ -8,6 +8,7 @@ import calendarTranslation from "./calendarTranslation";
 import viewApplicationTranslation from "./viewApplicationTranslation";
 import buttonTranslation from "./buttonTranslation";
 import trackerApplication from "./trackerApplication";
+import viewLoanTranslation from "./viewLoanTranslation";
 
 const translations = {
   landingPageTranslation,
@@ -20,6 +21,7 @@ const translations = {
   viewApplicationTranslation,
   buttonTranslation,
   trackerApplication,
+  viewLoanTranslation,
 };
 
 export default translations;

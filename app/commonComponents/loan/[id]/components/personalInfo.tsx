@@ -1,33 +1,36 @@
 import React from "react";
-import { LoanDetails, Props } from "@/app/commonComponents/utils/type";
 import { DetailRow} from "../function";
+import { Props } from "@/app/commonComponents/utils/Types/components";
 import { formatDate, formatCurrency, capitalizeWords } from "@/app/commonComponents/utils/formatters";
+import { useLoanDetails } from "../hooks";
 
 export default function PersonalInfo({ client }: Props) {
+  const { t, a } = useLoanDetails(client.loanId);
+
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {/* General Info */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">General Information</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.h4}</h3>
         <div className="space-y-2">
-          <DetailRow label="Address" value={client.address || "-"} />
-          <DetailRow label="Date of Birth" value={client.appDob || "-"} />
-          <DetailRow label="Marital Status" value={client.appMarital || "-"} />
+          <DetailRow label={a.t6} value={client.address || "-"} />
+          <DetailRow label={a.t5} value={client.appDob || "-"} />
+          <DetailRow label={a.t7}value={client.appMarital || "-"} />
           {client.appMarital === "Married" && (
             <>
-              <DetailRow label="Spouse Name" value={client.appSpouseName || "-"} />
-              <DetailRow label="Spouse Occupation" value={client.appSpouseOccupation || "-"} />
+              <DetailRow label={a.t8} value={client.appSpouseName || "-"} />
+              <DetailRow label={a.t9} value={client.appSpouseOccupation || "-"} />
             </>
           )}
-          <DetailRow label="Number of Children" value={client.appChildren ?? "-"} />
+          <DetailRow label={a.t10} value={client.appChildren ?? "-"} />
         </div>
       </section>
 
       {/* Contact Info */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Contact Information</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.h5}</h3>
         <div className="space-y-2">
-          <DetailRow label="Contact Number" value={client.contactNumber || "-"} />
+          <DetailRow label={a.t22} value={client.contactNumber || "-"} />
           <DetailRow label="Email Address" value={client.emailAddress || "-"} />
         </div>
       </section>
@@ -36,21 +39,21 @@ export default function PersonalInfo({ client }: Props) {
       <section className="rounded-lg border border-gray-200 bg-white p-6">
         <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Income Information</h3>
         <div className="space-y-2">
-          <DetailRow label="Source of Income" value={capitalizeWords(client.sourceOfIncome)} />
+          <DetailRow label={a.t11} value={capitalizeWords(client.sourceOfIncome)} />
           {client.sourceOfIncome?.toLowerCase() === "business" && (
             <>
-              <DetailRow label="Business Type" value={capitalizeWords(client.businessType)} />
-              <DetailRow label="Date Started" value={formatDate(client.dateStarted)} />
-              <DetailRow label="Location" value={capitalizeWords(client.businessLocation)} />
+              <DetailRow label={a.t15} value={capitalizeWords(client.businessType)} />
+              <DetailRow label={a.t17} value={formatDate(client.dateStarted)} />
+              <DetailRow label={a.t18} value={capitalizeWords(client.businessLocation)} />
             </>
           )}
           {client.sourceOfIncome?.toLowerCase() === "employed" && (
             <>
-              <DetailRow label="Occupation" value={capitalizeWords(client.appOccupation)} />
-              <DetailRow label="Employment Status" value={capitalizeWords(client.appEmploymentStatus)} />
+              <DetailRow label={a.t12} value={capitalizeWords(client.appOccupation)} />
+              <DetailRow label={a.t14} value={capitalizeWords(client.appEmploymentStatus)} />
             </>
           )}
-          <DetailRow label="Monthly Income" value={formatCurrency(client.appMonthlyIncome)} />
+          <DetailRow label={a.t19} value={formatCurrency(client.appMonthlyIncome)} />
         </div>
       </section>
     </div>

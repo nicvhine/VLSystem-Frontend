@@ -10,23 +10,23 @@ import PersonalInfo from "./components/personalInfo";
 import LoanInfo from "./components/loanInfo";
 
 interface Props {
-  params: Promise<{ id: string }>; 
+  params: { id: string }; 
 }
 
 export default function LoansDetailPage({ params }: Props) {
-  const { id } = React.use(params);
+  const { id } = params; 
 
-  const { loan: client, loading, role } = useLoanDetails(id);
+  const { loan: client, loading, role, t } = useLoanDetails(id);
   const [activeTab, setActiveTab] = React.useState<"personal" | "loan">("loan");
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading client details...</div>;
-  if (!client) return <div className="p-8 text-center text-red-500">Client not found.</div>;
+  if (loading)
+    return <div className="p-8 text-center text-gray-500">Loading client details...</div>;
+  if (!client)
+    return <div className="p-8 text-center text-red-500">Client not found.</div>;
 
-  let Wrapper;
+  let Wrapper: React.ComponentType<{ children: React.ReactNode }> = Manager;
   if (role === "loan officer") Wrapper = LoanOfficer;
   else if (role === "head") Wrapper = Head;
-  else Wrapper = Manager;
-
 
   return (
     <Wrapper>
@@ -57,7 +57,7 @@ export default function LoansDetailPage({ params }: Props) {
                   href="/commonComponents/loan"
                   className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                 >
-                  Back to Loans
+                  {t.b2}
                 </Link>
               </div>
             </div>
@@ -68,8 +68,8 @@ export default function LoansDetailPage({ params }: Props) {
         <div className="mx-auto max-w-6xl px-6 pb-8 space-y-6">
           <div className="mt-4 flex overflow-hidden rounded-lg border border-gray-200 bg-white">
             {[
-              { key: "personal", label: "Personal Information" },
-              { key: "loan", label: "Loan Information" },
+              { key: "personal", label: t?.t2 || "Personal Information" },
+              { key: "loan", label: t?.t1 || "Loan Information" },
             ].map((tab) => (
               <button
                 key={tab.key}

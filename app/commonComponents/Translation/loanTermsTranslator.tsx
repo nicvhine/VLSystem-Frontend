@@ -62,6 +62,9 @@ const loanTermsTranslator = {
       l42: "Paid Amount",
       l43: "Reference Number",
       l44: "Note",
+      l45: "Total Loans",
+      l46: "Credit Score",
+
     },
     ceb: {
       // Loan Type
@@ -124,7 +127,9 @@ const loanTermsTranslator = {
       l41: "Balanse sa Panahon",
       l42: "Bayad nga Kantidad",
       l43: "Reperensya",
-      l44: "Mensahe"
+      l44: "Mensahe",
+      l45: "Kantidad sa Utang",
+      l46: "Grado sa Kredito",
     }
   };
   
