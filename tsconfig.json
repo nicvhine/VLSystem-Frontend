@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/commonComponents/modals/loanAgreement"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/commonComponents/modals/loanAgreement", "app/userPage/borrowerPage/reapplyLoan"],
   "exclude": ["node_modules"]
 }

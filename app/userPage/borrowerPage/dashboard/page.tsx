@@ -19,12 +19,14 @@ import UpcomingCollectionCard from './cards/upcomingCard';
 import PaidCollectionCard from './cards/paidCollectionCard';
 
 export default function BorrowerDashboard() {
-  const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : null;
+  const borrowersId =
+    typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : null;
+
   const dashboard = useBorrowerDashboard(borrowersId);
 
   const {
     activeLoan,
-    allLoans, 
+    allLoans,
     collections,
     paidPayments,
     paymentProgress,
@@ -48,10 +50,10 @@ export default function BorrowerDashboard() {
     setIsPaymentModalOpen,
     paymentModalAnimateIn,
     language,
-    t
+    t,
   } = dashboard;
 
-  // Require re-reading each time the terms gate opens
+  // Reset terms reads each time modal opens
   React.useEffect(() => {
     if (showTermsModal) {
       setTosRead(false);
@@ -59,20 +61,44 @@ export default function BorrowerDashboard() {
     }
   }, [showTermsModal, setTosRead, setPrivacyRead]);
 
-  if (loading) return <div className="flex justify-center items-center py-8"><LoadingSpinner /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center py-8">
+        <LoadingSpinner />
+      </div>
+    );
+
   if (error) return <p className="text-red-600">{error}</p>;
 
   // Pick active loan or fallback to latest loan
-  const displayedLoan = activeLoan || (allLoans?.length
-    ? allLoans.reduce((prev, curr) => new Date(prev.dateDisbursed || 0) > new Date(curr.dateDisbursed || 0) ? prev : curr)
-    : null
-  );
+  const displayedLoan =
+    activeLoan ||
+    (allLoans?.length
+      ? allLoans.reduce((prev, curr) =>
+          new Date(prev.dateDisbursed || 0) > new Date(curr.dateDisbursed || 0)
+            ? prev
+            : curr
+        )
+      : null);
+
+  const borrowerId = displayedLoan?.borrowersId || borrowersId || '';
 
   const upcoming = displayedLoan
-    ? collections.filter(c => c.borrowersId === borrowersId && c.loanId === displayedLoan.loanId && c.status !== 'Paid')
+    ? collections.filter(
+        (c) =>
+          c.borrowersId === borrowerId &&
+          c.loanId === displayedLoan.loanId &&
+          c.status !== 'Paid'
+      )
     : [];
+
   const paid = displayedLoan
-    ? collections.filter(c => c.borrowersId === borrowersId && c.loanId === displayedLoan.loanId && c.status === 'Paid')
+    ? collections.filter(
+        (c) =>
+          c.borrowersId === borrowerId &&
+          c.loanId === displayedLoan.loanId &&
+          c.status === 'Paid'
+      )
     : [];
 
   return (
@@ -81,8 +107,16 @@ export default function BorrowerDashboard() {
         <div className="w-full md:w-1/2 flex flex-col gap-4">
           <LoanDetailsCard activeLoan={displayedLoan} language={language} />
           <div className="flex gap-4">
-            <PaymentHistoryCard paidPayments={paidPayments} setIsPaymentModalOpen={setIsPaymentModalOpen} />
-            <PaymentProgressCard collections={collections} paymentProgress={paymentProgress} />
+            <PaymentHistoryCard
+              paidPayments={paidPayments}
+              setIsPaymentModalOpen={setIsPaymentModalOpen}
+            />
+            {/* ✅ Pass borrowerId safely */}
+            <PaymentProgressCard
+              collections={collections}
+              paymentProgress={paymentProgress}
+              borrowerId={borrowerId}
+            />
           </div>
         </div>
 
@@ -109,7 +143,9 @@ export default function BorrowerDashboard() {
           {paid.length > 0 && (
             <>
               <h4 className="text-lg font-semibold mt-4">Paid Collections</h4>
-              {paid.map(c => <PaidCollectionCard key={c.collectionNumber} collection={c} />)}
+              {paid.map((c) => (
+                <PaidCollectionCard key={c.collectionNumber} collection={c} />
+              ))}
             </>
           )}
         </div>
@@ -122,29 +158,51 @@ export default function BorrowerDashboard() {
         />
 
         {showErrorModal && (
-          <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
+          <ErrorModal
+            isOpen={showErrorModal}
+            message={errorMsg}
+            onClose={() => setShowErrorModal(false)}
+          />
         )}
 
         {showTermsModal && (
           <TermsGateModal
             language={language}
-            onCancel={() => { /* intentionally disabled in borrower flow */ }}
+            onCancel={() => {}}
             onOpenTos={() => setShowTosContent(true)}
             onOpenPrivacy={() => setShowPrivacyContent(true)}
             tosRead={tosRead}
             privacyRead={privacyRead}
-            acceptLabel={language === 'en' ? 'Accept and continue' : 'Mouyon ug mopadayon'}
+            acceptLabel={
+              language === 'en'
+                ? 'Accept and continue'
+                : 'Mouyon ug mopadayon'
+            }
             onAccept={() => {
               setShowTermsModal(false);
-              try { localStorage.setItem('termsReminderSeenAt', String(Date.now())); } catch {}
+              try {
+                localStorage.setItem('termsReminderSeenAt', String(Date.now()));
+              } catch {}
             }}
             showCloseIcon={false}
             showCancelButton={false}
           />
         )}
 
-        {showTosContent && <TermsContentModal language={language} onClose={() => setShowTosContent(false)} onReadComplete={() => setTosRead(true)} />}
-        {showPrivacyContent && <PrivacyContentModal language={language} onClose={() => setShowPrivacyContent(false)} onReadComplete={() => setPrivacyRead(true)} />}
+        {showTosContent && (
+          <TermsContentModal
+            language={language}
+            onClose={() => setShowTosContent(false)}
+            onReadComplete={() => setTosRead(true)}
+          />
+        )}
+        {showPrivacyContent && (
+          <PrivacyContentModal
+            language={language}
+            onClose={() => setShowPrivacyContent(false)}
+            onReadComplete={() => setPrivacyRead(true)}
+          />
+        )}
       </div>
     </Borrower>
   );
