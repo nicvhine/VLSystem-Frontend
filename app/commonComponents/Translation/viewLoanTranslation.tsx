@@ -24,26 +24,26 @@ const viewLoanTranslation = {
   },
   ceb: {
     // Tabs
-    t1: "Impormasyon sa Utang",
+    t1: "Impormasyon sa Pahulam",
     t2: "Personal nga Impormasyon",
-    t3: "Aktibong Utang",
-    t4: "Kaniadto nga mga Utang",
+    t3: "Aktibong Pahulam",
+    t4: "Kaniadto nga mga Pahulam",
 
     // Headers
-    h1: "Kasayuran sa Utang",
-    h2: "Detalye sa Kasamtangang Utang",
-    h3: "Kasaysayan sa Utang",
+    h1: "Kasayuran sa Pahulam",
+    h2: "Detalye sa Kasamtangang Pahulam",
+    h3: "Kasaysayan sa Pahulam",
     h4: "Kinatibuk-ang Impormasyon",
     h5: "Impormasyon sa Kontak",
     h6: "Impormasyon sa Kita",
 
     // Buttons
     b1: "Tan-awa ang Ledger",
-    b2: "Balik sa mga Pautang",
+    b2: "Balik sa mga Pahulam",
     
     // Messages
-    m1: "Walay aktibong pautang karon",
-    m2: "Walay mga karaang pautang",
+    m1: "Walay aktibong pahulam karon",
+    m2: "Walay mga karaang pahulam",
   },
 };
 

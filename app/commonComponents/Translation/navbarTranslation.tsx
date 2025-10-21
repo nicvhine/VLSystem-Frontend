@@ -35,17 +35,17 @@ const navbarTranslation = {
     t20: "Receive notifications via text message",
   },
   ceb: {
-    tab1: "Mga Pautang",
+    tab1: "Mga Pahulam",
     tab2: "Mga Aplikasyon",
     tab3: "Mga Koleksyon",
     tab4: "Mga Ahente",
     tab5: "Mga Tiggamit",
-    tab6: "Simulasyon sa Utang",
+    tab6: "Simulasyon sa Pahulam",
     tab7: "Team",
     tab8: "Mahitungod Kanamo",
     tab9: "Kontaka Kami",
     tab10: "Sulod",
-    tab11: "Mga Utang",
+    tab11: "Mga Pahulam",
 
     //Dropdown
     t1: "Ilisi",

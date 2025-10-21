@@ -172,7 +172,7 @@ export default function ApplicationPage() {
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-red-600 mb-3">{loanType}</h4>
                     <ul className="space-y-2 text-sm">
-                      {getRequirements(loanType).map((req, index) => (
+                      {getRequirements(loanType, language).map((req, index) => (
                         <li key={index} className="flex items-start gap-2 text-gray-600">
                           <span className="text-red-500 text-xs font-bold mt-1">•</span>
                           <span>{req}</span>

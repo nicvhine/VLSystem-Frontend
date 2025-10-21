@@ -5,6 +5,7 @@ import { FiX } from "react-icons/fi";
 import FormArea from "./formArea/formArea"; 
 import Navbar from "./navbar";
 import useIsMobile from "../../../../commonComponents/utils/useIsMobile";
+import { getRequirements } from "./function";
 
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
@@ -54,38 +55,6 @@ export default function ApplicationPage() {
     language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam',
   ];
 
-  // Get loan requirements based on loan type
-  const getRequirements = (type: string) => {
-    switch(type) {
-      case (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)'):
-        return [
-          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
-          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
-          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
-          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
-        ];
-      case (language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)'):
-        return [
-          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
-          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
-          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
-          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
-          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
-          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
-        ];
-      case (language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam'):
-        return [
-          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
-          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
-          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
-          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
-          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
-          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
-        ];
-      default:
-        return [];
-    }
-  };
 
   const loanProcessSteps = [
     language === 'en' ? 'Application Submission' : 'Pagsumite sa Aplikasyon',
@@ -133,7 +102,7 @@ export default function ApplicationPage() {
                   {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                  {getRequirements(loanType).map((req, index) => (
+                  {getRequirements(loanType, language).map((req, index) => (
                     <li key={index}>{req}</li>
                   ))}
                 </ul>
@@ -192,7 +161,7 @@ export default function ApplicationPage() {
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm text-red-600 mb-3">{loanType}</h4>
                     <ul className="space-y-2 text-sm">
-                      {getRequirements(loanType).map((req, index) => (
+                      {getRequirements(loanType, language).map((req, index) => (
                         <li key={index} className="flex items-start gap-2 text-gray-600">
                           <span className="text-red-500 text-xs font-bold mt-1">•</span>
                           <span>{req}</span>
