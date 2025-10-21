@@ -13,11 +13,6 @@ export default function PaymentHistoryCard({ paidPayments, setIsPaymentModalOpen
     <div className="flex-1 bg-white p-4 md:p-6 rounded-lg shadow relative">
       <div className="flex justify-between items-center">
         <h2 className="font-semibold text-m mb-4">Payment History</h2>
-        <FiMaximize
-          className="cursor-pointer text-gray-600 hover:text-gray-900"
-          size={20}
-          onClick={() => setIsPaymentModalOpen(true)}
-        />
       </div>
 
       <div className="mt-2 flex flex-col gap-2 max-h-48 overflow-y-auto">
