@@ -1,6 +1,6 @@
 'use client';
 
-import LoanStatsDashboard from "./loanStats";
+import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
 import LoanOfficer from "../page";
 import { useState } from "react";
 import InterviewCalendar from "./interviewCalendar";
@@ -17,7 +17,7 @@ export default function LoanOfficerDashboard() {
         <div className="p-4">
           <div className="flex gap-4 h-[calc(100vh-100px)]">
             <div className="flex flex-col gap-4 w-72 flex-shrink-0">
-              <LoanStatsDashboard />
+              <LoanStatistics />
             </div>
             <div className="flex-1 min-w-0">
               <InterviewCalendar onModalToggle={setIsNavbarBlurred} />

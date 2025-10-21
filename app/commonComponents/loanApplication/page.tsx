@@ -16,6 +16,7 @@ import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
 import Pagination from "../utils/pagination";
 import useIsMobile from "../utils/useIsMobile";
 import Filter from "../utils/sortAndSearch";
+import { translateLoanType } from "../utils/formatters";
 
 const API_URL = "http://localhost:3001/loan-applications";
 
@@ -199,7 +200,7 @@ export default function ApplicationsPage() {
                     {/* Loan Type */}
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {application.loanType}
+                        {translateLoanType(application.loanType, language)}
                       </div>
                     </td>
 
