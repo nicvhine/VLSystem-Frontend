@@ -1,9 +1,11 @@
-import { Collection } from "@/app/commonComponents/utils/Types/collection";
-import { Loan } from "@/app/commonComponents/utils/Types/loan";
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { Collection } from '@/app/commonComponents/utils/Types/collection';
+import { Loan } from '@/app/commonComponents/utils/Types/loan';
 
 const API_URL = 'http://localhost:3001';
 
-// Payment handler
 export async function handlePay(
   collection: Collection,
   activeLoan: Loan | null,
@@ -50,4 +52,18 @@ export async function handlePay(
     setErrorMsg('Error connecting to payment gateway.');
     setShowErrorModal(true);
   }
+}
+
+export function useReloan() {
+  const router = useRouter();
+
+  const handleReloan = (paymentProgress: number, borrowerId: string) => {
+    if (paymentProgress >= 70) {
+      router.push(`/userPage/borrowerPage/reapplyLoan/${borrowerId}`);
+    } else {
+      console.warn('Reloan not allowed: progress below 70%.');
+    }
+  };
+
+  return { handleReloan };
 }

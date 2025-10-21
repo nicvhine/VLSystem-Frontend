@@ -1,13 +1,17 @@
-'use client';
 import React from 'react';
 import { Collection } from '@/app/commonComponents/utils/Types/collection';
+import { useReloan } from '../function';
 
 interface PaymentProgressCardProps {
   collections: Collection[];
   paymentProgress: number;
+  borrowerId: string; 
 }
 
-export default function PaymentProgressCard({ collections, paymentProgress }: PaymentProgressCardProps) {
+export default function PaymentProgressCard({ collections, paymentProgress, borrowerId }: PaymentProgressCardProps) {
+  const { handleReloan } = useReloan();
+  const isReloanAllowed = paymentProgress >= 70;
+
   return (
     <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg flex flex-col items-center justify-center relative">
       <h2 className="font-semibold text-lg text-gray-800 mb-4">Payment Progress</h2>
@@ -44,6 +48,27 @@ export default function PaymentProgressCard({ collections, paymentProgress }: Pa
           <span className="font-semibold">{collections.filter(c => c.status !== 'Paid').length}</span>
           <span>Remaining</span>
         </div>
+      </div>
+
+      {/* Reloan Button Section */}
+      <div className="mt-6 flex flex-col items-center">
+      <button
+        onClick={() => handleReloan(paymentProgress, borrowerId)}
+        disabled={!isReloanAllowed}
+        className={`px-6 py-2 rounded-lg font-semibold ${
+          isReloanAllowed
+            ? 'bg-emerald-500 text-white hover:bg-emerald-600 transition'
+            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+        }`}
+      >
+        Reloan
+      </button>
+
+        {!isReloanAllowed && (
+          <span className="text-xs text-gray-400 mt-2">
+            You may only reloan once progress reaches 70%
+          </span>
+        )}
       </div>
     </div>
   );

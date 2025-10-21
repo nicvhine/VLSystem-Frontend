@@ -5,6 +5,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaf
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+const DEFAULT_POSITION: [number, number] = [10.3157, 123.8854];
+
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
   iconSize: [25, 41],
@@ -33,12 +35,12 @@ function MapEvents({
       const { lat, lng } = e.latlng;
       setMarkerPosition([lat, lng]);
       try {
-        const response = await fetch(
+        const res = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
         );
-        const data = await response.json();
-        setAddress(data.display_name);
-      } catch (error) {
+        const data = await res.json();
+        setAddress(data.display_name || `${lat}, ${lng}`);
+      } catch {
         setAddress(`${lat}, ${lng}`);
       }
     },
@@ -58,25 +60,22 @@ export default function MapComponent({
     setIsClient(true);
   }, []);
 
-  if (!isClient) {
-    return null;
-  }
+  if (!isClient) return null;
 
   return (
-    <div className="h-64 w-full rounded-lg overflow-hidden">
+    <div className="h-100 w-full rounded-lg overflow-hidden">
       <MapContainer
-        center={markerPosition || [10.3157, 123.8854]} // Default to Cebu City
-        zoom={13}
+        center={markerPosition || DEFAULT_POSITION} 
+        zoom={markerPosition ? 15 : 13} 
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <MapEvents
-          setAddress={setAddress}
-          setMarkerPosition={setMarkerPosition}
-        />
+
+        <MapEvents setAddress={setAddress} setMarkerPosition={setMarkerPosition} />
+
         {markerPosition && (
           <Marker position={markerPosition} icon={customIcon}>
             <Popup>{address}</Popup>

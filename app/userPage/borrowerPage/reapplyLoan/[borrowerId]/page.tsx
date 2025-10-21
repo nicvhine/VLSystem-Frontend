@@ -4,11 +4,8 @@ import { useState, useEffect } from "react";
 import { FiX } from "react-icons/fi";
 import FormArea from "./formArea/formArea"; 
 import Navbar from "./navbar";
-import LoginModal from "../loginForm/page";
-import useIsMobile from "../../../commonComponents/utils/useIsMobile";
-import { getRequirements } from "./function";
+import useIsMobile from "../../../../commonComponents/utils/useIsMobile";
 
-// Apply loan page: loan info sidebars and application form
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== 'undefined') {
@@ -46,15 +43,7 @@ export default function ApplicationPage() {
     }
   }, [language]);
 
-  const [address, setAddress] = useState('');
   const [loanType, setLoanType] = useState<string>('');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [mockLoanId] = useState("VL-" + Math.floor(100000 + Math.random() * 900000));
-  const [maritalStatus, setMaritalStatus] = useState('');
-  const [incomeSource, setIncomeSource] = useState('');
-  const [employmentStatus, setEmploymentStatus] = useState('');
-  const handleSubmit = () => setShowSuccessModal(true);
-  const closeModal = () => setShowSuccessModal(false);
 
   // For mobile info overlay
   const [showInfoOverlay, setShowInfoOverlay] = useState(false);
@@ -64,6 +53,39 @@ export default function ApplicationPage() {
     language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)',
     language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam',
   ];
+
+  // Get loan requirements based on loan type
+  const getRequirements = (type: string) => {
+    switch(type) {
+      case (language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)'):
+        return [
+          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
+          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
+          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
+          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
+        ];
+      case (language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)'):
+        return [
+          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
+          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
+          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
+          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
+          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
+          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
+        ];
+      case (language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam'):
+        return [
+          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
+          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
+          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
+          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
+          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
+          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
+        ];
+      default:
+        return [];
+    }
+  };
 
   const loanProcessSteps = [
     language === 'en' ? 'Application Submission' : 'Pagsumite sa Aplikasyon',
@@ -82,8 +104,6 @@ export default function ApplicationPage() {
         setIsLoginOpen={setIsLoginOpen}
         isMobile={isMobile}
       />
-      <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
-
 
       {/* Floating info button (mobile) */}
       {isMobile && (
@@ -113,7 +133,7 @@ export default function ApplicationPage() {
                   {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                {getRequirements(loanType, language).map((req, index) => (
+                  {getRequirements(loanType).map((req, index) => (
                     <li key={index}>{req}</li>
                   ))}
                 </ul>
