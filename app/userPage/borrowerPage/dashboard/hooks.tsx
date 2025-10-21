@@ -6,6 +6,7 @@ import { Collection, Payment } from "@/app/commonComponents/utils/Types/collecti
 import translations from "@/app/commonComponents/translation";
 
 export default function useBorrowerDashboard(borrowersId: string | null) {
+  // State variables
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showTosContent, setShowTosContent] = useState(false);
   const [showPrivacyContent, setShowPrivacyContent] = useState(false);
@@ -22,24 +23,22 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   const [error, setError] = useState('');
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [allLoans, setAllLoans] = useState<Loan[]>([]);
   const [role, setRole] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "ceb">("en");
 
-  // Translation object (reactive)
   const t = translations.loanTermsTranslator[language];
 
   // Initialize role and language from localStorage
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
-
     const keyMap: Record<string, string> = {
       head: "headLanguage",
       "loan officer": "loanOfficerLanguage",
       manager: "managerLanguage",
-      borrower: "language", // handle borrower
+      borrower: "language",
     };
-
     const langKey = keyMap[storedRole || ""] as keyof typeof keyMap;
     const storedLanguage = localStorage.getItem(langKey) as "en" | "ceb";
     if (storedLanguage) setLanguage(storedLanguage);
@@ -49,7 +48,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (
-        role === "borrower" || // allow borrower
+        role === "borrower" ||
         (role === "head" && event.detail.userType === "head") ||
         (role === "loan officer" && event.detail.userType === "loanOfficer") ||
         (role === "manager" && event.detail.userType === "manager")
@@ -58,11 +57,10 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
       }
     };
     window.addEventListener("languageChange", handleLanguageChange as EventListener);
-    return () =>
-      window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
   }, [role]);
 
-  // Terms modal check
+  // Check if terms modal should be shown
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const evaluate = () => {
@@ -75,14 +73,14 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     return () => window.removeEventListener('forcePasswordChangeCompleted', handleCompleted);
   }, []);
 
-  // Show terms modal if not seen
+  // Show terms modal if not seen recently
   useEffect(() => {
     if (!termsReady) return;
     try {
       const key = 'termsReminderSeenAt';
       const lastSeen = typeof window !== 'undefined' ? localStorage.getItem(key) : null;
       const now = Date.now();
-      const thresholdMs = 24 * 60 * 60 * 1000; // 24h
+      const thresholdMs = 24 * 60 * 60 * 1000; // 24 hours
       if (!lastSeen || isNaN(Number(lastSeen)) || now - Number(lastSeen) > thresholdMs) {
         setShowTermsModal(true);
       }
@@ -91,7 +89,25 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     }
   }, [termsReady]);
 
-  // Fetch active loan
+  // Fetch all loans for borrower
+  useEffect(() => {
+    if (!borrowersId) return;
+    const controller = new AbortController();
+    async function fetchAllLoans() {
+      try {
+        const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, { signal: controller.signal });
+        if (!res.ok) throw new Error('Failed to fetch loans');
+        const data: Loan[] = await res.json();
+        setAllLoans(data);
+      } catch (err) {
+        if (!(err instanceof DOMException && err.name === "AbortError")) console.error(err);
+      }
+    }
+    fetchAllLoans();
+    return () => controller.abort();
+  }, [borrowersId]);
+
+  // Fetch active loan or fallback to latest
   useEffect(() => {
     if (!borrowersId) return;
     const controller = new AbortController();
@@ -99,12 +115,16 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error('No active loan found');
-        const data: Loan = await res.json();
-        setActiveLoan(data);
+        const res = await fetch(`http://localhost:3001/loans/active-loan/${borrowersId}`, { signal: controller.signal });
+        if (res.ok) {
+          const data: Loan = await res.json();
+          setActiveLoan(data);
+        } else if (allLoans.length > 0) {
+          const latestLoan = [...allLoans].sort((a, b) =>
+            new Date(b.dateDisbursed).getTime() - new Date(a.dateDisbursed).getTime()
+          )[0];
+          setActiveLoan(latestLoan);
+        }
       } catch (err) {
         if (!(err instanceof DOMException && err.name === "AbortError")) {
           setError(err instanceof Error ? err.message : 'Error fetching active loan');
@@ -115,7 +135,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     }
     fetchActiveLoan();
     return () => controller.abort();
-  }, [borrowersId]);
+  }, [borrowersId, allLoans]);
 
   // Fetch loan details
   useEffect(() => {
@@ -123,50 +143,46 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     const controller = new AbortController();
     async function fetchLoanDetails() {
       try {
-        const res = await fetch(`http://localhost:3001/loans/details/${activeLoan.loanId}`, {
-          signal: controller.signal,
-        });
+        const res = await fetch(`http://localhost:3001/loans/details/${activeLoan.loanId}`, { signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch loan details');
         const data: Loan = await res.json();
         setActiveLoan(prev => ({ ...prev, ...data }));
       } catch (err) {
-        if (!(err instanceof DOMException && err.name === "AbortError")) {
-          console.error("Error fetching loan details:", err);
-        }
+        if (!(err instanceof DOMException && err.name === "AbortError")) console.error("Error fetching loan details:", err);
       }
     }
     fetchLoanDetails();
     return () => controller.abort();
   }, [activeLoan?.loanId]);
 
-  // Fetch payments
+  // Fetch payments for active loan only
   useEffect(() => {
-    if (!borrowersId) return;
+    if (!activeLoan?.loanId) return;
     const controller = new AbortController();
     async function fetchPayments() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`http://localhost:3001/payments/${borrowersId}`, { signal: controller.signal });
-        if (!res.ok) throw new Error('Failed to fetch payments');
-        const data: Payment[] = await res.json();
-        const uniquePayments = data.filter(
-          (payment, index, self) => index === self.findIndex(p => p.referenceNumber === payment.referenceNumber)
+        const res = await fetch(`http://localhost:3001/payments/ledger/${activeLoan.loanId}`, { signal: controller.signal });
+        if (!res.ok) throw new Error('Failed to fetch payments for loan');
+        const data: any = await res.json();
+        const paymentsArray = Array.isArray(data.payments) ? data.payments : data;
+        const uniquePayments = paymentsArray.filter(
+          (payment, index, self) =>
+            index === self.findIndex(p => p.referenceNumber === payment.referenceNumber)
         );
         setPaidPayments(uniquePayments);
       } catch (err) {
-        if (!(err instanceof DOMException && err.name === "AbortError")) {
-          setError(err instanceof Error ? err.message : 'Error fetching payments');
-        }
+        if (!(err instanceof DOMException && err.name === "AbortError")) setError(err instanceof Error ? err.message : 'Error fetching payments');
       } finally {
         setLoading(false);
       }
     }
     fetchPayments();
     return () => controller.abort();
-  }, [borrowersId]);
+  }, [activeLoan?.loanId]);
 
-  // Fetch collections
+  // Fetch collections for active loan
   useEffect(() => {
     if (!activeLoan?.loanId || !borrowersId) return;
     const controller = new AbortController();
@@ -174,16 +190,12 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`, {
-          signal: controller.signal,
-        });
+        const res = await fetch(`http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`, { signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch collections');
         const data: Collection[] = await res.json();
         setCollections(data);
       } catch (err) {
-        if (!(err instanceof DOMException && err.name === "AbortError")) {
-          setError(err instanceof Error ? err.message : 'Error fetching collections');
-        }
+        if (!(err instanceof DOMException && err.name === "AbortError")) setError(err instanceof Error ? err.message : 'Error fetching collections');
       } finally {
         setLoading(false);
       }
@@ -204,7 +216,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     }
   }, [activeLoan, collections]);
 
-  // Payment modal animation
+  // Animate payment modal
   useEffect(() => {
     if (isPaymentModalOpen) {
       setPaymentModalAnimateIn(false);
@@ -215,7 +227,9 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     }
   }, [isPaymentModalOpen]);
 
+  // Return all state and setters
   return {
+    allLoans,
     showTermsModal,
     setShowTermsModal,
     showTosContent,
