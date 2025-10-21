@@ -1,4 +1,5 @@
 export interface Loan {
+  status: string;
   loanId: string;
   type?: string;
   dateDisbursed?: string;
