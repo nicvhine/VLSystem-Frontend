@@ -1,39 +1,38 @@
+import translations from "../../../commonComponents/translation";
+
 export function getRequirements(type: string, language: 'en' | 'ceb') {
+    const t = translations.requirementsTranslation[language];
+    
     switch (type) {
-      case language === 'en'
-        ? 'Regular Loan Without Collateral'
-        : 'Regular nga Pahulam (Walay Kolateral)':
-        return [
-          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
-          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
-          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
-          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
-        ];
-  
-      case language === 'en'
-        ? 'Regular Loan With Collateral'
-        : 'Regular nga Pahulam (Naay Kolateral)':
-        return [
-          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
-          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
-          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
-          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
-          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
-          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
-        ];
-  
-      case language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam':
-        return [
-          language === 'en' ? 'Valid Government-issued ID' : 'Validong Gobyerno nga ID',
-          language === 'en' ? 'Proof of Income' : 'Prueba sa Kita',
-          language === 'en' ? 'Certificate of Employment / Business Permit' : 'Sertipiko sa Trabaho / Permit sa Negosyo',
-          language === 'en' ? 'Proof of Billing' : 'Prueba sa Pagbayad',
-          language === 'en' ? 'Collateral Document' : 'Dokumento sa Kolateral',
-          language === 'en' ? 'Appraisal Report of Collateral' : 'Report sa Pagtimbang-timbang sa Kolateral',
-        ];
-  
-      default:
-        return [];
+        case t.t1: // Regular Loan Without Collateral
+            return [
+                t.t4, // Valid Government-issued ID
+                t.t5, // Proof of Income
+                t.t6, // Certificate of Employment / Business Permit
+                t.t7, // Proof of Billing
+            ];
+
+        case t.t2: // Regular Loan With Collateral
+            return [
+                t.t4, // Valid Government-issued ID
+                t.t5, // Proof of Income
+                t.t6, // Certificate of Employment / Business Permit
+                t.t7, // Proof of Billing
+                t.t8, // Collateral Document
+                t.t9, // Appraisal Report of Collateral
+            ];
+
+        case t.t3: // Open-Term Loan
+            return [
+                t.t4, // Valid Government-issued ID
+                t.t5, // Proof of Income
+                t.t6, // Certificate of Employment / Business Permit
+                t.t7, // Proof of Billing
+                t.t8, // Collateral Document
+                t.t9, // Appraisal Report of Collateral
+            ];
+
+        default:
+            return [];
     }
-  }
-  
+}

@@ -68,16 +68,16 @@ const loanTermsTranslator = {
     },
     ceb: {
       // Loan Type
-      l1: "Ordinary nga Pautang Walay Kolateral",
-      l2: "Ordinary nga Pautang Adunay Kolateral",
-      l3: "Pautang nga Walay Takda sa Panahon",
+      l1: "Regular nga Pahulam (Walay Kolateral)",
+      l2: "Regular nga Pahulam (Naay Kolateral)",
+      l3: "Open-Term nga Pahulam",
       l4: "Prinsipal",
       l5: "Porsyento sa Interes",
       l6: "Kantidad sa Interes",
       l7: "Bayaran",
-      l8: "Termino sa Pautang",
+      l8: "Termino sa Pahulam",
       l9: "Kantidad kada Panahon",
-      l10: "Klase sa Utang",
+      l10: "Klase sa Pahulam",
   
       // Table Headers
       l11: "ID",
@@ -88,11 +88,11 @@ const loanTermsTranslator = {
       l16: "Aksyon",
       l17: "Petsa sa Pag-aplay",
       l18: "Numero sa Telepono",
-      l19: "Giatiman nga Pautang",
+      l19: "Giatiman nga Pahulam",
       l20: "Komisyon",
   
       // Page Headers
-      Loans: "Mga Pautang",
+      Loans: "Mga Pahulam",
       Application: "Mga Aplikasyon",
       Collection: "Mga Koleksyon",
       Agents: "Mga Ahente",
@@ -128,7 +128,7 @@ const loanTermsTranslator = {
       l42: "Bayad nga Kantidad",
       l43: "Reperensya",
       l44: "Mensahe",
-      l45: "Kantidad sa Utang",
+      l45: "Kinatibuk-ang Pahulam",
       l46: "Grado sa Kredito",
     }
   };
