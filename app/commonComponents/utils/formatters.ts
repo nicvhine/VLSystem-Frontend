@@ -31,8 +31,23 @@ export const translateLoanType = (
   language: "en" | "ceb" = "en"
 ): string => {
   const t = translations.loanTermsTranslator[language];
+  if (!type) return "—";
 
-  switch (type) {
+  // Normalize and accept multiple representations (codes, different casing, hyphens)
+  const raw = type;
+  const norm = raw
+    .toLowerCase()
+    .replace(/[_-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Handle code-style values used elsewhere
+  if (norm === "regularwithout" || norm.includes("without collateral")) return t.l1;
+  if (norm === "regularwith" || norm.includes("with collateral")) return t.l2;
+  if (norm === "openterm" || norm.includes("open term")) return t.l3;
+
+  // Handle exact known labels
+  switch (raw) {
     case "Regular Loan Without Collateral":
       return t.l1;
     case "Regular Loan With Collateral":
@@ -40,7 +55,7 @@ export const translateLoanType = (
     case "Open-Term Loan":
       return t.l3;
     default:
-      return type || "—";
+      return raw;
   }
 };
 

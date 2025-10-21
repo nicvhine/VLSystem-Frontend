@@ -27,8 +27,9 @@ export async function POST(req: Request) {
             currency: "PHP",
             description: "Sample Payment",
             redirect: {
-              success: "http://localhost:3000/success",
-              failed: "http://localhost:3000/pay/failed",
+              // Note: server should include the reference or we derive it server-side; adjust as needed.
+              success: "http://localhost:3000/userPage/borrowerPage/payMongoTools/payment-success/{referenceNumber}",
+              failed: "http://localhost:3000/userPage/borrowerPage/payMongoTools/cancel",
             },
           },
         },
