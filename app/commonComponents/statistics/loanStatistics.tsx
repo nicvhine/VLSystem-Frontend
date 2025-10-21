@@ -33,7 +33,7 @@ export default function LoanStatistics() {
     typeStats,
     applicationStats,
     language,
-  } = useLoanStats(role);
+  } = useLoanStats(role as "loanOfficer" | "manager");
 
   const t = translations.statisticTranslation[language];
   const l = translations.loanTermsTranslator[language];
@@ -46,15 +46,16 @@ export default function LoanStatistics() {
     );
 
   return (
-    <div className="flex flex-col gap-6 h-full">
+    <div className="flex flex-col gap-4 w-full h-full">
+      {/* Manager/Head Only */}
       {(role === "manager" || role === "head") && (
         <>
           {/* Financial Overview */}
-          <section className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
               <FiDollarSign className="text-red-600" /> {t.h1}
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               <StatCard
                 label={l.l4}
                 value={loanStats.totalPrincipal ?? 0}
@@ -73,11 +74,11 @@ export default function LoanStatistics() {
           </section>
 
           {/* Collection Status */}
-          <section className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
               <FiCheckCircle className="text-red-600" /> {t.h2}
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               <StatCard
                 label={t.s5}
                 value={collectionStats.totalCollectables ?? 0}
@@ -104,11 +105,12 @@ export default function LoanStatistics() {
         </>
       )}
 
-      <section className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      {/* Application Status */}
+      <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <FiUsers className="text-red-600" /> {t.h3}
         </h2>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <StatCard
             label={t.s2?.replace("Pending", "Applied") || "Applied"}
             value={applicationStats.applied ?? 0}
@@ -130,11 +132,12 @@ export default function LoanStatistics() {
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-all">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      {/* Loan Types */}
+      <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
+        <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <FiPieChart className="text-red-600" /> {t.h4}
         </h2>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <StatCard
             label={l.l1}
             value={typeStats.withCollateral ?? 0}
