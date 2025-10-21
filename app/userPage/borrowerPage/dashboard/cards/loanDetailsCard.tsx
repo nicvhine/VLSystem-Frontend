@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { formatDate } from '@/app/commonComponents/utils/formatters';
+import { formatDate, translateLoanType } from '@/app/commonComponents/utils/formatters';
 import { LoanDetailsCardProps } from '@/app/commonComponents/utils/Types/components';
 import translations from '@/app/commonComponents/translation';
 
@@ -17,7 +17,7 @@ export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCar
   return (
     <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg flex flex-col gap-4 md:gap-6 relative overflow-hidden">
       <h2 className="font-semibold text-lg md:text-xl text-gray-800 mb-2 md:mb-4 flex items-center gap-2 z-10">
-        {t.loans || 'Loan'} {t.details || 'Details'}
+        {(t.Loans ?? 'Loan')} Details
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-gray-700 z-10">
@@ -28,7 +28,7 @@ export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCar
           </div>
           <div className="flex items-center">
             <span className="font-medium text-gray-500">{t.l10 || 'Loan Type'}</span>
-            <span className="ml-auto font-semibold text-gray-800 break-words max-w-[160px] md:max-w-none">{activeLoan.loanType}</span>
+            <span className="ml-auto font-semibold text-gray-800 break-words text-right max-w-[160px] md:max-w-none">{translateLoanType(activeLoan.loanType, language)}</span>
           </div>
           <div className="flex items-center">
             <span className="font-medium text-gray-500">{t.l13 || 'Date Disbursed'}</span>

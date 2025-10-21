@@ -60,6 +60,7 @@ export interface Props {
 export interface SubmitOverlayToastProps {
   open: boolean;
   message?: string;
+  variant?: 'info' | 'success' | 'error';
 }
 
 export interface LoanDetailsCardProps {
