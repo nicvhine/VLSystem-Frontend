@@ -68,7 +68,7 @@
       <Borrower>
         <div className="flex flex-col md:flex-row gap-4 md:gap-6 p-4">
           <div className="w-full md:w-1/2 flex flex-col gap-4">
-            <LoanDetailsCard activeLoan={activeLoan} t={t}/>
+          <LoanDetailsCard activeLoan={activeLoan} language={language} />
             <div className="flex gap-4">
               <PaymentHistoryCard paidPayments={paidPayments} setIsPaymentModalOpen={setIsPaymentModalOpen} />
               <PaymentProgressCard collections={collections} paymentProgress={paymentProgress} />

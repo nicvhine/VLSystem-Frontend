@@ -9,11 +9,10 @@ export interface TeamSectionProps {
 // Team members data
 const teamMembers = [
   { name: "Divina Alburo", role: { en: "Chief Executive Officer", ceb: "Punong Ehekutibo" }, img: "/idPics/idDivine.png" },
-  { name: "Ronelyn Pelayo", role: { en: "Loan Manager", ceb: "Tagdumala sa Pahulam" }, img: "/idPics/idRonelyn.png" },
+  { name: "Ronelyn Pelayo", role: { en: "Office Manager", ceb: "Tagdumala sa Pahulam" }, img: "/idPics/idRonelyn.png" },
   { name: "Aiza Valiente", role: { en: "Loan Officer", ceb: "Opisyal sa Pahulam" }, img: "/idPics/idAiza.png" },
   { name: "Rosielle Marie Navares", role: { en: "Loan Officer", ceb: "Opisyal sa Pahulam" }, img: "/idPics/idRosielle.png" },
   { name: "Chris Damayo", role: { en: "Accountant", ceb: "Tigpamaba" }, img: "/idPic.jpg" },
-  { name: "Bernie Gomez", role: { en: "Accountant", ceb: "Tigpamaba" }, img: "/idPic.jpg" },
   { name: "Voltair Bracero", role: { en: "Field Lead", ceb: "Pangulo sa Field" }, img: "/idPics/idVoltair.png" },
   { name: "Rodelo Lepiten", role: { en: "Head Collector", ceb: "Pangulo sa Kolektor" }, img: "/idPic.jpg" },
   { name: "Shiela May Lepon", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPic.jpg" },

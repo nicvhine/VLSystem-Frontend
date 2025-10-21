@@ -64,7 +64,7 @@ export interface SubmitOverlayToastProps {
 
 export interface LoanDetailsCardProps {
   activeLoan: Loan | null;
-  t: { [key: string]: string };
+  language: 'en' | 'ceb'; 
 }
 
 export interface InterviewCalendarProps {

@@ -1,17 +1,10 @@
 'use client';
 
 import AuditLog from "./auditLog";
-import LoanStatsDashboard from "./loanStats";
+import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
 import Head from "../page";
-import { useState } from 'react';
 
 export default function HeadDashboard() {
-  const [darkMode, setDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('darkMode') === 'true';
-    }
-    return false;
-  });
 
   return (
     <Head>
@@ -27,7 +20,7 @@ export default function HeadDashboard() {
             {/* Left Panel - Loan Stats */}
             <div className="xl:col-span-2">
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-full">
-                <LoanStatsDashboard />
+                <LoanStatistics />
               </div>
             </div>
 

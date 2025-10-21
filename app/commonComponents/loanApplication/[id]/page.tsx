@@ -13,8 +13,6 @@ import ReleaseForm from "../../modals/loanAgreement/releaseForm";
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
 import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal";
 import ApplicationButtons from "./components/applicationButtons";
-import WithCollateral from "./customization/withCollateral";
-import OpenTerm from "./customization/openTerm";
 
 // Wrappers
 import Head from "@/app/userPage/headPage/page";
@@ -23,7 +21,6 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 
 // Hooks
 import { useApplicationData } from "./hooks";
-import { capitalizeWords, formatCurrency } from "@/app/commonComponents/utils/formatters";
 import { authFetch } from "../function";
 
 // Cards
@@ -31,6 +28,9 @@ import ProfileCard from "./cards/profileCard";
 import BasicInfoCard from "./cards/basicInfoCard";
 import LoanComputationCard from "./cards/loanComputationCard";
 import IncomeCharactedCard from "./cards/incomeCharacterCard";
+
+//Translation 
+import { translateLoanType } from "../../utils/formatters";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL 
 
@@ -50,7 +50,6 @@ export default function ApplicationDetailsPage() {
     modalContainer,
   } = useApplicationData("http://localhost:3001/loan-applications");
 
-  // Normalize role from localStorage to Navbar's expected union type
   const uiRole: 'head' | 'manager' | 'loanOfficer' | 'collector' | 'borrower' = (() => {
     const r = (role || '').toLowerCase();
     switch (r) {
@@ -70,7 +69,6 @@ export default function ApplicationDetailsPage() {
     }
   })();
 
-  const [activeTab, setActiveTab] = useState("income");
   const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -159,7 +157,7 @@ export default function ApplicationDetailsPage() {
                     }`}>
                       {application?.status || 'Unknown'}
                     </span>
-                    <span className="text-sm text-gray-500">{application?.loanType || ''}</span>
+                    <span className="text-sm text-gray-500">{translateLoanType(application?.loanType, language)}</span>
                   </div>
                 </div>
               </div>
@@ -227,24 +225,24 @@ export default function ApplicationDetailsPage() {
             onClose={() => setSuccessModalOpen(false)}
           />
 
-{isAgreementOpen === "loan" && (
-  <LoanAgreementModal
-    isOpen={true}
-    onClose={() => setIsAgreementOpen(null)}
-    application={(application as any) ?? null}
-  />
-)}
+          {isAgreementOpen === "loan" && (
+            <LoanAgreementModal
+              isOpen={true}
+              onClose={() => setIsAgreementOpen(null)}
+              application={(application as any) ?? null}
+            />
+          )}
 
-{isAgreementOpen === "release" && (
-  <ReleaseForm
-    isOpen={true}
-    onClose={() => setIsAgreementOpen(null)}
-    application={(application as any) ?? null}
-  />
-)}
+          {isAgreementOpen === "release" && (
+            <ReleaseForm
+              isOpen={true}
+              onClose={() => setIsAgreementOpen(null)}
+              application={(application as any) ?? null}
+            />
+          )}
 
-        <AccountModal ref={modalRef} />
-      </div>
-      </Wrapper>
+          <AccountModal ref={modalRef} />
+        </div>
+        </Wrapper>
     );
   }
