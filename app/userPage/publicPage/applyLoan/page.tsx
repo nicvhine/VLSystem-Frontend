@@ -94,6 +94,9 @@ export default function ApplicationPage() {
     return sections;
   }, [language, loanType]);
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> d4fff06 (Progress Tracker)
+=======
 >>>>>>> d4fff06 (Progress Tracker)
 =======
 >>>>>>> d4fff06 (Progress Tracker)

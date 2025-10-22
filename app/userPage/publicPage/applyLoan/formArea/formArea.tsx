@@ -562,6 +562,84 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     appAgent, appLoanPurpose, selectedLoan, photo2x2, uploadedFiles, requiredDocumentsCount, onProgressUpdate
   ]);
 
+  // Progress tracking effect
+  useEffect(() => {
+    if (!onProgressUpdate) return;
+
+    const progress: Record<string, boolean> = {
+      basicInfo: false,
+      income: false,
+      collateral: false,
+      references: false,
+      agent: false,
+      loanDetails: false,
+      photo: false,
+      documents: false,
+    };
+
+    // Check basic information completion
+    const basicInfoComplete = !!(
+      appName.trim() &&
+      appDob &&
+      appContact.trim() &&
+      appEmail.trim() &&
+      appMarital &&
+      appAddress.trim() &&
+      (appMarital !== "Married" || (appSpouseName.trim() && appSpouseOccupation.trim()))
+    );
+    progress.basicInfo = basicInfoComplete;
+
+    // Check income information completion
+    const incomeComplete = !!(
+      sourceOfIncome &&
+      appMonthlyIncome > 0 &&
+      (
+        (sourceOfIncome === "business" && appTypeBusiness.trim() && appBusinessName.trim() && appDateStarted && appBusinessLoc.trim()) ||
+        (sourceOfIncome !== "business" && appOccupation.trim() && appEmploymentStatus.trim() && appCompanyName.trim())
+      )
+    );
+    progress.income = incomeComplete;
+
+    // Check references completion
+    const referencesComplete = appReferences.every(ref => 
+      ref.name.trim() && ref.contact.trim() && ref.relation.trim()
+    );
+    progress.references = referencesComplete;
+
+    // Check collateral completion (only if required)
+    const collateralComplete = !requiresCollateral || !!(
+      collateralType &&
+      collateralValue > 0 &&
+      collateralDescription.trim() &&
+      ownershipStatus
+    );
+    progress.collateral = collateralComplete;
+
+    // Check agent completion
+    const agentComplete = !!appAgent.trim();
+    progress.agent = agentComplete;
+
+    // Check loan details completion
+    const loanDetailsComplete = !!(appLoanPurpose.trim() && selectedLoan);
+    progress.loanDetails = loanDetailsComplete;
+
+    // Check photo completion
+    const photoComplete = photo2x2.length > 0;
+    progress.photo = photoComplete;
+
+    // Check documents completion
+    const documentsComplete = uploadedFiles.length >= requiredDocumentsCount;
+    progress.documents = documentsComplete;
+
+    onProgressUpdate(progress);
+  }, [
+    appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
+    sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted, appBusinessLoc, appMonthlyIncome,
+    appOccupation, appEmploymentStatus, appCompanyName, appReferences,
+    requiresCollateral, collateralType, collateralValue, collateralDescription, ownershipStatus,
+    appAgent, appLoanPurpose, selectedLoan, photo2x2, uploadedFiles, requiredDocumentsCount, onProgressUpdate
+  ]);
+
   return (
     <div className="relative max-w-4xl mx-auto py-0">
       {/* Progress Modal */}
