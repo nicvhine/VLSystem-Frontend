@@ -18,6 +18,7 @@ import LoanDetails from "./sections/loanDetails";
 import UploadSection from "./sections/uploadSection";
 import AgentDropdown from "./sections/agent";
 
+<<<<<<< HEAD
 /**
  * Error modal component for displaying missing field errors
  * Shows an animated modal with error message and close button
@@ -108,6 +109,26 @@ function DocumentUploadErrorModal({ message, onClose }: { message: string; onClo
         </div>
     );
 }
+=======
+import { ErrorModal, DocumentUploadErrorModal } from "./modals/errorModal";
+import SuccessModalWithAnimation from "./modals/successModal";
+
+import { useUpdateMissingFields } from "./hooks/updateMissingFields";
+import { useFormSubmit } from "./hooks/useFormSubmit";
+import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function";
+
+interface FormAreaProps {
+  loanType: string;
+  language: "en" | "ceb";
+  isMobile?: boolean;
+  onProgressUpdate?: (progress: Record<string, boolean>) => void;
+}
+
+export default function FormArea({ loanType, language, isMobile, onProgressUpdate }: FormAreaProps) {
+  const COMPANY_NAME = "Vistula Lending Corporation";
+  const TERMS_VERSION = "1.0-draft";
+  const PRIVACY_VERSION = "1.0-draft";
+>>>>>>> d4fff06 (Progress Tracker)
 
 
 interface SuccessModalWithAnimationProps {
@@ -275,6 +296,7 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     const requiredDocumentsCount = loanTypeParam === 'with' ? 6 : loanTypeParam === 'open-term' ? 6 : 4;
     const API_URL = `http://localhost:3001/loan-applications/apply/${loanTypeParam}`;
 
+<<<<<<< HEAD
         useEffect(() => {
             setMissingFields((prev) => {
                 const next = prev.filter((field) => {
@@ -383,6 +405,97 @@ function SuccessModalWithAnimation({ language, loanId, onClose }: SuccessModalWi
     useEffect(() => {
         if (appAgent.trim()) {
             setAgentMissingError(false);
+=======
+  // Progress tracking effect
+  useEffect(() => {
+    if (!onProgressUpdate) return;
+
+    const progress: Record<string, boolean> = {
+      basicInfo: false,
+      income: false,
+      collateral: false,
+      references: false,
+      agent: false,
+      loanDetails: false,
+      photo: false,
+      documents: false,
+    };
+
+    // Check basic information completion
+    const basicInfoComplete = !!(
+      appName.trim() &&
+      appDob &&
+      appContact.trim() &&
+      appEmail.trim() &&
+      appMarital &&
+      appAddress.trim() &&
+      (appMarital !== "Married" || (appSpouseName.trim() && appSpouseOccupation.trim()))
+    );
+    progress.basicInfo = basicInfoComplete;
+
+    // Check income information completion
+    const incomeComplete = !!(
+      sourceOfIncome &&
+      appMonthlyIncome > 0 &&
+      (
+        (sourceOfIncome === "business" && appTypeBusiness.trim() && appBusinessName.trim() && appDateStarted && appBusinessLoc.trim()) ||
+        (sourceOfIncome !== "business" && appOccupation.trim() && appEmploymentStatus.trim() && appCompanyName.trim())
+      )
+    );
+    progress.income = incomeComplete;
+
+    // Check references completion
+    const referencesComplete = appReferences.every(ref => 
+      ref.name.trim() && ref.contact.trim() && ref.relation.trim()
+    );
+    progress.references = referencesComplete;
+
+    // Check collateral completion (only if required)
+    const collateralComplete = !requiresCollateral || !!(
+      collateralType &&
+      collateralValue > 0 &&
+      collateralDescription.trim() &&
+      ownershipStatus
+    );
+    progress.collateral = collateralComplete;
+
+    // Check agent completion
+    const agentComplete = !!appAgent.trim();
+    progress.agent = agentComplete;
+
+    // Check loan details completion
+    const loanDetailsComplete = !!(appLoanPurpose.trim() && selectedLoan);
+    progress.loanDetails = loanDetailsComplete;
+
+    // Check photo completion
+    const photoComplete = photo2x2.length > 0;
+    progress.photo = photoComplete;
+
+    // Check documents completion
+    const documentsComplete = uploadedFiles.length >= requiredDocumentsCount;
+    progress.documents = documentsComplete;
+
+    onProgressUpdate(progress);
+  }, [
+    appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
+    sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted, appBusinessLoc, appMonthlyIncome,
+    appOccupation, appEmploymentStatus, appCompanyName, appReferences,
+    requiresCollateral, collateralType, collateralValue, collateralDescription, ownershipStatus,
+    appAgent, appLoanPurpose, selectedLoan, photo2x2, uploadedFiles, requiredDocumentsCount, onProgressUpdate
+  ]);
+
+  return (
+    <div className="relative max-w-4xl mx-auto py-0">
+      {/* Progress Modal */}
+      <SubmitProgressModal
+        open={progressOpen}
+        activeStep={activeStep}
+        title={language === "en" ? "Submitting Application" : "Pag-submit sa Aplikasyon"}
+        subtitle={
+          language === "en"
+            ? "Please keep this window open while we process your request."
+            : "Palihog ayaw isira kini nga bintana samtang among gi-proseso ang imong hangyo."
+>>>>>>> d4fff06 (Progress Tracker)
         }
     }, [appAgent]);
 

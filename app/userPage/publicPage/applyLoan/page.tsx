@@ -46,6 +46,7 @@ export default function ApplicationPage() {
     }
   }, [language]);
 
+<<<<<<< HEAD
   const [address, setAddress] = useState('');
   const [loanType, setLoanType] = useState<string>('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -72,6 +73,27 @@ export default function ApplicationPage() {
     language === 'en' ? 'Approval Process' : 'Proseso sa Pag-apruba',
     language === 'en' ? 'Loan Disbursement' : 'Pagpagawas sa Pahulam',
   ];
+=======
+  // Tracker sections (static labels)
+  const trackerSections = useMemo(() => {
+    const sections = [
+      { key: "basicInfo", label: language === "en" ? "Basic Information" : "Pangunang Impormasyon" },
+      { key: "income", label: language === "en" ? "Source of Income" : "Tinubdan sa Kita" },
+      { key: "references", label: language === "en" ? "References" : "Mga Referensya" },
+      { key: "agent", label: language === "en" ? "Agent Selection" : "Pagpili sa Ahente" },
+      { key: "loanDetails", label: language === "en" ? "Loan Details" : "Mga Detalye sa Pahulam" },
+      { key: "photo", label: language === "en" ? "2x2 Photo" : "2x2 nga Larawan" },
+      { key: "documents", label: language === "en" ? "Supporting Documents" : "Mga Dokumento" },
+    ];
+    
+    // Add collateral section only if loan type requires it
+    if (loanType && (loanType.includes("With Collateral") || loanType.includes("Open-Term"))) {
+      sections.splice(2, 0, { key: "collateral", label: language === "en" ? "Collateral Information" : "Impormasyon sa Kolateral" });
+    }
+    
+    return sections;
+  }, [language, loanType]);
+>>>>>>> d4fff06 (Progress Tracker)
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
@@ -210,6 +232,7 @@ export default function ApplicationPage() {
           </div>
         )}
 
+<<<<<<< HEAD
        {/* Application Form Area */}
       <div className={isMobile ? "flex-1 overflow-y-auto p-2 bg-gray-50" : "flex-1 overflow-y-auto p-6 bg-gray-50"}>
         {/* Always show loan type dropdown at the top on mobile */}
@@ -224,6 +247,75 @@ export default function ApplicationPage() {
                 <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
                 {loanTypes.map(type => (
                   <option key={type} value={type}>{type}</option>
+=======
+        {/* Form Area + Progress Tracker */}
+        <div className="flex flex-1 bg-gray-50 overflow-hidden">
+          
+          {/* Application Form */}
+          <div className={isMobile ? "flex-1 overflow-y-auto p-2" : "flex-1 overflow-y-auto p-6"}>
+            {isMobile && (
+              <div className="flex justify-center mt-2 mb-0 w-full">
+                <div className="w-full max-w-[420px] px-4 mb-2">
+                  <select
+                    value={loanType}
+                    onChange={e => setLoanType(e.target.value)}
+                    className="w-full pt-3 pb-3 text-center text-base font-medium bg-white border border-gray-200 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  >
+                    <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
+                    {loanTypes.map(type => (
+                      <option key={type.key} value={type.key}>{type.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {loanType ? (
+              <FormArea 
+                loanType={loanType}
+                language={language}
+                isMobile={isMobile}
+                onProgressUpdate={setFormProgress}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
+                {language === 'en'
+                  ? 'Please select a loan type to start your application.'
+                  : 'Palihug pilia ang klase sa pahulam aron makasugod sa aplikasyon.'}
+              </div>
+            )}
+          </div>
+
+          {/* Right Sidebar Tracker */}
+          {!isMobile && (
+            <div className="w-64 bg-white border-l border-gray-100 shadow-sm p-6 space-y-4 overflow-y-auto">
+              <h3 className="font-semibold text-gray-800 text-center mb-4">
+                {language === 'en' ? 'Progress Tracker' : 'Tracker sa Aplikasyon'}
+              </h3>
+              <ul className="space-y-3 text-sm">
+                {trackerSections.map(section => (
+                  <li
+                    key={section.key}
+                    className={`flex items-center gap-2 transition-all ${
+                      formProgress[section.key]
+                        ? "text-green-600 font-semibold"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {formProgress[section.key] ? (
+                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                      </div>
+                    )}
+                    <span>{section.label}</span>
+                  </li>
+>>>>>>> d4fff06 (Progress Tracker)
                 ))}
               </select>
             </div>
