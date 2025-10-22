@@ -62,6 +62,8 @@ export function SubmitProgressModal({
   subtitle?: string;
   blockDismiss?: boolean;
 }) {
+  // optional upload progress percentage (0-100) can be provided by the caller
+  // note: kept as local prop by reading from rest args below via any type when passed
   const [animateIn, setAnimateIn] = useState(false);
 
   useEffect(() => {
@@ -106,6 +108,16 @@ export function SubmitProgressModal({
             )}
           </div>
         </div>
+
+        {/* Upload progress bar (if provided) */}
+        {activeStep === 1 && (typeof (arguments[0] as any).uploadProgress === 'number') && (
+          <div className="mb-4">
+            <div className="text-xs text-gray-600 mb-1">Uploading: {(arguments[0] as any).uploadProgress}%</div>
+            <div className="w-full h-2 bg-gray-200 rounded">
+              <div className="h-2 bg-red-600 rounded" style={{ width: `${(arguments[0] as any).uploadProgress}%` }} />
+            </div>
+          </div>
+        )}
 
         {total > 1 && (
           <ol className="space-y-2 mb-4">

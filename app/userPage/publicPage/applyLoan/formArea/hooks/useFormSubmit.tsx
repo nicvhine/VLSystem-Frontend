@@ -47,6 +47,7 @@ export function useFormSubmit(props: UseFormSubmitProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState(0); // 0-100
 
   // --- Validate required fields ---
   const handleSubmit = async () => {
@@ -162,8 +163,8 @@ export function useFormSubmit(props: UseFormSubmitProps) {
         formData.append("ownershipStatus", props.ownershipStatus);
       }
 
-      props.uploadedFiles.forEach(f => formData.append("documents", f));
-      if (props.photo2x2[0]) formData.append("profilePic", props.photo2x2[0]);
+  props.uploadedFiles.forEach(f => formData.append("documents", f));
+  if (props.photo2x2[0]) formData.append("profilePic", props.photo2x2[0]);
 
       // Consent info
       formData.append('companyName', props.COMPANY_NAME);
@@ -172,22 +173,97 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       formData.append('privacyVersion', props.PRIVACY_VERSION);
       formData.append('consentToTerms', 'true');
 
+      // Use XHR to get upload progress events
       setActiveStep(1); // Step 1: Uploading documents
+      setUploadProgress(0);
 
-      const res = await fetch(props.API_URL, { method: "POST", body: formData });
+      const uploadResult: { ok: boolean; response?: any } = await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', props.API_URL, true);
 
-      setActiveStep(2); // Step 2: Waiting for server response
-      const data = await res.json();
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) {
+            const pct = Math.round((ev.loaded / ev.total) * 100);
+            setUploadProgress(pct);
+          }
+        };
 
-      if (!res.ok) {
-        throw new Error(data?.error || "Submission failed");
+        xhr.onload = () => {
+          try {
+            const status = xhr.status;
+            const text = xhr.responseText;
+            const json = text ? JSON.parse(text) : {};
+            if (status >= 200 && status < 300) {
+              resolve({ ok: true, response: json });
+            } else {
+              resolve({ ok: false, response: json });
+            }
+          } catch (err) {
+            resolve({ ok: false, response: { error: 'Invalid JSON response' } });
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.onabort = () => reject(new Error('Upload aborted'));
+
+        xhr.send(formData);
+      });
+
+  // Move to waiting step after upload completes
+  setActiveStep(2); // Step 2: Waiting for server response / backend processing
+
+  // Ensure the waiting step is visible for a short minimum duration so users see it (prevents instant skip)
+  const MIN_VISIBLE_MS = 400;
+  await new Promise((res) => setTimeout(res, MIN_VISIBLE_MS));
+
+      if (!uploadResult.ok) {
+        const err = uploadResult.response?.error || 'Submission failed';
+        throw new Error(err);
       }
+
+      const data = uploadResult.response;
 
       // Extract loanId from response (check both possible structures)
       const loanId = data.application?.applicationId || data.applicationId;
 
       // Trigger success callback
       if (props.onSuccess && loanId) props.onSuccess(loanId);
+
+      // If server returned loanId, start polling for processing status endpoint in background
+      if (loanId) {
+        // start background polling (fire-and-forget)
+        (async () => {
+          try {
+            const statusUrl = `http://localhost:3001/loan-applications/${loanId}`;
+            const maxAttempts = 15; // e.g., ~30s at 2s interval
+            const intervalMs = 2000;
+            let attempts = 0;
+
+            while (attempts < maxAttempts) {
+              attempts += 1;
+              try {
+                const r = await fetch(statusUrl);
+                if (!r.ok) {
+                  // wait then continue
+                  await new Promise((res) => setTimeout(res, intervalMs));
+                  continue;
+                }
+                const d = await r.json();
+                const s = d.status;
+                if (s === 'Accepted' || s === 'Disbursed') {
+                  if (props.onSuccess) props.onSuccess(loanId);
+                  break;
+                }
+              } catch (e) {
+                // ignore and retry
+              }
+              await new Promise((res) => setTimeout(res, intervalMs));
+            }
+          } catch (e) {
+            // background polling failed silently
+          }
+        })();
+      }
 
       return { ok: true, data };
     } catch (error: any) {
@@ -203,5 +279,5 @@ export function useFormSubmit(props: UseFormSubmitProps) {
     }
   };
 
-  return { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep };
+  return { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress };
 }

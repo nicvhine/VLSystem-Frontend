@@ -128,7 +128,7 @@ export default function FormArea({ loanType, language, isMobile }: FormAreaProps
     photo2x2, uploadedFiles, missingFields, setMissingFields,
   });
 
-  const { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep } = useFormSubmit({
+  const { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress } = useFormSubmit({
     appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
     appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
     appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
@@ -147,6 +147,8 @@ export default function FormArea({ loanType, language, isMobile }: FormAreaProps
       <SubmitProgressModal
         open={progressOpen}
         activeStep={activeStep}
+        // pass upload progress percent (0-100)
+        uploadProgress={uploadProgress}
         title={language === "en" ? "Submitting Application" : "Pag-submit sa Aplikasyon"}
         subtitle={
           language === "en"
