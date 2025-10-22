@@ -17,37 +17,47 @@ import { StatCard } from "@/app/commonComponents/statistics/functions";
 import translations from "@/app/commonComponents/translation";
 
 export default function LoanStatistics() {
-  const [role, setRole] = useState("loanOfficer");
-
-  useEffect(() => {
+  const [role, setRole] = useState<'loanOfficer' | 'manager' | 'head'>(() => {
     if (typeof window !== "undefined") {
-      const storedRole = localStorage.getItem("role");
-      setRole(storedRole || "loanOfficer");
+      return (localStorage.getItem("role") as 'loanOfficer' | 'manager' | 'head') || 'loanOfficer';
     }
+    return 'loanOfficer';
+  });
+
+  // Lazy initializer ensures we read from localStorage only on mount
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("language") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+
+  // Listen for language change events
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      setLanguage(event.detail.language);
+    };
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
   }, []);
 
-  const {
-    loading,
-    loanStats,
-    collectionStats,
-    typeStats,
-    applicationStats,
-    language,
-  } = useLoanStats(role as "loanOfficer" | "manager");
+  // Re-fetch stats whenever role or language changes
+  const { loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(role, language);
 
   const t = translations.statisticTranslation[language];
   const l = translations.loanTermsTranslator[language];
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
         <LoadingSpinner />
       </div>
     );
+  }
 
   return (
     <div className="flex flex-col gap-4 w-full h-full">
-      {/* Manager/Head Only */}
+
       {(role === "manager" || role === "head") && (
         <>
           {/* Financial Overview */}

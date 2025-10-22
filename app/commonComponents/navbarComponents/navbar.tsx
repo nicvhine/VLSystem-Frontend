@@ -16,6 +16,7 @@ import {
   getBorrowerNavItems,
 } from './navItems';
 import { NavbarProps } from '../utils/Types/navbar';
+import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../utils/notification';
 
 export default function Navbar({ role, isBlurred = false }: NavbarProps) {
   const router = useRouter();
@@ -101,7 +102,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
 
     const token = localStorage.getItem('token');
     if (token && role) {
-      fetch(`http://localhost:3001/notifications/${role}`, {
+      const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+      fetch(`http://localhost:3001/notifications/${apiRole}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -389,8 +391,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                className="object-cover w-full h-full rounded-full"
              />
              
-                   
-                        
+              
                 ) : (
                   <span className="text-gray-700 font-semibold text-sm">
                     {name ? name.charAt(0).toUpperCase() : 'U'}

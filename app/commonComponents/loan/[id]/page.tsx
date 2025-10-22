@@ -37,15 +37,17 @@ export default function LoansDetailPage({ params }: Props) {
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-full border border-gray-200">
-                  <img
-                    src={
-                      client.profilePic
-                        ? `http://localhost:3001/${client.profilePic.filePath}`
-                        : "/default-avatar.png"
-                    }
-                    alt={client.name}
-                    className="h-full w-full object-cover"
-                  />
+                <img
+                  src={
+                    client.profilePic?.filePath
+                      ? client.profilePic.filePath.startsWith("http")
+                        ? client.profilePic.filePath
+                        : `http://localhost:3001/${client.profilePic.filePath}`
+                      : "/default-avatar.png"
+                  }
+                  alt={client.name}
+                  className="h-full w-full object-cover"
+                />
                 </div>
                 <div>
                   <h1 className="text-3xl font-semibold text-gray-900">{client.name}</h1>
