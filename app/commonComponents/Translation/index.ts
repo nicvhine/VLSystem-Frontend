@@ -9,6 +9,7 @@ import viewApplicationTranslation from "./viewApplicationTranslation";
 import buttonTranslation from "./buttonTranslation";
 import trackerApplication from "./trackerApplication";
 import viewLoanTranslation from "./viewLoanTranslation";
+import requirementsTranslation from "./requirementsTranslation";
 
 const translations = {
   landingPageTranslation,
@@ -22,6 +23,7 @@ const translations = {
   buttonTranslation,
   trackerApplication,
   viewLoanTranslation,
+  requirementsTranslation,
 };
 
 export default translations;

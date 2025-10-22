@@ -1,10 +1,5 @@
 const requirementsTranslation = {
     en: {
-        // Loan Types
-        t1: "Regular Loan Without Collateral",
-        t2: "Regular Loan With Collateral",
-        t3: "Open-Term Loan",
-        
         // Requirements
         t4: "Valid Government-issued ID",
         t5: "Proof of Income",
@@ -15,10 +10,6 @@ const requirementsTranslation = {
     },
     
     ceb: {
-        // Loan Types
-        t1: "Regular nga Pahulam (Walay Kolateral)",
-        t2: "Regular nga Pahulam (Naay Kolateral)",
-        t3: "Open-Term nga Pahulam",
         
         // Requirements
         t4: "Validong Gobyerno nga ID",
