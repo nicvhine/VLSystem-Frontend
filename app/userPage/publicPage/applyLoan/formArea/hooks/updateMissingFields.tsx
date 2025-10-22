@@ -22,6 +22,7 @@ interface UpdateMissingFieldsParams {
     appCompanyName: string;
     appReferences: { name: string; contact: string; relation: string }[];
     requiresCollateral: boolean;
+    requires2x2?: boolean;
     collateralType: string;
     collateralValue: number;
     collateralDescription: string;
@@ -58,92 +59,83 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
         appEmploymentStatus,
         appCompanyName,
         appReferences,
-        requiresCollateral,
         collateralType,
         collateralValue,
         collateralDescription,
         ownershipStatus,
         appAgent,
         photo2x2,
+    requiresCollateral,
+    requires2x2,
         uploadedFiles,
         missingFields,
         setMissingFields
     } = params;
 
     useEffect(() => {
-        setMissingFields((prev) => {
-            const next = prev.filter((field) => {
-                const referenceMatch = field.match(/^Reference (\d+) (Name|Contact|Relationship)$/);
-                if (referenceMatch) {
-                    const index = Number(referenceMatch[1]) - 1;
-                    const key = referenceMatch[2];
-                    const ref = appReferences[index];
-                    if (!ref) return false;
-                    if (key === "Name") return !ref.name.trim();
-                    if (key === "Contact") return !ref.contact.trim();
-                    return !ref.relation.trim();
-                }
+        // Recompute the full list of missing fields from current form values.
+        const next: string[] = [];
 
-                switch (field) {
-                    case "Name":
-                        return !appName.trim();
-                    case "Date of Birth":
-                        return !appDob;
-                    case "Contact Number":
-                        return !appContact.trim();
-                    case "Email Address":
-                        return !appEmail.trim();
-                    case "Marital Status":
-                        return !appMarital;
-                    case "Spouse Name":
-                        return appMarital === "Married" && !appSpouseName.trim();
-                    case "Spouse Occupation":
-                        return appMarital === "Married" && !appSpouseOccupation.trim();
-                    case "Home Address":
-                        return !appAddress.trim();
-                    case "Loan Purpose":
-                        return !appLoanPurpose.trim();
-                    case "Loan Amount":
-                        return !selectedLoan;
-                    case "Source of Income":
-                        return !sourceOfIncome;
-                    case "Type of Business":
-                        return sourceOfIncome === "business" && !appTypeBusiness.trim();
-                    case "Business Name":
-                        return sourceOfIncome === "business" && !appBusinessName.trim();
-                    case "Date Started":
-                        return sourceOfIncome === "business" && !appDateStarted;
-                    case "Business Location":
-                        return sourceOfIncome === "business" && !appBusinessLoc.trim();
-                    case "Occupation":
-                        return sourceOfIncome && sourceOfIncome !== "business" && !appOccupation.trim();
-                    case "Employment Status":
-                        return sourceOfIncome && sourceOfIncome !== "business" && !appEmploymentStatus.trim();
-                    case "Company Name":
-                        return sourceOfIncome && sourceOfIncome !== "business" && !appCompanyName.trim();
-                    case "Monthly Income":
-                        return !!sourceOfIncome && appMonthlyIncome <= 0;
-                    case "Collateral Type":
-                        return requiresCollateral && !collateralType;
-                    case "Collateral Value":
-                        return requiresCollateral && (!collateralValue || collateralValue <= 0);
-                    case "Collateral Description":
-                        return requiresCollateral && !collateralDescription.trim();
-                    case "Ownership Status":
-                        return requiresCollateral && !ownershipStatus;
-                    case "Agent":
-                        return !appAgent.trim();
-                    case "2x2 Photo":
-                        return photo2x2.length === 0;
-                    case "Document Upload":
-                        return uploadedFiles.length === 0;
-                    default:
-                        return true;
-                }
-            });
+        // Basic Info
+        if (!appName.trim()) next.push('Name');
+        if (!appDob) next.push('Date of Birth');
+        if (!appContact.trim()) next.push('Contact Number');
+        if (!appEmail.trim()) next.push('Email Address');
+        if (!appMarital) next.push('Marital Status');
+        if (appMarital === 'Married') {
+            if (!appSpouseName.trim()) next.push('Spouse Name');
+            if (!appSpouseOccupation.trim()) next.push('Spouse Occupation');
+        }
+        if (!appAddress.trim()) next.push('Home Address');
 
-            return next.length === prev.length ? prev : next;
+        // Loan info
+        if (!appLoanPurpose.trim()) next.push('Loan Purpose');
+        if (!selectedLoan) next.push('Loan Amount');
+
+        // Source of income
+        if (!sourceOfIncome) next.push('Source of Income');
+        if (sourceOfIncome === 'business') {
+            if (!appTypeBusiness.trim()) next.push('Type of Business');
+            if (!appBusinessName.trim()) next.push('Business Name');
+            if (!appDateStarted) next.push('Date Started');
+            if (!appBusinessLoc.trim()) next.push('Business Location');
+            if (!appMonthlyIncome || appMonthlyIncome <= 0) next.push('Monthly Income');
+        } else if (sourceOfIncome) {
+            if (!appOccupation.trim()) next.push('Occupation');
+            if (!appEmploymentStatus.trim()) next.push('Employment Status');
+            if (!appCompanyName.trim()) next.push('Company Name');
+            if (!appMonthlyIncome || appMonthlyIncome <= 0) next.push('Monthly Income');
+        }
+
+        // References
+        appReferences.forEach((ref, i) => {
+            if (!ref.name.trim()) next.push(`Reference ${i + 1} Name`);
+            if (!ref.contact.trim()) next.push(`Reference ${i + 1} Contact`);
+            if (!ref.relation.trim()) next.push(`Reference ${i + 1} Relationship`);
         });
+
+        // Agent
+        if (!appAgent.trim()) next.push('Agent');
+
+        // Collateral
+        if (requiresCollateral) {
+            if (!collateralType) next.push('Collateral Type');
+            if (!collateralValue || collateralValue <= 0) next.push('Collateral Value');
+            if (!collateralDescription.trim()) next.push('Collateral Description');
+            if (!ownershipStatus) next.push('Ownership Status');
+        }
+
+        // Uploads
+        if (requires2x2) {
+            if (photo2x2.length === 0) next.push('2x2 Photo');
+        }
+        if (uploadedFiles.length === 0) next.push('Document Upload');
+
+        // Only update if different to avoid extra renders
+        // Update directly with new array (avoid passing a function — setter expects string[])
+        const prev = missingFields;
+        const same = prev.length === next.length && prev.every((v, i) => v === next[i]);
+        if (!same) setMissingFields(next);
     }, [
         appName,
         appDob,
@@ -165,7 +157,8 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
         appEmploymentStatus,
         appCompanyName,
         appReferences,
-        requiresCollateral,
+    requiresCollateral,
+    requires2x2,
         collateralType,
         collateralValue,
         collateralDescription,
