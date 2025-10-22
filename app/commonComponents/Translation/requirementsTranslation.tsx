@@ -1,10 +1,5 @@
 const requirementsTranslation = {
     en: {
-        // Loan Types
-        t1: "Regular Loan Without Collateral",
-        t2: "Regular Loan With Collateral",
-        t3: "Open-Term Loan",
-        
         // Requirements
         t4: "Valid Government-issued ID",
         t5: "Proof of Income",
@@ -12,13 +7,16 @@ const requirementsTranslation = {
         t7: "Proof of Billing",
         t8: "Collateral Document",
         t9: "Appraisal Report of Collateral",
+
+        // Process
+        t10: "Application Submission",
+        t11: "Document Verification",
+        t12: "Credit Assessment",
+        t13: "Approval Process",
+        t14: "Loan Disbursement"
     },
     
     ceb: {
-        // Loan Types
-        t1: "Regular nga Pahulam (Walay Kolateral)",
-        t2: "Regular nga Pahulam (Naay Kolateral)",
-        t3: "Open-Term nga Pahulam",
         
         // Requirements
         t4: "Validong Gobyerno nga ID",
@@ -27,6 +25,13 @@ const requirementsTranslation = {
         t7: "Prueba sa Pagbayad",
         t8: "Dokumento sa Kolateral",
         t9: "Report sa Pagtimbang-timbang sa Kolateral",
+
+        // Process
+        t10: "Pagsumite sa Aplikasyon",
+        t11: "Pag-verify sa Dokumento",
+        t12: "Pagsusi sa Kredito",
+        t13: "Proseso sa Pag-apruba",
+        t14: "Pagpagawas sa Pahulam",
     }
 }
 

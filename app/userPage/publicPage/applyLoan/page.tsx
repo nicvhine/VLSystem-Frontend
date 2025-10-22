@@ -1,79 +1,66 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FiX } from "react-icons/fi";
 import FormArea from "./formArea/formArea"; 
-import Navbar from "./navbar";
+import LandingNavbar from "../navbar/landingNavbar";
 import LoginModal from "../loginForm/page";
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
-import { getRequirements } from "./function";
+import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/commonComponents/utils/formatters";
 
-// Apply loan page: loan info sidebars and application form
 export default function ApplicationPage() {
-  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
-    if (typeof window !== 'undefined') {
-      const reloanInfo = localStorage.getItem('reloanInfo');
-      if (reloanInfo) {
-        try {
-          const parsed = JSON.parse(reloanInfo);
-          return parsed.language || 'en';
-        } catch (e) {
-          return 'en';
-        }
-      }
-    }
-    return 'en';
-  });
-
-  const [isLoginOpen, setIsLoginOpen] = useState(false); 
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [loanType, setLoanType] = useState<string>('');
+  const [showInfoOverlay, setShowInfoOverlay] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+  const [formProgress, setFormProgress] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
-  
-  // Update reloan info with current language preference
+
+  // Base loan types (English only, used as keys)
+  const baseLoanTypes = [
+    'Regular Loan Without Collateral',
+    'Regular Loan With Collateral',
+    'Open-Term Loan',
+  ];
+
+  const loanProcessSteps = useMemo(() => getLoanProcessSteps(language), [language]);
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const reloanInfo = localStorage.getItem('reloanInfo');
-      if (reloanInfo) {
-        try {
-          const parsed = JSON.parse(reloanInfo);
-          localStorage.setItem('reloanInfo', JSON.stringify({
-            ...parsed,
-            language: language
-          }));
-        } catch (e) {
-          console.error('Error updating reloan info with language:', e);
-        }
-      }
+    if (!localStorage.getItem('role')) localStorage.setItem('role', 'public');
+    if (!localStorage.getItem('language')) localStorage.setItem('language', 'en');
+
+    const savedLanguage = localStorage.getItem('language') as 'en' | 'ceb';
+    if (savedLanguage) setLanguage(savedLanguage);
+
+    const timer = setTimeout(() => setPageLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Update localStorage when language changes
+  useEffect(() => {
+    if (!localStorage.getItem('role')) localStorage.setItem('role', 'public');
+
+    const savedLanguage = localStorage.getItem('language') as 'en' | 'ceb' | null;
+    if (!savedLanguage) {
+      localStorage.setItem('language', 'en');
+      setLanguage('en');
+    } else {
+      setLanguage(savedLanguage);
     }
+
+    const timer = setTimeout(() => setPageLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Compute translated loan types
+  const loanTypes = useMemo(() => {
+    return baseLoanTypes.map(type => ({
+      key: type,
+      label: translateLoanType(type, language),
+    }));
   }, [language]);
 
-<<<<<<< HEAD
-  const [address, setAddress] = useState('');
-  const [loanType, setLoanType] = useState<string>('');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [mockLoanId] = useState("VL-" + Math.floor(100000 + Math.random() * 900000));
-  const [maritalStatus, setMaritalStatus] = useState('');
-  const [incomeSource, setIncomeSource] = useState('');
-  const [employmentStatus, setEmploymentStatus] = useState('');
-  const handleSubmit = () => setShowSuccessModal(true);
-  const closeModal = () => setShowSuccessModal(false);
-
-  // For mobile info overlay
-  const [showInfoOverlay, setShowInfoOverlay] = useState(false);
-
-  const loanTypes = [
-    language === 'en' ? 'Regular Loan Without Collateral' : 'Regular nga Pahulam (Walay Kolateral)',
-    language === 'en' ? 'Regular Loan With Collateral' : 'Regular nga Pahulam (Naay Kolateral)',
-    language === 'en' ? 'Open-Term Loan' : 'Open-Term nga Pahulam',
-  ];
-
-  const loanProcessSteps = [
-    language === 'en' ? 'Application Submission' : 'Pagsumite sa Aplikasyon',
-    language === 'en' ? 'Document Verification' : 'Pag-verify sa Dokumento',
-    language === 'en' ? 'Credit Assessment' : 'Pagsusi sa Kredito',
-    language === 'en' ? 'Approval Process' : 'Proseso sa Pag-apruba',
-    language === 'en' ? 'Loan Disbursement' : 'Pagpagawas sa Pahulam',
-  ];
-=======
   // Tracker sections (static labels)
   const trackerSections = useMemo(() => {
     const sections = [
@@ -93,25 +80,16 @@ export default function ApplicationPage() {
     
     return sections;
   }, [language, loanType]);
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> d4fff06 (Progress Tracker)
-=======
->>>>>>> d4fff06 (Progress Tracker)
-=======
->>>>>>> d4fff06 (Progress Tracker)
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
-      <Navbar 
+      <LandingNavbar 
         language={language}
         setLanguage={setLanguage}
         isLoginOpen={isLoginOpen}
         setIsLoginOpen={setIsLoginOpen}
-        isMobile={isMobile}
       />
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
-
 
       {/* Floating info button (mobile) */}
       {isMobile && (
@@ -134,6 +112,7 @@ export default function ApplicationPage() {
             >
               <FiX size={24} />
             </button>
+
             {/* Loan Requirements */}
             {loanType ? (
               <div className="mb-4">
@@ -141,39 +120,35 @@ export default function ApplicationPage() {
                   {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                {getRequirements(loanType, language).map((req, index) => (
+                  {getRequirements(loanType, language).map((req, index) => (
                     <li key={index}>{req}</li>
                   ))}
                 </ul>
               </div>
             ) : (
               <p className="text-gray-400 text-sm text-center mb-4">
-                {language === 'en' ? 'Select a loan type to view requirements' : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
+                {language === 'en'
+                  ? 'Select a loan type to view requirements'
+                  : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
               </p>
             )}
-            {/* Application Process */}
-            <div>
-              <h3 className="font-semibold text-gray-800 text-center mb-2">
-                {language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}
-              </h3>
-              <ul className="list-decimal list-inside text-sm text-gray-600 space-y-1">
-                {loanProcessSteps.map((step, index) => (
-                  <li key={index}>{step}</li>
-                ))}
-              </ul>
-            </div>
           </div>
         </div>
       )}
+
       {/* Main content */}
       <div className={isMobile ? "flex-1 flex flex-col overflow-hidden" : "flex flex-1 overflow-hidden"}>
+        
         {/* Left Sidebar (desktop only) */}
         {!isMobile && (
           <div className="w-80 bg-white shadow-sm p-6 space-y-6 overflow-y-auto">
+            
             {/* Type of Loan Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-                <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Type of Loan' : 'Klase sa Pahulam'}</h3>
+                <h3 className="font-semibold text-gray-800 text-center">
+                  {language === 'en' ? 'Type of Loan' : 'Klase sa Pahulam'}
+                </h3>
               </div>
               <div className="p-4">
                 <div className="bg-gray-50 rounded-lg p-3">
@@ -184,21 +159,26 @@ export default function ApplicationPage() {
                   >
                     <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
                     {loanTypes.map((type) => (
-                      <option key={type} value={type}>{type}</option>
+                      <option key={type.key} value={type.key}>{type.label}</option>
                     ))}
                   </select>
                 </div>
               </div>
             </div>
-            {/* Type of Loan Requirements Section */}
+
+            {/* Loan Requirements Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-                <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}</h3>
+                <h3 className="font-semibold text-gray-800 text-center">
+                  {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
+                </h3>
               </div>
               <div className="p-4 overflow-y-auto">
                 {loanType ? (
                   <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-red-600 mb-3">{loanType}</h4>
+                    <h4 className="font-medium text-sm text-red-600 mb-3">
+                      {translateLoanType(loanType, language)}
+                    </h4>
                     <ul className="space-y-2 text-sm">
                       {getRequirements(loanType, language).map((req, index) => (
                         <li key={index} className="flex items-start gap-2 text-gray-600">
@@ -210,50 +190,37 @@ export default function ApplicationPage() {
                   </div>
                 ) : (
                   <div className="text-gray-400 text-sm text-center flex items-center justify-center h-full">
-                    {language === 'en' ? 'Select a loan type to view requirements' : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
+                    {language === 'en'
+                      ? 'Select a loan type to view requirements'
+                      : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
                   </div>
                 )}
               </div>
             </div>
+
             {/* Loan Process Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
-                <h3 className="font-semibold text-gray-800 text-center">{language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}</h3>
+                <h3 className="font-semibold text-gray-800 text-center">
+                  {language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}
+                </h3>
               </div>
               <div className="p-4">
-                <div className="space-y-3">
-                  <ul className="space-y-3 text-sm">
-                    {loanProcessSteps.map((step, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium min-w-[24px] text-center">
-                          {index + 1}
-                        </span>
-                        <span className="text-gray-600">{step}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <ul className="space-y-3 text-sm">
+                  {loanProcessSteps.map((step, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <span className="bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full font-medium min-w-[24px] text-center">
+                        {index + 1}
+                      </span>
+                      <span className="text-gray-600">{step}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
         )}
 
-<<<<<<< HEAD
-       {/* Application Form Area */}
-      <div className={isMobile ? "flex-1 overflow-y-auto p-2 bg-gray-50" : "flex-1 overflow-y-auto p-6 bg-gray-50"}>
-        {/* Always show loan type dropdown at the top on mobile */}
-        {isMobile && (
-          <div className="flex justify-center mt-2 mb-0 w-full">
-            <div className="w-full max-w-[420px] px-4 mb-2">
-              <select
-                value={loanType}
-                onChange={e => setLoanType(e.target.value)}
-                className="w-full pt-3 pb-3 text-center text-base font-medium bg-white border border-gray-200 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
-                {loanTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-=======
         {/* Form Area + Progress Tracker */}
         <div className="flex flex-1 bg-gray-50 overflow-hidden">
           
@@ -321,26 +288,12 @@ export default function ApplicationPage() {
                     )}
                     <span>{section.label}</span>
                   </li>
->>>>>>> d4fff06 (Progress Tracker)
                 ))}
-              </select>
+              </ul>
             </div>
-          </div>
-        )}
-        {loanType ? (
-          <FormArea loanType={loanType} language={language} isMobile={isMobile} />
-        ) : (
-          <div className={isMobile ? "flex flex-col items-center justify-center h-full" : "flex items-center justify-center h-full text-gray-400 text-lg font-medium"}>
-            <div className={isMobile ? "text-gray-400 text-base font-medium mb-2 text-center" : "text-gray-400 text-lg font-medium"}>
-              {language === 'en'
-                ? 'Please select a loan type to start your application.'
-                : 'Palihug pilia ang klase sa pahulam aron makasugod sa aplikasyon.'}
-            </div>
-          </div>
-        )}
-      </div>
+          )}
 
-
+        </div>
       </div>
     </div>
   );

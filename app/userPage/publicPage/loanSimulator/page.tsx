@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import translations from '@/app/commonComponents/translation';
+import { translateLoanType } from '@/app/commonComponents/utils/formatters';
 
 interface SimulatorModalProps {
   isOpen: boolean;
@@ -197,10 +198,14 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 onChange={(e) => setLoanType(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
               >
-                <option value="">{language === 'en' ? 'Select loan type' : 'Pilia ang klase sa pahulam'}</option>
-                <option value="regularWithout">{language === 'en' ? 'Regular (Without Collateral)' : 'Regular (Walay Kolateral)'}</option>
-                <option value="regularWith">{language === 'en' ? 'Regular (With Collateral)' : 'Regular (Naay Kolateral)'}</option>
-                <option value="openTerm">{language === 'en' ? 'Open-Term' : 'Open-Term'}</option>
+                <option value="">
+                  {language === "en" ? "Select loan type" : "Pilia ang klase sa pahulam"}
+                </option>
+                {["regularWithout", "regularWith", "openTerm"].map((type) => (
+                  <option key={type} value={type}>
+                    {translateLoanType(type, language)}
+                  </option>
+                ))}
               </select>
             </div>
 

@@ -57,3 +57,46 @@ export interface InterviewEvent {
   end: Date;
   applicationId: string;
 }
+
+export interface Reference {
+  name: string;
+  contact: string;
+  relation: string;
+}
+
+export interface HandleSubmitParams {
+  appName: string;
+  appDob: string;
+  appContact: string;
+  appEmail: string;
+  appMarital: string;
+  appSpouseName?: string;
+  appSpouseOccupation?: string;
+  appAddress: string;
+  appLoanPurpose: string;
+  selectedLoan?: any;
+  sourceOfIncome: string;
+  appTypeBusiness?: string;
+  appBusinessName?: string;
+  appDateStarted?: string;
+  appBusinessLoc?: string;
+  appOccupation?: string;
+  appEmploymentStatus?: string;
+  appCompanyName?: string;
+  appMonthlyIncome?: number;
+  requiresCollateral: boolean;
+  collateralType?: string;
+  collateralValue?: number;
+  collateralDescription?: string;
+  ownershipStatus?: string;
+  appAgent: string;
+  appReferences: Reference[];
+  uploadedFiles: File[];
+  photo2x2: File[];
+  language: 'en' | 'ceb';
+  setMissingFields: (fields: string[]) => void;
+  setShowErrorModal: (open: boolean) => void;
+  setAgentMissingError: (value: boolean) => void;
+  setShowTermsModal: (open: boolean) => void;
+  setErrorMessage: (msg: string) => void;
+}
