@@ -1,4 +1,5 @@
 import translations from "../translation";
+import requirementsTranslation from "../translation/requirementsTranslation";
 
 export const formatCurrency = (amount?: number | string) =>
   amount
@@ -59,3 +60,26 @@ export const translateLoanType = (
   }
 };
 
+export const getRequirements = (type: string, language: "en" | "ceb") => {
+  const t = translations.requirementsTranslation[language];
+  const englishType = translateLoanType(type, "en");
+
+  switch (englishType) {
+    case "Regular Loan Without Collateral":
+      return [t.t4, t.t5, t.t6, t.t7];
+
+    case "Regular Loan With Collateral":
+      return [t.t4, t.t5, t.t6, t.t7, t.t8, t.t9];
+
+    case "Open-Term Loan":
+      return [t.t4, t.t5, t.t6, t.t7, t.t8, t.t9];
+
+    default:
+      return [];
+  }
+};
+
+export const getLoanProcessSteps = (language: "en" | "ceb") => {
+  const t = translations.requirementsTranslation[language];
+  return [t.t10, t.t11, t.t12, t.t13, t.t14];
+};
