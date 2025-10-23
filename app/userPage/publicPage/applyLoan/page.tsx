@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
-import { FiX } from "react-icons/fi";
+import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import FormArea from "./formArea/formArea";
 import LandingNavbar from "../navbar/landingNavbar";
 import LoginModal from "../loginForm/page";
@@ -15,6 +15,9 @@ export default function ApplicationPage() {
   const [showInfoOverlay, setShowInfoOverlay] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [formProgress, setFormProgress] = useState<Record<string, boolean>>({});
+  const [formMissingCounts, setFormMissingCounts] = useState<Record<string, number>>({});
+  const [formMissingDetails, setFormMissingDetails] = useState<Record<string, string[]>>({});
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
 
   // Base loan types (English only, used as keys)
@@ -61,14 +64,54 @@ export default function ApplicationPage() {
     }));
   }, [language]);
 
-  // Tracker sections (static labels)
-  const trackerSections = useMemo(() => [
-    { key: "basicInfo", label: language === "en" ? "Basic Information" : "Pangunang Impormasyon" },
-    { key: "income", label: language === "en" ? "Source of Income" : "Tinubdan sa Kita" },
-    { key: "collateral", label: language === "en" ? "Collateral Information" : "Impormasyon sa Kolateral" },
-    { key: "references", label: language === "en" ? "References" : "Mga Referensya" },
-    { key: "documents", label: language === "en" ? "Supporting Documents" : "Mga Dokumento" },
-  ], [language]);
+  // Tracker sections depend on selected loan type. Include Agent, Loan Details and a 2x2 Photo item
+  // for Regular Loan Without Collateral per the product request.
+  const trackerSections = useMemo(() => {
+    if (!loanType) return [];
+    const loanTypeParam = loanType === 'Regular Loan With Collateral' ? 'with' : loanType === 'Regular Loan Without Collateral' ? 'without' : 'open-term';
+  const requiresCollateral = loanTypeParam === 'with' || loanTypeParam === 'open-term';
+  // Per request: show 2x2 for all loan types (including 'without')
+  const requires2x2 = true;
+
+    // Build per-loan-type ordered sections. Keep labels localized.
+    // Place 'collateral' as the fifth section to reflect form order: basicInfo, income, references, agent, collateral, loanDetails, photo2x2, documents
+    const sectionsForWith: { key: string; label: string }[] = [
+      { key: 'basicInfo', label: language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon' },
+      { key: 'income', label: language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita' },
+      { key: 'references', label: language === 'en' ? 'References' : 'Mga Referensya' },
+      { key: 'agent', label: language === 'en' ? 'Agent' : 'Ahente' },
+      { key: 'collateral', label: language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral' },
+      { key: 'loanDetails', label: language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam' },
+      ...(requires2x2 ? [{ key: 'photo2x2', label: language === 'en' ? '2x2 Photo' : '2x2' }] : []),
+      { key: 'documents', label: language === 'en' ? 'Supporting Documents' : 'Mga Dokumento' },
+    ];
+
+    // For 'without', omit 'collateral' so the tracker matches the form sections shown to users
+    const sectionsForWithout: { key: string; label: string }[] = [
+      { key: 'basicInfo', label: language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon' },
+      { key: 'income', label: language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita' },
+      { key: 'references', label: language === 'en' ? 'References' : 'Mga Referensya' },
+      { key: 'agent', label: language === 'en' ? 'Agent' : 'Ahente' },
+      { key: 'loanDetails', label: language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam' },
+      ...(requires2x2 ? [{ key: 'photo2x2', label: language === 'en' ? '2x2 Photo' : '2x2' }] : []),
+      { key: 'documents', label: language === 'en' ? 'Supporting Documents' : 'Mga Dokumento' },
+    ];
+
+    const sectionsForOpen: { key: string; label: string }[] = [
+      { key: 'basicInfo', label: language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon' },
+      { key: 'income', label: language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita' },
+      { key: 'references', label: language === 'en' ? 'References' : 'Mga Referensya' },
+      { key: 'agent', label: language === 'en' ? 'Agent' : 'Ahente' },
+      { key: 'collateral', label: language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral' },
+      { key: 'loanDetails', label: language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam' },
+      { key: 'documents', label: language === 'en' ? 'Supporting Documents' : 'Mga Dokumento' },
+    ];
+
+    if (loanTypeParam === 'with') return sectionsForWith;
+    if (loanTypeParam === 'without') return sectionsForWithout;
+    // copy 'with' tracker to 'open-term' per request
+    return sectionsForWith;
+  }, [language, loanType]);
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
@@ -237,7 +280,11 @@ export default function ApplicationPage() {
                 loanType={loanType}
                 language={language}
                 isMobile={isMobile}
-                onProgressUpdate={setFormProgress}
+                onProgressUpdate={(progress) => {
+                  setFormProgress(progress.done || {});
+                  setFormMissingCounts(progress.missingCounts || {});
+                  setFormMissingDetails(progress.missingDetails || {});
+                }}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
@@ -255,18 +302,58 @@ export default function ApplicationPage() {
                 {language === 'en' ? 'Progress Tracker' : 'Tracker sa Aplikasyon'}
               </h3>
               <ul className="space-y-3 text-sm">
-                {trackerSections.map(section => (
-                  <li
-                    key={section.key}
-                    className={`transition-all ${
-                      formProgress[section.key]
-                        ? "text-green-600 font-semibold"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {section.label}
-                  </li>
-                ))}
+                {trackerSections.map(section => {
+                  const done = !!formProgress[section.key];
+                  const missing = formMissingCounts[section.key] || 0;
+                  const isExpanded = !!expandedSections[section.key];
+                  const details = formMissingDetails[section.key] || [];
+                  return (
+                    <li key={section.key} className="flex flex-col w-full">
+                      <div className="flex items-center gap-3 w-full">
+                        <button
+                          onClick={() => {
+                            // try to find element by id; map both photo2x2 and documents to the shared upload wrapper
+                            const special = section.key === 'photo2x2' || section.key === 'documents';
+                            const el = document.getElementById(special ? 'photo2x2_and_documents' : section.key);
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }}
+                          className="flex items-center gap-3 w-full text-left"
+                        >
+                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full ${done ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                            {done ? <FiCheck /> : <FiX />}
+                          </span>
+                          <span className={`text-sm ${done ? 'text-gray-800' : 'text-gray-600'}`}>{section.label}</span>
+                        </button>
+
+                        {/* Chevrons: toggle expansion of missing-field details. Stop propagation so it doesn't trigger scroll */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setExpandedSections(prev => ({ ...prev, [section.key]: !prev[section.key] })); }}
+                          className="ml-2 p-1 rounded hover:bg-gray-100"
+                          aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                          title={isExpanded ? (language === 'en' ? 'Collapse' : 'Tak-op') : (language === 'en' ? 'Expand' : 'Ipakita')}
+                        >
+                          {isExpanded ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                        </button>
+
+                        {missing > 0 && (
+                          <span className="ml-auto inline-flex items-center justify-center min-w-[28px] h-6 px-2 rounded-full bg-red-50 text-red-600 text-xs font-medium">{missing}</span>
+                        )}
+                      </div>
+
+                      {/* Expanded missing-details list */}
+                      {isExpanded && details.length > 0 && (
+                        <ul className="mt-2 ml-9 text-xs text-gray-600 space-y-1">
+                          {details.map((d, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-red-500 text-xs font-bold mt-1">•</span>
+                              <span>{d}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}

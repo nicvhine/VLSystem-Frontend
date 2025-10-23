@@ -104,6 +104,7 @@ export interface BasicInformationProps {
   appAddress: string;
   setAppAddress: (value: string) => void;
   missingFields?: string[];
+  showFieldErrors?: boolean;
 }
 
 export interface CollateralProps {
@@ -118,4 +119,5 @@ export interface CollateralProps {
   setOwnershipStatus: (value: string) => void;
   collateralTypeOptions: { value: string; label: string }[];
   missingFields?: string[];
+  showFieldErrors?: boolean;
 }

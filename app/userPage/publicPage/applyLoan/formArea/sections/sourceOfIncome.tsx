@@ -26,6 +26,7 @@ interface SourceOfIncomeProps {
   appCompanyName: string;
   setAppCompanyName: (value: string) => void;
   missingFields?: string[];
+  showFieldErrors?: boolean;
 }
 
 /**
@@ -79,6 +80,7 @@ export default function SourceOfIncome({
   appCompanyName,
   setAppCompanyName,
   missingFields = [],
+  showFieldErrors = false,
 }: SourceOfIncomeProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
@@ -94,7 +96,7 @@ export default function SourceOfIncome({
           value={sourceOfIncome}
           onChange={(e) => setSourceOfIncome(e.target.value)}
           className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-            missingFields.includes("Source of Income")
+            (showFieldErrors && missingFields.includes("Source of Income"))
               ? "border-red-500"
               : "border-gray-200"
           }`}
@@ -121,7 +123,7 @@ export default function SourceOfIncome({
               value={appTypeBusiness}
               onChange={(e) => setAppTypeBusiness(e.target.value)}
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                missingFields.includes("Type of Business")
+                (showFieldErrors && missingFields.includes("Type of Business"))
                   ? "border-red-500"
                   : "border-gray-200"
               }`}
@@ -141,7 +143,7 @@ export default function SourceOfIncome({
               value={appBusinessName}
               onChange={(e) => setAppBusinessName(e.target.value)}
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                missingFields.includes("Business Name")
+                (showFieldErrors && missingFields.includes("Business Name"))
                   ? "border-red-500"
                   : "border-gray-200"
               }`}
@@ -161,7 +163,7 @@ export default function SourceOfIncome({
               value={appDateStarted}
               onChange={(e) => setAppDateStarted(e.target.value)}
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                missingFields.includes("Date Started")
+                (showFieldErrors && missingFields.includes("Date Started"))
                   ? "border-red-500"
                   : "border-gray-200"
               }`}
@@ -176,7 +178,7 @@ export default function SourceOfIncome({
               value={appBusinessLoc}
               onChange={(e) => setAppBusinessLoc(e.target.value)}
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                missingFields.includes("Business Location")
+                (showFieldErrors && missingFields.includes("Business Location"))
                   ? "border-red-500"
                   : "border-gray-200"
               }`}
@@ -201,11 +203,7 @@ export default function SourceOfIncome({
                   type="text"
                   value={appOccupation}
                   onChange={(e) => setAppOccupation(e.target.value)}
-                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    missingFields.includes("Occupation")
-                      ? "border-red-500"
-                      : "border-gray-200"
-                  }`}
+                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes("Occupation")) ? "border-red-500" : "border-gray-200"}`}
                   placeholder={
                     language === "en" ? "Enter occupation" : "Isulod ang trabaho"
                   }
@@ -218,11 +216,7 @@ export default function SourceOfIncome({
                 <select
                   value={appEmploymentStatus}
                   onChange={(e) => setAppEmploymentStatus(e.target.value)}
-                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    missingFields.includes("Employment Status")
-                      ? "border-red-500"
-                      : "border-gray-200"
-                  }`}
+                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes("Employment Status")) ? "border-red-500" : "border-gray-200"}`}
                 >
                   <option value="">
                     {language === "en" ? "Select status" : "Pilia ang kahimtang"}
@@ -239,11 +233,7 @@ export default function SourceOfIncome({
                   type="text"
                   value={appCompanyName}
                   onChange={(e) => setAppCompanyName(e.target.value)}
-                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                    missingFields.includes("Company Name")
-                      ? "border-red-500"
-                      : "border-gray-200"
-                  }`}
+                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes("Company Name")) ? "border-red-500" : "border-gray-200"}`}
                   placeholder={
                     language === "en"
                       ? "Enter company name"
@@ -261,11 +251,7 @@ export default function SourceOfIncome({
               type="number"
               value={appMonthlyIncome}
               onChange={(e) => setAppMonthlyIncome(Number(e.target.value))}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                missingFields.includes("Monthly Income")
-                  ? "border-red-500"
-                  : "border-gray-200"
-              }`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes("Monthly Income")) ? "border-red-500" : "border-gray-200"}`}
               placeholder={
                 language === "en"
                   ? "Enter monthly income"
