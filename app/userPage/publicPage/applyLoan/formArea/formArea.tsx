@@ -22,13 +22,17 @@ import SuccessModalWithAnimation from "./modals/successModal";
 import { useUpdateMissingFields } from "./hooks/updateMissingFields";
 import { useFormSubmit } from "./hooks/useFormSubmit";
 import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function";
+import { useSectionProgress } from "./hooks/useSectionProgress";
 
 interface FormAreaProps {
   loanType: string;
   language: "en" | "ceb";
   isMobile?: boolean;
-  // optional callback to report per-section completion and missing counts to parent page
-  onProgressUpdate?: (progress: { done: Record<string, boolean>; missingCounts: Record<string, number>; missingDetails: Record<string, string[]> }) => void;
+  onProgressUpdate?: (progress: {
+    done: Record<string, boolean>;
+    missingCounts: Record<string, number>;
+    missingDetails: Record<string, string[]>;
+  }) => void;
 }
 
 export default function FormArea({ loanType, language, isMobile, onProgressUpdate }: FormAreaProps) {
@@ -54,7 +58,6 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
 
   const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
   const requiredDocumentsCount = loanTypeParam === "with" || loanTypeParam === "open-term" ? 6 : 4;
-  // Per product decision: 2x2 is required for all loan types (with, without, open-term)
   const requires2x2 = true;
   const API_URL = `http://localhost:3001/loan-applications/apply/${loanTypeParam}`;
 
@@ -69,7 +72,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
   const [appAddress, setAppAddress] = useState("");
 
-  // Source of Income
+  // Source of Income 
   const [sourceOfIncome, setSourceOfIncome] = useState("");
   const [appTypeBusiness, setAppTypeBusiness] = useState("");
   const [appBusinessName, setAppBusinessName] = useState("");
@@ -81,18 +84,18 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [appCompanyName, setAppCompanyName] = useState("");
   const [occupationError, setOccupationError] = useState("");
 
-  // References
+  // References 
   const [appReferences, setAppReferences] = useState([
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" },
     { name: "", contact: "", relation: "" },
   ]);
 
-  // Agents
+  // Agent
   const [appAgent, setAppAgent] = useState("");
   const [agentMissingError, setAgentMissingError] = useState(false);
 
-  // Collateral
+  // Collateral 
   const [collateralType, setCollateralType] = useState("");
   const [collateralValue, setCollateralValue] = useState<number>(0);
   const [collateralDescription, setCollateralDescription] = useState("");
@@ -108,76 +111,20 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
 
-  // Uploads
+  // Uploads 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
-  // compute and report per-section completion and missing counts to parent when missingFields or uploads change
-  useEffect(() => {
-    const done: Record<string, boolean> = {};
-    const missingCounts: Record<string, number> = {};
-  const missingDetails: Record<string, string[]> = {};
+  // Compute section progress
+  useSectionProgress({
+    missingFields,
+    photo2x2,
+    requires2x2,
+    appAgent,
+    onProgressUpdate,
+  });
 
-    // Basic Information
-    const basicKeys = ['Name','Date of Birth','Contact Number','Email Address','Marital Status','Spouse Name','Spouse Occupation','Home Address'];
-  const basicMissing = missingFields.filter(f => basicKeys.includes(f));
-  missingCounts['basicInfo'] = basicMissing.length;
-  missingDetails['basicInfo'] = basicMissing;
-  done['basicInfo'] = missingCounts['basicInfo'] === 0;
-
-    // Income
-    const incomeKeys = ['Source of Income','Type of Business','Business Name','Date Started','Business Location','Occupation','Employment Status','Company Name','Monthly Income'];
-  const incomeMissing = missingFields.filter(f => incomeKeys.includes(f));
-  missingCounts['income'] = incomeMissing.length;
-  missingDetails['income'] = incomeMissing;
-  done['income'] = missingCounts['income'] === 0;
-
-    // Collateral
-    const collateralKeys = ['Collateral Type','Collateral Value','Collateral Description','Ownership Status'];
-  const collateralMissing = missingFields.filter(f => collateralKeys.includes(f));
-  missingCounts['collateral'] = collateralMissing.length;
-  missingDetails['collateral'] = collateralMissing;
-  done['collateral'] = missingCounts['collateral'] === 0;
-
-    // References
-    missingCounts['references'] = missingFields.filter(f => /^Reference \d+/.test(f)).length;
-    done['references'] = missingCounts['references'] === 0;
-  const referencesMissing = missingFields.filter(f => /^Reference \d+/.test(f));
-  missingCounts['references'] = referencesMissing.length;
-  missingDetails['references'] = referencesMissing;
-
-    // 2x2 Photo (use actual uploaded state)
-    missingCounts['photo2x2'] = requires2x2 ? (photo2x2.length === 0 ? 1 : 0) : 0;
-    done['photo2x2'] = missingCounts['photo2x2'] === 0;
-  const photoMissing = requires2x2 ? (photo2x2.length === 0 ? ['2x2 Photo'] : []) : [];
-  missingCounts['photo2x2'] = photoMissing.length;
-  missingDetails['photo2x2'] = photoMissing;
-
-    // Documents
-    const docKeys = ['Document Upload'];
-    missingCounts['documents'] = missingFields.filter(f => docKeys.includes(f)).length;
-    done['documents'] = missingCounts['documents'] === 0;
-  const docsMissing = missingFields.filter(f => docKeys.includes(f));
-  missingCounts['documents'] = docsMissing.length;
-  missingDetails['documents'] = docsMissing;
-
-    // Agent
-  const agentMissing = !appAgent.trim() ? ['Agent'] : [];
-  missingCounts['agent'] = agentMissing.length;
-  missingDetails['agent'] = agentMissing;
-  done['agent'] = missingCounts['agent'] === 0;
-
-    // Loan details
-  const loanKeys = ['Loan Purpose', 'Loan Amount'];
-  const loanMissing = missingFields.filter(f => loanKeys.includes(f));
-  missingCounts['loanDetails'] = loanMissing.length;
-  missingDetails['loanDetails'] = loanMissing;
-  done['loanDetails'] = missingCounts['loanDetails'] === 0;
-
-    if (onProgressUpdate) onProgressUpdate({ done, missingCounts, missingDetails });
-  }, [missingFields, requiresCollateral, requires2x2, photo2x2, onProgressUpdate]);
-
-  // Terms/Privacy modals
+  // Terms/Privacy Modal
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showTosContent, setShowTosContent] = useState(false);
   const [showPrivacyContent, setShowPrivacyContent] = useState(false);
@@ -188,13 +135,12 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [showDocumentUploadErrorModal, setShowDocumentUploadErrorModal] = useState(false);
   const [documentUploadError, setDocumentUploadError] = useState("");
 
-
   // Hooks
   useUpdateMissingFields({
     appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
     appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
     appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
-  requiresCollateral, requires2x2, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
+    requiresCollateral, requires2x2, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
     photo2x2, uploadedFiles, missingFields, setMissingFields,
   });
 
@@ -217,7 +163,6 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
       <SubmitProgressModal
         open={progressOpen}
         activeStep={activeStep}
-        // pass upload progress percent (0-100)
         uploadProgress={uploadProgress}
         title={language === "en" ? "Submitting Application" : "Pag-submit sa Aplikasyon"}
         subtitle={
@@ -244,68 +189,71 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
       <div className={`${isSubmitting ? "pointer-events-none opacity-60" : ""}`}>
         {/* Form Sections */}
         <div id="basicInfo">
-        <BasicInformation
-          language={language} appName={appName} setAppName={setAppName} appDob={appDob} setAppDob={setAppDob}
-          appContact={appContact} setAppContact={setAppContact} appEmail={appEmail} setAppEmail={setAppEmail}
-          appMarital={appMarital} setAppMarital={setAppMarital} appChildren={appChildren} setAppChildren={setAppChildren}
-          appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
-          setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
-          missingFields={missingFields}
-        />
+          <BasicInformation
+            language={language} appName={appName} setAppName={setAppName} appDob={appDob} setAppDob={setAppDob}
+            appContact={appContact} setAppContact={setAppContact} appEmail={appEmail} setAppEmail={setAppEmail}
+            appMarital={appMarital} setAppMarital={setAppMarital} appChildren={appChildren} setAppChildren={setAppChildren}
+            appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
+            setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
+            missingFields={missingFields}
+          />
         </div>
+
         <div id="income">
-        <SourceOfIncome
-          language={language} sourceOfIncome={sourceOfIncome} setSourceOfIncome={setSourceOfIncome}
-          appTypeBusiness={appTypeBusiness} setAppTypeBusiness={setAppTypeBusiness} appBusinessName={appBusinessName}
-          setAppBusinessName={setAppBusinessName} appDateStarted={appDateStarted} setAppDateStarted={setAppDateStarted}
-          appBusinessLoc={appBusinessLoc} setAppBusinessLoc={setAppBusinessLoc} appMonthlyIncome={appMonthlyIncome}
-          setAppMonthlyIncome={setAppMonthlyIncome} appOccupation={appOccupation} setAppOccupation={setAppOccupation}
-          occupationError={occupationError} setOccupationError={setOccupationError}
-          appEmploymentStatus={appEmploymentStatus} setAppEmploymentStatus={setAppEmploymentStatus}
-          appCompanyName={appCompanyName} setAppCompanyName={setAppCompanyName} missingFields={missingFields}
-        />
+          <SourceOfIncome
+            language={language} sourceOfIncome={sourceOfIncome} setSourceOfIncome={setSourceOfIncome}
+            appTypeBusiness={appTypeBusiness} setAppTypeBusiness={setAppTypeBusiness} appBusinessName={appBusinessName}
+            setAppBusinessName={setAppBusinessName} appDateStarted={appDateStarted} setAppDateStarted={setAppDateStarted}
+            appBusinessLoc={appBusinessLoc} setAppBusinessLoc={setAppBusinessLoc} appMonthlyIncome={appMonthlyIncome}
+            setAppMonthlyIncome={setAppMonthlyIncome} appOccupation={appOccupation} setAppOccupation={setAppOccupation}
+            occupationError={occupationError} setOccupationError={setOccupationError}
+            appEmploymentStatus={appEmploymentStatus} setAppEmploymentStatus={setAppEmploymentStatus}
+            appCompanyName={appCompanyName} setAppCompanyName={setAppCompanyName} missingFields={missingFields}
+          />
         </div>
+
         <div id="references">
-        <References language={language} appReferences={appReferences} setAppReferences={setAppReferences}
-          appContact={appContact} appName={appName} missingFields={missingFields} />
+          <References language={language} appReferences={appReferences} setAppReferences={setAppReferences}
+            appContact={appContact} appName={appName} missingFields={missingFields} />
         </div>
+
         <div id="agent">
-        <AgentDropdown language={language} appAgent={appAgent} setAppAgent={setAppAgent} missingError={agentMissingError} />
+          <AgentDropdown language={language} appAgent={appAgent} setAppAgent={setAppAgent} missingError={agentMissingError} />
         </div>
 
         {requiresCollateral && (
           <div id="collateral">
-          <CollateralInformation
-            language={language} collateralType={collateralType} setCollateralType={setCollateralType}
-            collateralValue={collateralValue} setCollateralValue={setCollateralValue}
-            collateralDescription={collateralDescription} setCollateralDescription={setCollateralDescription}
-            ownershipStatus={ownershipStatus} setOwnershipStatus={setOwnershipStatus}
-            collateralTypeOptions={collateralTypeOptions} missingFields={missingFields}
-          />
+            <CollateralInformation
+              language={language} collateralType={collateralType} setCollateralType={setCollateralType}
+              collateralValue={collateralValue} setCollateralValue={setCollateralValue}
+              collateralDescription={collateralDescription} setCollateralDescription={setCollateralDescription}
+              ownershipStatus={ownershipStatus} setOwnershipStatus={setOwnershipStatus}
+              collateralTypeOptions={collateralTypeOptions} missingFields={missingFields}
+            />
           </div>
         )}
 
         <div id="loanDetails">
-        <LoanDetails
-          language={language} loanType={loanTypeParam} appLoanPurpose={appLoanPurpose} setAppLoanPurpose={setAppLoanPurpose}
-          onLoanSelect={(loan) => setSelectedLoan(loan)} missingFields={missingFields}
-        />
+          <LoanDetails
+            language={language} loanType={loanTypeParam} appLoanPurpose={appLoanPurpose} setAppLoanPurpose={setAppLoanPurpose}
+            onLoanSelect={(loan) => setSelectedLoan(loan)} missingFields={missingFields}
+          />
         </div>
 
         <div id="photo2x2_and_documents">
-        <UploadSection
-          language={language} photo2x2={photo2x2} documents={uploadedFiles}
-          handleProfileChange={(e) =>
-            handleProfileChange(e, setPhoto2x2, language, setDocumentUploadError, setShowDocumentUploadErrorModal)
-          }
-          handleFileChange={(e) =>
-            handleFileChange(e, uploadedFiles, setUploadedFiles, requiredDocumentsCount, language,
-              setDocumentUploadError, setShowDocumentUploadErrorModal)
-          }
-          removeProfile={() => removeProfile(setPhoto2x2)}
-          removeDocument={(index) => removeDocument(index, uploadedFiles, setUploadedFiles)}
-          missingFields={missingFields} requiredDocumentsCount={requiredDocumentsCount}
-        />
+          <UploadSection
+            language={language} photo2x2={photo2x2} documents={uploadedFiles}
+            handleProfileChange={(e) =>
+              handleProfileChange(e, setPhoto2x2, language, setDocumentUploadError, setShowDocumentUploadErrorModal)
+            }
+            handleFileChange={(e) =>
+              handleFileChange(e, uploadedFiles, setUploadedFiles, requiredDocumentsCount, language,
+                setDocumentUploadError, setShowDocumentUploadErrorModal)
+            }
+            removeProfile={() => removeProfile(setPhoto2x2)}
+            removeDocument={(index) => removeDocument(index, uploadedFiles, setUploadedFiles)}
+            missingFields={missingFields} requiredDocumentsCount={requiredDocumentsCount}
+          />
         </div>
       </div>
 
