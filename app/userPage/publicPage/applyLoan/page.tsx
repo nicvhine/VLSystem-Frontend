@@ -7,6 +7,7 @@ import LandingNavbar from "../navbar/landingNavbar";
 import LoginModal from "../loginForm/page";
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
 import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/commonComponents/utils/formatters";
+import { useTrackerSections } from "./formArea/hooks/useTrackerSections";
 
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -66,52 +67,8 @@ export default function ApplicationPage() {
 
   // Tracker sections depend on selected loan type. Include Agent, Loan Details and a 2x2 Photo item
   // for Regular Loan Without Collateral per the product request.
-  const trackerSections = useMemo(() => {
-    if (!loanType) return [];
-    const loanTypeParam = loanType === 'Regular Loan With Collateral' ? 'with' : loanType === 'Regular Loan Without Collateral' ? 'without' : 'open-term';
-  const requiresCollateral = loanTypeParam === 'with' || loanTypeParam === 'open-term';
-  // Per request: show 2x2 for all loan types (including 'without')
-  const requires2x2 = true;
+  const trackerSections = useTrackerSections(loanType, language);
 
-    // Build per-loan-type ordered sections. Keep labels localized.
-    // Place 'collateral' as the fifth section to reflect form order: basicInfo, income, references, agent, collateral, loanDetails, photo2x2, documents
-    const sectionsForWith: { key: string; label: string }[] = [
-      { key: 'basicInfo', label: language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon' },
-      { key: 'income', label: language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita' },
-      { key: 'references', label: language === 'en' ? 'References' : 'Mga Referensya' },
-      { key: 'agent', label: language === 'en' ? 'Agent' : 'Ahente' },
-      { key: 'collateral', label: language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral' },
-      { key: 'loanDetails', label: language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam' },
-      ...(requires2x2 ? [{ key: 'photo2x2', label: language === 'en' ? '2x2 Photo' : '2x2' }] : []),
-      { key: 'documents', label: language === 'en' ? 'Supporting Documents' : 'Mga Dokumento' },
-    ];
-
-    // For 'without', omit 'collateral' so the tracker matches the form sections shown to users
-    const sectionsForWithout: { key: string; label: string }[] = [
-      { key: 'basicInfo', label: language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon' },
-      { key: 'income', label: language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita' },
-      { key: 'references', label: language === 'en' ? 'References' : 'Mga Referensya' },
-      { key: 'agent', label: language === 'en' ? 'Agent' : 'Ahente' },
-      { key: 'loanDetails', label: language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam' },
-      ...(requires2x2 ? [{ key: 'photo2x2', label: language === 'en' ? '2x2 Photo' : '2x2' }] : []),
-      { key: 'documents', label: language === 'en' ? 'Supporting Documents' : 'Mga Dokumento' },
-    ];
-
-    const sectionsForOpen: { key: string; label: string }[] = [
-      { key: 'basicInfo', label: language === 'en' ? 'Basic Information' : 'Pangunang Impormasyon' },
-      { key: 'income', label: language === 'en' ? 'Source of Income' : 'Tinubdan sa Kita' },
-      { key: 'references', label: language === 'en' ? 'References' : 'Mga Referensya' },
-      { key: 'agent', label: language === 'en' ? 'Agent' : 'Ahente' },
-      { key: 'collateral', label: language === 'en' ? 'Collateral Information' : 'Impormasyon sa Kolateral' },
-      { key: 'loanDetails', label: language === 'en' ? 'Loan Details' : 'Detalye sa Pahulam' },
-      { key: 'documents', label: language === 'en' ? 'Supporting Documents' : 'Mga Dokumento' },
-    ];
-
-    if (loanTypeParam === 'with') return sectionsForWith;
-    if (loanTypeParam === 'without') return sectionsForWithout;
-    // copy 'with' tracker to 'open-term' per request
-    return sectionsForWith;
-  }, [language, loanType]);
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
