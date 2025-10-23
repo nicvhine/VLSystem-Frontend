@@ -1,17 +1,23 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { LoanStats, CollectionStats, TypeStats, ApplicationStats, LoanTypeStat,  } from "../utils/Types/statsType";
+import { LoanStats, CollectionStats, TypeStats, ApplicationStats, LoanTypeStat } from "../utils/Types/statsType";
+import translations from "../translation";
 
 export function useLoanStats(userType: "manager" | "loanOfficer") {
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState<"en" | "ceb">(() => {
-    if (typeof window !== "undefined") {
-      const key = userType === "manager" ? "managerLanguage" : "loanOfficerLanguage";
-      return (localStorage.getItem(key) as "en" | "ceb") || "en";
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== 'undefined') {
+      if (!localStorage.getItem('language')) {
+        localStorage.setItem('language', 'en');
+      }
+      return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
     }
-    return "en";
+    return 'en';
   });
+
+  const t = translations.statisticTranslation[language];
+  const s = translations.loanTermsTranslator[language];
 
   const [loanStats, setLoanStats] = useState<LoanStats>({
     totalPrincipal: 0,
@@ -33,10 +39,13 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
 
   const [applicationStats, setApplicationStats] = useState<ApplicationStats>({
     applied: 0,
-    pending: 0,
     approved: 0,
     denied: 0,
   });
+
+  const [monthlyInterest, setMonthlyInterest] = useState<{ month: number; totalInterest: number }[]>(
+    Array.from({ length: 12 }, (_, i) => ({ month: i + 1, totalInterest: 0 }))
+  );
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -45,14 +54,15 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
       try {
         const urls = userType === "manager"
           ? [
-              "http://localhost:3001/loans/loan-type-stats",
-              "http://localhost:3001/loans/loan-stats",
-              "http://localhost:3001/collections/collection-stats",
-              "http://localhost:3001/loan-applications/applicationStatus-stats",
+              "http://localhost:3001/stat/loan-type-stats",
+              "http://localhost:3001/stat/loan-stats",
+              "http://localhost:3001/stat/collection-stats",
+              "http://localhost:3001/stat/applicationStatus-stats",
+              "http://localhost:3001/stat/monthly-interest?year=" + new Date().getFullYear(),
             ]
           : [
-              "http://localhost:3001/loan-applications/loan-type-stats",
-              "http://localhost:3001/loan-applications/applicationStatus-stats",
+              "http://localhost:3001/stat/applied-loan-type-stats",
+              "http://localhost:3001/stat/applicationStatus-stats",
             ];
 
         const responses = await Promise.all(
@@ -65,10 +75,12 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
           const loanData = await responses[1].json();
           const collectionData: CollectionStats = await responses[2].json();
           const appData: ApplicationStats = await responses[3].json();
+          const monthlyInterestData = await responses[4].json();
 
           setLoanStats({ typeStats: typeData, ...loanData });
           setCollectionStats(collectionData);
           setApplicationStats(appData);
+          setMonthlyInterest(monthlyInterestData);
 
           const withCollateral = typeData.find(t => t.loanType === "Regular Loan With Collateral")?.count || 0;
           const withoutCollateral = typeData.find(t => t.loanType === "Regular Loan Without Collateral")?.count || 0;
@@ -114,5 +126,5 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
     };
   }, [userType]);
 
-  return { loading, loanStats, collectionStats, typeStats, applicationStats, language };
+  return { s, t, loading, loanStats, collectionStats, typeStats, applicationStats, monthlyInterest, language };
 }
