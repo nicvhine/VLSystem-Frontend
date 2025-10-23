@@ -253,8 +253,8 @@ export default function ApplicationPage() {
           </div>
 
           {/* Right Sidebar Tracker */}
-          {!isMobile && (
-            <div className="w-64 p-6 space-y-4 overflow-y-auto rounded-lg ">
+          {!isMobile && pageLoaded && loanType && (
+            <div className="w-74 p-6 space-y-4 overflow-y-auto rounded-lg ">
               <h3 className="font-semibold text-gray-800 mb-4 text-sm">
                 {language === 'en' ? 'Progress Tracker' : 'Tracker sa Aplikasyon'}
               </h3>
@@ -267,62 +267,64 @@ export default function ApplicationPage() {
 
                   return (
                     <li key={section.key} className="flex flex-col w-full bg-gray-50 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start gap-3 w-full">
-              <button
-                onClick={() => {
-                  const special = section.key === 'photo2x2' || section.key === 'documents';
-                  const el = document.getElementById(special ? 'photo2x2_and_documents' : section.key);
-                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-                className="flex items-start gap-3 w-full text-left"
-              >
-                <span
-                  className={`flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full border ${
-                    done
-                      ? 'bg-green-50 text-green-600 border-green-600'
-                      : 'border-gray-300 text-gray-300'
-                  }`}
-                >
-                  {done ? <FiCheck /> : null}
-                </span>
-                <span className={`text-sm font-medium ${done ? 'text-gray-800' : 'text-gray-600'}`}>
-                  {section.label}
-                </span>
-              </button>
+                      <div className="flex items-start gap-3 w-full">
+                        <button
+                          onClick={() => {
+                            const special = section.key === 'photo2x2' || section.key === 'documents';
+                            const el = document.getElementById(special ? 'photo2x2_and_documents' : section.key);
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }}
+                          className="flex items-start gap-3 w-full text-left"
+                        >
+                          <span
+                            className={`flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full border ${
+                              done
+                                ? 'bg-green-50 text-green-600 border-green-600'
+                                : 'border-gray-300 text-gray-300'
+                            }`}
+                          >
+                            {done ? <FiCheck /> : null}
+                          </span>
+                          <span className={`text-sm font-medium ${done ? 'text-gray-800' : 'text-gray-600'}`}>
+                            {section.label}
+                          </span>
+                        </button>
 
-              <button
-                onClick={(e) => { e.stopPropagation(); setExpandedSections(prev => ({ ...prev, [section.key]: !prev[section.key] })); }}
-                className="ml-2 p-1 rounded hover:bg-gray-100"
-                aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
-                title={isExpanded ? (language === 'en' ? 'Collapse' : 'Tak-op') : (language === 'en' ? 'Expand' : 'Ipakita')}
-              >
-                {isExpanded ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
-              </button>
+                        {!done && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setExpandedSections(prev => ({ ...prev, [section.key]: !prev[section.key] })); }}
+                            className="ml-2 p-1 rounded hover:bg-gray-100"
+                            aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                            title={isExpanded ? (language === 'en' ? 'Collapse' : 'Tak-op') : (language === 'en' ? 'Expand' : 'Ipakita')}
+                          >
+                            {isExpanded ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                          </button>
+                        )}
 
-              {missing > 0 && (
-                <span className="ml-auto inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-red-100 text-red-600 text-xs font-semibold">
-                  {missing}
-                </span>
-              )}
-            </div>
+                        {missing > 0 && (
+                          <span className="ml-auto inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-red-100 text-red-600 text-xs font-semibold">
+                            {missing}
+                          </span>
+                        )}
+                      </div>
 
-            {isExpanded && details.length > 0 && (
-              <ul className="mt-2 ml-9 text-xs text-gray-600 space-y-1">
-                {details.map((d, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-red-500 text-xs font-bold mt-1">•</span>
-                    <span>{d}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-
+                      {isExpanded && details.length > 0 && (
+                        <ul className="mt-2 ml-9 text-xs text-gray-600 space-y-1">
+                          {details.map((d, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-red-500 text-xs font-bold mt-1">•</span>
+                              <span>{d}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
                   );
                 })}
               </ul>
             </div>
           )}
+
 
         </div>
       </div>
