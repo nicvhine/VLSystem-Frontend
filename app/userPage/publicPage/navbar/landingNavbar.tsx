@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { getLandingNavItems } from '@/app/commonComponents/navbarComponents/navItems';
+import translationData from '@/app/commonComponents/translation';
 
 interface LandingNavbarProps {
   language: 'en' | 'ceb';
@@ -50,6 +51,7 @@ export default function LandingNavbar({
   };
 
   const navItems: LandingNavItem[] = getLandingNavItems(language, smoothScrollTo, setIsCalculationOpen);
+  const pub = translationData.publicTranslation[language];
 
   return (
     <header className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-md sticky top-0 z-50">
@@ -78,7 +80,7 @@ export default function LandingNavbar({
                   <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
                 </div>
                 <span className="ml-3 text-sm font-medium text-gray-900">
-                  {language === 'en' ? 'English' : 'Cebuano'}
+                  {language === 'en' ? pub.english : pub.cebuano}
                 </span>
               </label>
 
@@ -87,7 +89,7 @@ export default function LandingNavbar({
                 onClick={() => setIsLoginOpen(true)}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
               >
-                {language === 'en' ? 'Login' : 'Sulod'}
+                {pub.login}
               </button>
             </div>
           ) : (
@@ -106,7 +108,7 @@ export default function LandingNavbar({
                     <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
                   </div>
                   <span className="ml-3 text-sm font-medium text-gray-900">
-                    {language === 'en' ? 'English' : 'Cebuano'}
+                    {language === 'en' ? pub.english : pub.cebuano}
                   </span>
                 </label>
 
@@ -140,7 +142,7 @@ export default function LandingNavbar({
                   onClick={() => setIsLoginOpen(true)}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                 >
-                  {language === 'en' ? 'Login' : 'Sulod'}
+                  {pub.login}
                 </button>
               </nav>
 
@@ -186,7 +188,7 @@ export default function LandingNavbar({
                   <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
                 </div>
                 <span className="ml-3 text-sm font-medium text-gray-900">
-                  {language === 'en' ? 'English' : 'Cebuano'}
+                  {language === 'en' ? pub.english : pub.cebuano}
                 </span>
               </label>
 
@@ -225,7 +227,7 @@ export default function LandingNavbar({
                 }}
                 className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition w-full"
               >
-                {language === 'en' ? 'Login' : 'Sulod'}
+                {pub.login}
               </button>
             </div>
           </div>

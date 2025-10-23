@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import translations from '@/app/commonComponents/translation';
+import translationData from '@/app/commonComponents/translation';
 import { translateLoanType } from '@/app/commonComponents/utils/formatters';
 
 interface SimulatorModalProps {
@@ -146,7 +146,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
       interestRate: `${rate}%`,
       interest: `₱${totalInterest.toLocaleString()}`,
       totalPayment: `₱${totalRepayment.toLocaleString()}`,
-      loanTerm: `${months} ${language === 'en' ? 'months' : 'ka bulan'}`,
+      loanTerm: `${months} ${pub.months}`,
       paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
@@ -159,8 +159,9 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   if (!showModal) return null;
 
-  const t = translations.loanTermsTranslator[language];
-  const s = translations.simulatorTranslator[language];
+  const t = translationData.loanTermsTranslator[language];
+  const s = translationData.simulatorTranslator[language];
+  const pub = translationData.publicTranslation[language];
 
   const resultLabels = {
     principalAmount: t.l4 + ':',
@@ -186,20 +187,20 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
         </button>
 
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
+          {pub.loanSimulation}
         </h2>
 
         <form onSubmit={calculateLoan} className="space-y-6">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Loan Type' : 'Klase sa Pahulam'}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{pub.loanType}</label>
               <select
                 value={loanType}
                 onChange={(e) => setLoanType(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
               >
                 <option value="">
-                  {language === "en" ? "Select loan type" : "Pilia ang klase sa pahulam"}
+                  {pub.selectLoanType}
                 </option>
                 {["regularWithout", "regularWith", "openTerm"].map((type) => (
                   <option key={type} value={type}>
@@ -211,13 +212,13 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
             {loanType && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{language === 'en' ? 'Loan Amount' : 'Kantidad sa Pahulam'}</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{pub.loanAmount}</label>
                 <select
                   className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
                   value={selectedLoanAmount}
                   onChange={(e) => setSelectedLoanAmount(e.target.value)}
                 >
-                  <option value="">{language === 'en' ? 'Select amount' : 'Pilia ang kantidad'}</option>
+                  <option value="">{pub.selectAmount}</option>
                   {loanOptions.map((amt) => (
                     <option key={amt} value={amt}>
                       ₱{amt.toLocaleString()}
@@ -232,7 +233,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
             type="submit"
             className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
           >
-            {language === 'en' ? 'Calculate' : 'Kalkulaha'}
+            {pub.calculate}
           </button>
         </form>
 

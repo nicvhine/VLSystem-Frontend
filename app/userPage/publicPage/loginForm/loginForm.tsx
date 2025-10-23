@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { loginHandler } from './loginHandlers';
 import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
 import { ButtonContentLoading } from '@/app/commonComponents/utils/loading';
+import translationData from '@/app/commonComponents/translation';
 
 interface Props {
   onClose: () => void;
@@ -25,6 +26,9 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => (localStorage.getItem("language") as any) || 'en');
+  const auth = translationData.authTranslation[language];
+  const e = translationData.errorTranslation[language];
 
   if (!isVisible) return null;
 
@@ -50,7 +54,7 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
 
       router.push(redirectMap[role || ''] || '/');
     } else {
-      setErrorMsg('Incorrect verification code.');
+      setErrorMsg(e.incorrectVerificationCode);
       setShowErrorModal(true);
     }
     setIsVerifying(false);
@@ -59,12 +63,12 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded-md w-80">
-        <h2 className="text-lg font-semibold mb-4 text-center">Enter SMS Code</h2>
+        <h2 className="text-lg font-semibold mb-4 text-center">{auth.enterSmsCode}</h2>
         <input
           type="text"
           value={codeInput}
           onChange={(e) => setCodeInput(e.target.value)}
-          placeholder="6-digit code"
+          placeholder={auth.sixDigitCode}
           className="w-full border px-3 py-2 rounded mb-4"
         />
         <button
@@ -72,7 +76,7 @@ function SMSModal({ isVisible, onClose, router }: SMSModalProps) {
           disabled={isVerifying}
           className="w-full py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {isVerifying ? <ButtonContentLoading label="Verifying..." /> : 'Verify'}
+          {isVerifying ? <ButtonContentLoading label={auth.verifying} /> : auth.verify}
         </button>
         {showErrorModal && (
           <div className="fixed bottom-4 right-4 z-50">
@@ -103,11 +107,13 @@ export default function LoginFormWithSMS({
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const auth = translationData.authTranslation[language];
+  const e = translationData.errorTranslation[language];
 
-    const handleSubmit = (e: FormEvent) => {
-      e.preventDefault();
+    const handleSubmit = (event: FormEvent) => {
+      event.preventDefault();
       if (!username || !password) {
-        setErrorMsg('Please enter both username and password.');
+        setErrorMsg(e.usernamePasswordRequired);
         setShowErrorModal(true);
         return;
       }
@@ -130,12 +136,12 @@ export default function LoginFormWithSMS({
             >
               &times;
             </button>
-            <h2 className="text-2xl font-semibold mb-1 text-center">Welcome Back</h2>
-            <p className="mb-4 text-center text-gray-600">Login to your VLSystem account</p>
+            <h2 className="text-2xl font-semibold mb-1 text-center">{auth.welcomeBack}</h2>
+            <p className="mb-4 text-center text-gray-600">{auth.loginSubtitle}</p>
             <form onSubmit={handleSubmit}>
               <input
                 type="text"
-                placeholder="Username"
+                placeholder={auth.username}
                 className="w-full px-4 py-2.5 mb-3 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -143,7 +149,7 @@ export default function LoginFormWithSMS({
               <div className="relative mb-4">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Password"
+                  placeholder={auth.password}
                   className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -153,7 +159,7 @@ export default function LoginFormWithSMS({
                   className="absolute right-3 top-2.5 text-sm text-gray-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  {showPassword ? auth.hide : auth.show}
                 </button>
               </div>
               <p
@@ -163,7 +169,7 @@ export default function LoginFormWithSMS({
                   setForgotRole('');
                 }}
               >
-                {language === 'en' ? 'Forgot Password or Username?' : 'Nakalimot sa Password o Username?'}
+                {auth.forgotPrompt}
               </p>
               <div className="flex justify-center">
                 <button
@@ -172,9 +178,9 @@ export default function LoginFormWithSMS({
                   className="w-28 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isLoggingIn ? (
-                    <ButtonContentLoading label={language === 'en' ? 'Logging in...' : 'Nag-log in...'} />
+                    <ButtonContentLoading label={auth.loggingIn} />
                   ) : (
-                    language === 'en' ? 'Login' : 'Sulod'
+                    auth.login
                   )}
                 </button>
               </div>

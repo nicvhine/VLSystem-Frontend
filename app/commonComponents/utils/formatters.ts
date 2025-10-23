@@ -1,5 +1,4 @@
 import translations from "../translation";
-import requirementsTranslation from "../translation/requirementsTranslation";
 
 export const formatCurrency = (amount?: number | string) =>
   amount

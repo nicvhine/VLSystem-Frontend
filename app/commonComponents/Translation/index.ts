@@ -11,6 +11,11 @@ import trackerApplication from "./trackerApplication";
 import viewLoanTranslation from "./viewLoanTranslation";
 import requirementsTranslation from "./requirementsTranslation";
 
+// New grouped translation files
+import applicationTranslation from "./applicationTranslation";
+import authTranslation from "./authTranslation";
+import publicTranslation from "./publicTranslation";
+
 const translations = {
   landingPageTranslation,
   navbarTranslation,
@@ -24,6 +29,10 @@ const translations = {
   trackerApplication,
   viewLoanTranslation,
   requirementsTranslation,
+  // New grouped translations
+  applicationTranslation,
+  authTranslation,
+  publicTranslation,
 };
 
 export default translations;

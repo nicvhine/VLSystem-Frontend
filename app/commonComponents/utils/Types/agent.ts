@@ -42,6 +42,7 @@ export interface AgentDropdownProps {
   appAgent: string;
   setAppAgent: (agentId: string) => void;
   missingError?: boolean;
+  showFieldErrors?: boolean;
 }
 
 export interface FieldErrors {

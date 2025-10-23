@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
-import { FiX } from "react-icons/fi";
-import FormArea from "./formArea/formArea"; 
+import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import FormArea from "./formArea/formArea";
 import LandingNavbar from "../navbar/landingNavbar";
 import LoginModal from "../loginForm/page";
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
 import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/commonComponents/utils/formatters";
+import { useTrackerSections } from "./formArea/hooks/useTrackerSections";
+import translationData from '@/app/commonComponents/translation';
 
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -15,6 +17,9 @@ export default function ApplicationPage() {
   const [showInfoOverlay, setShowInfoOverlay] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
   const [formProgress, setFormProgress] = useState<Record<string, boolean>>({});
+  const [formMissingCounts, setFormMissingCounts] = useState<Record<string, number>>({});
+  const [formMissingDetails, setFormMissingDetails] = useState<Record<string, string[]>>({});
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
 
   // Base loan types (English only, used as keys)
@@ -25,6 +30,7 @@ export default function ApplicationPage() {
   ];
 
   const loanProcessSteps = useMemo(() => getLoanProcessSteps(language), [language]);
+  const pub = translationData.applicationTranslation[language];
 
   useEffect(() => {
     if (!localStorage.getItem('role')) localStorage.setItem('role', 'public');
@@ -61,25 +67,10 @@ export default function ApplicationPage() {
     }));
   }, [language]);
 
-  // Tracker sections (static labels)
-  const trackerSections = useMemo(() => {
-    const sections = [
-      { key: "basicInfo", label: language === "en" ? "Basic Information" : "Pangunang Impormasyon" },
-      { key: "income", label: language === "en" ? "Source of Income" : "Tinubdan sa Kita" },
-      { key: "references", label: language === "en" ? "References" : "Mga Referensya" },
-      { key: "agent", label: language === "en" ? "Agent Selection" : "Pagpili sa Ahente" },
-      { key: "loanDetails", label: language === "en" ? "Loan Details" : "Mga Detalye sa Pahulam" },
-      { key: "photo", label: language === "en" ? "2x2 Photo" : "2x2 nga Larawan" },
-      { key: "documents", label: language === "en" ? "Supporting Documents" : "Mga Dokumento" },
-    ];
-    
-    // Add collateral section only if loan type requires it
-    if (loanType && (loanType.includes("With Collateral") || loanType.includes("Open-Term"))) {
-      sections.splice(2, 0, { key: "collateral", label: language === "en" ? "Collateral Information" : "Impormasyon sa Kolateral" });
-    }
-    
-    return sections;
-  }, [language, loanType]);
+  // Tracker sections depend on selected loan type. Include Agent, Loan Details and a 2x2 Photo item
+  // for Regular Loan Without Collateral per the product request.
+  const trackerSections = useTrackerSections(loanType, language);
+
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
@@ -96,7 +87,7 @@ export default function ApplicationPage() {
         <button
           className="fixed bottom-6 right-6 z-50 bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-red-700"
           onClick={() => setShowInfoOverlay(!showInfoOverlay)}
-          title={language === 'en' ? 'Loan Info' : 'Impormasyon sa Pahulam'}
+          title={pub.loanInfo}
         >
           !
         </button>
@@ -117,7 +108,7 @@ export default function ApplicationPage() {
             {loanType ? (
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-800 text-center mb-2">
-                  {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
+                  {pub.loanRequirements}
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
                   {getRequirements(loanType, language).map((req, index) => (
@@ -127,9 +118,7 @@ export default function ApplicationPage() {
               </div>
             ) : (
               <p className="text-gray-400 text-sm text-center mb-4">
-                {language === 'en'
-                  ? 'Select a loan type to view requirements'
-                  : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
+                {pub.selectLoanTypeToViewRequirements}
               </p>
             )}
           </div>
@@ -147,7 +136,7 @@ export default function ApplicationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 text-center">
-                  {language === 'en' ? 'Type of Loan' : 'Klase sa Pahulam'}
+                  {pub.typeOfLoan}
                 </h3>
               </div>
               <div className="p-4">
@@ -157,7 +146,7 @@ export default function ApplicationPage() {
                     onChange={(e) => setLoanType(e.target.value)}
                     className="w-full p-3 text-center font-medium bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   >
-                    <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
+                    <option value="">{pub.typeOfLoanPlaceholder}</option>
                     {loanTypes.map((type) => (
                       <option key={type.key} value={type.key}>{type.label}</option>
                     ))}
@@ -170,7 +159,7 @@ export default function ApplicationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 text-center">
-                  {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
+                  {pub.loanRequirements}
                 </h3>
               </div>
               <div className="p-4 overflow-y-auto">
@@ -202,7 +191,7 @@ export default function ApplicationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 text-center">
-                  {language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}
+                  {pub.applicationProcess}
                 </h3>
               </div>
               <div className="p-4">
@@ -234,7 +223,7 @@ export default function ApplicationPage() {
                     onChange={e => setLoanType(e.target.value)}
                     className="w-full pt-3 pb-3 text-center text-base font-medium bg-white border border-gray-200 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   >
-                    <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
+                    <option value="">{pub.typeOfLoanPlaceholder}</option>
                     {loanTypes.map(type => (
                       <option key={type.key} value={type.key}>{type.label}</option>
                     ))}
@@ -248,50 +237,92 @@ export default function ApplicationPage() {
                 loanType={loanType}
                 language={language}
                 isMobile={isMobile}
-                onProgressUpdate={setFormProgress}
+                onProgressUpdate={(progress) => {
+                  setFormProgress(progress.done || {});
+                  setFormMissingCounts(progress.missingCounts || {});
+                  setFormMissingDetails(progress.missingDetails || {});
+                }}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
-                {language === 'en'
-                  ? 'Please select a loan type to start your application.'
-                  : 'Palihug pilia ang klase sa pahulam aron makasugod sa aplikasyon.'}
+                {pub.pleaseSelectLoanType}
               </div>
             )}
           </div>
 
           {/* Right Sidebar Tracker */}
-          {!isMobile && (
-            <div className="w-64 bg-white border-l border-gray-100 shadow-sm p-6 space-y-4 overflow-y-auto">
-              <h3 className="font-semibold text-gray-800 text-center mb-4">
-                {language === 'en' ? 'Progress Tracker' : 'Tracker sa Aplikasyon'}
+          {!isMobile && pageLoaded && loanType && (
+            <div className="w-74 p-6 space-y-4 overflow-y-auto rounded-lg ">
+              <h3 className="font-semibold text-gray-800 mb-4 text-sm">
+                {pub.progressTracker}
               </h3>
               <ul className="space-y-3 text-sm">
-                {trackerSections.map(section => (
-                  <li
-                    key={section.key}
-                    className={`flex items-center gap-2 transition-all ${
-                      formProgress[section.key]
-                        ? "text-green-600 font-semibold"
-                        : "text-gray-500"
-                    }`}
-                  >
-                    {formProgress[section.key] ? (
-                      <div className="w-5 h-5 bg-green-100 rounded-full flex items-center justify-center">
-                        <svg className="w-3 h-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
+                {trackerSections.map(section => {
+                  const done = !!formProgress[section.key];
+                  const missing = formMissingCounts[section.key] || 0;
+                  const isExpanded = !!expandedSections[section.key];
+                  const details = formMissingDetails[section.key] || [];
+
+                  return (
+                    <li key={section.key} className="flex flex-col w-full bg-gray-50 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-start gap-3 w-full">
+                        <button
+                          onClick={() => {
+                            const special = section.key === 'photo2x2' || section.key === 'documents';
+                            const el = document.getElementById(special ? 'photo2x2_and_documents' : section.key);
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }}
+                          className="flex items-start gap-3 w-full text-left"
+                        >
+                          <span
+                            className={`flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full border ${
+                              done
+                                ? 'bg-green-50 text-green-600 border-green-600'
+                                : 'border-gray-300 text-gray-300'
+                            }`}
+                          >
+                            {done ? <FiCheck /> : null}
+                          </span>
+                          <span className={`text-sm font-medium ${done ? 'text-gray-800' : 'text-gray-600'}`}>
+                            {section.label}
+                          </span>
+                        </button>
+
+                        {!done && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setExpandedSections(prev => ({ ...prev, [section.key]: !prev[section.key] })); }}
+                            className="ml-2 p-1 rounded hover:bg-gray-100"
+                            aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
+                            title={isExpanded ? pub.collapse : pub.expand}
+                          >
+                            {isExpanded ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+                          </button>
+                        )}
+
+                        {missing > 0 && (
+                          <span className="ml-auto inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-red-100 text-red-600 text-xs font-semibold">
+                            {missing}
+                          </span>
+                        )}
                       </div>
-                    ) : (
-                      <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                      </div>
-                    )}
-                    <span>{section.label}</span>
-                  </li>
-                ))}
+
+                      {isExpanded && details.length > 0 && (
+                        <ul className="mt-2 ml-9 text-xs text-gray-600 space-y-1">
+                          {details.map((d, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-red-500 text-xs font-bold mt-1">•</span>
+                              <span>{d}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
+
 
         </div>
       </div>

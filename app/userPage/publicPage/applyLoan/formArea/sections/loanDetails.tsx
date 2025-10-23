@@ -15,6 +15,7 @@ interface LoanDetailsProps {
   setAppLoanPurpose: (val: string) => void;
   onLoanSelect: (loan: { amount: number; months?: number; interest: number } | null) => void;
   missingFields?: string[];
+  showFieldErrors?: boolean;
 }
 
 export default function LoanDetails({
@@ -24,6 +25,7 @@ export default function LoanDetails({
   setAppLoanPurpose,
   onLoanSelect,
   missingFields = [],
+  showFieldErrors = false,
 }: LoanDetailsProps) {
   const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
@@ -131,7 +133,7 @@ export default function LoanDetails({
           <input
             value={appLoanPurpose} 
             onChange={(e) => setAppLoanPurpose(e.target.value)} 
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields && missingFields.includes('Loan Purpose') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields && missingFields.includes('Loan Purpose')) ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Enter Loan Purpose"
@@ -201,11 +203,7 @@ export default function LoanDetails({
                 setLoanAmountError("");
               }
             }}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-              (missingFields && missingFields.includes('Loan Amount')) || loanAmountError || (selectedLoan === null && customLoanAmount !== "")
-                ? 'border-red-500'
-                : 'border-gray-200'
-            }`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields && missingFields.includes('Loan Amount')) || loanAmountError || (selectedLoan === null && customLoanAmount !== "") ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Enter loan amount"

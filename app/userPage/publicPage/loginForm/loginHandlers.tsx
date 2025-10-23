@@ -74,7 +74,7 @@ export async function loginHandler({ username, password, onClose, router, setSho
   localStorage.setItem('darkMode', user.darkMode?.toString() || 'false'); 
 
   if (user.profilePic) {
-  const fullPicUrl = `http://localhost:3001${user.profilePic}`;
+  const fullPicUrl = `${user.profilePic}`;
   localStorage.setItem('profilePic', fullPicUrl);
 }
 

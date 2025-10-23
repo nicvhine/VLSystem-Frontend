@@ -13,6 +13,7 @@ const buttonTranslation = {
         b9: "Loan Officer",
         b10: "Collector",
         b11: "Print Collection Sheet",
+        b12: "Close",
     },
     ceb: {
         b1: "Pagdugang Tiggamit",
@@ -27,7 +28,8 @@ const buttonTranslation = {
         b8: "Manager",
         b9: "Loan Officer",
         b10: "Collector",
-        b11: "I-print ang Collection Sheet", 
+        b11: "I-print ang Collection Sheet",
+        b12: "Sirad-a", 
     }
 }
 
