@@ -33,9 +33,10 @@ interface FormAreaProps {
     missingCounts: Record<string, number>;
     missingDetails: Record<string, string[]>;
   }) => void;
+  borrowersId?: string | undefined;
 }
 
-export default function FormArea({ loanType, language, isMobile, onProgressUpdate }: FormAreaProps) {
+export default function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId }: FormAreaProps) {
   const COMPANY_NAME = "Vistula Lending Corporation";
   const TERMS_VERSION = "1.0-draft";
   const PRIVACY_VERSION = "1.0-draft";
@@ -43,6 +44,8 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const router = useRouter();
 
   const [loanId, setLoanId] = useState<string | null>(null);
+  const [isPrefilled, setIsPrefilled] = useState(false);
+  // borrowersId provided by parent page via route params
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -114,6 +117,9 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   // Uploads 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+  // Previous uploads metadata (do not auto-fetch blobs). User must opt-in to "Use previous".
+  const [prevProfilePicUrl, setPrevProfilePicUrl] = useState<string | null>(null);
+  const [prevDocumentsMeta, setPrevDocumentsMeta] = useState<any[]>([]);
 
   // Compute section progress
   useSectionProgress({
@@ -154,8 +160,171 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   });
 
   useEffect(() => {
-    if (appAgent.trim()) setAgentMissingError(false);
+    // appAgent can be a string or object (from prefill). Coerce to string safely before trim.
+    const rawAgent = appAgent ?? "";
+    let agentString = "";
+    if (typeof rawAgent === "string") agentString = rawAgent;
+    else if (rawAgent && typeof rawAgent === "object") agentString = (rawAgent as any).agentId ?? "";
+    else agentString = String(rawAgent || "");
+    if (agentString.includes("[object") || agentString.toLowerCase() === "null" || agentString.toLowerCase() === "undefined") agentString = "";
+    if (agentString.trim()) setAgentMissingError(false);
   }, [appAgent]);
+
+  // Fetch latest application for this borrower and prefill when loan type is selected
+  useEffect(() => {
+    async function fetchAndPrefill() {
+      if (!borrowersId) return;
+      try {
+        const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const latest = data?.latestApplication;
+        if (!latest) {
+          setIsPrefilled(false);
+          return;
+        }
+
+        // Map backend application fields to form state
+        setAppName(latest.appName || "");
+        setAppDob(latest.appDob || "");
+        setAppContact(latest.appContact || "");
+        setAppEmail(latest.appEmail || "");
+        setAppMarital(latest.appMarital || "");
+        setAppChildren(latest.appChildren || 0);
+        setAppSpouseName(latest.appSpouseName || "");
+        setAppSpouseOccupation(latest.appSpouseOccupation || "");
+        setAppAddress(latest.appAddress || "");
+
+        setSourceOfIncome(latest.sourceOfIncome || "");
+        setAppTypeBusiness(latest.appTypeBusiness || "");
+        setAppBusinessName(latest.appBusinessName || "");
+        setAppDateStarted(latest.appDateStarted || "");
+        setAppBusinessLoc(latest.appBusinessLoc || "");
+        setAppMonthlyIncome(latest.appMonthlyIncome || 0);
+        setAppOccupation(latest.appOccupation || "");
+        setAppEmploymentStatus(latest.appEmploymentStatus || "");
+        setAppCompanyName(latest.appCompanyName || "");
+
+        setAppReferences(latest.appReferences || [
+          { name: "", contact: "", relation: "" },
+          { name: "", contact: "", relation: "" },
+          { name: "", contact: "", relation: "" },
+        ]);
+
+        // Normalize prefetched agent: backend may return an agent object or an agentId string.
+        // AgentDropdown expects an agentId string as the select value. Ensure we set that.
+        const resolvedAgent = latest.appAgent && typeof latest.appAgent === "object"
+          ? (latest.appAgent.agentId ?? "")
+          : (typeof latest.appAgent === "string" ? latest.appAgent : "");
+        setAppAgent(resolvedAgent);
+
+        setCollateralType(latest.collateralType || "");
+        setCollateralValue(latest.collateralValue || 0);
+        setCollateralDescription(latest.collateralDescription || "");
+        setOwnershipStatus(latest.ownershipStatus || "");
+
+  // Do NOT prefill loan selection or purpose for reapply — borrower should choose these anew.
+
+        // Do NOT auto-fetch previous file blobs. Instead store metadata and let the user opt-in
+        // to "Use previous" which will fetch the blob on demand.
+        setPrevProfilePicUrl(latest.profilePic || null);
+        setPrevDocumentsMeta(Array.isArray(latest.documents) ? latest.documents : []);
+
+        setIsPrefilled(true);
+      } catch (err) {
+        console.error("Error fetching latest application for prefill:", err);
+      }
+    }
+
+    // Trigger prefill when loan type param changes (borrower selected a loan type)
+    if (loanTypeParam) fetchAndPrefill();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loanTypeParam, borrowersId]);
+
+  // Helper: fetch image blob, validate (size + optional square), and return File
+  async function fetchImageAsFileWithValidation(url: string, opts?: { maxBytes?: number; requireSquare?: boolean }) {
+    const { maxBytes = 2 * 1024 * 1024, requireSquare = true } = opts || {};
+    try {
+      // Try fetching including credentials in case the file URL requires auth cookies
+      let resp: Response | null = null;
+      try {
+        resp = await fetch(url, { credentials: 'include' });
+      } catch (e) {
+        // network error (CORS or other). Try a plain fetch as a fallback.
+        try {
+          resp = await fetch(url);
+        } catch (e2) {
+          throw new Error('Network error while fetching image (possible CORS or auth required)');
+        }
+      }
+
+      if (!resp || !resp.ok) throw new Error('Failed to fetch image (non-200 response)');
+      const blob = await resp.blob();
+      if (blob.size > maxBytes) throw new Error('Image too large');
+
+      // quick sanity: ensure we actually received an image
+      if (!blob.type.startsWith('image/')) throw new Error('Fetched resource is not an image');
+
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new Image();
+        const objectUrl = URL.createObjectURL(blob);
+        i.onload = () => { URL.revokeObjectURL(objectUrl); resolve(i); };
+        i.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('image-load-error')); };
+        i.src = objectUrl;
+      });
+      if (requireSquare && img.width !== img.height) throw new Error('Image must be square');
+
+      let filename = url.split('/').pop() || 'photo2x2';
+      // ensure file has an extension matching the mime type
+      if (!filename.includes('.') && blob.type) {
+        const ext = blob.type.split('/')[1] || 'jpg';
+        filename = `${filename}.${ext}`;
+      }
+      const file = new File([blob], filename, { type: blob.type });
+      return { ok: true as const, file };
+    } catch (err: any) {
+      return { ok: false as const, error: err.message || String(err) };
+    }
+  }
+
+  // Called by UploadSection when user clicks "Use previous" for profile pic
+  async function handleUsePreviousProfile() {
+    if (!prevProfilePicUrl) return { ok: false, error: 'No previous profile URL' };
+    const res = await fetchImageAsFileWithValidation(prevProfilePicUrl);
+    if (res.ok) {
+      setPhoto2x2([res.file]);
+      // remove previous preview to reflect it's been consumed
+      setPrevProfilePicUrl(null);
+      return { ok: true };
+    } else {
+      setDocumentUploadError(res.error || 'Failed to fetch previous 2x2');
+      setShowDocumentUploadErrorModal(true);
+      return res;
+    }
+  }
+
+  // Called by UploadSection when user clicks "Use" for a previous document at index
+  async function handleUsePreviousDocument(index: number) {
+    const doc = prevDocumentsMeta[index];
+    if (!doc || !doc.filePath) return { ok: false, error: 'No previous document' };
+    try {
+      const resp = await fetch(doc.filePath);
+      if (!resp.ok) throw new Error('Failed to fetch document');
+      const blob = await resp.blob();
+      const name = doc.fileName || (doc.filePath.split('/').pop() || 'document');
+      const type = doc.mimeType || blob.type || 'application/octet-stream';
+      const file = new File([blob], name, { type });
+      setUploadedFiles(prev => [...prev, file]);
+      // remove from previous meta list
+      setPrevDocumentsMeta(prev => prev.filter((_, i) => i !== index));
+      return { ok: true };
+    } catch (err: any) {
+      console.warn('Failed to fetch previous document', err);
+      setDocumentUploadError(err.message || 'Failed to fetch document');
+      setShowDocumentUploadErrorModal(true);
+      return { ok: false, error: err.message || String(err) };
+    }
+  }
 
   return (
     <div className="relative max-w-4xl mx-auto py-0">
@@ -196,6 +365,8 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
             setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
             missingFields={missingFields}
+            borrowersId={borrowersId || ''}
+            isPrefilled={isPrefilled}
           />
         </div>
 
@@ -253,6 +424,10 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             removeProfile={() => removeProfile(setPhoto2x2)}
             removeDocument={(index) => removeDocument(index, uploadedFiles, setUploadedFiles)}
             missingFields={missingFields} requiredDocumentsCount={requiredDocumentsCount}
+            previousProfileUrl={prevProfilePicUrl}
+            previousDocuments={prevDocumentsMeta}
+            onUsePreviousProfile={handleUsePreviousProfile}
+            onUsePreviousDocument={handleUsePreviousDocument}
           />
         </div>
       </div>

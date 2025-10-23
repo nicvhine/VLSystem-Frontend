@@ -106,6 +106,8 @@ export interface BasicInformationProps {
   setAppAddress: (value: string) => void;
   missingFields?: string[];
   showFieldErrors?: boolean;
+  // When true, the form was prefilled from an existing application. DOB should be non-editable in that case.
+  isPrefilled?: boolean;
 }
 
 export interface CollateralProps {

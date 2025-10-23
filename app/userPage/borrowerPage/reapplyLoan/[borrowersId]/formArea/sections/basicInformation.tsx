@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import MapComponent from "../../../MapComponent"; 
+import MapComponent from "../../MapComponent"; 
 import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
 
 /**
@@ -52,6 +52,8 @@ export default function BasicInformation({
   setAppAddress,
   missingFields = [],
   showFieldErrors = false,
+  borrowersId = "",
+  isPrefilled = false,
 }: BasicInformationProps) {
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
@@ -113,10 +115,11 @@ export default function BasicInformation({
             type="date"
             value={appDob}
             onChange={(e) => setAppDob(e.target.value)}
+            readOnly={isPrefilled}
             max={new Date(new Date().setFullYear(new Date().getFullYear() - 18))
               .toISOString()
               .split("T")[0]}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Date of Birth')) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Date of Birth')) ? 'border-red-500' : 'border-gray-200'} ${isPrefilled ? 'bg-gray-50' : ''}`}
           />
         </div>
 

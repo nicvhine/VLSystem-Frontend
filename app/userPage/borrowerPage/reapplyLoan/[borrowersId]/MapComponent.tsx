@@ -2,19 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+// Do NOT import 'leaflet' at module top-level (it accesses window during import and breaks SSR).
+// We'll dynamically import it on the client inside useEffect.
 
 const DEFAULT_POSITION: [number, number] = [10.3157, 123.8854];
 
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png",
-  shadowSize: [41, 41],
-});
+// We'll create the customIcon on the client after dynamically importing leaflet.
 
 interface MapComponentProps {
   address: string;
@@ -55,9 +48,35 @@ export default function MapComponent({
   setMarkerPosition,
 }: MapComponentProps) {
   const [isClient, setIsClient] = useState(false);
+  const [customIcon, setCustomIcon] = useState<any | null>(null);
 
   useEffect(() => {
     setIsClient(true);
+    // Dynamically import leaflet and its CSS on the client only
+    (async () => {
+      try {
+        // @ts-ignore - importing CSS dynamically; type definitions may not exist
+        await import('leaflet/dist/leaflet.css');
+      } catch (e) {
+        // CSS import is optional; ignore failures
+      }
+      try {
+        const Lmod = await import('leaflet');
+        const L = (Lmod as any).default || Lmod;
+        const icon = new L.Icon({
+          iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
+          shadowSize: [41, 41],
+        });
+        setCustomIcon(icon);
+      } catch (err) {
+        console.error('Failed to load leaflet dynamically', err);
+        setCustomIcon(null);
+      }
+    })();
   }, []);
 
   if (!isClient) return null;
@@ -76,7 +95,7 @@ export default function MapComponent({
 
         <MapEvents setAddress={setAddress} setMarkerPosition={setMarkerPosition} />
 
-        {markerPosition && (
+        {markerPosition && customIcon && (
           <Marker position={markerPosition} icon={customIcon}>
             <Popup>{address}</Popup>
           </Marker>

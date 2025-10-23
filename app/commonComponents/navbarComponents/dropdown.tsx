@@ -105,7 +105,23 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   const t = translations.navbarTranslation[language];
 
   // Determine final image to show
-  const finalProfilePic = previewPic || props.profilePic || '/idPic.jpg';
+  const [externalProfilePic, setExternalProfilePic] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onProfileUpdate = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        setExternalProfilePic(ev.detail?.profilePic || null);
+      } catch (err) {
+        setExternalProfilePic(null);
+      }
+    };
+    window.addEventListener('profilePicUpdated', onProfileUpdate as EventListener);
+    return () => window.removeEventListener('profilePicUpdated', onProfileUpdate as EventListener);
+  }, []);
+
+  const finalProfilePic = previewPic || externalProfilePic || props.profilePic || null;
+  const hasImage = Boolean(finalProfilePic && finalProfilePic !== '/idPic.jpg');
   // Show actions row (EDIT | REMOVE or SAVE | CANCEL) only when avatar is clicked
   const [showPhotoActions, setShowPhotoActions] = useState(false);
   const avatarBlockRef = useRef<HTMLDivElement | null>(null);
@@ -137,9 +153,9 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
             onClick={() => !isWorking && setShowPhotoActions((v) => !v)}
             title="Edit profile picture"
           >
-            {previewPic || props.profilePic ? (
+            {hasImage ? (
               <Image
-                src={previewPic || props.profilePic}       
+                src={finalProfilePic || ''}
                 alt="Profile"
                 width={80}
                 height={80}

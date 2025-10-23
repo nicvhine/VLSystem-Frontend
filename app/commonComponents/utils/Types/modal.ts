@@ -4,7 +4,9 @@ export interface BaseModalProps<T = any> {
   isOpen: boolean;
   isAnimating?: boolean;
   onClose?: () => void;
+  // Support both selectedItem and selectedCollection aliases used in various modal components
   selectedItem?: T;
+  selectedCollection?: T;
 }
 
 export interface ConfirmModalProps {

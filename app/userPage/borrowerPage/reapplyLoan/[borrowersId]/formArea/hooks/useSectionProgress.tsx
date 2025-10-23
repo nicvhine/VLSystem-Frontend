@@ -10,7 +10,8 @@ interface UseSectionProgressParams {
   missingFields: string[];
   photo2x2: File[];
   requires2x2: boolean;
-  appAgent: string;
+  // appAgent may sometimes be a string or an object (prefill data). Accept any and coerce.
+  appAgent: any;
   onProgressUpdate?: (progress: Progress) => void;
 }
 
@@ -21,7 +22,7 @@ export function useSectionProgress({
   appAgent,
   onProgressUpdate,
 }: UseSectionProgressParams) {
-  const prevProgressRef = useRef<Progress>();
+  const prevProgressRef = useRef<Progress | undefined>(undefined);
 
   useEffect(() => {
     const done: Record<string, boolean> = {};
@@ -67,7 +68,22 @@ export function useSectionProgress({
     missingDetails["documents"] = docMissing;
     done["documents"] = missingCounts["documents"] === 0;
 
-    const agentMissing = !appAgent.trim() ? ["Agent"] : [];
+  // appAgent can be a string or an object when prefilling; coerce to string safely
+  const rawAgent = appAgent ?? "";
+  // Normalize: accept string agentId, or object with agentId/name. Treat invalid string placeholders as empty.
+  let agentString = "";
+  if (typeof rawAgent === "string") {
+    agentString = rawAgent;
+  } else if (rawAgent && typeof rawAgent === "object") {
+    agentString = rawAgent.agentId ?? rawAgent.name ?? "";
+  } else {
+    agentString = String(rawAgent || "");
+  }
+  // Guard against common bad values that are truthy but not real data
+  if (agentString.includes("[object") || agentString.toLowerCase() === "null" || agentString.toLowerCase() === "undefined") {
+    agentString = "";
+  }
+  const agentMissing = !agentString.trim() ? ["Agent"] : [];
     missingCounts["agent"] = agentMissing.length;
     missingDetails["agent"] = agentMissing;
     done["agent"] = missingCounts["agent"] === 0;
