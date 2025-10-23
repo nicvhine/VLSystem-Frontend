@@ -32,6 +32,7 @@ export default function CollateralInformation({
   setOwnershipStatus,
   collateralTypeOptions,
   missingFields = [],
+  showFieldErrors = false,
 }: CollateralProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
@@ -49,7 +50,7 @@ export default function CollateralInformation({
           <select
             value={collateralType}
             onChange={(e) => setCollateralType(e.target.value)}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Collateral Type') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Collateral Type')) ? 'border-red-500' : 'border-gray-200'}`}
           >
             {collateralTypeOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -69,7 +70,7 @@ export default function CollateralInformation({
             type="number"
             value={collateralValue}
             onChange={(e) => setCollateralValue(parseFloat(e.target.value))}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Collateral Value') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Collateral Value')) ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Enter estimated value"
@@ -88,7 +89,7 @@ export default function CollateralInformation({
           <textarea
             value={collateralDescription}
             onChange={(e) => setCollateralDescription(e.target.value)}
-            className={`w-full border p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Collateral Description') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg h-24 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Collateral Description')) ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={
               language === "en"
                 ? "Provide detailed description of your collateral"
@@ -107,7 +108,7 @@ export default function CollateralInformation({
           <select
             value={ownershipStatus}
             onChange={(e) => setOwnershipStatus(e.target.value)}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Ownership Status') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Ownership Status')) ? 'border-red-500' : 'border-gray-200'}`}
           >
             <option value="">
               {language === "en"
