@@ -2,7 +2,6 @@ const statisticTranslation = {
   en: {
     // Application Status
     s1: "Applied",
-    s2: "Pending",
     s3: "Approved",
     s4: "Denied",
 

@@ -10,11 +10,10 @@ import {
   FiClock,
 } from "react-icons/fi";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLoanStats } from "@/app/commonComponents/statistics/hooks";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { StatCard } from "@/app/commonComponents/statistics/functions";
-import translations from "@/app/commonComponents/translation";
 
 export default function LoanStatistics() {
   const [role, setRole] = useState<'loanOfficer' | 'manager' | 'head'>(() => {
@@ -24,28 +23,7 @@ export default function LoanStatistics() {
     return 'loanOfficer';
   });
 
-  // Lazy initializer ensures we read from localStorage only on mount
-  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
-    if (typeof window !== "undefined") {
-      return (localStorage.getItem("language") as 'en' | 'ceb') || 'en';
-    }
-    return 'en';
-  });
-
-  // Listen for language change events
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      setLanguage(event.detail.language);
-    };
-    window.addEventListener("languageChange", handleLanguageChange as EventListener);
-    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
-  }, []);
-
-  // Re-fetch stats whenever role or language changes
-  const { loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(role, language);
-
-  const t = translations.statisticTranslation[language];
-  const l = translations.loanTermsTranslator[language];
+  const { s, t, loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(role);
 
   if (loading) {
     return (
@@ -67,14 +45,14 @@ export default function LoanStatistics() {
             </h2>
             <div className="flex flex-col gap-2">
               <StatCard
-                label={l.l4}
+                label={s.l4}
                 value={loanStats.totalPrincipal ?? 0}
                 color="text-green-600"
                 icon={FiDollarSign}
                 isAmount
               />
               <StatCard
-                label={l.l6}
+                label={s.l6}
                 value={loanStats.totalInterest ?? 0}
                 color="text-red-600"
                 icon={FiTrendingUp}
@@ -122,19 +100,19 @@ export default function LoanStatistics() {
         </h2>
         <div className="flex flex-col gap-2">
           <StatCard
-            label={t.s2?.replace("Pending", "Applied") || "Applied"}
+            label={t.s1}
             value={applicationStats.applied ?? 0}
             color="text-yellow-600"
             icon={FiClock}
           />
           <StatCard
-            label={t.s3?.replace("Applications", "") || "Approved"}
+            label={t.s3}
             value={applicationStats.approved ?? 0}
             color="text-green-600"
             icon={FiCheckCircle}
           />
           <StatCard
-            label={t.s4?.replace("Applications", "") || "Denied"}
+            label={t.s4}
             value={applicationStats.denied ?? 0}
             color="text-red-600"
             icon={FiXCircle}
@@ -149,19 +127,19 @@ export default function LoanStatistics() {
         </h2>
         <div className="flex flex-col gap-2">
           <StatCard
-            label={l.l1}
+            label={s.l1}
             value={typeStats.withCollateral ?? 0}
             color="text-blue-600"
             icon={FiUsers}
           />
           <StatCard
-            label={l.l2}
+            label={s.l2}
             value={typeStats.withoutCollateral ?? 0}
             color="text-green-600"
             icon={FiUsers}
           />
           <StatCard
-            label={l.l3}
+            label={s.l3}
             value={typeStats.openTerm ?? 0}
             color="text-red-600"
             icon={FiUsers}
