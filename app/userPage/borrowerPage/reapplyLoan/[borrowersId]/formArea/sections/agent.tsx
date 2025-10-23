@@ -9,6 +9,7 @@ const AgentDropdown: FC<AgentDropdownProps> = ({
   appAgent,
   setAppAgent,
   missingError,
+  showFieldErrors = false,
 }) => {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +43,7 @@ const AgentDropdown: FC<AgentDropdownProps> = ({
         <select
           value={appAgent}
           onChange={(e) => setAppAgent(e.target.value)}
-          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingError ? 'border-red-500' : 'border-gray-200'}`}
+          className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingError) ? 'border-red-500' : 'border-gray-200'}`}
         >
           <option value="">{language === "en" ? "Choose an agent" : "Pilia ang ahente"}</option>
           {agents.map((agent) => (

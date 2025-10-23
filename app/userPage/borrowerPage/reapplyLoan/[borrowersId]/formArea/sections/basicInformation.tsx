@@ -1,8 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import MapComponent from "../../MapComponent"; 
+import MapComponent from "../../../MapComponent"; 
 import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
+
+/**
+ * Basic information form section component
+ * Handles personal details including name, contact, marital status, and address with map integration
+ * @param language - Current language setting (English or Cebuano)
+ * @param appName - Applicant's name
+ * @param setAppName - Function to set applicant's name
+ * @param appDob - Applicant's date of birth
+ * @param setAppDob - Function to set date of birth
+ * @param appContact - Applicant's contact number
+ * @param setAppContact - Function to set contact number
+ * @param appEmail - Applicant's email address
+ * @param setAppEmail - Function to set email address
+ * @param appMarital - Applicant's marital status
+ * @param setAppMarital - Function to set marital status
+ * @param appChildren - Number of children
+ * @param setAppChildren - Function to set number of children
+ * @param appSpouseName - Spouse's name
+ * @param setAppSpouseName - Function to set spouse's name
+ * @param appSpouseOccupation - Spouse's occupation
+ * @param setAppSpouseOccupation - Function to set spouse's occupation
+ * @param appAddress - Applicant's address
+ * @param setAppAddress - Function to set address
+ * @param missingFields - Array of missing field names for validation
+ * @returns JSX element containing the basic information form section
+ */
 
 export default function BasicInformation({
   language,
@@ -25,6 +51,7 @@ export default function BasicInformation({
   appAddress,
   setAppAddress,
   missingFields = [],
+  showFieldErrors = false,
 }: BasicInformationProps) {
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
@@ -69,7 +96,7 @@ export default function BasicInformation({
               }
             }}
             className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-              missingFields.includes("Name") || nameError ? "border-red-500" : "border-gray-200"
+              (showFieldErrors && (missingFields.includes("Name") || nameError)) ? "border-red-500" : "border-gray-200"
             }`}
             placeholder={language === "en" ? "Enter your full name" : "Isulod ang imong tibuok ngalan"}
           />
@@ -89,7 +116,7 @@ export default function BasicInformation({
             max={new Date(new Date().setFullYear(new Date().getFullYear() - 18))
               .toISOString()
               .split("T")[0]}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Date of Birth') ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Date of Birth')) ? 'border-red-500' : 'border-gray-200'}`}
           />
         </div>
 
@@ -121,7 +148,7 @@ export default function BasicInformation({
                 setError("");
               }
             }}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Contact Number') || error ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Contact Number') || error)) ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
           />
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
@@ -141,7 +168,7 @@ export default function BasicInformation({
                 value = value.replace(/@.*/, "");
                 setAppEmail(value + "@gmail.com");
               }}
-                className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Email Address') ? 'border-red-500' : 'border-gray-200'}`}
+                className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Email Address')) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
             />
             <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">
@@ -160,7 +187,7 @@ export default function BasicInformation({
           <select
             value={appMarital}
             onChange={(e) => setAppMarital(e.target.value)}
-           className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Marital Status') ? 'border-red-500' : 'border-gray-200'}`}
+           className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Marital Status')) ? 'border-red-500' : 'border-gray-200'}`}
           >
             <option value="">{language === "en" ? "Select Status" : "Pilia ang Kahimtang"}</option>
             <option value="Single">{language === "en" ? "Single" : "Walay Bana/Asawa"}</option>
@@ -190,7 +217,7 @@ export default function BasicInformation({
               {language === "en" ? "Spouse Name:" : "Ngalan sa Bana/Asawa:"}
             </label>
             <input
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Spouse Name') ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Spouse Name')) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter spouse name" : "Isulod ang ngalan sa bana/asawa"}
               value={appSpouseName}
               onChange={(e) => setAppSpouseName(e.target.value)}
@@ -201,7 +228,7 @@ export default function BasicInformation({
               {language === "en" ? "Spouse Occupation:" : "Trabaho sa Bana/Asawa:"}
             </label>
             <input
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Spouse Occupation') ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Spouse Occupation')) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter spouse occupation" : "Isulod ang trabaho sa bana/asawa"}
               value={appSpouseOccupation}
               onChange={(e) => setAppSpouseOccupation(e.target.value)}
@@ -219,7 +246,7 @@ export default function BasicInformation({
           type="text"
           value={appAddress}
           onChange={handleAddressChange}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes('Home Address') ? 'border-red-500' : 'border-gray-200'}`}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Home Address')) ? 'border-red-500' : 'border-gray-200'}`}
           placeholder={language === "en" ? "Click on the map or type here" : "I-klik ang mapa o isulat dinhi"}
         />
       </div>

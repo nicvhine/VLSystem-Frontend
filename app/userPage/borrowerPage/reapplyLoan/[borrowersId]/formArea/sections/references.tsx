@@ -17,6 +17,7 @@ interface ReferencesProps {
   appContact: string;
   appName: string;
   missingFields?: string[];
+  showFieldErrors?: boolean;
 }
 
 /**
@@ -38,6 +39,7 @@ export default function References({
   appContact,
   appName, 
   missingFields = [],
+  showFieldErrors = false,
 }: ReferencesProps) {
   const nameError = useMemo(() => {
     return appReferences.map((ref, idx) => {
@@ -113,7 +115,7 @@ export default function References({
               value={appReferences[i]?.name || ""}
               maxLength={50}
               onChange={e => handleReferenceChange(i, "name", e.target.value)}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${nameError[i] || missingFields.includes(`Reference ${i + 1} Name`) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (nameError[i] || missingFields.includes(`Reference ${i + 1} Name`))) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter name" : "Isulod ang ngalan"}
             />
             {nameError[i] && (
@@ -141,7 +143,7 @@ export default function References({
                   // keep refErrors via memo; no state needed here
                 }
               }}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${refErrors[i] || missingFields.includes(`Reference ${i + 1} Contact`) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (refErrors[i] || missingFields.includes(`Reference ${i + 1} Contact`))) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
             />
             {refErrors[i] && (
@@ -157,7 +159,7 @@ export default function References({
               value={appReferences[i]?.relation || ""}
               maxLength={30}
               onChange={e => handleReferenceChange(i, "relation", e.target.value)}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${missingFields.includes(`Reference ${i + 1} Relationship`) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes(`Reference ${i + 1} Relationship`)) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter relationship" : "Isulod ang relasyon"}
             />
           </div>

@@ -85,6 +85,7 @@ export interface TrackModalProps {
 
 export interface BasicInformationProps {
   language: "en" | "ceb";
+  borrowersId: string;
   appName: string;
   setAppName: (value: string) => void;
   appDob: string;
