@@ -5,6 +5,7 @@ import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
 import { useState, useEffect } from 'react';
 import translations from '../translation';
+import { useProfilePicUpload } from './hooks/useProfilePicUpload';
 
 interface ProfileDropdownProps {
   name: string;
@@ -17,32 +18,16 @@ interface ProfileDropdownProps {
   isDropdownOpen: boolean;
   setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   profilePic: string;
-  previewPic: string;
-  isUploadingPic: boolean;
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSaveProfilePic: () => void;
-  handleCancelUpload: () => void;
 }
 
 export default function ProfileDropdown(props: ProfileDropdownProps) {
-  const {
-    name,
-    email,
-    phoneNumber,
-    username,
-    role,
-    isEditing,
-    setIsEditing,
-    isDropdownOpen,
-    setIsDropdownOpen,
-    profilePic,
-    previewPic,
-    isUploadingPic,
-    handleFileChange,
-    handleSaveProfilePic,
-    handleCancelUpload,
-  } = props;
+  const { name, email, phoneNumber, username, role, isEditing, setIsEditing, isDropdownOpen } = props;
 
+  // Profile picture upload hook
+  const { previewPic, isUploading, handleFileChange, handleCancelUpload, handleSaveProfilePic } =
+    useProfilePicUpload({ currentProfilePic: props.profilePic, username });
+
+  // Dropdown logic hook
   const {
     editingEmail,
     setEditingEmail,
@@ -109,6 +94,9 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
 
   const t = translations.navbarTranslation[language];
 
+  // Determine final image to show
+  const finalProfilePic = previewPic || props.profilePic || '/idPic.jpg';
+
   return (
     <div className="relative">
       <div
@@ -119,33 +107,27 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
       >
         {/* Profile Info */}
         <div className="flex flex-col items-center pt-7 pb-4 gap-1">
-          <div
-            className="relative group w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer hover:ring-4 transition-all flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-2xl"
-            onClick={() => document.getElementById('profileUpload')?.click()}
-          >
-            {previewPic || profilePic ? (
-              <Image
-                src={previewPic || profilePic}
-                alt="Profile"
-                width={80}
-                height={80}
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <span>{name ? name.charAt(0).toUpperCase() : 'U'}</span>
-            )}
-            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
-              {t.t1}
-            </div>
-            <input
-              type="file"
-              id="profileUpload"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
+        <div
+          className="relative group w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer hover:ring-4 transition-all flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-2xl"
+          onClick={() => document.getElementById('profileUpload')?.click()}
+        >
+          {previewPic || props.profilePic ? (
+            <Image
+              src={previewPic || props.profilePic}       
+              alt="Profile"
+              width={80}
+              height={80}
+              className="w-full h-full object-cover rounded-full"
             />
+          ) : (
+            <span>{name ? name.charAt(0).toUpperCase() : 'U'}</span>
+          )}
+          
+          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
+            {t.t1}
           </div>
-
+          <input type="file" id="profileUpload" accept="image/*" className="hidden" onChange={handleFileChange} />
+        </div>
           <div className="font-semibold text-lg text-center">{name}</div>
           <div className="text-gray-400 text-sm text-center">{email}</div>
           <div className="text-red-600 text-xs font-medium text-center mt-1 uppercase tracking-wide">
@@ -162,7 +144,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
               : role}
           </div>
 
-          {isUploadingPic && (
+          {isUploading && (
             <div className="flex gap-2 mt-3">
               <button
                 onClick={handleSaveProfilePic}
