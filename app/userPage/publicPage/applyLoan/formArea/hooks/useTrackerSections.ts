@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 type Section = { key: string; label: string };
 
-export function useTrackerSections(loanType: string | null, language: 'en' | 'ph'): Section[] {
+export function useTrackerSections(loanType: string | null, language: 'en' | 'ceb'): Section[] {
   return useMemo(() => {
     if (!loanType) return [];
 
