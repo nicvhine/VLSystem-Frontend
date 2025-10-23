@@ -33,6 +33,12 @@ const navbarTranslation = {
     t18: "Receive notifications via email",
     t19: "SMS Notifications",
     t20: "Receive notifications via text message",
+    t21: "Updating profile photo...",
+    t22: "Remove",
+    t23: "Change",
+    t24: "Save",
+    t25: "Cancel",
+    t26: "Are you sure you want to remove your profile photo?",
   },
   ceb: {
     tab1: "Mga Pahulam",
@@ -68,6 +74,14 @@ const navbarTranslation = {
     t18: "Pagdawat og notipikasyon pinaagi sa email",
     t19: "SMS Notifications",
     t20: "Pagdawat og notipikasyon pinaagi sa text message"
+    ,
+    t21: "Gina-update ang litrato sa profile...",
+    t22: "Kuhaa",
+    t23: "Ilisi",
+    t24: "I-save",
+    t25: "I-cancel"
+    ,
+    t26: "Sigurado ka ba nga gusto nimo tangtangon ang litrato sa profile?"
   }
 };
 

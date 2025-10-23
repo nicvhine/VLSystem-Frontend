@@ -10,6 +10,7 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewPic, setPreviewPic] = useState<string>(currentProfilePic);
   const [isUploading, setIsUploading] = useState(false);
+  const [isWorking, setIsWorking] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -31,16 +32,17 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
   };
 
   const handleSaveProfilePic = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) return { ok: false, error: 'No file selected' } as const;
 
     const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
-    if (!userId || !token) return alert('User not authenticated');
+    if (!userId || !token) return { ok: false, error: 'User not authenticated' } as const;
 
     const formData = new FormData();
     formData.append('profilePic', selectedFile);
 
     try {
+      setIsWorking(true);
       const res = await fetch(`http://localhost:3001/users/${userId}/upload-profile`, {
         method: 'POST',
         body: formData,
@@ -56,18 +58,22 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
 
       setSelectedFile(null);
       setIsUploading(false);
+      setIsWorking(false);
+      return { ok: true, url: data.profilePic.filePath } as const;
     } catch (err: any) {
       console.error('Upload error:', err);
-      alert(err.message);
+      setIsWorking(false);
+      return { ok: false, error: err.message || 'Upload failed' } as const;
     }
   };
 
   const handleRemoveProfilePic = async () => {
     const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
-    if (!userId || !token) return alert('User not authenticated');
+    if (!userId || !token) return { ok: false, error: 'User not authenticated' } as const;
 
     try {
+      setIsWorking(true);
       const res = await fetch(`http://localhost:3001/users/${userId}/remove-profile`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
@@ -82,15 +88,19 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
 
       setSelectedFile(null);
       setIsUploading(false);
+      setIsWorking(false);
+      return { ok: true } as const;
     } catch (err: any) {
       console.error('Remove error:', err);
-      alert(err.message);
+      setIsWorking(false);
+      return { ok: false, error: err.message || 'Remove failed' } as const;
     }
   };
 
   return {
     previewPic,
     isUploading,
+    isWorking,
     handleFileChange,
     handleCancelUpload,
     handleSaveProfilePic,

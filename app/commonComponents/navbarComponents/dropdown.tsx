@@ -3,9 +3,13 @@
 import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import translations from '../translation';
 import { useProfilePicUpload } from './hooks/useProfilePicUpload';
+import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
+import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
+import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
+import SubmitOverlayToast from '@/app/commonComponents/utils/submitOverlayToast';
 
 interface ProfileDropdownProps {
   name: string;
@@ -24,8 +28,14 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   const { name, email, phoneNumber, username, role, isEditing, setIsEditing, isDropdownOpen } = props;
 
   // Profile picture upload hook
-  const { previewPic, isUploading, handleFileChange, handleCancelUpload, handleSaveProfilePic } =
+  const { previewPic, isUploading, isWorking, handleFileChange, handleCancelUpload, handleSaveProfilePic, handleRemoveProfilePic } =
     useProfilePicUpload({ currentProfilePic: props.profilePic, username });
+
+  // Local modals for feedback
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMsg, setModalMsg] = useState('');
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
 
   // Dropdown logic hook
   const {
@@ -96,6 +106,20 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
 
   // Determine final image to show
   const finalProfilePic = previewPic || props.profilePic || '/idPic.jpg';
+  // Show actions row (EDIT | REMOVE or SAVE | CANCEL) only when avatar is clicked
+  const [showPhotoActions, setShowPhotoActions] = useState(false);
+  const avatarBlockRef = useRef<HTMLDivElement | null>(null);
+
+  // Hide actions when clicking outside the avatar block
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (avatarBlockRef.current && !avatarBlockRef.current.contains(e.target as Node)) {
+        setShowPhotoActions(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
 
   return (
     <div className="relative">
@@ -107,28 +131,84 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
       >
         {/* Profile Info */}
         <div className="flex flex-col items-center pt-7 pb-4 gap-1">
-        <div
-          className="relative group w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 cursor-pointer hover:ring-4 transition-all flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-2xl"
-          onClick={() => document.getElementById('profileUpload')?.click()}
-        >
-          {previewPic || props.profilePic ? (
-            <Image
-              src={previewPic || props.profilePic}       
-              alt="Profile"
-              width={80}
-              height={80}
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <span>{name ? name.charAt(0).toUpperCase() : 'U'}</span>
-          )}
-          
-          <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition">
-            {t.t1}
+        <div className="relative group" ref={avatarBlockRef}>
+          <div
+            className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-red-900 hover:ring-4 transition-all flex items-center justify-center bg-gray-200 text-gray-700 font-bold text-2xl cursor-pointer"
+            onClick={() => !isWorking && setShowPhotoActions((v) => !v)}
+            title="Edit profile picture"
+          >
+            {previewPic || props.profilePic ? (
+              <Image
+                src={previewPic || props.profilePic}       
+                alt="Profile"
+                width={80}
+                height={80}
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              <span>{name ? name.charAt(0).toUpperCase() : 'U'}</span>
+            )}
+
+            {/* Hover overlay (just shows EDIT word) */}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+              <span className="text-white text-xs tracking-wide">EDIT</span>
+            </div>
           </div>
+
+          {/* Row directly below avatar: toggled by click (no hover) */}
+          <div className={`absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 transition-all duration-200 ${showPhotoActions ? 'opacity-100 translate-y-0 flex' : 'opacity-0 -translate-y-2 pointer-events-none'}`}>
+            <div className="flex items-center gap-3 text-sm bg-transparent">
+                {!isUploading ? (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); if (!isWorking) document.getElementById('profileUpload')?.click(); }}
+                  className={`text-sm font-medium ${isWorking ? 'text-gray-300 cursor-not-allowed' : 'text-black hover:underline'}`}
+                  disabled={isWorking}
+                >
+                  {t.t1?.toUpperCase() || 'CHANGE'}
+                </button>
+                <span className="text-gray-400">|</span>
+                {(((previewPic && previewPic !== '/idPic.jpg') || (props.profilePic && props.profilePic !== '/idPic.jpg'))) ? (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); if (isWorking) return; setShowRemoveConfirm(true); }}
+                    className={`text-sm font-medium ${isWorking ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:underline'}`}
+                    disabled={isWorking}
+                  >
+                    {t.t22?.toUpperCase() || 'REMOVE'}
+                  </button>
+                ) : (
+                  <span className="text-gray-300">REMOVE</span>
+                )}
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={async (e) => { e.stopPropagation(); if (isWorking) return; const res = await handleSaveProfilePic(); if (res && 'ok' in res) { if (res.ok) { setModalMsg('Profile picture updated successfully.'); setShowSuccessModal(true); } else { setModalMsg(res.error || 'Failed to update profile picture'); setShowErrorModal(true); } } }}
+                  className={`text-sm font-medium ${isWorking ? 'text-gray-300 cursor-not-allowed' : 'text-black hover:underline'}`}
+                  disabled={isWorking}
+                >
+                  {t.t2?.toUpperCase() || 'SAVE'}
+                </button>
+                <span className="text-gray-400">|</span>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); if (isWorking) return; handleCancelUpload(); }}
+                  className={`text-sm font-medium ${isWorking ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:underline'}`}
+                  disabled={isWorking}
+                >
+                  {t.t3?.toUpperCase() || 'CANCEL'}
+                </button>
+              </>
+            )}
+            </div>
+          </div>
+
           <input type="file" id="profileUpload" accept="image/*" className="hidden" onChange={handleFileChange} />
         </div>
-          <div className="font-semibold text-lg text-center">{name}</div>
+          <div className={`font-semibold text-lg text-center transition-all ${showPhotoActions ? 'mt-8' : ''}`}>{name}</div>
           <div className="text-gray-400 text-sm text-center">{email}</div>
           <div className="text-red-600 text-xs font-medium text-center mt-1 uppercase tracking-wide">
             {role === 'borrower'
@@ -144,22 +224,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
               : role}
           </div>
 
-          {isUploading && (
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={handleSaveProfilePic}
-                className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition"
-              >
-                {t.t2}
-              </button>
-              <button
-                onClick={handleCancelUpload}
-                className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded hover:bg-gray-300 transition"
-              >
-                {t.t3}
-              </button>
-            </div>
-          )}
+          
         </div>
 
         {/* Actions */}
@@ -241,6 +306,33 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           {t.t7}
         </div>
       </div>
+
+      {/* Loading toast + Modals */}
+  <SubmitOverlayToast open={isWorking} message={t?.t21 || 'Updating profile photo...'} variant="info" />
+      <ConfirmModal
+        show={showRemoveConfirm}
+        message={t?.t26 || 'Are you sure you want to remove your profile photo?'}
+        onConfirm={async () => {
+          setShowRemoveConfirm(false);
+          const res = await handleRemoveProfilePic();
+          if (res && 'ok' in res) {
+            if (res.ok) {
+              setModalMsg('Profile photo removed.');
+              setShowSuccessModal(true);
+            } else {
+              setModalMsg(res.error || 'Failed to remove profile photo');
+              setShowErrorModal(true);
+            }
+          }
+        }}
+        onCancel={() => setShowRemoveConfirm(false)}
+      />
+      {showSuccessModal && (
+        <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
+      )}
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
+      )}
     </div>
   );
 }
