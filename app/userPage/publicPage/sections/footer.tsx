@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import translationData from '@/app/commonComponents/translation';
 
 // Props interface for footer component
 interface FooterProps {
@@ -12,6 +13,7 @@ interface FooterProps {
  * @returns JSX element containing the footer section
  */
 export default function Footer({ language }: FooterProps) {
+  const pub = translationData.publicTranslation[language];
 
   return (
     <footer id="footer" className="bg-black text-white py-12">
@@ -21,22 +23,22 @@ export default function Footer({ language }: FooterProps) {
           <div>
             <h3 className="text-xl font-bold mb-4">VLSystem</h3>
             <p className="text-gray-400">
-              {language === 'en' ? 'Empowering Lives Through Better Lending' : 'Paghatag Kusog sa Kinabuhi Pinaagi sa Mas Maayong Pahulam'}
+              {pub.empoweringHeader}
             </p>
           </div>
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-semibold mb-4">{language === 'en' ? 'Legal' : 'Legal'}</h4>
+            <h4 className="font-semibold mb-4">{pub.legal}</h4>
             <ul className="space-y-2">
-              <li><Link href="/privacy" className="footer-link">{language === 'en' ? 'Privacy Policy' : 'Palisiya sa Pagkapribado'}</Link></li>
-              <li><Link href="/terms" className="footer-link">{language === 'en' ? 'Terms of Service' : 'Mga Termino sa Serbisyo'}</Link></li>
+              <li><Link href="/privacy" className="footer-link">{pub.privacyPolicy}</Link></li>
+              <li><Link href="/terms" className="footer-link">{pub.termsOfService}</Link></li>
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-semibold mb-4">{language === 'en' ? 'Connect' : 'Kontaka Kami'}</h4>
+            <h4 className="font-semibold mb-4">{pub.connect}</h4>
             <div className="space-y-2">
               <p>📞 +63912023122</p>
               <p>📩 vistulalending@gmail.com</p>

@@ -8,6 +8,7 @@ import LoginModal from "../loginForm/page";
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
 import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/commonComponents/utils/formatters";
 import { useTrackerSections } from "./formArea/hooks/useTrackerSections";
+import translationData from '@/app/commonComponents/translation';
 
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -29,6 +30,7 @@ export default function ApplicationPage() {
   ];
 
   const loanProcessSteps = useMemo(() => getLoanProcessSteps(language), [language]);
+  const pub = translationData.applicationTranslation[language];
 
   useEffect(() => {
     if (!localStorage.getItem('role')) localStorage.setItem('role', 'public');
@@ -85,7 +87,7 @@ export default function ApplicationPage() {
         <button
           className="fixed bottom-6 right-6 z-50 bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-red-700"
           onClick={() => setShowInfoOverlay(!showInfoOverlay)}
-          title={language === 'en' ? 'Loan Info' : 'Impormasyon sa Pahulam'}
+          title={pub.loanInfo}
         >
           !
         </button>
@@ -106,7 +108,7 @@ export default function ApplicationPage() {
             {loanType ? (
               <div className="mb-4">
                 <h3 className="font-semibold text-gray-800 text-center mb-2">
-                  {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
+                  {pub.loanRequirements}
                 </h3>
                 <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
                   {getRequirements(loanType, language).map((req, index) => (
@@ -116,9 +118,7 @@ export default function ApplicationPage() {
               </div>
             ) : (
               <p className="text-gray-400 text-sm text-center mb-4">
-                {language === 'en'
-                  ? 'Select a loan type to view requirements'
-                  : 'Pilia ang klase sa pahulam aron makita ang mga kinahanglanon'}
+                {pub.selectLoanTypeToViewRequirements}
               </p>
             )}
           </div>
@@ -136,7 +136,7 @@ export default function ApplicationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 text-center">
-                  {language === 'en' ? 'Type of Loan' : 'Klase sa Pahulam'}
+                  {pub.typeOfLoan}
                 </h3>
               </div>
               <div className="p-4">
@@ -146,7 +146,7 @@ export default function ApplicationPage() {
                     onChange={(e) => setLoanType(e.target.value)}
                     className="w-full p-3 text-center font-medium bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   >
-                    <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
+                    <option value="">{pub.typeOfLoanPlaceholder}</option>
                     {loanTypes.map((type) => (
                       <option key={type.key} value={type.key}>{type.label}</option>
                     ))}
@@ -159,7 +159,7 @@ export default function ApplicationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 text-center">
-                  {language === 'en' ? 'Loan Requirements' : 'Mga Kinahanglanon sa Pahulam'}
+                  {pub.loanRequirements}
                 </h3>
               </div>
               <div className="p-4 overflow-y-auto">
@@ -191,7 +191,7 @@ export default function ApplicationPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-100">
               <div className="bg-gray-50 px-4 py-3 rounded-t-lg border-b border-gray-100">
                 <h3 className="font-semibold text-gray-800 text-center">
-                  {language === 'en' ? 'Application Process' : 'Proseso sa Aplikasyon'}
+                  {pub.applicationProcess}
                 </h3>
               </div>
               <div className="p-4">
@@ -223,7 +223,7 @@ export default function ApplicationPage() {
                     onChange={e => setLoanType(e.target.value)}
                     className="w-full pt-3 pb-3 text-center text-base font-medium bg-white border border-gray-200 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   >
-                    <option value="">{language === 'en' ? '-- TYPE OF LOAN --' : '-- KLASE SA PAHULAM --'}</option>
+                    <option value="">{pub.typeOfLoanPlaceholder}</option>
                     {loanTypes.map(type => (
                       <option key={type.key} value={type.key}>{type.label}</option>
                     ))}
@@ -245,9 +245,7 @@ export default function ApplicationPage() {
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
-                {language === 'en'
-                  ? 'Please select a loan type to start your application.'
-                  : 'Palihug pilia ang klase sa pahulam aron makasugod sa aplikasyon.'}
+                {pub.pleaseSelectLoanType}
               </div>
             )}
           </div>
@@ -256,7 +254,7 @@ export default function ApplicationPage() {
           {!isMobile && pageLoaded && loanType && (
             <div className="w-74 p-6 space-y-4 overflow-y-auto rounded-lg ">
               <h3 className="font-semibold text-gray-800 mb-4 text-sm">
-                {language === 'en' ? 'Progress Tracker' : 'Tracker sa Aplikasyon'}
+                {pub.progressTracker}
               </h3>
               <ul className="space-y-3 text-sm">
                 {trackerSections.map(section => {
@@ -295,7 +293,7 @@ export default function ApplicationPage() {
                             onClick={(e) => { e.stopPropagation(); setExpandedSections(prev => ({ ...prev, [section.key]: !prev[section.key] })); }}
                             className="ml-2 p-1 rounded hover:bg-gray-100"
                             aria-label={isExpanded ? 'Collapse details' : 'Expand details'}
-                            title={isExpanded ? (language === 'en' ? 'Collapse' : 'Tak-op') : (language === 'en' ? 'Expand' : 'Ipakita')}
+                            title={isExpanded ? pub.collapse : pub.expand}
                           >
                             {isExpanded ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
                           </button>
