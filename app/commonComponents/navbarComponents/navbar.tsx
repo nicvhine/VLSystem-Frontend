@@ -166,6 +166,36 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     });
   };
 
+  // Listen for profile pic updates dispatched by upload/remove hooks
+  useEffect(() => {
+    const onProfileUpdate = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        const pic = ev.detail?.profilePic;
+        if (pic) {
+          setProfilePic(pic);
+          setOriginalPic(pic);
+        } else {
+          // removed -> show initial
+          setProfilePic('');
+          setOriginalPic('');
+        }
+      } catch (err) {
+        // ignore
+      }
+    };
+    window.addEventListener('profilePicUpdated', onProfileUpdate as EventListener);
+    return () => window.removeEventListener('profilePicUpdated', onProfileUpdate as EventListener);
+  }, []);
+
+  // Final avatar (preview or saved) — empty string means no image
+  const finalAvatar = (previewPic || profilePic) || '';
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
+  useEffect(() => {
+    setAvatarLoaded(false);
+    if (!finalAvatar) setAvatarLoaded(true); // initials show immediately
+  }, [finalAvatar]);
+
 
   return (
     <div
@@ -409,11 +439,6 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                   isDropdownOpen={isDropdownOpen}
                   setIsDropdownOpen={setIsDropdownOpen}
                   profilePic={profilePic || ''}
-                  previewPic={previewPic || ''}
-                  isUploadingPic={isUploadingPic}
-                  handleFileChange={handleFileChange}
-                  handleSaveProfilePic={handleSaveProfilePic}
-                  handleCancelUpload={handleCancelUpload}
                   isEditing={isEditingProfile}
                   setIsEditing={setIsEditingProfile}
                 />

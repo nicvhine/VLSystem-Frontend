@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from "react";
+import { useParams } from 'next/navigation';
 import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import FormArea from "./formArea/formArea";
 import Navbar from "@/app/commonComponents/navbarComponents/navbar";
@@ -9,6 +10,7 @@ import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/c
 import { useTrackerSections } from "./formArea/hooks/useTrackerSections";
 
 export default function ApplicationPage() {
+  const params = useParams() as { borrowersId?: string };
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [loanType, setLoanType] = useState<string>('');
@@ -229,6 +231,8 @@ export default function ApplicationPage() {
                 loanType={loanType}
                 language={language}
                 isMobile={isMobile}
+                // Pass borrower id from the route dynamic segment so FormArea can fetch the last application
+                borrowersId={params?.borrowersId}
                 onProgressUpdate={(progress) => {
                   setFormProgress(progress.done || {});
                   setFormMissingCounts(progress.missingCounts || {});

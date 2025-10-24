@@ -14,6 +14,11 @@ interface UploadSectionProps {
   missingFields?: string[];
   requiredDocumentsCount?: number; // max allowed documents based on loan type
   showFieldErrors?: boolean;
+  // Previous upload metadata (do not contain blobs). If present, UI will show "Use previous" buttons.
+  previousProfileUrl?: string | null;
+  previousDocuments?: { fileName?: string; filePath?: string; mimeType?: string }[];
+  onUsePreviousProfile?: () => Promise<{ ok: boolean; error?: string } | void>;
+  onUsePreviousDocument?: (index: number) => Promise<{ ok: boolean; error?: string } | void>;
 }
 
 export default function UploadSection({
@@ -27,6 +32,10 @@ export default function UploadSection({
   missingFields = [],
   requiredDocumentsCount,
   showFieldErrors = false,
+  previousProfileUrl = null,
+  previousDocuments = [],
+  onUsePreviousProfile,
+  onUsePreviousDocument,
 }: UploadSectionProps) {
 
   // State for confirmation modal
@@ -102,6 +111,22 @@ export default function UploadSection({
                       ${photo2x2.length > 0 ? 'opacity-50 cursor-not-allowed file:bg-gray-100 file:text-gray-400 hover:file:bg-gray-100' : ''}`}
           />
         </div>
+
+        {/* If there is no selected photo but a previous URL exists, show it and a Use button */}
+        {!photo2x2.length && previousProfileUrl && (
+          <div className="mt-4 flex flex-col items-center w-full justify-center">
+            <img src={previousProfileUrl} alt="previous 2x2" className="w-24 h-24 object-cover rounded border shadow-sm mb-2 mx-auto" />
+            <p className="text-sm text-gray-600">Previously uploaded 2x2</p>
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={async () => { await onUsePreviousProfile?.(); }}
+                className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+              >
+                {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {photo2x2.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-4">
@@ -184,6 +209,28 @@ export default function UploadSection({
                 >
                   {language === 'en' ? 'Remove' : 'Tangtangon'}
                 </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Show previous documents metadata with Use button if no current documents */}
+        {previousDocuments && previousDocuments.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <h5 className="text-sm font-medium text-gray-700">{language === 'en' ? 'Previously uploaded documents' : 'Mga naunang dokumento'}</h5>
+            {previousDocuments.map((doc, idx) => (
+              <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-700">{doc.fileName || doc.filePath?.split('/').pop() || `Document ${idx+1}`}</span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => { await onUsePreviousDocument?.(idx); }}
+                    className="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
+                  >
+                    {language === 'en' ? 'Use' : 'Gamita'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>

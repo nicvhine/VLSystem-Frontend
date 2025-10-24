@@ -175,7 +175,7 @@ export default function LoginFormWithSMS({
                 <button
                   type="submit"
                   disabled={isLoggingIn}
-                  className="w-28 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-36 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isLoggingIn ? (
                     <ButtonContentLoading label={auth.loggingIn} />

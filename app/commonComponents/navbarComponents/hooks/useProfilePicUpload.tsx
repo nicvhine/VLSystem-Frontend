@@ -8,7 +8,7 @@ interface UseProfilePicUploadParams {
 
 export function useProfilePicUpload({ currentProfilePic, username }: UseProfilePicUploadParams) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewPic, setPreviewPic] = useState<string>(currentProfilePic);
+  const [previewPic, setPreviewPic] = useState<string | null>(currentProfilePic || null);
   const [isUploading, setIsUploading] = useState(false);
   const [isWorking, setIsWorking] = useState(false);
 
@@ -52,9 +52,12 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Upload failed');
 
-      setPreviewPic(data.profilePic.filePath);
-      localStorage.setItem('profilePic', data.profilePic.filePath);
-      window.dispatchEvent(new CustomEvent('profilePicUpdated', { detail: { profilePic: data.profilePic.filePath } }));
+  // Normalize to absolute URL so other components (navbar) can render immediately
+  const filePath = data.profilePic.filePath;
+  const fullUrl = filePath && filePath.startsWith('http') ? filePath : `${window.location.origin}${filePath}`;
+  setPreviewPic(fullUrl);
+  localStorage.setItem('profilePic', fullUrl);
+  window.dispatchEvent(new CustomEvent('profilePicUpdated', { detail: { profilePic: fullUrl } }));
 
       setSelectedFile(null);
       setIsUploading(false);
@@ -82,9 +85,10 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Remove failed');
 
-      setPreviewPic('/idPic.jpg');
-      localStorage.setItem('profilePic', '/idPic.jpg');
-      window.dispatchEvent(new CustomEvent('profilePicUpdated', { detail: { profilePic: '/idPic.jpg' } }));
+  // Clear profilePic so listeners treat this as 'no image' and render initials
+  setPreviewPic(null);
+  localStorage.removeItem('profilePic');
+  window.dispatchEvent(new CustomEvent('profilePicUpdated', { detail: { profilePic: null } }));
 
       setSelectedFile(null);
       setIsUploading(false);

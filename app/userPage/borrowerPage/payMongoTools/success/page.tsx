@@ -1,8 +1,6 @@
-import { useRouter } from "next/router";
 import Link from "next/link";
 
 export default function PaymentSuccess() {
-  const router = useRouter();
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-green-50">

@@ -27,7 +27,8 @@ interface UpdateMissingFieldsParams {
     collateralValue: number;
     collateralDescription: string;
     ownershipStatus: string;
-    appAgent: string;
+    // appAgent may be a string or an object when prefilling; accept any and coerce before use
+    appAgent: any;
     photo2x2: File[];
     uploadedFiles: File[];
     missingFields: string[];
@@ -114,8 +115,10 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
             if (!ref.relation.trim()) next.push(`Reference ${i + 1} Relationship`);
         });
 
-        // Agent
-        if (!appAgent.trim()) next.push('Agent');
+    // Agent - coerce safely to string before trimming
+    const rawAgent = appAgent ?? "";
+    const agentString = typeof rawAgent === "string" ? rawAgent : (rawAgent?.name ?? String(rawAgent));
+    if (!agentString.trim()) next.push('Agent');
 
         // Collateral
         if (requiresCollateral) {

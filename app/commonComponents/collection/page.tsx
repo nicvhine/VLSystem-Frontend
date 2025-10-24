@@ -23,7 +23,7 @@ import {
 } from "./functions";
 
 // Main collections page component
-export default function CollectionsPage({ onModalStateChange }: CollectionsPageProps) {
+export default function CollectionsPage() {
   const {
     searchQuery, setSearchQuery,
     sortBy, setSortBy,
@@ -47,7 +47,7 @@ export default function CollectionsPage({ onModalStateChange }: CollectionsPageP
     totalPayments, completedPayments, collectionRate,
     overallTotalCollected, overallTotalTarget, overallTargetAchieved,
     overallTotalPayments, overallCompletedPayments, overallCollectionRate
-  } = useCollectionPage(onModalStateChange);
+  } = useCollectionPage();
 
   const [paymentLoading, setPaymentLoading] = React.useState(false); 
   const [loading, setLoading] = useState(false);

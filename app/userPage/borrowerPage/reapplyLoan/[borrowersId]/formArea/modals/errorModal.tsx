@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface ModalProps {
     message: string;
@@ -20,6 +21,15 @@ export function ErrorModal({ message, onClose }: ModalProps) {
         setTimeout(() => onClose(), 150);
     };
 
+    // lock body scroll while modal is open to prevent background interaction
+    useEffect(() => {
+        const previous = document.body.style.overflow;
+        if (animateIn) document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previous;
+        };
+    }, [animateIn]);
+
     let header = "Error";
     if (message.toLowerCase().includes("agent") || message.toLowerCase().includes("does not exist")) {
         header = "Agent Selection Error";
@@ -29,12 +39,16 @@ export function ErrorModal({ message, onClose }: ModalProps) {
         header = "Document Upload Error";
     }
 
-    return (
+    return createPortal(
         <div
-            className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+            className={`fixed inset-0 bg-black/40 backdrop-blur-lg flex items-center justify-center px-4 transition-opacity duration-150 ${
                 animateIn ? 'opacity-100' : 'opacity-0'
             }`}
             onClick={handleClose}
+            // ensure strong backdrop blur on all browsers and force on-top stacking
+            style={{ zIndex: 2147483647, WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
+            aria-modal="true"
+            role="dialog"
         >
             <div
                 className={`w-full max-w-sm rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
@@ -51,7 +65,8 @@ export function ErrorModal({ message, onClose }: ModalProps) {
                     >Close</button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
@@ -68,12 +83,24 @@ export function DocumentUploadErrorModal({ message, onClose }: ModalProps) {
         setTimeout(() => onClose(), 150);
     };
 
-    return (
+    // lock body scroll while modal is open to prevent background interaction
+    useEffect(() => {
+        const previous = document.body.style.overflow;
+        if (animateIn) document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previous;
+        };
+    }, [animateIn]);
+
+    return createPortal(
         <div
-            className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+            className={`fixed inset-0 bg-black/40 backdrop-blur-lg flex items-center justify-center px-4 transition-opacity duration-150 ${
                 animateIn ? 'opacity-100' : 'opacity-0'
             }`}
             onClick={handleClose}
+            style={{ zIndex: 2147483647, WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}
+            aria-modal="true"
+            role="dialog"
         >
             <div
                 className={`w-full max-w-sm rounded-lg bg-white p-6 text-black shadow-lg transition-all duration-150 ${
@@ -90,6 +117,7 @@ export function DocumentUploadErrorModal({ message, onClose }: ModalProps) {
                     >Close</button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
