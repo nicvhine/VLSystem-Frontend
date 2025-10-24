@@ -488,6 +488,8 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             missingFields={missingFields} requiredDocumentsCount={requiredDocumentsCount}
             previousProfileUrl={prevProfilePicUrl}
             previousDocuments={prevDocumentsMeta}
+            removePreviousProfile={() => setPrevProfilePicUrl(null)}
+            removePreviousDocument={(index: number) => setPrevDocumentsMeta(prev => prev.filter((_, i) => i !== index))}
             onUsePreviousProfile={handleUsePreviousProfile}
             onUsePreviousDocument={handleUsePreviousDocument}
           />
