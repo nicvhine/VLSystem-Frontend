@@ -19,6 +19,8 @@ interface UploadSectionProps {
   previousDocuments?: { fileName?: string; filePath?: string; mimeType?: string }[];
   onUsePreviousProfile?: () => Promise<{ ok: boolean; error?: string } | void>;
   onUsePreviousDocument?: (index: number) => Promise<{ ok: boolean; error?: string } | void>;
+  // whether the previous profile pic can be reused (within allowed timeframe)
+  allowUsePreviousProfile?: boolean;
 }
 
 export default function UploadSection({
@@ -36,6 +38,7 @@ export default function UploadSection({
   previousDocuments = [],
   onUsePreviousProfile,
   onUsePreviousDocument,
+  allowUsePreviousProfile = true,
 }: UploadSectionProps) {
 
   // State for confirmation modal
@@ -118,13 +121,30 @@ export default function UploadSection({
             <img src={previousProfileUrl} alt="previous 2x2" className="w-24 h-24 object-cover rounded border shadow-sm mb-2 mx-auto" />
             <p className="text-sm text-gray-600">Previously uploaded 2x2</p>
             <div className="mt-2 flex gap-2">
-              <button
-                onClick={async () => { await onUsePreviousProfile?.(); }}
-                className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
-              >
-                {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
-              </button>
+              {allowUsePreviousProfile ? (
+                <button
+                  onClick={async () => { await onUsePreviousProfile?.(); }}
+                  className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+                >
+                  {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
+                </button>
+              ) : (
+                <button
+                  disabled
+                  title={language === 'en' ? 'Previous photo older than 6 months' : 'Ang naunang litrato lapas na sa 6 ka bulan'}
+                  className="bg-gray-200 text-gray-500 px-3 py-1 rounded text-xs cursor-not-allowed"
+                >
+                  {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
+                </button>
+              )}
             </div>
+            {!allowUsePreviousProfile && (
+              <p className="text-xs text-red-600 mt-2 text-center">
+                {language === 'en'
+                  ? 'Previous 2x2 is older than 6 months — please upload an updated photo.'
+                  : 'Ang naunang 2x2 lapas na sa 6 ka bulan — palihug i-upload ang bag-ong litrato.'}
+              </p>
+            )}
           </div>
         )}
 

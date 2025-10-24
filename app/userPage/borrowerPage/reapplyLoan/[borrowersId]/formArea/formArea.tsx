@@ -120,6 +120,8 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   // Previous uploads metadata (do not auto-fetch blobs). User must opt-in to "Use previous".
   const [prevProfilePicUrl, setPrevProfilePicUrl] = useState<string | null>(null);
   const [prevDocumentsMeta, setPrevDocumentsMeta] = useState<any[]>([]);
+  // Whether previous profile pic is allowed to be reused (only allowed within 6 months)
+  const [allowUsePrevProfile, setAllowUsePrevProfile] = useState<boolean>(false);
 
   // Compute section progress
   useSectionProgress({
@@ -225,10 +227,14 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
 
   // Do NOT prefill loan selection or purpose for reapply — borrower should choose these anew.
 
-        // Do NOT auto-fetch previous file blobs. Instead store metadata and let the user opt-in
-        // to "Use previous" which will fetch the blob on demand.
-        setPrevProfilePicUrl(latest.profilePic || null);
-        setPrevDocumentsMeta(Array.isArray(latest.documents) ? latest.documents : []);
+  // Do NOT auto-fetch previous file blobs. Instead store metadata and let the user opt-in
+  // to "Use previous" which will fetch the blob on demand.
+  setPrevProfilePicUrl(latest.profilePic || null);
+  setPrevDocumentsMeta(Array.isArray(latest.documents) ? latest.documents : []);
+  // Determine whether previous profile pic can be reused: allow only if within 6 months
+  const appliedDate = latest.appliedDate || latest.applicationDate || latest.appliedAt || latest.createdAt || latest.submittedAt;
+  const isOld = isMoreThanMonthsAgo(appliedDate, 6);
+  setAllowUsePrevProfile(!isOld);
 
         setIsPrefilled(true);
       } catch (err) {
@@ -285,6 +291,17 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     } catch (err: any) {
       return { ok: false as const, error: err.message || String(err) };
     }
+  }
+
+  // Helper: returns true if the provided date string is more than `months` months ago.
+  // If dateStr is missing or invalid we treat it as old (require new upload).
+  function isMoreThanMonthsAgo(dateStr: string | undefined | null, months: number) {
+    if (!dateStr) return true;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return true;
+    const cutoff = new Date(d);
+    cutoff.setMonth(cutoff.getMonth() + months);
+    return new Date() > cutoff;
   }
 
   // Called by UploadSection when user clicks "Use previous" for profile pic
@@ -426,6 +443,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             missingFields={missingFields} requiredDocumentsCount={requiredDocumentsCount}
             previousProfileUrl={prevProfilePicUrl}
             previousDocuments={prevDocumentsMeta}
+            allowUsePreviousProfile={allowUsePrevProfile}
             onUsePreviousProfile={handleUsePreviousProfile}
             onUsePreviousDocument={handleUsePreviousDocument}
           />
