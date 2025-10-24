@@ -18,6 +18,8 @@ interface UploadSectionProps {
   previousDocuments?: { fileName?: string; filePath?: string; mimeType?: string }[];
   onUsePreviousProfile?: (fileUrl: string) => Promise<{ ok: boolean; error?: string } | void>;
   onUsePreviousDocument?: (index: number) => Promise<{ ok: boolean; error?: string } | void>;
+  removePreviousProfile?: () => void;
+  removePreviousDocument?: (index: number) => void;
   allowUsePreviousProfile?: boolean;
 }
 
@@ -36,6 +38,8 @@ export default function UploadSection({
   previousDocuments = [],
   onUsePreviousProfile,
   onUsePreviousDocument,
+  removePreviousProfile,
+  removePreviousDocument,
   allowUsePreviousProfile = true,
 }: UploadSectionProps) {
 
@@ -60,7 +64,7 @@ export default function UploadSection({
 
   // Confirmation modal
   const [showConfirm, setShowConfirm] = useState(false);
-  const [confirmType, setConfirmType] = useState<'profile' | 'document' | null>(null);
+  const [confirmType, setConfirmType] = useState<'profile' | 'document' | 'prevProfile' | 'prevDocument' | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string>("");
 
@@ -71,6 +75,29 @@ export default function UploadSection({
       language === 'en'
         ? 'Are you sure you want to remove this photo?'
         : 'Sigurado ka nga gusto nimo tangtangon ang litrato?'
+    );
+    setShowConfirm(true);
+  };
+
+  // Remove handlers for previous items (metadata-only)
+  const handleRemovePrevProfile = () => {
+    setRemoveIndex(null);
+    setConfirmType('prevProfile');
+    setConfirmMessage(
+      language === 'en'
+        ? 'Remove the previous 2x2 preview? This will hide the previously uploaded photo.'
+        : 'Tangtanga ang naunang 2x2? Kini magtago sa naunang litrato.'
+    );
+    setShowConfirm(true);
+  };
+
+  const handleRemovePrevDocument = (index: number) => {
+    setRemoveIndex(index);
+    setConfirmType('prevDocument');
+    setConfirmMessage(
+      language === 'en'
+        ? 'Remove this previous document from the list?'
+        : 'Tangtanga ba kini nga naunang dokumento sa listahan?'
     );
     setShowConfirm(true);
   };
@@ -87,9 +114,17 @@ export default function UploadSection({
   };
 
   const handleConfirmRemove = () => {
-    if (removeIndex === null || !confirmType) return;
-    if (confirmType === 'profile') removeProfile(removeIndex);
-    if (confirmType === 'document') removeDocument(removeIndex);
+    if (!confirmType) return;
+    if (confirmType === 'profile') {
+      if (removeIndex !== null) removeProfile(removeIndex);
+    } else if (confirmType === 'document') {
+      if (removeIndex !== null) removeDocument(removeIndex);
+    } else if (confirmType === 'prevProfile') {
+      removePreviousProfile?.();
+    } else if (confirmType === 'prevDocument') {
+      if (removeIndex !== null) removePreviousDocument?.(removeIndex);
+    }
+
     setShowConfirm(false);
     setTimeout(() => {
       setRemoveIndex(null);
@@ -146,7 +181,7 @@ export default function UploadSection({
             <p className="mt-2 text-sm text-gray-600">
               {language === "en" ? "Previously uploaded 2x2" : "Naunang 2x2 nga litrato"}
             </p>
-            <div className="mt-2">
+            <div className="mt-2 flex items-center gap-2">
               {allowUsePreviousProfile ? (
                 <button
                   onClick={async () => {
@@ -166,6 +201,13 @@ export default function UploadSection({
                   {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
                 </button>
               )}
+              <button
+                onClick={handleRemovePrevProfile}
+                className="bg-red-500 text-white px-3 py-1 rounded text-xs hover:bg-red-600"
+                title={language === 'en' ? 'Remove previous preview' : 'Tangtanga ang naunang preview'}
+              >
+                {language === 'en' ? 'Remove' : 'Tangtangon'}
+              </button>
             </div>
           </div>
         )}
@@ -289,6 +331,13 @@ export default function UploadSection({
                     className="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
                   >
                     {language === 'en' ? 'Use' : 'Gamita'}
+                  </button>
+                  <button
+                    onClick={() => handleRemovePrevDocument(idx)}
+                    className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                    title={language === 'en' ? 'Remove previous document' : 'Tangtanga ang naunang dokumento'}
+                  >
+                    {language === 'en' ? 'Remove' : 'Tangtangon'}
                   </button>
                 </div>
               </div>
