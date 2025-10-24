@@ -12,14 +12,12 @@ interface UploadSectionProps {
   removeProfile: (index: number) => void;
   removeDocument: (index: number) => void;
   missingFields?: string[];
-  requiredDocumentsCount?: number; // max allowed documents based on loan type
+  requiredDocumentsCount?: number;
   showFieldErrors?: boolean;
-  // Previous upload metadata (do not contain blobs). If present, UI will show "Use previous" buttons.
-  previousProfileUrl?: string | null;
+  previousProfileUrl?: string | { fileName?: string; filePath?: string; mimeType?: string } | null;
   previousDocuments?: { fileName?: string; filePath?: string; mimeType?: string }[];
-  onUsePreviousProfile?: () => Promise<{ ok: boolean; error?: string } | void>;
+  onUsePreviousProfile?: (fileUrl: string) => Promise<{ ok: boolean; error?: string } | void>;
   onUsePreviousDocument?: (index: number) => Promise<{ ok: boolean; error?: string } | void>;
-  // whether the previous profile pic can be reused (within allowed timeframe)
   allowUsePreviousProfile?: boolean;
 }
 
@@ -41,13 +39,31 @@ export default function UploadSection({
   allowUsePreviousProfile = true,
 }: UploadSectionProps) {
 
-  // State for confirmation modal
+  // ✅ Normalize profile picture (can be string or object)
+  const normalizedPrevUrl = (() => {
+    if (!previousProfileUrl) return null;
+
+    if (typeof previousProfileUrl === "object") {
+      // if filePath exists, it’s the real Cloudinary URL
+      return previousProfileUrl.filePath || null;
+    }
+
+    if (typeof previousProfileUrl === "string") {
+      // fallback if backend accidentally sends string
+      return previousProfileUrl.startsWith("http")
+        ? previousProfileUrl
+        : null;
+    }
+
+    return null;
+  })();
+
+  // Confirmation modal
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmType, setConfirmType] = useState<'profile' | 'document' | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
   const [confirmMessage, setConfirmMessage] = useState<string>("");
 
-  // Wrapped remove handlers
   const handleRemoveProfile = (index: number) => {
     setRemoveIndex(index);
     setConfirmType('profile');
@@ -58,6 +74,7 @@ export default function UploadSection({
     );
     setShowConfirm(true);
   };
+
   const handleRemoveDocument = (index: number) => {
     setRemoveIndex(index);
     setConfirmType('document');
@@ -71,12 +88,8 @@ export default function UploadSection({
 
   const handleConfirmRemove = () => {
     if (removeIndex === null || !confirmType) return;
-    if (confirmType === 'profile') {
-      removeProfile(removeIndex);
-    } else if (confirmType === 'document') {
-      removeDocument(removeIndex);
-    }
-    // Close modal first, then clear state after animation
+    if (confirmType === 'profile') removeProfile(removeIndex);
+    if (confirmType === 'document') removeDocument(removeIndex);
     setShowConfirm(false);
     setTimeout(() => {
       setRemoveIndex(null);
@@ -85,7 +98,6 @@ export default function UploadSection({
   };
 
   const handleCancelRemove = () => {
-    // Close modal first, then clear state after animation
     setShowConfirm(false);
     setTimeout(() => {
       setRemoveIndex(null);
@@ -96,16 +108,22 @@ export default function UploadSection({
   return (
     <div>
       {/* 2x2 Upload */}
-  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
         </h4>
-  <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${(showFieldErrors && missingFields.includes('2x2 Photo')) ? 'border-red-500' : 'border-gray-200'}`}> 
+
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${
+            showFieldErrors && missingFields.includes('2x2 Photo')
+              ? 'border-red-500'
+              : 'border-gray-200'
+          }`}
+        >
           <input
             type="file"
             accept=".jpg,.jpeg,.png"
-            // Only one 2x2 photo allowed
             onChange={handleProfileChange}
             disabled={photo2x2.length > 0}
             className={`block w-full text-sm text-gray-600 cursor-pointer
@@ -115,15 +133,27 @@ export default function UploadSection({
           />
         </div>
 
-        {/* If there is no selected photo but a previous URL exists, show it and a Use button */}
-        {!photo2x2.length && previousProfileUrl && (
-          <div className="mt-4 flex flex-col items-center w-full justify-center">
-            <img src={previousProfileUrl} alt="previous 2x2" className="w-24 h-24 object-cover rounded border shadow-sm mb-2 mx-auto" />
-            <p className="text-sm text-gray-600">Previously uploaded 2x2</p>
-            <div className="mt-2 flex gap-2">
+        {/* Show previous photo if no new one selected */}
+        {!photo2x2.length && normalizedPrevUrl && (
+          <div className="mt-6 flex flex-col items-center">
+            <div className="w-28 h-28 rounded-full border border-gray-200 shadow-sm overflow-hidden">
+              <img
+                src={normalizedPrevUrl}
+                alt="Previous 2x2"
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <p className="mt-2 text-sm text-gray-600">
+              {language === "en" ? "Previously uploaded 2x2" : "Naunang 2x2 nga litrato"}
+            </p>
+            <div className="mt-2">
               {allowUsePreviousProfile ? (
                 <button
-                  onClick={async () => { await onUsePreviousProfile?.(); }}
+                  onClick={async () => {
+                    if (normalizedPrevUrl) {
+                      await onUsePreviousProfile?.(normalizedPrevUrl);
+                    }
+                  }}
                   className="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
                 >
                   {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
@@ -131,20 +161,12 @@ export default function UploadSection({
               ) : (
                 <button
                   disabled
-                  title={language === 'en' ? 'Previous photo older than 6 months' : 'Ang naunang litrato lapas na sa 6 ka bulan'}
                   className="bg-gray-200 text-gray-500 px-3 py-1 rounded text-xs cursor-not-allowed"
                 >
                   {language === 'en' ? 'Use previous' : 'Gamita ang nauna'}
                 </button>
               )}
             </div>
-            {!allowUsePreviousProfile && (
-              <p className="text-xs text-red-600 mt-2 text-center">
-                {language === 'en'
-                  ? 'Previous 2x2 is older than 6 months — please upload an updated photo.'
-                  : 'Ang naunang 2x2 lapas na sa 6 ka bulan — palihug i-upload ang bag-ong litrato.'}
-              </p>
-            )}
           </div>
         )}
 
@@ -176,24 +198,37 @@ export default function UploadSection({
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'I-upload ang mga Dokumento'}
         </h4>
-  <div className={`border-2 border-dashed rounded-lg p-6 hover:border-red-300 transition-colors ${(showFieldErrors && missingFields.includes('Document Upload')) ? 'border-red-500' : 'border-gray-200'}`}> 
+
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 hover:border-red-300 transition-colors ${
+            showFieldErrors && missingFields.includes('Document Upload')
+              ? 'border-red-500'
+              : 'border-gray-200'
+          }`}
+        >
           <div className="flex items-center gap-3 w-full">
-            {/* Hidden input with custom trigger to control dynamic message */}
             <input
               id="documents-upload"
               type="file"
               multiple
               accept=".pdf,.jpg,.jpeg,.png"
               onChange={handleFileChange}
-              disabled={typeof requiredDocumentsCount === 'number' ? (documents.length >= requiredDocumentsCount) : false}
+              disabled={
+                typeof requiredDocumentsCount === 'number'
+                  ? documents.length >= requiredDocumentsCount
+                  : false
+              }
               className="sr-only"
             />
             <label
               htmlFor="documents-upload"
               className={`inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors
-                ${typeof requiredDocumentsCount === 'number' && documents.length >= requiredDocumentsCount
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-red-50 text-red-600 hover:bg-red-100'}`}
+                ${
+                  typeof requiredDocumentsCount === 'number' &&
+                  documents.length >= requiredDocumentsCount
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-50 text-red-600 hover:bg-red-100'
+                }`}
             >
               Choose Files
             </label>
@@ -234,18 +269,23 @@ export default function UploadSection({
           </div>
         )}
 
-        {/* Show previous documents metadata with Use button if no current documents */}
         {previousDocuments && previousDocuments.length > 0 && (
           <div className="mt-4 space-y-2">
-            <h5 className="text-sm font-medium text-gray-700">{language === 'en' ? 'Previously uploaded documents' : 'Mga naunang dokumento'}</h5>
+            <h5 className="text-sm font-medium text-gray-700">
+              {language === 'en'
+                ? 'Previously uploaded documents'
+                : 'Mga naunang dokumento'}
+            </h5>
             {previousDocuments.map((doc, idx) => (
               <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-700">{doc.fileName || doc.filePath?.split('/').pop() || `Document ${idx+1}`}</span>
+                  <span className="text-sm text-gray-700">
+                    {doc.fileName || doc.filePath?.split('/').pop() || `Document ${idx + 1}`}
+                  </span>
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={async () => { await onUsePreviousDocument?.(idx); }}
+                    onClick={async () => await onUsePreviousDocument?.(idx)}
                     className="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
                   >
                     {language === 'en' ? 'Use' : 'Gamita'}
@@ -257,7 +297,6 @@ export default function UploadSection({
         )}
       </div>
 
-      {/* Confirmation Modal for Remove (top-level so it always renders) */}
       <ConfirmModal
         show={showConfirm}
         message={confirmMessage}
