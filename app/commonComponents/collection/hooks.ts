@@ -79,8 +79,16 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
         if (role === "collector" && currentCollector) {
           url += `?collector=${encodeURIComponent(currentCollector)}`;
         }
-
-        const response = await fetch(url);
+  
+        const token = localStorage.getItem("token");
+        const response = await fetch(url, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+  
+        if (!response.ok) throw new Error("Unauthorized or failed request");
+  
         const data = await response.json();
         setCollections(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -90,9 +98,10 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
         setLoading(false);
       }
     };
-
+  
     fetchCollections();
   }, [role, currentCollector]);
+  
 
   // Animate Payment Modal
   useEffect(() => {

@@ -15,10 +15,19 @@ export default function PaymentSuccess({ params }: { params: { referenceNumber: 
     setPhase("processing");
     setMsg("Finalizing your payment... Please wait.");
     try {
-      const res = await fetch(`http://localhost:3001/payments/${referenceNumber}/paymongo/success`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `http://localhost:3001/payments/${referenceNumber}/paymongo/success`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+
       await res.json().catch(() => undefined);
       if (!res.ok) throw new Error("Failed to finalize payment");
       setPhase("success");

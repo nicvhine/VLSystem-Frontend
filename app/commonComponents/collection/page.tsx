@@ -10,7 +10,7 @@ import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { formatCurrency } from "../utils/formatters";
-import { CollectionsPageProps, Collection } from "../utils/Types/collection";
+import {  Collection } from "../utils/Types/collection";
 import Filter from "../utils/sortAndSearch";
 import {
   handleSaveNote,
@@ -174,6 +174,7 @@ export default function CollectionsPage() {
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l9}</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l42}</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l41}</th>
+                  {role !== "collector" && <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l21}</th>}
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l15}</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l44}</th>
                   {role === "collector" && <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l16}</th>}
@@ -193,6 +194,7 @@ export default function CollectionsPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodBalance)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{col.collector}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                         col.status === "Paid" ? "bg-green-100 text-green-800" :

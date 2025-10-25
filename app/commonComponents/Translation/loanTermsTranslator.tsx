@@ -23,6 +23,7 @@ const loanTermsTranslator = {
       l18: "Phone Number",
       l19: "Handled Loans",
       l20: "Commission",
+      l21: "Collector",
   
       // Page Headers
       Loans: "Loans",
@@ -90,6 +91,7 @@ const loanTermsTranslator = {
       l18: "Numero sa Telepono",
       l19: "Giatiman nga Pahulam",
       l20: "Komisyon",
+      l21: "Kolektor",
   
       // Page Headers
       Loans: "Mga Pahulam",

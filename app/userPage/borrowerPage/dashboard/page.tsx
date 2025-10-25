@@ -13,7 +13,6 @@ import useBorrowerDashboard from './hooks';
 
 // Cards
 import LoanDetailsCard from './cards/loanDetailsCard';
-import PaymentHistoryCard from './cards/paymentHistoryCard';
 import PaymentProgressCard from './cards/paymentProgressCard';
 import UpcomingCollectionCard from './cards/upcomingCard';
 import PaidCollectionCard from './cards/paidCollectionCard';

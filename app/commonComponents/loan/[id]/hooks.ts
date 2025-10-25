@@ -14,7 +14,15 @@ export const useLoanDetails = (id: string) => {
   useEffect(() => {
     const fetchLoanDetails = async () => {
       try {
-        const response = await fetch(`${API_URL}/${id}`);
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          console.error("Error fetching loan:", errData);
+          return;
+        }
         const data = await response.json();
         setLoan(data);
       } catch (error) {
@@ -22,7 +30,7 @@ export const useLoanDetails = (id: string) => {
       } finally {
         setLoading(false);
       }
-    };
+    };    
     fetchLoanDetails();
   }, [id]);
 
