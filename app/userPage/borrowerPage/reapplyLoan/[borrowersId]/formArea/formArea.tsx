@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { useState, useEffect } from "react";
 import { ButtonDotsLoading, SubmitProgressModal } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
+
+import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
+import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
+import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
 
 import BasicInformation from "./sections/basicInformation";
 import SourceOfIncome from "./sections/sourceOfIncome";
@@ -19,6 +23,7 @@ import { useUpdateMissingFields } from "./hooks/updateMissingFields";
 import { useFormSubmit } from "./hooks/useFormSubmit";
 import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function";
 import { useSectionProgress } from "./hooks/useSectionProgress";
+import { usePrefillAndUploads } from "./hooks/usePrefill";
 
 interface FormAreaProps {
   loanType: string;
@@ -30,7 +35,6 @@ interface FormAreaProps {
     missingDetails: Record<string, string[]>;
   }) => void;
   borrowersId?: string | undefined;
-  onShowTermsModal?: () => void;
 }
 
 interface ProfilePicData {
@@ -41,7 +45,7 @@ interface ProfilePicData {
   url?: string;
 }
 
-export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId, onShowTermsModal }, ref) {
+export default function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId }: FormAreaProps) {
   const COMPANY_NAME = "Vistula Lending Corporation";
   const TERMS_VERSION = "1.0-draft";
   const PRIVACY_VERSION = "1.0-draft";
@@ -135,6 +139,13 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
     onProgressUpdate,
   });
 
+  // Terms/Privacy Modal
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showTosContent, setShowTosContent] = useState(false);
+  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
+  const [tosRead, setTosRead] = useState(false);
+  const [privacyRead, setPrivacyRead] = useState(false);
+
   // Document upload error modal
   const [showDocumentUploadErrorModal, setShowDocumentUploadErrorModal] = useState(false);
   const [documentUploadError, setDocumentUploadError] = useState("");
@@ -157,25 +168,19 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
     API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language
   });
 
-  // Expose submission method to parent component
-  useImperativeHandle(ref, () => ({
-    submitForm: async () => {
-      try {
-        const result = await performSubmit();
-        if (result.ok && result.data.application?.applicationId) {
-          setLoanId(result.data.application.applicationId);
-          setShowSuccessModal(true);
-        } else {
-          setErrorMessage(result.error?.message || "Submission failed");
-          setShowErrorModal(true);
-        }
-      } catch (err: any) {
-        setErrorMessage(err.message || "Submission failed");
-        setShowErrorModal(true);
-      }
-    }
-  }));
-
+  const { handleUsePreviousProfile, handleUsePreviousDocument } = usePrefillAndUploads({
+    borrowersId,
+    loanTypeParam,
+    setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
+    setAppSpouseName, setAppSpouseOccupation, setAppAddress,
+    setSourceOfIncome, setAppTypeBusiness, setAppBusinessName, setAppDateStarted,
+    setAppBusinessLoc, setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
+    setAppReferences, setAppAgent,
+    setCollateralType, setCollateralValue, setCollateralDescription, setOwnershipStatus,
+    setPrevProfilePicUrl, setPrevDocumentsMeta, setIsPrefilled,
+    setDocumentUploadError, setShowDocumentUploadErrorModal,
+    setPhoto2x2, setUploadedFiles,
+  });
   useEffect(() => {
     // appAgent can be a string or object (from prefill). Coerce to string safely before trim.
     const rawAgent = appAgent ?? "";
@@ -187,184 +192,6 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
     if (agentString.trim()) setAgentMissingError(false);
   }, [appAgent]);
 
-  // Fetch latest application for this borrower and prefill when loan type is selected
-  useEffect(() => {
-    async function fetchAndPrefill() {
-      if (!borrowersId) return;
-      try {
-        const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const latest = data?.latestApplication;
-        if (!latest) {
-          setIsPrefilled(false);
-          return;
-        }
-
-        // Map backend application fields to form state
-        setAppName(latest.appName || "");
-        setAppDob(latest.appDob || "");
-        setAppContact(latest.appContact || "");
-        setAppEmail(latest.appEmail || "");
-        setAppMarital(latest.appMarital || "");
-        setAppChildren(latest.appChildren || 0);
-        setAppSpouseName(latest.appSpouseName || "");
-        setAppSpouseOccupation(latest.appSpouseOccupation || "");
-        setAppAddress(latest.appAddress || "");
-
-        setSourceOfIncome(latest.sourceOfIncome || "");
-        setAppTypeBusiness(latest.appTypeBusiness || "");
-        setAppBusinessName(latest.appBusinessName || "");
-        setAppDateStarted(latest.appDateStarted || "");
-        setAppBusinessLoc(latest.appBusinessLoc || "");
-        setAppMonthlyIncome(latest.appMonthlyIncome || 0);
-        setAppOccupation(latest.appOccupation || "");
-        setAppEmploymentStatus(latest.appEmploymentStatus || "");
-        setAppCompanyName(latest.appCompanyName || "");
-
-        setAppReferences(latest.appReferences || [
-          { name: "", contact: "", relation: "" },
-          { name: "", contact: "", relation: "" },
-          { name: "", contact: "", relation: "" },
-        ]);
-
-        // Normalize prefetched agent: backend may return an agent object or an agentId string.
-        // AgentDropdown expects an agentId string as the select value. Ensure we set that.
-        const resolvedAgent = latest.appAgent && typeof latest.appAgent === "object"
-          ? (latest.appAgent.agentId ?? "")
-          : (typeof latest.appAgent === "string" ? latest.appAgent : "");
-        setAppAgent(resolvedAgent);
-
-        setCollateralType(latest.collateralType || "");
-        setCollateralValue(latest.collateralValue || 0);
-        setCollateralDescription(latest.collateralDescription || "");
-        setOwnershipStatus(latest.ownershipStatus || "");
-
-  // Do NOT prefill loan selection or purpose for reapply — borrower should choose these anew.
-
-        // Do NOT auto-fetch previous file blobs. Instead store metadata and let the user opt-in
-        // to "Use previous" which will fetch the blob on demand.
-        let resolvedUrl: string | null = null;
-      if (latest.profilePic) {
-        if (typeof latest.profilePic === "string") {
-          resolvedUrl = latest.profilePic;
-        } else if (typeof latest.profilePic === "object") {
-          const filePath = latest.profilePic.filePath;
-
-          if (typeof filePath === "string") {
-            resolvedUrl = filePath;
-          } else if (
-            filePath &&
-            typeof filePath === "object" &&
-            typeof filePath.url === "string"
-          ) {
-            resolvedUrl = filePath.url;
-          } else if (latest.profilePic.secure_url) {
-            resolvedUrl = latest.profilePic.secure_url;
-          }
-        }
-      }
-      
-        // store resolved profile pic URL (may be null)
-        setPrevProfilePicUrl(resolvedUrl);
-        setPrevDocumentsMeta(Array.isArray(latest.documents) ? latest.documents : []);
-
-        setIsPrefilled(true);
-      } catch (err) {
-        console.error("Error fetching latest application for prefill:", err);
-      }
-    }
-
-    // Trigger prefill when loan type param changes (borrower selected a loan type)
-    if (loanTypeParam) fetchAndPrefill();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loanTypeParam, borrowersId]);
-
-  // Helper: fetch image blob, validate (size + optional square), and return File
-  async function fetchImageAsFileWithValidation(url: string, opts?: { maxBytes?: number; requireSquare?: boolean }) {
-    const { maxBytes = 2 * 1024 * 1024, requireSquare = true } = opts || {};
-    try {
-      // Try fetching including credentials in case the file URL requires auth cookies
-      let resp: Response | null = null;
-      try {
-        resp = await fetch(url, { credentials: 'include' });
-      } catch (e) {
-        // network error (CORS or other). Try a plain fetch as a fallback.
-        try {
-          resp = await fetch(url);
-        } catch (e2) {
-          throw new Error('Network error while fetching image (possible CORS or auth required)');
-        }
-      }
-
-      if (!resp || !resp.ok) throw new Error('Failed to fetch image (non-200 response)');
-      const blob = await resp.blob();
-      if (blob.size > maxBytes) throw new Error('Image too large');
-
-      // quick sanity: ensure we actually received an image
-      if (!blob.type.startsWith('image/')) throw new Error('Fetched resource is not an image');
-
-      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-        const i = new Image();
-        const objectUrl = URL.createObjectURL(blob);
-        i.onload = () => { URL.revokeObjectURL(objectUrl); resolve(i); };
-        i.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('image-load-error')); };
-        i.src = objectUrl;
-      });
-      if (requireSquare && img.width !== img.height) throw new Error('Image must be square');
-
-      let filename = url.split('/').pop() || 'photo2x2';
-      // ensure file has an extension matching the mime type
-      if (!filename.includes('.') && blob.type) {
-        const ext = blob.type.split('/')[1] || 'jpg';
-        filename = `${filename}.${ext}`;
-      }
-      const file = new File([blob], filename, { type: blob.type });
-      return { ok: true as const, file };
-    } catch (err: any) {
-      return { ok: false as const, error: err.message || String(err) };
-    }
-  }
-
-  // Called by UploadSection when user clicks "Use previous" for profile pic
-  async function handleUsePreviousProfile() {
-    if (!prevProfilePicUrl) return { ok: false, error: 'No previous profile URL' };
-    const res = await fetchImageAsFileWithValidation(prevProfilePicUrl);
-    if (res.ok) {
-      setPhoto2x2([res.file]);
-      // remove previous preview to reflect it's been consumed
-      setPrevProfilePicUrl(null);
-      return { ok: true };
-    } else {
-      setDocumentUploadError(res.error || 'Failed to fetch previous 2x2');
-      setShowDocumentUploadErrorModal(true);
-      return res;
-    }
-  }
-  
-
-  // Called by UploadSection when user clicks "Use" for a previous document at index
-  async function handleUsePreviousDocument(index: number) {
-    const doc = prevDocumentsMeta[index];
-    if (!doc || !doc.filePath) return { ok: false, error: 'No previous document' };
-    try {
-      const resp = await fetch(doc.filePath);
-      if (!resp.ok) throw new Error('Failed to fetch document');
-      const blob = await resp.blob();
-      const name = doc.fileName || (doc.filePath.split('/').pop() || 'document');
-      const type = doc.mimeType || blob.type || 'application/octet-stream';
-      const file = new File([blob], name, { type });
-      setUploadedFiles(prev => [...prev, file]);
-      // remove from previous meta list
-      setPrevDocumentsMeta(prev => prev.filter((_, i) => i !== index));
-      return { ok: true };
-    } catch (err: any) {
-      console.warn('Failed to fetch previous document', err);
-      setDocumentUploadError(err.message || 'Failed to fetch document');
-      setShowDocumentUploadErrorModal(true);
-      return { ok: false, error: err.message || String(err) };
-    }
-  }
 
   return (
     <div className="relative max-w-4xl mx-auto py-0">
@@ -491,7 +318,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
               setShowErrorModal(true);
               return;
             }
-            onShowTermsModal?.();
+            setShowTermsModal(true);
           }}
           disabled={isSubmitting}
           className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -501,6 +328,48 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
         </button>
       </div>
 
+      {/* Terms / Privacy Modals */}
+      {showTermsModal && (
+        <TermsGateModal
+          language={language}
+          onCancel={() => setShowTermsModal(false)}
+          onOpenTos={() => setShowTosContent(true)}
+          onOpenPrivacy={() => setShowPrivacyContent(true)}
+          tosRead={tosRead} privacyRead={privacyRead}
+          onAccept={async () => {
+            setShowTermsModal(false);
+            try {
+              const result = await performSubmit();
+              if (result.ok && result.data.application?.applicationId) {
+                setLoanId(result.data.application.applicationId);
+                setShowSuccessModal(true);
+              } else {
+                setErrorMessage(result.error?.message || "Submission failed");
+                setShowErrorModal(true);
+              }
+            } catch (err: any) {
+              setErrorMessage(err.message || "Submission failed");
+              setShowErrorModal(true);
+            }
+          }}
+        />
+      )}
+
+      {showTosContent && (
+        <TermsContentModal
+          language={language}
+          onClose={() => setShowTosContent(false)}
+          onReadComplete={() => setTosRead(true)}
+        />
+      )}
+      {showPrivacyContent && (
+        <PrivacyContentModal
+          language={language}
+          onClose={() => setShowPrivacyContent(false)}
+          onReadComplete={() => setPrivacyRead(true)}
+        />
+      )}
+
       {showSuccessModal && (
         <SuccessModalWithAnimation
           language={language} loanId={loanId}
@@ -509,4 +378,4 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
       )}
     </div>
   );
-});
+}

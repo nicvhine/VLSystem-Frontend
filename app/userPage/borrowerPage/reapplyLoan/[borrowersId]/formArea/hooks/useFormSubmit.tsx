@@ -119,6 +119,7 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       setActiveStep(0); // Step 0: Preparing submission
 
       const formData = new FormData();
+      formData.append("isReloan", "true");
       formData.append("appName", props.appName);
       formData.append("appDob", props.appDob);
       formData.append("appContact", props.appContact);
