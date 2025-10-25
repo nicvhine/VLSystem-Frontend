@@ -264,7 +264,7 @@ export default function ApplicationPage() {
                   const details = formMissingDetails[section.key] || [];
 
                   return (
-                    <li key={section.key} className="flex flex-col w-full bg-gray-50 rounded-lg p-2 shadow-sm hover:shadow-md transition-shadow">
+                    <li key={section.key} className="flex flex-col w-full">
                       <div className="flex items-start gap-3 w-full">
                         <button
                           onClick={() => {
