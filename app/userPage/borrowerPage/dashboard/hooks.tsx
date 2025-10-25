@@ -86,68 +86,87 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   useEffect(() => {
     if (!borrowersId) return;
     const controller = new AbortController();
-
+  
     const fetchAllLoans = async () => {
       setLoading(true);
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, {
           signal: controller.signal,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
         if (!res.ok) throw new Error("Failed to fetch loans");
         const data: Loan[] = await res.json();
-
+  
         setAllLoans(data); 
-
         const active = data.find(loan => loan.status === "Active") || null;
         setActiveLoan(active);
-
+  
       } catch (err: any) {
         if (err.name === "AbortError") return; 
         console.error("Error fetching all loans:", err);
         setError("Failed to load loans");
-      }
-       finally {
+      } finally {
         setLoading(false);
       }
     };
-
+  
     fetchAllLoans();
     return () => controller.abort();
   }, [borrowersId]);
+  
 
   // Loan details
   useEffect(() => {
     if (!activeLoan?.loanId) return;
     const controller = new AbortController();
-
+  
     const fetchLoanDetails = async () => {
       try {
+        const token = localStorage.getItem("token"); 
         const res = await fetch(
           `http://localhost:3001/loans/details/${activeLoan.loanId}`,
-          { signal: controller.signal }
+          {
+            signal: controller.signal,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+  
         if (!res.ok) throw new Error("Failed to fetch loan details");
+  
         const data: Loan = await res.json();
         if (data) setActiveLoan(prev => ({ ...prev, ...data, loanId: prev?.loanId }));
+  
       } catch (err) {
         console.error("Error fetching loan details:", err);
       }
     };
-
+  
     fetchLoanDetails();
     return () => controller.abort();
   }, [activeLoan?.loanId]);
+  
 
   // Payments
   useEffect(() => {
     if (!activeLoan?.loanId) return;
     const controller = new AbortController();
-
+  
     const fetchPayments = async () => {
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch(
           `http://localhost:3001/payments/ledger/${activeLoan.loanId}`,
-          { signal: controller.signal }
+          {
+            signal: controller.signal,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         if (!res.ok) throw new Error("Failed to fetch payments");
         const data = await res.json();
@@ -157,33 +176,43 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
         console.error("Error fetching payments:", err);
       }
     };
-
+  
     fetchPayments();
     return () => controller.abort();
   }, [activeLoan?.loanId]);
-
+  
   // Collections
   useEffect(() => {
     if (!activeLoan?.loanId || !borrowersId) return;
     const controller = new AbortController();
-
+  
     const fetchCollections = async () => {
       try {
+        const token = localStorage.getItem("token"); 
         const res = await fetch(
           `http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`,
-          { signal: controller.signal }
+          {
+            signal: controller.signal,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
+  
         if (!res.ok) throw new Error("Failed to fetch collections");
+  
         const data: Collection[] = await res.json();
         setCollections(data);
+  
       } catch (err) {
         console.error("Error fetching collections:", err);
       }
     };
-
+  
     fetchCollections();
     return () => controller.abort();
   }, [activeLoan?.loanId, borrowersId]);
+  
 
   // Calculate payment progress
   useEffect(() => {

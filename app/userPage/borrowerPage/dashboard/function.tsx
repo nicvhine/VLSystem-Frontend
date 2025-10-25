@@ -10,7 +10,7 @@ export async function handlePay(
   activeLoan: Loan | null,  
   setErrorMsg: React.Dispatch<React.SetStateAction<string>>,
   setShowErrorModal: React.Dispatch<React.SetStateAction<boolean>>,
-  customAmount?: number // optional fifth argument
+  customAmount?: number
 ) {
   if (!activeLoan) return;
 
@@ -23,34 +23,44 @@ export async function handlePay(
   }
 
   try {
-    const res = await fetch(`${API_URL}/payments/paymongo/gcash`, {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMsg('You must be logged in to make a payment.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    const response = await fetch(`${API_URL}/payments/paymongo/gcash`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`, 
+      },
       body: JSON.stringify({
         amount: amountToPay,
         collectionNumber: collection.collectionNumber,
         referenceNumber: collection.referenceNumber,
-        borrowersId: activeLoan.borrowersId,
       }),
     });
 
-
-    if (!res.ok) {
-      const errorData = await res.json();
+    if (!response.ok) {
+      const errorData = await response.json();
       setErrorMsg(`Payment failed: ${errorData.error || 'Unknown error'}`);
       setShowErrorModal(true);
       return;
     }
 
-    const data = await res.json();
+    const data = await response.json();
+
     if (data.checkout_url) {
+      // Redirect to PayMongo checkout
       window.location.href = data.checkout_url;
     } else {
-      setErrorMsg('Failed to create payment.');
+      setErrorMsg('Failed to create payment. Please try again.');
       setShowErrorModal(true);
     }
-  } catch (err) {
-    console.error(err);
+  } catch (err: any) {
+    console.error("Payment error:", err);
     setErrorMsg('Error connecting to payment gateway.');
     setShowErrorModal(true);
   }
