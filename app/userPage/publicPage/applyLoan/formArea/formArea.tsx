@@ -1,12 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { ButtonDotsLoading, SubmitProgressModal } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
-
-import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
-import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
-import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
 
 import BasicInformation from "./sections/basicInformation";
 import SourceOfIncome from "./sections/sourceOfIncome";
@@ -33,9 +29,10 @@ interface FormAreaProps {
     missingCounts: Record<string, number>;
     missingDetails: Record<string, string[]>;
   }) => void;
+  onShowTermsModal?: () => void;
 }
 
-export default function FormArea({ loanType, language, isMobile, onProgressUpdate }: FormAreaProps) {
+export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(function FormArea({ loanType, language, isMobile, onProgressUpdate, onShowTermsModal }, ref) {
   const COMPANY_NAME = "Vistula Lending Corporation";
   const TERMS_VERSION = "1.0-draft";
   const PRIVACY_VERSION = "1.0-draft";
@@ -124,13 +121,6 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     onProgressUpdate,
   });
 
-  // Terms/Privacy Modal
-  const [showTermsModal, setShowTermsModal] = useState(false);
-  const [showTosContent, setShowTosContent] = useState(false);
-  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
-  const [tosRead, setTosRead] = useState(false);
-  const [privacyRead, setPrivacyRead] = useState(false);
-
   // Document upload error modal
   const [showDocumentUploadErrorModal, setShowDocumentUploadErrorModal] = useState(false);
   const [documentUploadError, setDocumentUploadError] = useState("");
@@ -152,6 +142,25 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     photo2x2, uploadedFiles, missingFields, setMissingFields, setAgentMissingError,
     API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language
   });
+
+  // Expose submission method to parent component
+  useImperativeHandle(ref, () => ({
+    submitForm: async () => {
+      try {
+        const result = await performSubmit();
+        if (result.ok && result.data.application?.applicationId) {
+          setLoanId(result.data.application.applicationId);
+          setShowSuccessModal(true);
+        } else {
+          setErrorMessage(result.error?.message || "Submission failed");
+          setShowErrorModal(true);
+        }
+      } catch (err: any) {
+        setErrorMessage(err.message || "Submission failed");
+        setShowErrorModal(true);
+      }
+    }
+  }));
 
   useEffect(() => {
     if (appAgent.trim()) setAgentMissingError(false);
@@ -274,7 +283,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
               setShowErrorModal(true);
               return;
             }
-            setShowTermsModal(true);
+            onShowTermsModal?.();
           }}
           disabled={isSubmitting}
           className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -284,48 +293,6 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
         </button>
       </div>
 
-      {/* Terms / Privacy Modals */}
-      {showTermsModal && (
-        <TermsGateModal
-          language={language}
-          onCancel={() => setShowTermsModal(false)}
-          onOpenTos={() => setShowTosContent(true)}
-          onOpenPrivacy={() => setShowPrivacyContent(true)}
-          tosRead={tosRead} privacyRead={privacyRead}
-          onAccept={async () => {
-            setShowTermsModal(false);
-            try {
-              const result = await performSubmit();
-              if (result.ok && result.data.application?.applicationId) {
-                setLoanId(result.data.application.applicationId);
-                setShowSuccessModal(true);
-              } else {
-                setErrorMessage(result.error?.message || "Submission failed");
-                setShowErrorModal(true);
-              }
-            } catch (err: any) {
-              setErrorMessage(err.message || "Submission failed");
-              setShowErrorModal(true);
-            }
-          }}
-        />
-      )}
-
-      {showTosContent && (
-        <TermsContentModal
-          language={language}
-          onClose={() => setShowTosContent(false)}
-          onReadComplete={() => setTosRead(true)}
-        />
-      )}
-      {showPrivacyContent && (
-        <PrivacyContentModal
-          language={language}
-          onClose={() => setShowPrivacyContent(false)}
-          onReadComplete={() => setPrivacyRead(true)}
-        />
-      )}
-
       {showSuccessModal && (
         <SuccessModalWithAnimation
           language={language} loanId={loanId}
@@ -334,4 +301,4 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
       )}
     </div>
   );
-}
+});

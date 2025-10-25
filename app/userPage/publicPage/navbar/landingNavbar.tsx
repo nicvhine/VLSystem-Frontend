@@ -14,6 +14,7 @@ interface LandingNavbarProps {
   setIsLoginOpen?: (open: boolean) => void;
   isCalculationOpen?: boolean;
   setIsCalculationOpen?: (open: boolean) => void;
+  isBlurred?: boolean;
 }
 
 export default function LandingNavbar({ 
@@ -23,7 +24,8 @@ export default function LandingNavbar({
   isLoginOpen: parentIsLoginOpen,
   setIsLoginOpen: parentSetIsLoginOpen,
   isCalculationOpen: parentIsCalculationOpen,
-  setIsCalculationOpen: parentSetIsCalculationOpen
+  setIsCalculationOpen: parentSetIsCalculationOpen,
+  isBlurred = false
 }: LandingNavbarProps) {
 
   const pathname = usePathname();
@@ -54,7 +56,7 @@ export default function LandingNavbar({
   const pub = translationData.publicTranslation[language];
 
   return (
-    <header className="w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-md sticky top-0 z-50">
+    <header className={`w-full bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 shadow-md sticky top-0 z-50 ${isBlurred ? 'blur-sm' : ''} transition-all duration-150`}>
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex justify-between items-center">
           {/* Logo */}
