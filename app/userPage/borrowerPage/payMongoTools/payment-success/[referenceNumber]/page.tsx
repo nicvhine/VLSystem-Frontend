@@ -9,7 +9,7 @@ export default function PaymentSuccess({ params }: { params: { referenceNumber: 
 
   const [phase, setPhase] = useState<"processing" | "success" | "error">("processing");
   const [msg, setMsg] = useState("Finalizing your payment... Please wait.");
-  const [redirectIn, setRedirectIn] = useState(2); // seconds
+  const [redirectIn, setRedirectIn] = useState(2); 
 
   const finalize = useCallback(async () => {
     setPhase("processing");

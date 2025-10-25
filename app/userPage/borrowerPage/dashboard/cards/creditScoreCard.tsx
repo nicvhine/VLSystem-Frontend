@@ -73,18 +73,6 @@ export default function CreditScoreCard({
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="mt-6 w-full flex justify-around">
-        <div className="flex flex-col items-center">
-          <span className="text-lg font-semibold text-green-600">{paidCount}</span>
-          <span className="text-sm text-gray-500">Paid</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <span className="text-lg font-semibold text-red-500">{remainingCount}</span>
-          <span className="text-sm text-gray-500">Remaining</span>
-        </div>
-      </div>
-
       {/* Reloan Button */}
       <div className="mt-8 flex flex-col items-center">
         <button
