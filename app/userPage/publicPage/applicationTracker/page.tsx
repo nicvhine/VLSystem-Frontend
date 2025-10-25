@@ -121,7 +121,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
       >
         {/* Container */}
         <div
-          className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 relative ${
+          className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 relative text-black ${
             animateIn ? "scale-100 opacity-100" : "scale-95 opacity-0"
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -134,11 +134,11 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
             ✖
           </button>
           <h2 className="text-xl font-semibold mb-1 text-black">{t.h2}</h2>
-          <p className="text-sm text-gray-600 mb-3">{t.n1}</p>
+          <p className="text-sm text-black mb-3">{t.n1}</p>
         <input
           type="text"
           placeholder="Application ID"
-          className="w-full p-3 border border-gray-300 rounded-lg mb-4 uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          className="w-full p-3 border border-gray-300 rounded-lg mb-4 uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-black placeholder-gray-400"
           value={applicationId}
           onChange={(e) => setApplicationId(e.target.value.toUpperCase())}
         />
