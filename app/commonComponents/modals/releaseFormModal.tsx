@@ -3,7 +3,7 @@
 import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-import { ReleaseFormModalProps } from "../../utils/Types/modal";
+import { ReleaseFormModalProps } from "../utils/Types/modal";
 
 /**
  * Reusable signature line component for forms
