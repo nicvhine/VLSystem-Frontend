@@ -126,7 +126,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [photo2x2, setPhoto2x2] = useState<File[]>([]);
   // Previous uploads metadata (do not auto-fetch blobs). User must opt-in to "Use previous".
-  const [prevProfilePicUrl, setPrevProfilePicUrl] = useState<ProfilePicData | string | null>(null);
+  const [prevProfilePicUrl, setPrevProfilePicUrl] = useState<string | null>(null);
   const [prevDocumentsMeta, setPrevDocumentsMeta] = useState<any[]>([]);
 
   // Compute section progress
@@ -254,8 +254,10 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             resolvedUrl = latest.profilePic.secure_url;
           }
         }
-      }       
-        
+      }
+      
+        // store resolved profile pic URL (may be null)
+        setPrevProfilePicUrl(resolvedUrl);
         setPrevDocumentsMeta(Array.isArray(latest.documents) ? latest.documents : []);
 
         setIsPrefilled(true);
@@ -317,50 +319,17 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
 
   // Called by UploadSection when user clicks "Use previous" for profile pic
   async function handleUsePreviousProfile() {
-    // Handle cases where value might be object
-    let url = null;
-  
-    if (!prevProfilePicUrl) {
-      console.error(" prevProfilePicUrl missing");
-      return { ok: false };
-    }
-  
-    if (typeof prevProfilePicUrl === "string") {
-      url = prevProfilePicUrl;
-    } else if (typeof prevProfilePicUrl === "object") {
-      if (typeof prevProfilePicUrl.filePath === "string") {
-        url = prevProfilePicUrl.filePath;
-      } else if (
-        prevProfilePicUrl.filePath &&
-        typeof prevProfilePicUrl.filePath === "object" &&
-        typeof prevProfilePicUrl.filePath.url === "string"
-      ) {
-        url = prevProfilePicUrl.filePath.url;
-      } else if (typeof prevProfilePicUrl.url === "string") {
-        url = prevProfilePicUrl.url;
-      }
-    }
-  
-    if (!url) {
-      console.error("Could not resolve valid URL from:", prevProfilePicUrl);
-      return { ok: false };
-    }
-  
-    try {
-      console.log("Fetching previous profile image from:", url);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("Failed to fetch image");
-  
-      const blob = await response.blob();
-      const fileName = url.split("/").pop() || "previous-profile.jpg";
-      const file = new File([blob], fileName, { type: blob.type || "image/jpeg" });
-  
-      setPhoto2x2([file]);
-  
+    if (!prevProfilePicUrl) return { ok: false, error: 'No previous profile URL' };
+    const res = await fetchImageAsFileWithValidation(prevProfilePicUrl);
+    if (res.ok) {
+      setPhoto2x2([res.file]);
+      // remove previous preview to reflect it's been consumed
+      setPrevProfilePicUrl(null);
       return { ok: true };
-    } catch (error) {
-      console.error("Error using previous profile:", error);
-      return { ok: false, error: "Could not use previous profile" };
+    } else {
+      setDocumentUploadError(res.error || 'Failed to fetch previous 2x2');
+      setShowDocumentUploadErrorModal(true);
+      return res;
     }
   }
   
