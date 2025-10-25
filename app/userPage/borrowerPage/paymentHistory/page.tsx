@@ -3,7 +3,7 @@
 import React from 'react';
 import Borrower from '../page';
 import useBorrowerDashboard from '../dashboard/hooks';
-import { Payment, Collection } from '@/app/commonComponents/utils/Types/collection';
+import { Payment } from '@/app/commonComponents/utils/Types/collection';
 import { format } from 'date-fns';
 
 export default function PaymentHistoryPage() {
