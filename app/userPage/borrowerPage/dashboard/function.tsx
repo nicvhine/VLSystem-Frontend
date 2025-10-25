@@ -1,5 +1,4 @@
 'use client';
-
 import { useRouter } from 'next/navigation';
 import { Collection } from '@/app/commonComponents/utils/Types/collection';
 import { Loan } from '@/app/commonComponents/utils/Types/loan';
@@ -8,15 +7,17 @@ const API_URL = 'http://localhost:3001';
 
 export async function handlePay(
   collection: Collection,
-  activeLoan: Loan | null,
+  activeLoan: Loan | null,  
   setErrorMsg: React.Dispatch<React.SetStateAction<string>>,
-  setShowErrorModal: React.Dispatch<React.SetStateAction<boolean>>
+  setShowErrorModal: React.Dispatch<React.SetStateAction<boolean>>,
+  customAmount?: number // optional fifth argument
 ) {
   if (!activeLoan) return;
 
-  const amountToPay = collection.periodAmount ?? 0;
+  const amountToPay = Number(customAmount) || collection.periodAmount || 0;
+
   if (amountToPay <= 0) {
-    setErrorMsg('This collection has no amount due.');
+    setErrorMsg('Please enter a valid payment amount.');
     setShowErrorModal(true);
     return;
   }
@@ -32,6 +33,7 @@ export async function handlePay(
         borrowersId: activeLoan.borrowersId,
       }),
     });
+
 
     if (!res.ok) {
       const errorData = await res.json();
