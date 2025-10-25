@@ -152,11 +152,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
         if (!res.ok) throw new Error("Failed to fetch payments");
         const data = await res.json();
         const payments = Array.isArray(data.payments) ? data.payments : data;
-        const unique = payments.filter(
-          (p: Payment, i: number, self: Payment[]) =>
-            i === self.findIndex(x => x.referenceNumber === p.referenceNumber)
-        );
-        setPaidPayments(unique);
+        setPaidPayments(payments);
       } catch (err) {
         console.error("Error fetching payments:", err);
       }
