@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { ButtonDotsLoading, SubmitProgressModal } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
 
@@ -41,7 +41,7 @@ interface ProfilePicData {
   url?: string;
 }
 
-export default function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId, onShowTermsModal }: FormAreaProps) {
+export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId, onShowTermsModal }, ref) {
   const COMPANY_NAME = "Vistula Lending Corporation";
   const TERMS_VERSION = "1.0-draft";
   const PRIVACY_VERSION = "1.0-draft";
@@ -156,6 +156,25 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     photo2x2, uploadedFiles, missingFields, setMissingFields, setAgentMissingError,
     API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language
   });
+
+  // Expose submission method to parent component
+  useImperativeHandle(ref, () => ({
+    submitForm: async () => {
+      try {
+        const result = await performSubmit();
+        if (result.ok && result.data.application?.applicationId) {
+          setLoanId(result.data.application.applicationId);
+          setShowSuccessModal(true);
+        } else {
+          setErrorMessage(result.error?.message || "Submission failed");
+          setShowErrorModal(true);
+        }
+      } catch (err: any) {
+        setErrorMessage(err.message || "Submission failed");
+        setShowErrorModal(true);
+      }
+    }
+  }));
 
   useEffect(() => {
     // appAgent can be a string or object (from prefill). Coerce to string safely before trim.
@@ -521,4 +540,4 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
       )}
     </div>
   );
-}
+});

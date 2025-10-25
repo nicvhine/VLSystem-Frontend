@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams } from 'next/navigation';
 import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import FormArea from "./formArea/formArea";
@@ -30,6 +30,9 @@ export default function ApplicationPage() {
   const [showPrivacyContent, setShowPrivacyContent] = useState(false);
   const [tosRead, setTosRead] = useState(false);
   const [privacyRead, setPrivacyRead] = useState(false);
+  
+  // Form submission handler
+  const formAreaRef = useRef<{ submitForm: () => Promise<void> }>(null);
   
   const isMobile = useIsMobile();
 
@@ -96,7 +99,10 @@ export default function ApplicationPage() {
           privacyRead={privacyRead}
           onAccept={async () => {
             setShowTermsModal(false);
-            // The actual submission will be handled by FormArea
+            // Call FormArea's submission method
+            if (formAreaRef.current?.submitForm) {
+              await formAreaRef.current.submitForm();
+            }
           }}
         />
       )}
@@ -271,6 +277,7 @@ export default function ApplicationPage() {
 
             {loanType ? (
               <FormArea 
+                ref={formAreaRef}
                 loanType={loanType}
                 language={language}
                 isMobile={isMobile}
