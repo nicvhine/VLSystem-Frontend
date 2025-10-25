@@ -10,7 +10,7 @@ interface PaymentProgressCardProps {
   borrowerId: string;
 }
 
-export default function PaymentProgressCard({
+export default function CreditScoreCard({
   collections,
   paymentProgress,
   borrowerId,
@@ -27,7 +27,7 @@ export default function PaymentProgressCard({
 
   return (
     <div className="w-full md:w-1/2 bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-shadow duration-300">
-      <h2 className="text-m font-semibold text-gray-900 mb-6">Payment Progress</h2>
+      <h2 className="text-m font-semibold text-gray-900 mb-6">Credit Score</h2>
 
       {/* Circular Progress */}
       <div className="relative w-44 h-44 md:w-52 md:h-52">
@@ -60,7 +60,7 @@ export default function PaymentProgressCard({
           <defs>
             <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#22c55e" />  
-              <stop offset="50%" stopColor="#10b981" />
+              <stop offset="50%" stopColor="#10b981" /> 
               <stop offset="100%" stopColor="#059669" /> 
             </linearGradient>
           </defs>
