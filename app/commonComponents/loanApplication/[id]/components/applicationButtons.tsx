@@ -210,7 +210,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
         </>
       )}
 
-      {application.status === "Disbursed" && (
+      {(application.status === "Disbursed" || application.status === "Active") && (
         <>
           <button
             ref={buttonRef}
@@ -246,6 +246,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           )}
         </>
       )}
+
       <SubmitOverlayToast open={isActing} message="Processing action..." />
     </>
   );
