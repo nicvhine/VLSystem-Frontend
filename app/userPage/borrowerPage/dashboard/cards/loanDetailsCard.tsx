@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { formatDate, translateLoanType } from '@/app/commonComponents/utils/formatters';
 import { LoanDetailsCardProps } from '@/app/commonComponents/utils/Types/components';
 import translations from '@/app/commonComponents/translation';
@@ -8,61 +8,77 @@ import translations from '@/app/commonComponents/translation';
 export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCardProps) {
   if (!activeLoan) return null;
 
-  // Compute translations reactively
   const t = translations.loanTermsTranslator[language];
 
   const formatCurrency = (value?: number | string) =>
     `₱${Number(value ?? 0).toLocaleString()}`;
 
   return (
-    <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg flex flex-col gap-4 md:gap-6 relative overflow-hidden">
-      <h2 className="font-semibold text-lg md:text-xl text-gray-800 mb-2 md:mb-4 flex items-center gap-2 z-10">
-        {(t.Loans ?? 'Loan')} Details
-      </h2>
+    <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+      {/* Header */}
+      <div className="text-black px-6 py-4">
+        <h2 className="font-bold text-m">Loan Details</h2>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 text-gray-700 z-10">
-        <div className="flex flex-col gap-2 md:gap-4 md:pr-4 md:border-r md:border-gray-200">
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l11 || 'Loan ID'}</span>
-            <span className="ml-auto font-semibold text-gray-800">{activeLoan.loanId}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l10 || 'Loan Type'}</span>
-            <span className="ml-auto font-semibold text-gray-800 break-words text-right max-w-[160px] md:max-w-none">{translateLoanType(activeLoan.loanType, language)}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l13 || 'Date Disbursed'}</span>
-            <span className="ml-auto font-semibold text-gray-800">{activeLoan.dateDisbursed ? formatDate(activeLoan.dateDisbursed) : '-'}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l5 || 'Interest Rate'}</span>
-            <span className="ml-auto font-semibold text-gray-800">{activeLoan.appInterestRate ?? 0}%</span>
-          </div>
+      {/* Content */}
+      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
+        {/* Left Column */}
+        <div className="flex flex-col gap-4 border-b md:border-b-0 pb-4 md:pb-0 md:pr-6">
+          <DetailRow label={t.l11 || 'Loan ID'} value={activeLoan.loanId} />
+          <DetailRow
+            label={t.l10 || 'Loan Type'}
+            value={translateLoanType(activeLoan.loanType, language)}
+            breakText
+          />
+          <DetailRow
+            label={t.l13 || 'Date Disbursed'}
+            value={activeLoan.dateDisbursed ? formatDate(activeLoan.dateDisbursed) : '-'}
+          />
+          <DetailRow
+            label={t.l5 || 'Interest Rate'}
+            value={`${activeLoan.appInterestRate ?? 0}%`}
+          />
         </div>
 
-        <div className="flex flex-col gap-2 md:gap-4 md:pl-4">
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l4 || 'Principal'}</span>
-            <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">{formatCurrency(activeLoan.appLoanAmount)}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l6 || 'Interest Amount'}</span>
-            <span className="ml-auto font-semibold text-gray-800">{formatCurrency(activeLoan.appInterestAmount)}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l7 || 'Total Interest'}</span>
-            <span className="ml-auto font-semibold text-gray-800">{formatCurrency(activeLoan.appTotalInterestAmount)}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l8 || 'Total Payable'}</span>
-            <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">{formatCurrency(activeLoan.appTotalPayable)}</span>
-          </div>
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500">{t.l9 || 'Monthly Due'}</span>
-            <span className="ml-auto font-bold text-gray-800 text-base md:text-lg">{formatCurrency(activeLoan.appMonthlyDue)}</span>
-          </div>
+        {/* Right Column */}
+        <div className="flex flex-col gap-4 md:pl-6">
+          <DetailRow
+            label={t.l4 || 'Principal'}
+            value={formatCurrency(activeLoan.appLoanAmount)}
+          />
+          <DetailRow
+            label={t.l6 || 'Total Interest'}
+            value={formatCurrency(activeLoan.appTotalInterestAmount)}
+          />
+          <DetailRow
+            label={t.l7 || 'Total Payable'}
+            value={formatCurrency(activeLoan.appTotalPayable)}
+          />
         </div>
       </div>
     </div>
   );
 }
+
+const DetailRow = ({
+  label,
+  value,
+  bold = false,
+  breakText = false,
+}: {
+  label: string;
+  value: string | number;
+  bold?: boolean;
+  breakText?: boolean;
+}) => (
+  <div className="flex items-center justify-between">
+    <span className="text-sm font-medium text-gray-500">{label}</span>
+    <span
+      className={`text-sm ${bold ? 'font-bold text-gray-800 text-base md:text-lg' : 'text-gray-700'} ${
+        breakText ? 'break-words text-right max-w-[160px] md:max-w-none' : ''
+      }`}
+    >
+      {value}
+    </span>
+  </div>
+);

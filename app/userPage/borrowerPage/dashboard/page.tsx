@@ -17,6 +17,7 @@ import PaymentHistoryCard from './cards/paymentHistoryCard';
 import PaymentProgressCard from './cards/paymentProgressCard';
 import UpcomingCollectionCard from './cards/upcomingCard';
 import PaidCollectionCard from './cards/paidCollectionCard';
+import CreditScoreCard from './cards/creditScoreCard';
 
 export default function BorrowerDashboard() {
   const borrowersId =
@@ -107,12 +108,16 @@ export default function BorrowerDashboard() {
         <div className="w-full md:w-1/2 flex flex-col gap-4">
           <LoanDetailsCard activeLoan={displayedLoan} language={language} />
           <div className="flex gap-4">
-            <PaymentHistoryCard
+            {/* <PaymentHistoryCard
               paidPayments={paidPayments}
               setIsPaymentModalOpen={setIsPaymentModalOpen}
-            />
-            {/* ✅ Pass borrowerId safely */}
+            /> */}
             <PaymentProgressCard
+              collections={collections}
+              paymentProgress={paymentProgress}
+              borrowerId={borrowerId}
+            />
+            <CreditScoreCard
               collections={collections}
               paymentProgress={paymentProgress}
               borrowerId={borrowerId}

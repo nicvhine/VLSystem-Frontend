@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Payment, PaymentHistoryModalProps } from '@/app/userPage/borrowerPage/dashboard/type';
+import { Payment } from '../../utils/Types/collection';
+import { PaymentHistoryModalProps } from '../../utils/Types/modal';
 
 export default function PaymentHistoryModal({ isOpen, animateIn, onClose, paidPayments }: PaymentHistoryModalProps) {
   const [shouldRender, setShouldRender] = useState(isOpen);
