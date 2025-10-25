@@ -1,7 +1,7 @@
 'use client';
 
 import { FC } from "react";
-import ConfirmModal from "../confirmModal/ConfirmModal";
+import ConfirmModal from "../confirmModal";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import { AddAgentModalProps } from "../../utils/Types/agent";
 import { useAddAgentLogic } from "./logic";

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
-import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
+import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
+import SuccessModal from '@/app/commonComponents/modals/successModal';
 import emailjs from 'emailjs-com';
 
 type Props = {

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
-import ErrorModal from "../errorModal/modal";
-import ConfirmModal from "../confirmModal/ConfirmModal";
-import { InterviewModalProps } from "../../utils/Types/modal";
+import ErrorModal from "./errorModal";
+import ConfirmModal from "./confirmModal";
+import { InterviewModalProps } from "../utils/Types/modal";
 
 /**
  * Interview calendar modal component for scheduling loan interviews

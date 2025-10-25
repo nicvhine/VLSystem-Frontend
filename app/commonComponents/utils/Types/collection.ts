@@ -20,6 +20,7 @@ export interface Collection {
 }
 
 export interface Payment {
+  receipt: string;
   _id?: string;
   loanId: string;
   referenceNumber: string;

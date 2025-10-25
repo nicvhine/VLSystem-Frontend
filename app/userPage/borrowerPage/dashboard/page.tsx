@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Borrower from '../page';
-import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
+import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import TermsGateModal from '@/app/commonComponents/modals/termsPrivacy/TermsGateModal';
 import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
 import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';

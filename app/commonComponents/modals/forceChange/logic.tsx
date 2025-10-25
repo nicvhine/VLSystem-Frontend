@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import SuccessModal from '../successModal/modal';
-import ErrorModal from '../errorModal/modal';
+import SuccessModal from '../successModal';
+import ErrorModal from '../errorModal';
 
 /**
  * Custom hook for password change functionality

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 
 /**
