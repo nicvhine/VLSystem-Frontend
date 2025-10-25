@@ -4,10 +4,6 @@ import { useState, useEffect } from "react";
 import { ButtonDotsLoading, SubmitProgressModal } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
 
-import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
-import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
-import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
-
 import BasicInformation from "./sections/basicInformation";
 import SourceOfIncome from "./sections/sourceOfIncome";
 import References from "./sections/references";
@@ -34,6 +30,7 @@ interface FormAreaProps {
     missingDetails: Record<string, string[]>;
   }) => void;
   borrowersId?: string | undefined;
+  onShowTermsModal?: () => void;
 }
 
 interface ProfilePicData {
@@ -44,7 +41,7 @@ interface ProfilePicData {
   url?: string;
 }
 
-export default function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId }: FormAreaProps) {
+export default function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId, onShowTermsModal }: FormAreaProps) {
   const COMPANY_NAME = "Vistula Lending Corporation";
   const TERMS_VERSION = "1.0-draft";
   const PRIVACY_VERSION = "1.0-draft";
@@ -137,13 +134,6 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     appAgent,
     onProgressUpdate,
   });
-
-  // Terms/Privacy Modal
-  const [showTermsModal, setShowTermsModal] = useState(false);
-  const [showTosContent, setShowTosContent] = useState(false);
-  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
-  const [tosRead, setTosRead] = useState(false);
-  const [privacyRead, setPrivacyRead] = useState(false);
 
   // Document upload error modal
   const [showDocumentUploadErrorModal, setShowDocumentUploadErrorModal] = useState(false);
@@ -513,7 +503,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
               setShowErrorModal(true);
               return;
             }
-            setShowTermsModal(true);
+            onShowTermsModal?.();
           }}
           disabled={isSubmitting}
           className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -522,48 +512,6 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             : language === "en" ? "Submit Application" : "Isumite ang Aplikasyon"}
         </button>
       </div>
-
-      {/* Terms / Privacy Modals */}
-      {showTermsModal && (
-        <TermsGateModal
-          language={language}
-          onCancel={() => setShowTermsModal(false)}
-          onOpenTos={() => setShowTosContent(true)}
-          onOpenPrivacy={() => setShowPrivacyContent(true)}
-          tosRead={tosRead} privacyRead={privacyRead}
-          onAccept={async () => {
-            setShowTermsModal(false);
-            try {
-              const result = await performSubmit();
-              if (result.ok && result.data.application?.applicationId) {
-                setLoanId(result.data.application.applicationId);
-                setShowSuccessModal(true);
-              } else {
-                setErrorMessage(result.error?.message || "Submission failed");
-                setShowErrorModal(true);
-              }
-            } catch (err: any) {
-              setErrorMessage(err.message || "Submission failed");
-              setShowErrorModal(true);
-            }
-          }}
-        />
-      )}
-
-      {showTosContent && (
-        <TermsContentModal
-          language={language}
-          onClose={() => setShowTosContent(false)}
-          onReadComplete={() => setTosRead(true)}
-        />
-      )}
-      {showPrivacyContent && (
-        <PrivacyContentModal
-          language={language}
-          onClose={() => setShowPrivacyContent(false)}
-          onReadComplete={() => setPrivacyRead(true)}
-        />
-      )}
 
       {showSuccessModal && (
         <SuccessModalWithAnimation

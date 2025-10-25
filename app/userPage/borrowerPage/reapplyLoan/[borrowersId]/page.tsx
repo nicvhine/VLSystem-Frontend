@@ -5,6 +5,9 @@ import { useParams } from 'next/navigation';
 import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import FormArea from "./formArea/formArea";
 import Navbar from "@/app/commonComponents/navbarComponents/navbar";
+import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
+import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
+import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
 import useIsMobile from "../../../../commonComponents/utils/useIsMobile";
 import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/commonComponents/utils/formatters";
 import { useTrackerSections } from "./formArea/hooks/useTrackerSections";
@@ -20,6 +23,14 @@ export default function ApplicationPage() {
   const [formMissingCounts, setFormMissingCounts] = useState<Record<string, number>>({});
   const [formMissingDetails, setFormMissingDetails] = useState<Record<string, string[]>>({});
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  
+  // Terms modal state
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showTosContent, setShowTosContent] = useState(false);
+  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
+  const [tosRead, setTosRead] = useState(false);
+  const [privacyRead, setPrivacyRead] = useState(false);
+  
   const isMobile = useIsMobile();
 
   // Base loan types (English only, used as keys)
@@ -72,7 +83,39 @@ export default function ApplicationPage() {
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
-      <Navbar role='borrower'/>
+      <Navbar role='borrower' isBlurred={showTermsModal || showTosContent || showPrivacyContent}/>
+
+      {/* Terms / Privacy Modals */}
+      {showTermsModal && (
+        <TermsGateModal
+          language={language}
+          onCancel={() => setShowTermsModal(false)}
+          onOpenTos={() => setShowTosContent(true)}
+          onOpenPrivacy={() => setShowPrivacyContent(true)}
+          tosRead={tosRead} 
+          privacyRead={privacyRead}
+          onAccept={async () => {
+            setShowTermsModal(false);
+            // The actual submission will be handled by FormArea
+          }}
+        />
+      )}
+
+      {showTosContent && (
+        <TermsContentModal
+          language={language}
+          onClose={() => setShowTosContent(false)}
+          onReadComplete={() => setTosRead(true)}
+        />
+      )}
+      
+      {showPrivacyContent && (
+        <PrivacyContentModal
+          language={language}
+          onClose={() => setShowPrivacyContent(false)}
+          onReadComplete={() => setPrivacyRead(true)}
+        />
+      )}
 
       {/* Floating info button (mobile) */}
       {isMobile && (
@@ -238,6 +281,7 @@ export default function ApplicationPage() {
                   setFormMissingCounts(progress.missingCounts || {});
                   setFormMissingDetails(progress.missingDetails || {});
                 }}
+                onShowTermsModal={() => setShowTermsModal(true)}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-gray-400 text-lg font-medium">
