@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 
 interface LoanPreview {
@@ -60,11 +61,48 @@ export default function EditPrincipalModal({
   currentAmount,
   onSave,
   onClose,
-  loading,
+  loading = false,
 }: EditPrincipalModalProps) {
   const [amount, setAmount] = useState(currentAmount);
   const [loanApp, setLoanApp] = useState<LoanApplication | null>(null);
   const [preview, setPreview] = useState<LoanPreview | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  // Animation lifecycle management
+  useEffect(() => {
+    setIsVisible(true);
+    const timer = setTimeout(() => setIsAnimating(true), 10);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Close modal with animation
+  const handleModalClose = () => {
+    if (loading) return;
+    setIsAnimating(false);
+    setTimeout(() => {
+      setIsVisible(false);
+      onClose();
+    }, 150);
+  };
+
+  // Handle backdrop click
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      handleModalClose();
+    }
+  };
+
+  // Handle escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isVisible && !loading) {
+        handleModalClose();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isVisible, loading]);
 
   // Fetch application details
   useEffect(() => {
@@ -97,7 +135,7 @@ export default function EditPrincipalModal({
         .sort((a, b) => b.amount - a.amount)[0] || options[0];
     }
 
-    const months = selectedOption.months ?? 12; 
+    const months = 'months' in selectedOption ? selectedOption.months : 12; 
     const interestRate = selectedOption.interest;
 
     const serviceFee =
@@ -147,40 +185,54 @@ export default function EditPrincipalModal({
 
       const data = await res.json();
       onSave(Number(data.updatedApp.appLoanAmount));
+      handleModalClose();
     } catch (err) {
       console.error(err);
       alert("Error updating principal");
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4 text-black">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 relative">
+  if (!isVisible) return null;
+
+  const modalContent = (
+    <div
+      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
+        isAnimating ? "opacity-100" : "opacity-0"
+      }`}
+      onClick={handleBackdropClick}
+    >
+      <div
+        className={`bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative text-black transform transition-all duration-150 ${
+          isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+          onClick={handleModalClose}
+          className={`absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition ${
+            loading ? 'opacity-50 cursor-not-allowed hover:text-gray-500' : ''
+          }`}
+          disabled={loading}
         >
-          <FiX />
+          <FiX size={20} />
         </button>
 
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          Edit Principal{" "}
-          <span className="text-gray-500 text-sm">
-            ({applicationId}, {loanApp?.loanType})
-          </span>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">
+          Edit Principal
         </h2>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-600 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Principal Amount
           </label>
           <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-            className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
             min={0}
             step={0.01}
+            disabled={loading}
           />
         </div>
 
@@ -188,40 +240,42 @@ export default function EditPrincipalModal({
           <div className="mb-4 bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
             <h3 className="font-medium text-gray-700 mb-2">Loan Preview:</h3>
             <div className="grid grid-cols-2 gap-2">
-              <div>Principal:</div>
-              <div>₱ {preview.principal.toLocaleString()}</div>
-              <div>Months:</div>
-              <div>{preview.months}</div>
-              <div>Interest Rate:</div>
-              <div>{preview.interestRate}%</div>
-              <div>Interest Amount:</div>
-              <div>₱ {preview.interestAmount.toLocaleString()}</div>
-              <div>Total Interest:</div>
-              <div>₱ {preview.totalInterestAmount.toLocaleString()}</div>
-              <div>Service Fee:</div>
-              <div>₱ {preview.serviceFee.toLocaleString()}</div>
-              <div>Total Payable:</div>
-              <div>₱ {preview.totalPayable.toLocaleString()}</div>
-              <div>Monthly Due:</div>
-              <div>₱ {preview.monthlyDue.toLocaleString()}</div>
-              <div>Net Released:</div>
-              <div>₱ {preview.netReleased.toLocaleString()}</div>
+              <div className="text-gray-600">Principal:</div>
+              <div className="text-right">₱ {preview.principal.toLocaleString()}</div>
+              <div className="text-gray-600">Months:</div>
+              <div className="text-right">{preview.months}</div>
+              <div className="text-gray-600">Interest Rate:</div>
+              <div className="text-right">{preview.interestRate}%</div>
+              <div className="text-gray-600">Interest Amount:</div>
+              <div className="text-right">₱ {preview.interestAmount.toLocaleString()}</div>
+              <div className="text-gray-600">Total Interest:</div>
+              <div className="text-right">₱ {preview.totalInterestAmount.toLocaleString()}</div>
+              <div className="text-gray-600">Service Fee:</div>
+              <div className="text-right">₱ {preview.serviceFee.toLocaleString()}</div>
+              <div className="text-gray-600">Total Payable:</div>
+              <div className="text-right">₱ {preview.totalPayable.toLocaleString()}</div>
+              <div className="text-gray-600">Monthly Due:</div>
+              <div className="text-right">₱ {preview.monthlyDue.toLocaleString()}</div>
+              <div className="text-gray-600">Net Released:</div>
+              <div className="text-right">₱ {preview.netReleased.toLocaleString()}</div>
             </div>
           </div>
         )}
 
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-end gap-3 pt-2">
           <button
-            onClick={onClose}
-            className="px-5 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition text-gray-700"
+            onClick={handleModalClose}
+            className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium ${
+              loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-300'
+            }`}
             disabled={loading}
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className={`px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
+            className={`px-4 py-2 bg-red-600 text-white rounded-lg transition-colors font-medium ${
+              loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-red-700'
             }`}
             disabled={loading}
           >
@@ -231,4 +285,6 @@ export default function EditPrincipalModal({
       </div>
     </div>
   );
+
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }
