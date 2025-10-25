@@ -6,9 +6,9 @@ import ProfileSettingsPanel from './profileEditing';
 import { useState, useEffect, useRef } from 'react';
 import translations from '../translation';
 import { useProfilePicUpload } from './hooks/useProfilePicUpload';
-import SuccessModal from '@/app/commonComponents/modals/successModal/modal';
-import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
-import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
+import SuccessModal from '@/app/commonComponents/modals/successModal';
+import ErrorModal from '@/app/commonComponents/modals/errorModal';
+import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import SubmitOverlayToast from '@/app/commonComponents/utils/submitOverlayToast';
 
 interface ProfileDropdownProps {

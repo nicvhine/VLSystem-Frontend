@@ -2,7 +2,7 @@
 
 import { Dispatch, SetStateAction } from "react";
 import { formatCurrency } from "../../utils/formatters";
-import ConfirmModal from "../../modals/confirmModal/ConfirmModal";
+import ConfirmModal from "../../modals/confirmModal";
 import { PaymentModalProps } from "../../utils/Types/collection";
 
 export default function PaymentModal({

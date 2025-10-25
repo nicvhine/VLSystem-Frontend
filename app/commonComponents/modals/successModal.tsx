@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SuccessModalProps } from '../../utils/Types/modal';
+import { SuccessModalProps } from '../utils/Types/modal';
 
 /**
  * Success modal component with fade animations and auto-close functionality

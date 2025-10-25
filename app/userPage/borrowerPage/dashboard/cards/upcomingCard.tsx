@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Collection } from '@/app/commonComponents/utils/Types/collection';
 import { Loan } from '@/app/commonComponents/utils/Types/loan';
 import { handlePay } from '../function';
-import CustomAmountModal from '@/app/commonComponents/modals/payModal/modal';
+import CustomAmountModal from '@/app/commonComponents/modals/payModal';
 
 interface UpcomingCollectionCardProps {
   collection: Collection;

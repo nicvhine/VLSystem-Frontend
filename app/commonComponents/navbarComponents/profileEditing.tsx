@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import ConfirmModal from '@/app/commonComponents/modals/confirmModal/ConfirmModal';
+import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import translations from '../translation';
 import { ProfileEditingProps } from '../utils/Types/profileEditing';
 

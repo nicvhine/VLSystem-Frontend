@@ -10,7 +10,7 @@ import { User } from "@/app/commonComponents/utils/Types/userPage";
 import React from "react";
 import CreateUserModal from "./createUserModal";
 import DecisionModal from "./modal";
-import SuccessModal from "@/app/commonComponents/modals/successModal/modal";
+import SuccessModal from "@/app/commonComponents/modals/successModal";
 import translations from "@/app/commonComponents/translation";
 
 // Use shared LoadingSpinner from common utils

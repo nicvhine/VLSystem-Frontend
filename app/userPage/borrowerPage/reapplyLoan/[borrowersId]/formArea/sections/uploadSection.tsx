@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
-import ConfirmModal from "@/app/commonComponents/modals/confirmModal/ConfirmModal";
+import ConfirmModal from "@/app/commonComponents/modals/confirmModal";
 
 interface UploadSectionProps {
   language: 'en' | 'ceb';

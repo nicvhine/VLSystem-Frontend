@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-import ConfirmModal from "@/app/commonComponents/modals/confirmModal/ConfirmModal";
+import ConfirmModal from "@/app/commonComponents/modals/confirmModal";
 
 // Props interface for CreateUserModal component
 interface CreateUserModalProps {

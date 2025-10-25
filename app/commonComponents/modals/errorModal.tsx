@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ErrorModalProps } from '../../utils/Types/modal';
+import { ErrorModalProps } from '../utils/Types/modal';
 
 /**
  * Error modal component with fade animations and auto-close functionality

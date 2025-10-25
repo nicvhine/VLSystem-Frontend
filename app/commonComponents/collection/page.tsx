@@ -8,7 +8,7 @@ import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { useCollectionPage } from "./hooks";
 import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
-import ErrorModal from "@/app/commonComponents/modals/errorModal/modal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { formatCurrency } from "../utils/formatters";
 import { CollectionsPageProps, Collection } from "../utils/Types/collection";
 import Filter from "../utils/sortAndSearch";

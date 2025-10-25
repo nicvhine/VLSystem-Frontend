@@ -2,7 +2,7 @@
 
 import { FC, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ConfirmModalProps } from "../../utils/Types/modal";
+import { ConfirmModalProps } from "../utils/Types/modal";
 
 /**
  * Reusable confirmation modal component for sensitive actions

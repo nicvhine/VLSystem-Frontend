@@ -6,8 +6,8 @@ import { FiArrowLeft } from "react-icons/fi";
 
 // Components
 import Navbar from "../../navbarComponents/navbar";
-import SuccessModal from "../../modals/successModal/modal";
-import ErrorModal from "../../modals/errorModal/modal";
+import SuccessModal from "../../modals/successModal";
+import ErrorModal from "../../modals/errorModal";
 import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/modal";
 import ReleaseForm from "../../modals/loanAgreement/releaseForm";
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";

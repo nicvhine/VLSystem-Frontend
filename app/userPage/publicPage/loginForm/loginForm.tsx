@@ -3,7 +3,7 @@
 // Login form with SMS verification step
 import { FormEvent, useState } from 'react';
 import { loginHandler } from './loginHandlers';
-import ErrorModal from '@/app/commonComponents/modals/errorModal/modal';
+import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import { ButtonContentLoading } from '@/app/commonComponents/utils/loading';
 import translationData from '@/app/commonComponents/translation';
 

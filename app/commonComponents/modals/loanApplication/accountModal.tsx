@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/utils/loading";
-import SuccessModal from "../../modals/successModal/modal";
-import ErrorModal from "../../modals/errorModal/modal";
+import SuccessModal from "../successModal";
+import ErrorModal from "../errorModal";
 import emailjs from "emailjs-com";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 
