@@ -145,26 +145,27 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [balanceDecision, setBalanceDecision] = useState<'deduct' | 'addPrincipal'>('deduct');
 
   useEffect(() => {
-     if (!borrowersId) {
-    console.warn("No borrowersId provided");
-    return;
-  }
+    if (!borrowersId) {
+      console.warn("No borrowersId provided");
+      return;
+    }
   
     const fetchBalance = async () => {
       try {
         const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}/balance`);
         const data = await res.json();
-        if (data.hasBalance && data.totalBalance > 0) {
-          setPreviousBalance(data.totalBalance);
-          setShowBalanceField(true);
-        }
+  
+        // backend already returns { balance: number }
+        setPreviousBalance(data.balance || 0);
       } catch (err) {
-        console.error("Failed to fetch previous balance:", err);
+        console.error("Failed to fetch active loan balance:", err);
+        setPreviousBalance(0);
       }
     };
   
     fetchBalance();
   }, [borrowersId]);
+  
   
   // Terms/Privacy Modal
   const [showTermsModal, setShowTermsModal] = useState(false);
