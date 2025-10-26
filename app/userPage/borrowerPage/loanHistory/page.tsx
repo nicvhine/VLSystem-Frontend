@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loan } from '@/app/commonComponents/utils/Types/loan';
 import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
-import { formatDate } from '@/app/commonComponents/utils/formatters';
+import { formatDate, formatCurrency } from '@/app/commonComponents/utils/formatters';
 import Borrower from '../page';
 
 export default function LoanHistoryPage() {
@@ -22,17 +22,17 @@ export default function LoanHistoryPage() {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(
-          `http://localhost:3001/loans/all/${borrowersId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error('Failed to fetch loans');
         const data: Loan[] = await res.json();
+        // Sort descending by date
         setLoans(
           data.sort(
             (a, b) =>
-              new Date(b.dateDisbursed || 0).getTime() -
-              new Date(a.dateDisbursed || 0).getTime()
+              new Date(b.dateDisbursed ?? 0).getTime() -
+              new Date(a.dateDisbursed ?? 0).getTime()
           )
         );
       } catch (err: any) {
@@ -46,15 +46,13 @@ export default function LoanHistoryPage() {
     fetchLoans();
   }, [borrowersId]);
 
-  const formatCurrency = (value?: number | string) =>
-    `₱${Number(value ?? 0).toLocaleString()}`;
-
-  const totalLoanAmount = loans.reduce((sum, l) => sum + (l.appLoanAmount ?? 0), 0);
-  const totalInterestAmount = loans.reduce(
-    (sum, l) => sum + (l.appTotalInterestAmount ?? 0),
+  // Correct total calculations
+  const totalLoanAmount = loans.reduce(
+    (sum, loan) => sum + Number(loan.appLoanAmount ?? 0),
     0
   );
-
+  
+  
   return (
     <Borrower>
       <div className="p-6">
@@ -63,16 +61,7 @@ export default function LoanHistoryPage() {
         {/* Top Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <MetricCard label="Total Loans" value={loans.length} color="blue" />
-          <MetricCard
-            label="Total Loan Amount"
-            value={formatCurrency(totalLoanAmount)}
-            color="green"
-          />
-          <MetricCard
-            label="Total Interest Paid"
-            value={formatCurrency(totalInterestAmount)}
-            color="purple"
-          />
+          <MetricCard label="Total Loan Amount" value={formatCurrency(totalLoanAmount)} color="green" />
         </div>
 
         {/* Loan Table */}
@@ -124,15 +113,13 @@ export default function LoanHistoryPage() {
                         <span className="font-medium">Loan Type:</span> {loan.loanType}
                       </p>
                       <p>
-                        <span className="font-medium">Total Payable:</span>{' '}
-                        {formatCurrency(loan.appTotalPayable)}
+                        <span className="font-medium">Total Payable:</span> {formatCurrency(loan.appTotalPayable)}
                       </p>
                       <p>
                         <span className="font-medium">Interest Rate:</span> {loan.appInterestRate ?? 0}%
                       </p>
                       <p>
-                        <span className="font-medium">Total Interest:</span>{' '}
-                        {formatCurrency(loan.appTotalInterestAmount)}
+                        <span className="font-medium">Total Interest:</span> {formatCurrency(loan.appTotalInterestAmount)}
                       </p>
                       <p>
                         <span className="font-medium">Terms:</span> {loan.appLoanTerms} months
@@ -149,6 +136,7 @@ export default function LoanHistoryPage() {
   );
 }
 
+// Metric Card Component
 const MetricCard = ({
   label,
   value,
