@@ -83,9 +83,7 @@ export default function LoanDetails({
       return;
     }
 
-    // Determine the basis for validation
     const validationAmount = balanceDecision === "addPrincipal" ? amount + previousBalance : amount;
-
     const minAmount = Math.min(...options.map((o) => o.amount));
     const maxAmount = Math.max(...options.map((o) => o.amount));
 
@@ -126,7 +124,7 @@ export default function LoanDetails({
       const adjusted = Number(customLoanAmount) + previousBalance;
       setAdjustedLoanAmount(adjusted);
       if (onAdjustedLoanChange) onAdjustedLoanChange(adjusted);
-      validateLoanAmount(Number(customLoanAmount)); // validate against adjusted
+      validateLoanAmount(Number(customLoanAmount));
     } else {
       setAdjustedLoanAmount("");
       if (onAdjustedLoanChange) onAdjustedLoanChange(Number(customLoanAmount));
@@ -144,52 +142,65 @@ export default function LoanDetails({
         {language === "en" ? "Loan Details" : "Detalye sa Pahulam"}
       </h4>
 
-      {/* Previous Balance */}
-      <p className="mb-4 text-gray-700 font-medium">
-        {language === "en" ? "You have a balance of" : "Aduna kay naunang balance nga"} {formatCurrency(previousBalance)}
-      </p>
+      {/* Only show balance and radio options if borrower actually has a balance */}
+      {previousBalance > 0 && (
+        <>
+          {/* Previous Balance */}
+          <p className="mb-4 text-gray-700 font-medium">
+            {language === "en"
+              ? "You have an active balance of"
+              : "Aduna kay aktibong balance nga"}{" "}
+            {formatCurrency(previousBalance)}
+          </p>
 
-      {/* Balance Decision Radios */}
-      <div className="flex flex-col gap-3 mb-6">
-        <label className="flex items-start gap-2">
-          <input
-            type="radio"
-            name="balanceDecision"
-            value="deduct"
-            checked={balanceDecision === 'deduct'}
-            onChange={() => setBalanceDecision('deduct')}
-            className="mt-1"
-          />
-          <div>
-            <span className="font-medium text-gray-800">{language === "en" ? "Deduct from Receivable" : "Ibawas sa Makadawat"}</span>
-            <p className="text-sm text-gray-500">
-              {language === "en"
-                ? "Cash received will be reduced by this balance. Interest still calculated on full loan amount."
-                : "Ang cash nga madawat ibawas sa balance. Interest kay base gihapon sa full loan amount."}
-            </p>
+          {/* Balance Decision Radios */}
+          <div className="flex flex-col gap-3 mb-6">
+            <label className="flex items-start gap-2">
+              <input
+                type="radio"
+                name="balanceDecision"
+                value="deduct"
+                checked={balanceDecision === 'deduct'}
+                onChange={() => setBalanceDecision('deduct')}
+                className="mt-1"
+              />
+              <div>
+                <span className="font-medium text-gray-800">
+                  {language === "en" ? "Deduct from Receivable" : "Ibawas sa Makadawat"}
+                </span>
+                <p className="text-sm text-gray-500">
+                  {language === "en"
+                    ? "Cash received will be reduced by this balance. Interest still calculated on full loan amount."
+                    : "Ang cash nga madawat ibawas sa balance. Interest kay base gihapon sa full loan amount."}
+                </p>
+              </div>
+            </label>
+
+            <label className="flex items-start gap-2">
+              <input
+                type="radio"
+                name="balanceDecision"
+                value="addPrincipal"
+                checked={balanceDecision === 'addPrincipal'}
+                onChange={() => setBalanceDecision('addPrincipal')}
+                className="mt-1"
+              />
+              <div>
+                <span className="font-medium text-gray-800">
+                  {language === "en" ? "Add to Principal" : "Idugang sa Principal"}
+                </span>
+                <p className="text-sm text-gray-500">
+                  {language === "en"
+                    ? "Balance will be added to loan principal. Full cash received, interest on total amount."
+                    : "Ang balance idugang sa principal. Full cash madawat, interest base sa total amount."}
+                </p>
+              </div>
+            </label>
           </div>
-        </label>
+        </>
+      )}
 
-        <label className="flex items-start gap-2">
-          <input
-            type="radio"
-            name="balanceDecision"
-            value="addPrincipal"
-            checked={balanceDecision === 'addPrincipal'}
-            onChange={() => setBalanceDecision('addPrincipal')}
-            className="mt-1"
-          />
-          <div>
-            <span className="font-medium text-gray-800">{language === "en" ? "Add to Principal" : "Idugang sa Principal"}</span>
-            <p className="text-sm text-gray-500">
-              {language === "en"
-                ? "Balance will be added to loan principal. Full cash received, interest on total amount."
-                : "Ang balance idugang sa principal. Full cash madawat, interest base sa total amount."}
-            </p>
-          </div>
-        </label>
-      </div>
-
+      {/* Loan Input Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Loan Purpose */}
         <div>
@@ -229,7 +240,7 @@ export default function LoanDetails({
         </div>
 
         {/* Adjusted Loan Amount */}
-        {balanceDecision === "addPrincipal" && customLoanAmount !== "" && (
+        {previousBalance > 0 && balanceDecision === "addPrincipal" && customLoanAmount !== "" && (
           <div>
             <label className="block font-medium mb-2 text-gray-700">
               {language === "en" ? "Adjusted Loan Amount:" : "Nausab nga Kantidad sa Pahulam:"}
@@ -240,7 +251,6 @@ export default function LoanDetails({
               readOnly
               className={`w-full border p-3 rounded-lg ${loanAmountError ? 'border-red-500' : 'border-gray-200'} bg-gray-50`}
             />
-            {loanAmountError && <p className="text-sm text-red-500 mt-1">{loanAmountError}</p>}
           </div>
         )}
 
@@ -293,7 +303,7 @@ export default function LoanDetails({
             const monthlyPayment = adjustedLoan / months + monthlyInterest;
 
             let netProceeds = adjustedLoan - serviceCharge;
-            if (balanceDecision === "deduct") netProceeds -= previousBalance;
+            if (previousBalance > 0 && balanceDecision === "deduct") netProceeds -= previousBalance;
 
             return (
               <div className="space-y-2 text-black">
