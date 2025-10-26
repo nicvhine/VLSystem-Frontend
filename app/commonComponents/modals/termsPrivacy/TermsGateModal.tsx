@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function TermsGateModal({
   language,
@@ -28,13 +29,26 @@ export default function TermsGateModal({
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setAnimateIn(true);
     return () => setAnimateIn(false);
   }, []);
-  return (
-    <div className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+  useEffect(() => {
+    // ensure this component only renders on the client and after mount
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+  if (!mounted) return null;
+
+  const markup = (
+    // Ensure the modal backdrop sits above everything (navbars, sidebars, dev overlays)
+    <div
+      style={{ zIndex: 2147483646 }}
+      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        style={{ zIndex: 2147483647 }}
+        className={`bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         {showCloseIcon && (
           <button onClick={onCancel} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
         )}
@@ -106,4 +120,8 @@ export default function TermsGateModal({
       </div>
     </div>
   );
+
+  const target = typeof document !== 'undefined' ? document.body : null;
+  if (!target) return null;
+  return createPortal(markup, target);
 }
