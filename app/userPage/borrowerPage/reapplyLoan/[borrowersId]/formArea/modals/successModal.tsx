@@ -26,7 +26,7 @@ export default function SuccessModalWithAnimation({
         setAnimateIn(false);
         setTimeout(() => {
             onClose();
-            router.push("/userPage/borrowerPage");
+            router.push("/userPage/borrowerPage/dashboard");
         }, 150);
     };
 
