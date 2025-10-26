@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Borrower from '../page';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import TermsGateModal from '@/app/commonComponents/modals/termsPrivacy/TermsGateModal';
@@ -25,8 +25,8 @@ export default function BorrowerDashboard() {
   const dashboard = useBorrowerDashboard(borrowersId);
 
   const {
-    activeLoan,
     allLoans,
+    activeLoan,
     collections,
     paidPayments,
     paymentProgress,
@@ -61,25 +61,34 @@ export default function BorrowerDashboard() {
     }
   }, [showTermsModal, setTosRead, setPrivacyRead]);
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center py-8">
-        <LoadingSpinner />
-      </div>
-    );
-
-  if (error) return <p className="text-red-600">{error}</p>;
-
-  // Pick active loan or fallback to latest loan
-  const displayedLoan =
-    activeLoan ||
-    (allLoans?.length
-      ? allLoans.reduce((prev, curr) =>
-          new Date(prev.dateDisbursed || 0) > new Date(curr.dateDisbursed || 0)
-            ? prev
-            : curr
-        )
-      : null);
+  // Pick the loan to display: active first, else most recent inactive
+  const displayedLoan = useMemo(() => {
+    if (!allLoans || allLoans.length === 0) return null;
+  
+    // 1. Active loans sorted descending
+    const activeLoans = allLoans
+      .filter((loan) => loan.status === "Active")
+      .sort(
+        (a, b) =>
+          new Date(b.dateDisbursed ?? 0).getTime() -
+          new Date(a.dateDisbursed ?? 0).getTime()
+      );
+  
+    if (activeLoans.length > 0) return activeLoans[0];
+  
+    // 2. Inactive loans sorted descending
+    const inactiveLoans = allLoans
+      .filter((loan) => loan.status !== "Active")
+      .sort(
+        (a, b) =>
+          new Date(b.dateDisbursed ?? 0).getTime() -
+          new Date(a.dateDisbursed ?? 0).getTime()
+      );
+  
+    return inactiveLoans[0] || null;
+  }, [allLoans]);
+  
+  
 
   const borrowerId = displayedLoan?.borrowersId || borrowersId || '';
 
@@ -103,111 +112,115 @@ export default function BorrowerDashboard() {
 
   return (
     <Borrower>
-      <div className="flex flex-col md:flex-row gap-4 md:gap-6 p-4">
-        <div className="w-full md:w-1/2 flex flex-col gap-4">
-          <LoanDetailsCard activeLoan={displayedLoan} language={language} />
-          <div className="flex gap-4">
-            {/* <PaymentHistoryCard
-              paidPayments={paidPayments}
-              setIsPaymentModalOpen={setIsPaymentModalOpen}
-            /> */}
-            <PaymentProgressCard
-              collections={collections}
-              paymentProgress={paymentProgress}
-              borrowerId={borrowerId}
-            />
-            <CreditScoreCard
-              collections={collections}
-              paymentProgress={paymentProgress}
-              borrowerId={borrowerId}
-            />
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <LoadingSpinner />
+        </div>
+      ) : error ? (
+        <p className="text-red-600">{error}</p>
+      ) : !displayedLoan ? (
+        <p>No loans found.</p>
+      ) : (
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 p-4">
+          <div className="w-full md:w-1/2 flex flex-col gap-4">
+            <LoanDetailsCard activeLoan={displayedLoan} language={language} />
+            <div className="flex gap-4">
+              <PaymentProgressCard
+                collections={collections}
+                paymentProgress={paymentProgress}
+                borrowerId={borrowerId}
+              />
+              <CreditScoreCard
+                collections={collections}
+                paymentProgress={paymentProgress}
+                borrowerId={borrowerId}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1 flex flex-col gap-4 overflow-y-auto max-h-screen">
-          <h3 className="text-xl font-semibold">Upcoming Bills</h3>
-          {upcoming.length > 0 ? (
-            upcoming.map((collection, i) => {
-              const canPay = i === 0 || upcoming[i - 1].status === 'Paid';
-              return (
-                <UpcomingCollectionCard
-                  key={collection.collectionNumber}
-                  collection={collection}
-                  activeLoan={displayedLoan!}
-                  canPay={canPay}
-                  setErrorMsg={setErrorMsg}
-                  setShowErrorModal={setShowErrorModal}
-                />
-              );
-            })
-          ) : (
-            <p>No upcoming bills.</p>
+          <div className="flex-1 flex flex-col gap-4 overflow-y-auto max-h-screen">
+            <h3 className="text-xl font-semibold">Upcoming Bills</h3>
+            {upcoming.length > 0 ? (
+              upcoming.map((collection, i) => {
+                const canPay = i === 0 || upcoming[i - 1].status === 'Paid';
+                return (
+                  <UpcomingCollectionCard
+                    key={collection.collectionNumber}
+                    collection={collection}
+                    activeLoan={displayedLoan!}
+                    canPay={canPay}
+                    setErrorMsg={setErrorMsg}
+                    setShowErrorModal={setShowErrorModal}
+                  />
+                );
+              })
+            ) : (
+              <p>No upcoming bills.</p>
+            )}
+
+            {paid.length > 0 && (
+              <>
+                <h4 className="text-lg font-semibold mt-4">Paid Collections</h4>
+                {paid.map((c) => (
+                  <PaidCollectionCard key={c.collectionNumber} collection={c} />
+                ))}
+              </>
+            )}
+          </div>
+
+          <PaymentHistoryModal
+            isOpen={isPaymentModalOpen}
+            animateIn={paymentModalAnimateIn}
+            onClose={() => setIsPaymentModalOpen(false)}
+            paidPayments={paidPayments}
+          />
+
+          {showErrorModal && (
+            <ErrorModal
+              isOpen={showErrorModal}
+              message={errorMsg}
+              onClose={() => setShowErrorModal(false)}
+            />
           )}
 
-          {paid.length > 0 && (
-            <>
-              <h4 className="text-lg font-semibold mt-4">Paid Collections</h4>
-              {paid.map((c) => (
-                <PaidCollectionCard key={c.collectionNumber} collection={c} />
-              ))}
-            </>
+          {showTermsModal && (
+            <TermsGateModal
+              language={language}
+              onCancel={() => {}}
+              onOpenTos={() => setShowTosContent(true)}
+              onOpenPrivacy={() => setShowPrivacyContent(true)}
+              tosRead={tosRead}
+              privacyRead={privacyRead}
+              acceptLabel={
+                language === 'en' ? 'Accept and continue' : 'Mouyon ug mopadayon'
+              }
+              onAccept={() => {
+                setShowTermsModal(false);
+                try {
+                  localStorage.setItem('termsReminderSeenAt', String(Date.now()));
+                } catch {}
+              }}
+              showCloseIcon={false}
+              showCancelButton={false}
+            />
+          )}
+
+          {showTosContent && (
+            <TermsContentModal
+              language={language}
+              onClose={() => setShowTosContent(false)}
+              onReadComplete={() => setTosRead(true)}
+            />
+          )}
+          {showPrivacyContent && (
+            <PrivacyContentModal
+              language={language}
+              onClose={() => setShowPrivacyContent(false)}
+              onReadComplete={() => setPrivacyRead(true)}
+            />
           )}
         </div>
-
-        <PaymentHistoryModal
-          isOpen={isPaymentModalOpen}
-          animateIn={paymentModalAnimateIn}
-          onClose={() => setIsPaymentModalOpen(false)}
-          paidPayments={paidPayments}
-        />
-
-        {showErrorModal && (
-          <ErrorModal
-            isOpen={showErrorModal}
-            message={errorMsg}
-            onClose={() => setShowErrorModal(false)}
-          />
-        )}
-
-        {showTermsModal && (
-          <TermsGateModal
-            language={language}
-            onCancel={() => {}}
-            onOpenTos={() => setShowTosContent(true)}
-            onOpenPrivacy={() => setShowPrivacyContent(true)}
-            tosRead={tosRead}
-            privacyRead={privacyRead}
-            acceptLabel={
-              language === 'en'
-                ? 'Accept and continue'
-                : 'Mouyon ug mopadayon'
-            }
-            onAccept={() => {
-              setShowTermsModal(false);
-              try {
-                localStorage.setItem('termsReminderSeenAt', String(Date.now()));
-              } catch {}
-            }}
-            showCloseIcon={false}
-            showCancelButton={false}
-          />
-        )}
-
-        {showTosContent && (
-          <TermsContentModal
-            language={language}
-            onClose={() => setShowTosContent(false)}
-            onReadComplete={() => setTosRead(true)}
-          />
-        )}
-        {showPrivacyContent && (
-          <PrivacyContentModal
-            language={language}
-            onClose={() => setShowPrivacyContent(false)}
-            onReadComplete={() => setPrivacyRead(true)}
-          />
-        )}
-      </div>
+      )}
     </Borrower>
   );
 }
