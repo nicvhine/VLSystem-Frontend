@@ -6,8 +6,9 @@ import { Collection, Payment } from "@/app/commonComponents/utils/Types/collecti
 import translations from "@/app/commonComponents/translation";
 
 export default function useBorrowerDashboard(borrowersId: string | null) {
-  const [activeLoan, setActiveLoan] = useState<Loan | null>(null);
   const [allLoans, setAllLoans] = useState<Loan[]>([]);
+  const [activeLoan, setActiveLoan] = useState<Loan | null>(null);
+  const [displayedLoan, setDisplayedLoan] = useState<Loan | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [paidPayments, setPaidPayments] = useState<Payment[]>([]);
   const [paymentProgress, setPaymentProgress] = useState(0);
@@ -16,7 +17,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   const [language, setLanguage] = useState<"en" | "ceb">("en");
   const [role, setRole] = useState<string | null>(null);
 
-  // Tems and Modal
+  // Terms & Modal
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showTosContent, setShowTosContent] = useState(false);
   const [showPrivacyContent, setShowPrivacyContent] = useState(false);
@@ -33,7 +34,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
 
   const t = translations.loanTermsTranslator[language];
 
-  // Language
+  /** LANGUAGE SETTINGS **/
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     setRole(storedRole);
@@ -60,7 +61,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
   }, [role]);
 
-  // Terms
+  /** TERMS & MODAL **/
   useEffect(() => {
     const mustChange = localStorage.getItem("forcePasswordChange") === "true";
     if (!mustChange) setTermsReady(true);
@@ -75,98 +76,98 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
     const key = "termsReminderSeenAt";
     const lastSeen = localStorage.getItem(key);
     const now = Date.now();
-    const threshold = 24 * 60 * 60 * 1000; 
+    const threshold = 24 * 60 * 60 * 1000; // 24 hours
 
     if (!lastSeen || isNaN(Number(lastSeen)) || now - Number(lastSeen) > threshold) {
       setShowTermsModal(true);
     }
   }, [termsReady]);
 
-  // Fetch all loans
-  useEffect(() => {
-    if (!borrowersId) return;
-    const controller = new AbortController();
-  
-    const fetchAllLoans = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, {
-          signal: controller.signal,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch loans");
-        const data: Loan[] = await res.json();
-  
-        setAllLoans(data); 
-        const active = data.find(loan => loan.status === "Active") || null;
-        setActiveLoan(active);
-  
-      } catch (err: any) {
-        if (err.name === "AbortError") return; 
-        console.error("Error fetching all loans:", err);
-        setError("Failed to load loans");
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    fetchAllLoans();
-    return () => controller.abort();
-  }, [borrowersId]);
-  
+ /** FETCH ALL LOANS **/
+useEffect(() => {
+  if (!borrowersId) return;
+  const controller = new AbortController();
 
-  // Loan details
+  const fetchAllLoans = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, {
+        signal: controller.signal,
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch loans");
+      const data: Loan[] = await res.json();
+
+      console.log("Fetched loans:", data);
+
+      // Find active loan
+      const active = data
+        .filter(l => l.status === "Active")
+        .sort((a, b) => new Date(b.dateDisbursed ?? 0).getTime() - new Date(a.dateDisbursed ?? 0).getTime())[0] || null;
+
+      console.log("Active loan found:", active);
+      debugger; // <-- pause here in dev tools
+
+      setActiveLoan(active);
+
+      // Determine displayed loan
+      const displayed = active || data
+        .filter(l => l.status !== "Active")
+        .sort((a, b) => new Date(b.dateDisbursed ?? 0).getTime() - new Date(a.dateDisbursed ?? 0).getTime())[0] || null;
+
+      console.log("Displayed loan selected:", displayed);
+      debugger; // <-- pause here in dev tools
+
+      if (displayed) {
+        const mergedLoan = {
+          ...displayed, // loan fields
+          ...displayed, // app fields (already merged in API)
+        };
+        setDisplayedLoan(mergedLoan);
+      }
+
+      setAllLoans(data);
+
+    } catch (err: any) {
+      if (err.name === "AbortError") return;
+      console.error("Error fetching all loans:", err);
+      setError("Failed to load loans");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchAllLoans();
+  return () => controller.abort();
+}, [borrowersId]);
+
+
+  /** FETCH LOAN DETAILS, COLLECTIONS, PAYMENTS BASED ON DISPLAYED LOAN **/
   useEffect(() => {
-    if (!activeLoan?.loanId) return;
+    if (!displayedLoan?.loanId || !borrowersId) return;
     const controller = new AbortController();
-  
-    const fetchLoanDetails = async () => {
+    const token = localStorage.getItem("token");
+
+    const fetchCollections = async () => {
       try {
-        const token = localStorage.getItem("token"); 
         const res = await fetch(
-          `http://localhost:3001/loans/details/${activeLoan.loanId}`,
-          {
-            signal: controller.signal,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `http://localhost:3001/collections/schedule/${borrowersId}/${displayedLoan.loanId}`,
+          { signal: controller.signal, headers: { Authorization: `Bearer ${token}` } }
         );
-  
-        if (!res.ok) throw new Error("Failed to fetch loan details");
-  
-        const data: Loan = await res.json();
-        if (data) setActiveLoan(prev => ({ ...prev, ...data, loanId: prev?.loanId }));
-  
+        if (!res.ok) throw new Error("Failed to fetch collections");
+        const data: Collection[] = await res.json();
+        setCollections(data);
       } catch (err) {
-        console.error("Error fetching loan details:", err);
+        console.error("Error fetching collections:", err);
       }
     };
-  
-    fetchLoanDetails();
-    return () => controller.abort();
-  }, [activeLoan?.loanId]);
-  
 
-  // Payments
-  useEffect(() => {
-    if (!activeLoan?.loanId) return;
-    const controller = new AbortController();
-  
     const fetchPayments = async () => {
       try {
-        const token = localStorage.getItem("token");
         const res = await fetch(
-          `http://localhost:3001/payments/ledger/${activeLoan.loanId}`,
-          {
-            signal: controller.signal,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `http://localhost:3001/payments/ledger/${displayedLoan.loanId}`,
+          { signal: controller.signal, headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch payments");
         const data = await res.json();
@@ -176,57 +177,24 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
         console.error("Error fetching payments:", err);
       }
     };
-  
-    fetchPayments();
-    return () => controller.abort();
-  }, [activeLoan?.loanId]);
-  
-  // Collections
-  useEffect(() => {
-    if (!activeLoan?.loanId || !borrowersId) return;
-    const controller = new AbortController();
-  
-    const fetchCollections = async () => {
-      try {
-        const token = localStorage.getItem("token"); 
-        const res = await fetch(
-          `http://localhost:3001/collections/schedule/${borrowersId}/${activeLoan.loanId}`,
-          {
-            signal: controller.signal,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-  
-        if (!res.ok) throw new Error("Failed to fetch collections");
-  
-        const data: Collection[] = await res.json();
-        setCollections(data);
-  
-      } catch (err) {
-        console.error("Error fetching collections:", err);
-      }
-    };
-  
-    fetchCollections();
-    return () => controller.abort();
-  }, [activeLoan?.loanId, borrowersId]);
-  
 
-  // Calculate payment progress
+    fetchCollections();
+    fetchPayments();
+
+    return () => controller.abort();
+  }, [displayedLoan?.loanId, borrowersId]);
+
+  /** PAYMENT PROGRESS **/
   useEffect(() => {
     if (collections.length === 0) return setPaymentProgress(0);
-
     const total = collections.reduce((sum, c) => sum + c.periodAmount, 0);
     const paid = collections
       .filter(c => c.status === "Paid")
       .reduce((sum, c) => sum + c.periodAmount, 0);
-
     setPaymentProgress(total > 0 ? Math.round((paid / total) * 100) : 0);
   }, [collections]);
 
-  // Payment modal animation
+  /** PAYMENT MODAL ANIMATION **/
   useEffect(() => {
     if (isPaymentModalOpen) {
       setPaymentModalAnimateIn(false);
@@ -240,6 +208,7 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   return {
     allLoans,
     activeLoan,
+    displayedLoan,
     collections,
     paidPayments,
     paymentProgress,
