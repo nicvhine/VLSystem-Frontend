@@ -1,20 +1,38 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Borrower from "../page";
 import useBorrowerDashboard from "../dashboard/hooks";
 import { Payment, Collection } from "@/app/commonComponents/utils/Types/collection";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
 import ReceiptModal from "../modals/receipt";
 import Pagination from "@/app/commonComponents/utils/pagination";
+import translations from '@/app/commonComponents/translation';
 
 export default function PaymentHistoryPage() {
   const [modalPayment, setModalPayment] = useState<Payment | null>(null);
   const [pageSize, setPageSize] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : null;
   const { paidPayments = [], collections = [], loading, error } = useBorrowerDashboard(borrowersId);
+
+  const t = translations.borrowerPageTranslation[language];
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('language') as 'en' | 'ceb';
+    if (storedLanguage) setLanguage(storedLanguage);
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail?.language) {
+        setLanguage(event.detail.language as 'en' | 'ceb');
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
 
   // Sort payments by date ascending
   const sortedPayments = [...paidPayments].sort(
@@ -37,7 +55,7 @@ export default function PaymentHistoryPage() {
 
   if (loading) return (
     <div className="flex justify-center items-center h-screen">
-      <span className="text-gray-500 text-lg">Loading payments...</span>
+      <span className="text-gray-500 text-lg">{t.t35}</span>
     </div>
   );
 
@@ -56,33 +74,33 @@ export default function PaymentHistoryPage() {
 
           {/* Dashboard Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card title="Total Payments" value={totalPayments} />
-            <Card title="Total Amount Paid" value={`₱${totalAmount.toLocaleString()}`} />
+            <Card title={t.t22} value={totalPayments} />
+            <Card title={t.t23} value={`₱${totalAmount.toLocaleString()}`} />
             <Card
-              title="Latest Payment"
+                title={t.t24}
               value={latestPayment ? formatDate(latestPayment.toISOString()) : '-'}
             />
             <Card
-              title="Next Payment"
-              value={nextPayment ? formatDate(new Date(nextPayment.dueDate).toISOString()) : 'All Paid'}
+              title={t.t25}
+              value={nextPayment ? formatDate(new Date(nextPayment.dueDate).toISOString()) : t.t34}
             />
           </div>
 
           {/* Payment Table */}
           <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
             {sortedPayments.length === 0 ? (
-              <p className="text-gray-500 text-center py-10">No payments made yet.</p>
+              <p className="text-gray-500 text-center py-10">{t.t26}</p>
             ) : (
               <table className="min-w-full">
                 <thead>
                   <tr>
                     {[
-                      'Reference Number',
-                      'Payment Date',
-                      'Loan Balance',
-                      'Amount Paid',
-                      'Mode',
-                      'Receipt',
+                      t.t27,
+                      t.t28,
+                      t.t29,
+                      t.t30,
+                      t.t31,
+                      t.t32,
                     ].map((heading) => (
                       <th
                         key={heading}
@@ -116,7 +134,7 @@ export default function PaymentHistoryPage() {
                               onClick={() => setModalPayment(payment)}
                               className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition"
                             >
-                              View
+                              {t.t33}
                             </button>
                           ) : (
                             <span className="text-sm text-gray-400">N/A</span>
@@ -139,7 +157,7 @@ export default function PaymentHistoryPage() {
               pageSize={pageSize}
               setCurrentPage={setCurrentPage}
               setPageSize={setPageSize}
-              language={'en'}
+              language={language}
             />
           </div>
 

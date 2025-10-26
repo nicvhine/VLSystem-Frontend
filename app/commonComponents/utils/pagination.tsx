@@ -16,6 +16,11 @@ const Pagination: React.FC<PaginationProps> = ({
   const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
   const t = translations.loanTermsTranslator[language];
+  const tPagination = {
+    en: { showing: "Showing" },
+    ceb: { showing: "Nagpakita" }
+  };
+  
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
       <div className="text-sm text-gray-700">
@@ -23,7 +28,7 @@ const Pagination: React.FC<PaginationProps> = ({
           <>0</>
         ) : (
           <>
-            {language === "en" ? "Showing" : "Nagpakita"}{" "}
+            {tPagination[language].showing}{" "}
             <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span>{" "}
             {t.l37} <span className="font-medium">{totalCount}</span>
           </>

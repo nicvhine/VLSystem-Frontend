@@ -10,6 +10,7 @@ import buttonTranslation from "./buttonTranslation";
 import trackerApplication from "./trackerApplication";
 import viewLoanTranslation from "./viewLoanTranslation";
 import requirementsTranslation from "./requirementsTranslation";
+import borrowerPageTranslation from "./borrowerPageTranslation";
 
 // New grouped translation files
 import applicationTranslation from "./applicationTranslation";
@@ -29,6 +30,7 @@ const translations = {
   trackerApplication,
   viewLoanTranslation,
   requirementsTranslation,
+  borrowerPageTranslation,
   // New grouped translations
   applicationTranslation,
   authTranslation,

@@ -7,6 +7,7 @@ import { formatDate, formatCurrency } from '@/app/commonComponents/utils/formatt
 import { motion, AnimatePresence } from 'framer-motion';
 import Pagination from '@/app/commonComponents/utils/pagination';
 import Borrower from '../page';
+import translations from '@/app/commonComponents/translation';
 
 export default function LoanHistoryPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -20,9 +21,26 @@ export default function LoanHistoryPage() {
   const [collectionsPageSize, setCollectionsPageSize] = useState<number>(10);
   const [currentLoansPage, setCurrentLoansPage] = useState<number>(1);
   const [loansPageSize, setLoansPageSize] = useState<number>(10);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const borrowersId =
     typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : null;
+
+  const t = translations.borrowerPageTranslation[language];
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem('language') as 'en' | 'ceb';
+    if (storedLanguage) setLanguage(storedLanguage);
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail?.language) {
+        setLanguage(event.detail.language as 'en' | 'ceb');
+      }
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange as EventListener);
+    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
 
   useEffect(() => {
     if (!borrowersId) return;
@@ -62,9 +80,9 @@ export default function LoanHistoryPage() {
   // helper to fetch loan details (used by onClick and retry)
   const fetchLoanDetails = async (loanId: string) => {
     if (!loanId) return;
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {
-      setError('Not authenticated. Please log in.');
+      setError(t.t20);
       return;
     }
 
@@ -115,7 +133,7 @@ export default function LoanHistoryPage() {
       setCurrentCollectionsPage(1);
     } catch (err) {
       console.error('Error fetching loan details:', err);
-      setError('Failed to load loan details. Please try again.');
+      setError(t.t21);
     } finally {
       setLoadingDetailsId(null);
     }
@@ -126,19 +144,19 @@ export default function LoanHistoryPage() {
       <div className="min-h-screen bg-gray-50 p-6 md:p-12">
         <div className="max-w-screen-2xl mx-auto w-full">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-m font-semibold text-gray-800">Loan History</h1>
+            <h1 className="text-m font-semibold text-gray-800">{t.t1}</h1>
           </div>
 
         {/* Top Metrics */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           <div className="p-5 rounded-xl bg-white shadow-sm border border-gray-100">
-            <p className="text-xs text-gray-500">Total Loans</p>
+            <p className="text-xs text-gray-500">{t.t2}</p>
             <p className="mt-2 text-2xl font-bold text-gray-800">{loans.length}</p>
           </div>
 
           <div className="p-5 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-between">
             <div>
-              <p className="text-xs text-gray-500">Total Loan Amount</p>
+              <p className="text-xs text-gray-500">{t.t3}</p>
               <p className="mt-2 text-2xl font-bold text-green-700">{formatCurrency(totalLoanAmount)}</p>
             </div>
           </div>
@@ -157,13 +175,13 @@ export default function LoanHistoryPage() {
                 onClick={() => fetchLoanDetails(lastDetailsAttemptId)}
                 className="ml-2 inline-flex items-center px-3 py-1 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700"
               >
-                Retry
+                {t.t17}
               </button>
             )}
           </div>
         ) : loans.length === 0 ? (
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <p className="text-gray-600">No past loans found.</p>
+            <p className="text-gray-600">{t.t4}</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -208,7 +226,7 @@ export default function LoanHistoryPage() {
                           : loan.status === 'Inactive'
                           ? 'bg-gray-100 text-gray-700'
                           : 'bg-blue-50 text-blue-700'
-                      } border`}>{loan.status}</span>
+                      } border`}>{loan.status === 'Active' ? t.t36 : loan.status === 'Inactive' ? t.t37 : loan.status}</span>
 
                       <div className="text-right">
                         <p className="text-sm text-gray-600">{formatCurrency(loan.appLoanAmount)}</p>
@@ -242,39 +260,39 @@ export default function LoanHistoryPage() {
                                 <div className="space-y-4">
                                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div>
-                                      <p className="text-xs text-gray-500">Loan Type</p>
+                                      <p className="text-xs text-gray-500">{t.t5}</p>
                                       <p className="font-medium text-gray-800">{det.loanType || loan.loanType || '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-gray-500">Total Payable</p>
+                                      <p className="text-xs text-gray-500">{t.t6}</p>
                                       <p className="font-medium text-gray-800">{formatCurrency(det.appTotalPayable ?? loan.appTotalPayable ?? 0)}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-gray-500">Interest / Terms</p>
+                                      <p className="text-xs text-gray-500">{t.t7}</p>
                                       <p className="font-medium text-gray-800">{det.appInterestRate ?? loan.appInterestRate ?? 0}% • {det.appLoanTerms ?? (loan as any).appLoanTerms ?? '-' } months</p>
                                     </div>
                                   </div>
 
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                      <p className="text-xs text-gray-500">Borrower</p>
+                                      <p className="text-xs text-gray-500">{t.t8}</p>
                                       <p className="font-medium text-gray-800">{det.name || (loan as any).name || '-'}</p>
                                       <p className="text-xs text-gray-500 mt-1">{borrower.contact || '-'}</p>
                                       <p className="text-xs text-gray-500">{borrower.address || '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-gray-500">Payment Schedule</p>
+                                      <p className="text-xs text-gray-500">{t.t9}</p>
                                       <p className="font-medium text-gray-800">{det.paymentSchedule || (loan as any).paymentSchedule || '-'}</p>
-                                      <p className="text-xs text-gray-500 mt-1">Paid: {formatCurrency(det.paidAmount ?? (loan as any).paidAmount ?? 0)}</p>
-                                      <p className="text-xs text-gray-500">Balance: {formatCurrency(det.balance ?? (loan as any).balance ?? (det.appTotalPayable ?? (loan as any).appTotalPayable ?? 0))}</p>
+                                      <p className="text-xs text-gray-500 mt-1">{t.t10}: {formatCurrency(det.paidAmount ?? (loan as any).paidAmount ?? 0)}</p>
+                                      <p className="text-xs text-gray-500">{t.t11}: {formatCurrency(det.balance ?? (loan as any).balance ?? (det.appTotalPayable ?? (loan as any).appTotalPayable ?? 0))}</p>
                                     </div>
                                   </div>
 
                                   {/* Collections table */}
                                   <div>
-                                    <p className="text-sm font-medium text-gray-700 mb-2">Payment Schedule</p>
+                                    <p className="text-sm font-medium text-gray-700 mb-2">{t.t9}</p>
                                     {collections.length === 0 ? (
-                                      <p className="text-gray-500">No scheduled collections available.</p>
+                                      <p className="text-gray-500">{t.t12}</p>
                                     ) : (
                                       <>
                                       <div className="overflow-x-auto">
@@ -282,10 +300,10 @@ export default function LoanHistoryPage() {
                                           <thead className="bg-white text-gray-700">
                                             <tr>
                                               <th className="p-2 text-left">#</th>
-                                              <th className="p-2 text-left">Due Date</th>
-                                              <th className="p-2 text-left">Amount</th>
-                                              <th className="p-2 text-left">Status</th>
-                                              <th className="p-2 text-left">Paid On</th>
+                                              <th className="p-2 text-left">{t.t13}</th>
+                                              <th className="p-2 text-left">{t.t14}</th>
+                                              <th className="p-2 text-left">{t.t15}</th>
+                                              <th className="p-2 text-left">{t.t16}</th>
                                             </tr>
                                           </thead>
                                           <tbody>
@@ -310,7 +328,7 @@ export default function LoanHistoryPage() {
                                           pageSize={collectionsPageSize}
                                           setCurrentPage={setCurrentCollectionsPage}
                                           setPageSize={(size: number) => { setCollectionsPageSize(size); setCurrentCollectionsPage(1); }}
-                                          language={'en'}
+                                          language={language}
                                         />
                                       </div>
                                       </>
@@ -337,7 +355,7 @@ export default function LoanHistoryPage() {
                       pageSize={loansPageSize}
                       setCurrentPage={(p: number) => { setCurrentLoansPage(p); setExpandedLoanId(null); }}
                       setPageSize={(size: number) => { setLoansPageSize(size); setCurrentLoansPage(1); setExpandedLoanId(null); }}
-                      language={'en'}
+                      language={language}
                     />
                   </div>
                 </>
