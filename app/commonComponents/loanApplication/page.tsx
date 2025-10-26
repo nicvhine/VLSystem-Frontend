@@ -242,60 +242,6 @@ export default function ApplicationsPage() {
                         >
                           {t.view}
                         </Link>
-
-                      {/* Accept Reloan */}
-                      {application.displayStatus === "Disbursed" &&
-                        application.isReloan && (
-                          <button
-                            className="bg-indigo-600 text-white px-3 py-1 rounded-md text-xs hover:bg-indigo-700"
-                            onClick={async () => {
-                              try {
-                                const response = await authFetch(
-                                  `${API_URL}/${application.applicationId}`,
-                                  {
-                                    method: "PUT",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({ status: "Accepted" }),
-                                  }
-                                );
-
-                                if (!response.ok)
-                                  throw new Error("Failed to accept reloan");
-                                const updated = await response.json();
-
-                                // Generate loan
-                                const loanRes = await fetch(
-                                  `http://localhost:3001/loans/generate-reloan/${application.borrowersId}`,
-                                  { method: "POST" }
-                                );
-
-                                if (!loanRes.ok) {
-                                  const err = await loanRes.json();
-                                  throw new Error(
-                                    err?.error || "Failed to generate loan"
-                                  );
-                                }
-
-                                setApplications((prev) =>
-                                  prev.map((app) =>
-                                    app.applicationId === updated.applicationId
-                                      ? updated
-                                      : app
-                                  )
-                                );
-
-                                setModalMsg("Reloan accepted and loan generated successfully.");
-                                setShowSuccessModal(true);
-                              } catch (error) {
-                                console.error(error);
-                                setModalMsg("Failed to accept and generate reloan");
-                                setShowErrorModal(true);
-                              }
-                            }}
-                          >
-                            Accept Reloan
-                          </button>
-                        )}
                     </td>
                   </tr>
                 ))}

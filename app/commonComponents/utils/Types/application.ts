@@ -44,6 +44,7 @@ export interface Application {
   paymentSchedule?: string;
   appReferences?: CharacterReference[];
   profilePic?: string;
+  isReloan?: boolean; 
 }
 
 export interface ApplicationCardProps {

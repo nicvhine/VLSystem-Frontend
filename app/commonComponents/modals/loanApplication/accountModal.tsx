@@ -19,16 +19,12 @@ interface Application {
   appInterest?: number;
   appLoanTerms?: number;
   status?: string;
+  isReloan?: boolean;
+  borrowersId?: string; 
 }
 
 /**
  * Send borrower credentials via EmailJS service
- * Attempts to send email with generated username and password
- * @param to_name - Recipient's name
- * @param email - Recipient's email address
- * @param borrower_username - Generated username for borrower
- * @param borrower_password - Generated password for borrower
- * @returns Promise that resolves when email is sent
  */
 const sendEmail = async ({
   to_name,
@@ -58,7 +54,7 @@ const sendEmail = async ({
   }
 };
 
-// Modal to create borrower account, assign collector and generate loan
+// Modal to create borrower account or assign collector
 export default forwardRef(function AccountModal(_, ref) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -72,8 +68,8 @@ export default forwardRef(function AccountModal(_, ref) {
   const [successMessage, setSuccessMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCollectors, setIsFetchingCollectors] = useState(false);
-  
-  // Expose openModal to parent via ref
+
+  // Expose openModal to parent
   useImperativeHandle(ref, () => ({
     openModal(app: Application) {
       setSelectedApp(app);
@@ -94,9 +90,9 @@ export default forwardRef(function AccountModal(_, ref) {
     return () => window.removeEventListener('keydown', onKey);
   }, [isVisible, isProcessing]);
 
-  // Close modal with animation and reset selection
+  // Close modal
   const handleModalClose = () => {
-    if (isProcessing) return; // prevent closing while processing
+    if (isProcessing) return;
     setIsAnimating(false);
     setTimeout(() => {
       setIsVisible(false);
@@ -106,14 +102,14 @@ export default forwardRef(function AccountModal(_, ref) {
     }, 150);
   };
 
-  // Helper: fetch with Authorization header from localStorage
+  // Helper fetch with token
   async function authFetch(url: string, options: RequestInit = {}) {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token found in localStorage");
     return fetch(url, { ...options, headers: { ...options.headers, Authorization: `Bearer ${token}` } });
   }
 
-  // Load available collectors for assignment
+  // Fetch collectors
   useEffect(() => {
     const fetchCollectors = async () => {
       try {
@@ -131,8 +127,8 @@ export default forwardRef(function AccountModal(_, ref) {
     fetchCollectors();
   }, []);
 
-  // Create borrower, activate application, generate loan, and email credentials
-  const handleCreateAccount = async () => {
+  // Handle create account or assign collector
+  const handleAction = async () => {
     if (!selectedApp) return;
     if (!selectedCollector) {
       setErrorMessage("Please select a collector.");
@@ -143,57 +139,67 @@ export default forwardRef(function AccountModal(_, ref) {
 
     try {
       setIsProcessing(true);
-      const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: selectedApp.appName,
-          role: "borrower",
-          applicationId: selectedApp.applicationId,
-          assignedCollector: selectedCollector,
-        }),
-      });
 
-      const borrowerData = await borrowerRes.json();
-      if (!borrowerRes.ok) throw new Error(borrowerData?.error);
+      if (selectedApp.isReloan) {
+        const res = await authFetch(`http://localhost:3001/borrowers/${selectedApp.borrowersId}/assign-collector`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assignedCollector: selectedCollector }),
+        });
+        if (!res.ok) throw new Error("Failed to assign collector.");
+        setSuccessMessage(`Collector assigned successfully: ${selectedCollector}`);
+      }
+      else {
+        // Normal flow: create borrower account + loan
+        const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: selectedApp.appName,
+            role: "borrower",
+            applicationId: selectedApp.applicationId,
+            assignedCollector: selectedCollector,
+          }),
+        });
+        const borrowerData = await borrowerRes.json();
+        if (!borrowerRes.ok) throw new Error(borrowerData?.error);
 
-      setGeneratedUsername(borrowerData.borrower.username);
+        setGeneratedUsername(borrowerData.borrower.username);
 
-      await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Active" }),
-      });
+        await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Active" }),
+        });
 
-      const loanResponse = await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, {
-        method: "POST",
-      });
-      const loanData = await loanResponse.json();
-      if (!loanResponse.ok) throw new Error(loanData?.error);
+        await fetch(`http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`, { method: "POST" });
 
-      await sendEmail({
-        to_name: selectedApp.appName,
-        email: selectedApp.appEmail,
-        borrower_username: borrowerData.borrower.username,
-        borrower_password: borrowerData.tempPassword,
-        onError: (msg: string) => {
-          setErrorMessage(msg);
-          setErrorOpen(true);
-          setTimeout(() => setErrorOpen(false), 5000);
-        }
-      });
+        await sendEmail({
+          to_name: selectedApp.appName,
+          email: selectedApp.appEmail,
+          borrower_username: borrowerData.borrower.username,
+          borrower_password: borrowerData.tempPassword,
+          onError: (msg: string) => {
+            setErrorMessage(msg);
+            setErrorOpen(true);
+            setTimeout(() => setErrorOpen(false), 5000);
+          },
+        });
 
-      setSuccessMessage("Account created and loan generated successfully.");
+        setSuccessMessage("Account created and loan generated successfully.");
+      }
+
       setSuccessOpen(true);
       setTimeout(() => {
         setSuccessOpen(false);
         handleModalClose();
       }, 5000);
+
     } catch (error: any) {
       console.error(error);
-  setErrorMessage(`Error: ${error.message}`);
-  setErrorOpen(true);
-  setTimeout(() => setErrorOpen(false), 5000);
+      setErrorMessage(`Error: ${error.message}`);
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
     } finally {
       setIsProcessing(false);
     }
@@ -216,16 +222,23 @@ export default forwardRef(function AccountModal(_, ref) {
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-xl font-semibold text-black mb-2">Create Account</h2>
-          <p className="text-sm text-gray-600 mb-4">Assign a collector and generate borrower credentials.</p>
+          <h2 className="text-xl font-semibold text-black mb-2">
+            {selectedApp?.isReloan ? "Assign Collector" : "Create Account"}
+          </h2>
+          <p className="text-sm text-gray-600 mb-4">
+            {selectedApp?.isReloan
+              ? "Choose a new collector for this reloan."
+              : "Assign a collector and generate borrower credentials."}
+          </p>
           <p className="text-base text-black font-medium mb-3">{selectedApp?.appName}</p>
-          <label className="block text-sm font-medium text-black mb-2">Assign Collector</label>
+
+          <label className="block text-sm font-medium text-black mb-2">Collector</label>
           <div className="relative">
             <select
               value={selectedCollector}
               onChange={(e) => setSelectedCollector(e.target.value)}
               disabled={isFetchingCollectors || isProcessing}
-              className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
+              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
             >
               <option value="">
                 {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
@@ -242,6 +255,7 @@ export default forwardRef(function AccountModal(_, ref) {
               </span>
             )}
           </div>
+
           <div className="flex justify-end gap-3 mt-6">
             <button
               className="px-4 py-2 bg-gray-300 text-black rounded-md hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -252,14 +266,17 @@ export default forwardRef(function AccountModal(_, ref) {
             </button>
             <button
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
-              onClick={handleCreateAccount}
+              onClick={handleAction}
               disabled={isProcessing}
             >
-              {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Create Account"}
+              {isProcessing
+                ? <ButtonContentLoading label="Processing..." />
+                : selectedApp?.isReloan ? "Assign Collector" : "Create Account"}
             </button>
           </div>
         </div>
       </div>
+
       <SuccessModal isOpen={successOpen} message={successMessage} onClose={() => setSuccessOpen(false)} />
       <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
     </>
