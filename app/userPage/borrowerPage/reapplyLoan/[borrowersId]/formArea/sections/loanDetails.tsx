@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState, Dispatch, SetStateAction, useEffect } from "react";
 
 type LoanOption = {
   amount: number;
@@ -16,6 +16,10 @@ interface LoanDetailsProps {
   onLoanSelect: (loan: { amount: number; months?: number; interest: number } | null) => void;
   missingFields?: string[];
   showFieldErrors?: boolean;
+  previousBalance: number;
+  balanceDecision: 'deduct' | 'addPrincipal';
+  setBalanceDecision: Dispatch<SetStateAction<'deduct' | 'addPrincipal'>>;
+  onAdjustedLoanChange?: (val: number) => void;
 }
 
 export default function LoanDetails({
@@ -26,10 +30,15 @@ export default function LoanDetails({
   onLoanSelect,
   missingFields = [],
   showFieldErrors = false,
+  previousBalance,
+  balanceDecision,
+  setBalanceDecision,
+  onAdjustedLoanChange
 }: LoanDetailsProps) {
   const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
   const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
   const [loanAmountError, setLoanAmountError] = useState<string>("");
+  const [adjustedLoanAmount, setAdjustedLoanAmount] = useState<number | "">("");
 
   // Loan options
   const withCollateralOptions: LoanOption[] = [
@@ -57,20 +66,16 @@ export default function LoanDetails({
 
   const getLoanOptions = () => {
     switch (loanType) {
-      case "with":
-        return withCollateralOptions;
-      case "without":
-        return withoutCollateralOptions;
-      case "open-term":
-        return openTermOptions;
-      default:
-        return [];
+      case "with": return withCollateralOptions;
+      case "without": return withoutCollateralOptions;
+      case "open-term": return openTermOptions;
+      default: return [];
     }
   };
 
+  // Validate loan amount (uses adjustedLoanAmount if addPrincipal)
   const validateLoanAmount = (amount: number) => {
     const options = getLoanOptions();
-
     if (options.length === 0) {
       setSelectedLoan(null);
       onLoanSelect(null);
@@ -78,34 +83,36 @@ export default function LoanDetails({
       return;
     }
 
+    // Determine the basis for validation
+    const validationAmount = balanceDecision === "addPrincipal" ? amount + previousBalance : amount;
+
     const minAmount = Math.min(...options.map((o) => o.amount));
     const maxAmount = Math.max(...options.map((o) => o.amount));
 
-    if (amount < minAmount) {
+    if (validationAmount < minAmount) {
       setSelectedLoan(null);
       onLoanSelect(null);
       setLoanAmountError(
         language === "en"
-          ? `Amount is below the minimum allowed (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(minAmount)}).`
-          : `Mas ubos sa minimum nga kantidad (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(minAmount)}).`
+          ? `Adjusted loan is below the minimum allowed (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(minAmount)}).`
+          : `Nausab nga kantidad ubos sa minimum (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(minAmount)}).`
       );
       return;
     }
 
-    if (amount > maxAmount) {
+    if (validationAmount > maxAmount) {
       setSelectedLoan(null);
       onLoanSelect(null);
       setLoanAmountError(
         language === "en"
-          ? `Amount exceeds the maximum allowed (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(maxAmount)}).`
-          : `Molapas sa maximum nga kantidad (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(maxAmount)}).`
+          ? `Adjusted loan exceeds the maximum allowed (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(maxAmount)}).`
+          : `Nausab nga kantidad molapas sa maximum (${new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(maxAmount)}).`
       );
       return;
     }
 
-    // Within range: snap to nearest allowed bracket not exceeding amount
     const match = options
-      .filter((o) => o.amount <= amount)
+      .filter((o) => o.amount <= validationAmount)
       .reduce((prev, curr) => (curr.amount > prev.amount ? curr : prev), options[0]);
 
     setLoanAmountError("");
@@ -113,10 +120,23 @@ export default function LoanDetails({
     onLoanSelect({ ...match, amount });
   };
 
+  // Update adjusted loan whenever balance decision or customLoanAmount changes
+  useEffect(() => {
+    if (customLoanAmount !== "" && balanceDecision === "addPrincipal") {
+      const adjusted = Number(customLoanAmount) + previousBalance;
+      setAdjustedLoanAmount(adjusted);
+      if (onAdjustedLoanChange) onAdjustedLoanChange(adjusted);
+      validateLoanAmount(Number(customLoanAmount)); // validate against adjusted
+    } else {
+      setAdjustedLoanAmount("");
+      if (onAdjustedLoanChange) onAdjustedLoanChange(Number(customLoanAmount));
+      if (customLoanAmount !== "") validateLoanAmount(Number(customLoanAmount));
+    }
+  }, [customLoanAmount, balanceDecision, previousBalance]);
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" }).format(amount);
-  
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
       <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
@@ -124,71 +144,70 @@ export default function LoanDetails({
         {language === "en" ? "Loan Details" : "Detalye sa Pahulam"}
       </h4>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Previous Balance */}
+      <p className="mb-4 text-gray-700 font-medium">
+        {language === "en" ? "You have a balance of" : "Aduna kay naunang balance nga"} {formatCurrency(previousBalance)}
+      </p>
+
+      {/* Balance Decision Radios */}
+      <div className="flex flex-col gap-3 mb-6">
+        <label className="flex items-start gap-2">
+          <input
+            type="radio"
+            name="balanceDecision"
+            value="deduct"
+            checked={balanceDecision === 'deduct'}
+            onChange={() => setBalanceDecision('deduct')}
+            className="mt-1"
+          />
+          <div>
+            <span className="font-medium text-gray-800">{language === "en" ? "Deduct from Receivable" : "Ibawas sa Makadawat"}</span>
+            <p className="text-sm text-gray-500">
+              {language === "en"
+                ? "Cash received will be reduced by this balance. Interest still calculated on full loan amount."
+                : "Ang cash nga madawat ibawas sa balance. Interest kay base gihapon sa full loan amount."}
+            </p>
+          </div>
+        </label>
+
+        <label className="flex items-start gap-2">
+          <input
+            type="radio"
+            name="balanceDecision"
+            value="addPrincipal"
+            checked={balanceDecision === 'addPrincipal'}
+            onChange={() => setBalanceDecision('addPrincipal')}
+            className="mt-1"
+          />
+          <div>
+            <span className="font-medium text-gray-800">{language === "en" ? "Add to Principal" : "Idugang sa Principal"}</span>
+            <p className="text-sm text-gray-500">
+              {language === "en"
+                ? "Balance will be added to loan principal. Full cash received, interest on total amount."
+                : "Ang balance idugang sa principal. Full cash madawat, interest base sa total amount."}
+            </p>
+          </div>
+        </label>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Loan Purpose */}
         <div>
           <label className="block font-medium mb-2 text-gray-700">
             {language === "en" ? "Loan Purpose:" : "Katuyoan sa Pahulam:"}
           </label>
           <input
-            value={appLoanPurpose} 
-            onChange={(e) => setAppLoanPurpose(e.target.value)} 
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields && missingFields.includes('Loan Purpose')) ? 'border-red-500' : 'border-gray-200'}`}
-            placeholder={
-              language === "en"
-                ? "Enter Loan Purpose"
-                : "Isulod ang Katuyoan sa Pahulam"
-            }
+            value={appLoanPurpose}
+            onChange={(e) => setAppLoanPurpose(e.target.value)}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields?.includes('Loan Purpose')) ? 'border-red-500' : 'border-gray-200'}`}
+            placeholder={language === "en" ? "Enter Loan Purpose" : "Isulod ang Katuyoan sa Pahulam"}
           />
         </div>
 
         {/* Loan Amount */}
         <div>
           <label className="block font-medium mb-2 text-gray-700">
-            <span className="inline-flex items-center gap-2">
-              {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
-              {/* Info tooltip */}
-              {(() => {
-                const options = getLoanOptions();
-                const hasOptions = options.length > 0;
-                const minAmount = hasOptions ? Math.min(...options.map(o => o.amount)) : null;
-                const maxAmount = hasOptions ? Math.max(...options.map(o => o.amount)) : null;
-                const formatAmt = (n: number | null) => (n === null ? "—" : formatCurrency(n));
-
-                const tipMain = language === 'en'
-                  ? (loanType === 'open-term'
-                      ? `Allowed range: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Interest adjusts by amount. No fixed term.`
-                      : `Allowed range: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Interest and term adjust based on your amount.`)
-                  : (loanType === 'open-term'
-                      ? `Pwede nga kantidad: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Ang interest mosunod sa kantidad. Wala'y fixed nga termino.`
-                      : `Pwede nga kantidad: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Ang interest ug termino mo-depende sa imong kantidad.`);
-
-                const tipNote = language === 'en'
-                  ? `Tip: Amounts above the maximum use the highest bracket's rate.`
-                  : `Tip: Kung molapas sa maximum, gamiton ang rate sa pinakataas nga bracket.`;
-
-                return (
-                  <span className="relative inline-flex group align-middle">
-                    <button
-                      type="button"
-                      aria-label={language === 'en' ? 'Loan amount information' : 'Impormasyon sa kantidad sa pahulam'}
-                      className="h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-[10px] leading-5 font-semibold inline-flex items-center justify-center select-none focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
-                      tabIndex={0}
-                    >
-                      i
-                    </button>
-                    <div
-                      role="tooltip"
-                      className="absolute z-30 top-1/2 left-full ml-2 -translate-y-1/2 w-64 max-w-[70vw] rounded-md bg-gray-100 text-gray-800 text-xs p-3 shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none"
-                    >
-                      <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-100 rotate-45 border-l border-t border-gray-200"></div>
-                      <p className="leading-snug">{tipMain}</p>
-                      <p className="mt-1 text-[10px] text-gray-600">{tipNote}</p>
-                    </div>
-                  </span>
-                );
-              })()}
-            </span>
+            {language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}
           </label>
           <input
             type="number"
@@ -203,26 +222,29 @@ export default function LoanDetails({
                 setLoanAmountError("");
               }
             }}
-            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields && missingFields.includes('Loan Amount')) || loanAmountError || (selectedLoan === null && customLoanAmount !== "") ? 'border-red-500' : 'border-gray-200'}`}
-            placeholder={
-              language === "en"
-                ? "Enter loan amount"
-                : "Isulod ang kantidad sa Pahulam"
-            }
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields?.includes('Loan Amount')) || loanAmountError || (selectedLoan === null && customLoanAmount !== "") ? 'border-red-500' : 'border-gray-200'}`}
+            placeholder={language === "en" ? "Enter loan amount" : "Isulod ang kantidad sa Pahulam"}
           />
-          {loanAmountError && (
-            <p className="text-sm text-red-500 mt-1">{loanAmountError}</p>
-          )}
-          {selectedLoan === null && customLoanAmount !== "" && !loanAmountError && (
-            <p className="text-sm text-red-500 mt-1">
-              {language === "en"
-                ? "Amount not valid for this loan type."
-                : "Dili valid nga kantidad alang ani nga klase sa pahulam."}
-            </p>
-          )}
+          {loanAmountError && <p className="text-sm text-red-500 mt-1">{loanAmountError}</p>}
         </div>
 
-        {/* Loan Terms & Interest (if applicable) */}
+        {/* Adjusted Loan Amount */}
+        {balanceDecision === "addPrincipal" && customLoanAmount !== "" && (
+          <div>
+            <label className="block font-medium mb-2 text-gray-700">
+              {language === "en" ? "Adjusted Loan Amount:" : "Nausab nga Kantidad sa Pahulam:"}
+            </label>
+            <input
+              type="number"
+              value={adjustedLoanAmount}
+              readOnly
+              className={`w-full border p-3 rounded-lg ${loanAmountError ? 'border-red-500' : 'border-gray-200'} bg-gray-50`}
+            />
+            {loanAmountError && <p className="text-sm text-red-500 mt-1">{loanAmountError}</p>}
+          </div>
+        )}
+
+        {/* Loan Terms & Interest */}
         {loanType !== "open-term" && (
           <>
             <div>
@@ -257,28 +279,27 @@ export default function LoanDetails({
           </h5>
 
           {(() => {
-            const loanAmount = Number(customLoanAmount);
-            const interestRate = Number(selectedLoan.interest) / 100;
-            const months = selectedLoan.months || 12;
+            const baseLoan = Number(customLoanAmount);
+            const adjustedLoan = balanceDecision === "addPrincipal" ? baseLoan + previousBalance : baseLoan;
 
             let serviceCharge = 0;
-            if (loanAmount >= 10000 && loanAmount <= 20000) {
-              serviceCharge = loanAmount * 0.05; 
-            } else if (loanAmount >= 25000 && loanAmount <= 45000) {
-              serviceCharge = 1000; 
-            } else if (loanAmount >= 50000 && loanAmount <= 500000) {
-              serviceCharge = loanAmount * 0.03;
-            }
+            if (adjustedLoan >= 10000 && adjustedLoan <= 20000) serviceCharge = adjustedLoan * 0.05;
+            else if (adjustedLoan > 20000 && adjustedLoan <= 45000) serviceCharge = 1000;
+            else if (adjustedLoan > 45000 && adjustedLoan <= 500000) serviceCharge = adjustedLoan * 0.03;
 
-            const monthlyInterest = loanAmount * interestRate;
-            const monthlyPayment = loanAmount / months + monthlyInterest;
-            const netProceeds = loanAmount - serviceCharge;
+            const interestRate = Number(selectedLoan.interest) / 100;
+            const months = selectedLoan.months || 12;
+            const monthlyInterest = adjustedLoan * interestRate;
+            const monthlyPayment = adjustedLoan / months + monthlyInterest;
+
+            let netProceeds = adjustedLoan - serviceCharge;
+            if (balanceDecision === "deduct") netProceeds -= previousBalance;
 
             return (
               <div className="space-y-2 text-black">
                 <p>
                   <span className="font-medium">{language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}</span>{" "}
-                  ₱{loanAmount.toLocaleString()}
+                  ₱{adjustedLoan.toLocaleString()}
                 </p>
                 <p>
                   <span className="font-medium">{language === "en" ? "Service Charge:" : "Serbisyo nga Bayad:"}</span>{" "}
@@ -297,7 +318,6 @@ export default function LoanDetails({
               </div>
             );
           })()}
-
         </div>
       )}
     </div>
