@@ -1,8 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 
 interface UseFormSubmitProps {
+  borrowersId?: string; // optional initially, fetched from backend
   appName: string;
   appDob: string;
   appContact: string;
@@ -12,7 +14,9 @@ interface UseFormSubmitProps {
   appSpouseOccupation: string;
   appAddress: string;
   appLoanPurpose: string;
-  selectedLoan: any | null;
+  selectedLoan: { amount: number; months?: number; interest: number } | null;
+  balanceDecision: 'deduct' | 'addPrincipal';
+  previousBalance: number;
   sourceOfIncome: string;
   appTypeBusiness: string;
   appBusinessName: string;
@@ -44,16 +48,42 @@ interface UseFormSubmitProps {
 }
 
 export function useFormSubmit(props: UseFormSubmitProps) {
+  const router = useRouter();
+  const params = useParams();
+  const borrowerIdFromUrl = params.id as string;
+
+  const [borrowersId, setBorrowersId] = useState<string | undefined>(props.borrowersId);
+  const [isFetchingBorrower, setIsFetchingBorrower] = useState(false);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progressOpen, setProgressOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
-  const [uploadProgress, setUploadProgress] = useState(0); // 0-100
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  // --- Validate required fields ---
+  // Fetch borrower details using your backend route
+  useEffect(() => {
+    if (!borrowerIdFromUrl) return;
+    async function fetchBorrower() {
+      try {
+        setIsFetchingBorrower(true);
+        const res = await fetch(`/api/borrowers/${borrowerIdFromUrl}`);
+        if (!res.ok) throw new Error("Failed to fetch borrower");
+        const data = await res.json();
+        setBorrowersId(data.borrowerDetails?.id || borrowerIdFromUrl);
+      } catch (err) {
+        console.error("Error fetching borrower:", err);
+      } finally {
+        setIsFetchingBorrower(false);
+      }
+    }
+    fetchBorrower();
+  }, [borrowerIdFromUrl]);
+
   const handleSubmit = async () => {
+    if (!borrowersId) return false; // ensure borrower is fetched
     const missing: string[] = [];
 
-    // Basic Info
+    // --- Basic Info Checks ---
     if (!props.appName.trim()) missing.push("Name");
     if (!props.appDob) missing.push("Date of Birth");
     if (!props.appContact.trim()) missing.push("Contact Number");
@@ -69,7 +99,7 @@ export function useFormSubmit(props: UseFormSubmitProps) {
     if (!props.appLoanPurpose.trim()) missing.push("Loan Purpose");
     if (!props.selectedLoan) missing.push("Loan Amount");
 
-    // Source of income
+    // Income & occupation
     if (!props.sourceOfIncome) missing.push("Source of Income");
     if (props.sourceOfIncome === "business") {
       if (!props.appTypeBusiness.trim()) missing.push("Type of Business");
@@ -77,7 +107,7 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       if (!props.appDateStarted) missing.push("Date Started");
       if (!props.appBusinessLoc.trim()) missing.push("Business Location");
       if (!props.appMonthlyIncome) missing.push("Monthly Income");
-    } else if (props.sourceOfIncome) {
+    } else {
       if (!props.appOccupation.trim()) missing.push("Occupation");
       if (!props.appEmploymentStatus.trim()) missing.push("Employment Status");
       if (!props.appCompanyName.trim()) missing.push("Company Name");
@@ -111,15 +141,18 @@ export function useFormSubmit(props: UseFormSubmitProps) {
     return missing.length === 0;
   };
 
-  // --- Perform submission ---
   const performSubmit = async () => {
+    if (!borrowersId) return { ok: false, error: "Borrower not loaded yet" };
+    if (!props.selectedLoan) return { ok: false, error: "Loan not selected" };
+
     try {
       setIsSubmitting(true);
       setProgressOpen(true);
-      setActiveStep(0); // Step 0: Preparing submission
+      setActiveStep(0);
 
       const formData = new FormData();
       formData.append("isReloan", "true");
+      formData.append("borrowersId", borrowersId);
       formData.append("appName", props.appName);
       formData.append("appDob", props.appDob);
       formData.append("appContact", props.appContact);
@@ -143,11 +176,33 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       }
 
       formData.append("appLoanPurpose", props.appLoanPurpose);
-      if (props.selectedLoan) {
-        formData.append("appLoanAmount", String(props.selectedLoan.amount));
-        formData.append("appLoanTerms", String(props.selectedLoan.months));
-        formData.append("appInterest", String(props.selectedLoan.interest));
-      }
+
+      // Loan computation
+      const baseLoan = props.selectedLoan.amount;
+      const months = props.selectedLoan.months || 12;
+      const interestRate = props.selectedLoan.interest / 100;
+      const interestAmount = baseLoan * interestRate;
+      const totalInterestAmount = interestAmount * months;
+      const totalPayable = baseLoan + totalInterestAmount;
+
+      let serviceFee = 0;
+      if (baseLoan >= 10000 && baseLoan <= 20000) serviceFee = baseLoan * 0.05;
+      else if (baseLoan > 20000 && baseLoan <= 45000) serviceFee = 1000;
+      else if (baseLoan > 45000) serviceFee = baseLoan * 0.03;
+
+      let netReleased = baseLoan - serviceFee;
+      if (props.balanceDecision === "deduct") netReleased -= props.previousBalance;
+
+      formData.append("appLoanAmount", String(baseLoan));
+      formData.append("appLoanTerms", String(months));
+      formData.append("appInterest", String(props.selectedLoan.interest));
+      formData.append("appInterestAmount", String(interestAmount));
+      formData.append("appTotalInterestAmount", String(totalInterestAmount));
+      formData.append("appTotalPayable", String(totalPayable));
+      formData.append("appServiceFee", String(serviceFee));
+      formData.append("appNetReleased", String(netReleased));
+      formData.append("previousBalance", String(props.previousBalance));
+      formData.append("balanceDecision", props.balanceDecision);
 
       props.appReferences.forEach((ref, i) => {
         formData.append(`appReferences[${i}][name]`, ref.name);
@@ -164,23 +219,22 @@ export function useFormSubmit(props: UseFormSubmitProps) {
         formData.append("ownershipStatus", props.ownershipStatus);
       }
 
-  props.uploadedFiles.forEach(f => formData.append("documents", f));
-  if (props.photo2x2[0]) formData.append("profilePic", props.photo2x2[0]);
+      props.uploadedFiles.forEach((f) => formData.append("documents", f));
+      if (props.photo2x2[0]) formData.append("profilePic", props.photo2x2[0]);
 
-      // Consent info
-      formData.append('companyName', props.COMPANY_NAME);
-      formData.append('termsAcceptedAt', new Date().toISOString());
-      formData.append('termsVersion', props.TERMS_VERSION);
-      formData.append('privacyVersion', props.PRIVACY_VERSION);
-      formData.append('consentToTerms', 'true');
+      formData.append("companyName", props.COMPANY_NAME);
+      formData.append("termsAcceptedAt", new Date().toISOString());
+      formData.append("termsVersion", props.TERMS_VERSION);
+      formData.append("privacyVersion", props.PRIVACY_VERSION);
+      formData.append("consentToTerms", "true");
 
-      // Use XHR to get upload progress events
-      setActiveStep(1); // Step 1: Uploading documents
+      // Upload with progress
+      setActiveStep(1);
       setUploadProgress(0);
 
       const uploadResult: { ok: boolean; response?: any } = await new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', props.API_URL, true);
+        xhr.open("POST", props.API_URL, true);
 
         xhr.upload.onprogress = (ev) => {
           if (ev.lengthComputable) {
@@ -192,86 +246,34 @@ export function useFormSubmit(props: UseFormSubmitProps) {
         xhr.onload = () => {
           try {
             const status = xhr.status;
-            const text = xhr.responseText;
-            const json = text ? JSON.parse(text) : {};
-            if (status >= 200 && status < 300) {
-              resolve({ ok: true, response: json });
-            } else {
-              resolve({ ok: false, response: json });
-            }
-          } catch (err) {
-            resolve({ ok: false, response: { error: 'Invalid JSON response' } });
+            const json = xhr.responseText ? JSON.parse(xhr.responseText) : {};
+            if (status >= 200 && status < 300) resolve({ ok: true, response: json });
+            else resolve({ ok: false, response: json });
+          } catch {
+            resolve({ ok: false, response: { error: "Invalid JSON response" } });
           }
         };
 
-        xhr.onerror = () => reject(new Error('Network error during upload'));
-        xhr.onabort = () => reject(new Error('Upload aborted'));
+        xhr.onerror = () => reject(new Error("Network error during upload"));
+        xhr.onabort = () => reject(new Error("Upload aborted"));
 
         xhr.send(formData);
       });
 
-  // Move to waiting step after upload completes
-  setActiveStep(2); // Step 2: Waiting for server response / backend processing
+      setActiveStep(2);
+      await new Promise((res) => setTimeout(res, 400));
 
-  // Ensure the waiting step is visible for a short minimum duration so users see it (prevents instant skip)
-  const MIN_VISIBLE_MS = 400;
-  await new Promise((res) => setTimeout(res, MIN_VISIBLE_MS));
-
-      if (!uploadResult.ok) {
-        const err = uploadResult.response?.error || 'Submission failed';
-        throw new Error(err);
-      }
+      if (!uploadResult.ok) throw new Error(uploadResult.response?.error || "Submission failed");
 
       const data = uploadResult.response;
-
-      // Extract loanId from response (check both possible structures)
       const loanId = data.application?.applicationId || data.applicationId;
 
-      // Trigger success callback
       if (props.onSuccess && loanId) props.onSuccess(loanId);
-
-      // If server returned loanId, start polling for processing status endpoint in background
-      if (loanId) {
-        // start background polling (fire-and-forget)
-        (async () => {
-          try {
-            const statusUrl = `http://localhost:3001/loan-applications/${loanId}`;
-            const maxAttempts = 15; // e.g., ~30s at 2s interval
-            const intervalMs = 2000;
-            let attempts = 0;
-
-            while (attempts < maxAttempts) {
-              attempts += 1;
-              try {
-                const r = await fetch(statusUrl);
-                if (!r.ok) {
-                  // wait then continue
-                  await new Promise((res) => setTimeout(res, intervalMs));
-                  continue;
-                }
-                const d = await r.json();
-                const s = d.status;
-                if (s === 'Accepted' || s === 'Disbursed') {
-                  if (props.onSuccess) props.onSuccess(loanId);
-                  break;
-                }
-              } catch (e) {
-                // ignore and retry
-              }
-              await new Promise((res) => setTimeout(res, intervalMs));
-            }
-          } catch (e) {
-            // background polling failed silently
-          }
-        })();
-      }
 
       return { ok: true, data };
     } catch (error: any) {
       console.error(error);
-      if (props.onError) {
-        props.onError(error?.message || "An error occurred. Please try again.");
-      }
+      if (props.onError) props.onError(error?.message || "An error occurred. Please try again.");
       return { ok: false, error };
     } finally {
       setIsSubmitting(false);
@@ -280,5 +282,5 @@ export function useFormSubmit(props: UseFormSubmitProps) {
     }
   };
 
-  return { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress };
+  return { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress, isFetchingBorrower, borrowersId };
 }

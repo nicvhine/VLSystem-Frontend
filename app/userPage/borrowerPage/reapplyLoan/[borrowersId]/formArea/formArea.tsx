@@ -21,7 +21,7 @@ import SuccessModalWithAnimation from "./modals/successModal";
 
 import { useUpdateMissingFields } from "./hooks/updateMissingFields";
 import { useFormSubmit } from "./hooks/useFormSubmit";
-import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function";
+import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function/document";
 import { useSectionProgress } from "./hooks/useSectionProgress";
 import { usePrefillAndUploads } from "./hooks/usePrefill";
 
@@ -71,7 +71,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
   const requiredDocumentsCount = loanTypeParam === "with" || loanTypeParam === "open-term" ? 6 : 4;
   const requires2x2 = true;
-  const API_URL = `http://localhost:3001/loan-applications/apply/${loanTypeParam}`;
+  const API_URL = `http://localhost:3001/loan-applications/reloan/${loanTypeParam}`;
 
   // Basic Info
   const [appName, setAppName] = useState("");
@@ -139,6 +139,33 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     onProgressUpdate,
   });
 
+  // Previous Balance
+  const [previousBalance, setPreviousBalance] = useState<number>(0);
+  const [showBalanceField, setShowBalanceField] = useState(false);
+  const [balanceDecision, setBalanceDecision] = useState<'deduct' | 'addPrincipal'>('deduct');
+
+  useEffect(() => {
+     if (!borrowersId) {
+    console.warn("No borrowersId provided");
+    return;
+  }
+  
+    const fetchBalance = async () => {
+      try {
+        const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}/balance`);
+        const data = await res.json();
+        if (data.hasBalance && data.totalBalance > 0) {
+          setPreviousBalance(data.totalBalance);
+          setShowBalanceField(true);
+        }
+      } catch (err) {
+        console.error("Failed to fetch previous balance:", err);
+      }
+    };
+  
+    fetchBalance();
+  }, [borrowersId]);
+  
   // Terms/Privacy Modal
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showTosContent, setShowTosContent] = useState(false);
@@ -160,14 +187,16 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   });
 
   const { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress } = useFormSubmit({
-    appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
+    borrowersId: borrowersId , appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
     appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
     appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
     requiresCollateral, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
     photo2x2, uploadedFiles, missingFields, setMissingFields, setAgentMissingError,
-    API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language
+    API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language,
+    previousBalance,        
+    balanceDecision,       
   });
-
+  
   const { handleUsePreviousProfile, handleUsePreviousDocument } = usePrefillAndUploads({
     borrowersId,
     loanTypeParam,
@@ -275,7 +304,9 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
         <div id="loanDetails">
           <LoanDetails
             language={language} loanType={loanTypeParam} appLoanPurpose={appLoanPurpose} setAppLoanPurpose={setAppLoanPurpose}
-            onLoanSelect={(loan) => setSelectedLoan(loan)} missingFields={missingFields}
+            onLoanSelect={(loan) => setSelectedLoan(loan)} missingFields={missingFields} previousBalance={previousBalance}    
+            balanceDecision={balanceDecision}       
+            setBalanceDecision={setBalanceDecision} 
           />
         </div>
 
@@ -300,6 +331,8 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
             onUsePreviousDocument={handleUsePreviousDocument}
           />
         </div>
+
+    
       </div>
 
       {showErrorModal && <ErrorModal message={errorMessage} onClose={() => setShowErrorModal(false)} />}
