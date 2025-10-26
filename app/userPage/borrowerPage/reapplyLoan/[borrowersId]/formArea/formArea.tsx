@@ -181,6 +181,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     setDocumentUploadError, setShowDocumentUploadErrorModal,
     setPhoto2x2, setUploadedFiles,
   });
+  
   useEffect(() => {
     // appAgent can be a string or object (from prefill). Coerce to string safely before trim.
     const rawAgent = appAgent ?? "";

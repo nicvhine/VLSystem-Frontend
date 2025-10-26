@@ -73,7 +73,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           onClick={() => modalRef.current?.openModal(application)}
           className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium"
         >
-          Create Account
+        {application.isReloan ? "Assign Collector" : "Create Account"}
         </button>
       )}
 

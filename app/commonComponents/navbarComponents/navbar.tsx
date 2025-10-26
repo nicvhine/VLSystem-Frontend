@@ -64,13 +64,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     profilePic,
     setProfilePic,
     previewPic,
-    setPreviewPic,
-    originalPic,
     setOriginalPic,
-    isUploadingPic,
-    handleFileChange,
-    handleSaveProfilePic,
-    handleCancelUpload,
   } = useProfilePic();
 
   const { setNotificationPreferences } = useAccountSettings();
