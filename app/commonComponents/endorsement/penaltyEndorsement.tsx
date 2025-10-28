@@ -81,6 +81,8 @@ export default function PenaltyEndorsementTab() {
           <tr>
             <th className="p-2 border">Reference</th>
             <th className="p-2 border">Borrower</th>
+            <th className="p-2 border">Endorser</th>
+            <th className="p-2 border">Reason</th>
             <th className="p-2 border">Penalty</th>
             <th className="p-2 border">Payable</th>
             <th className="p-2 border">Action</th>
@@ -90,9 +92,11 @@ export default function PenaltyEndorsementTab() {
           {endorsements.map(col => (
             <tr key={col._id}>
               <td className="p-2 border">{col.referenceNumber}</td>
-              <td className="p-2 border">{col.name}</td>
+              <td className="p-2 border">{col.borrowerName}</td>
+              <td className="p-2 border">{col.borrowerName}</td>
+              <td className="p-2 border">{col.reason}</td>
               <td className="p-2 border">{formatCurrency(col.penaltyAmount)}</td>
-              <td className="p-2 border">{formatCurrency(col.payableAmount)}</td>
+              <td className="p-2 border">{formatCurrency(col.periodAmount)}</td>
               <td className="p-2 border space-x-2">
                 {col.status === "Pending" ? (
                   <>

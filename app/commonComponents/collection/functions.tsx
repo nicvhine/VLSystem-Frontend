@@ -233,11 +233,17 @@ export const handleConfirmPayment = async (
   setPaymentLoading(true);
 
   try {
+    const token = localStorage.getItem("token"); 
+    if (!token) throw new Error("No token found"); 
+
     const response = await fetch(
       `http://localhost:3001/payments/${selectedCollection.referenceNumber}/cash`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+       headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, 
+      },
         body: JSON.stringify({ amount: paymentAmount }),
       }
     );

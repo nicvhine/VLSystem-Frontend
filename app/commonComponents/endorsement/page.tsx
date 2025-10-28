@@ -11,7 +11,7 @@ export default function PenaltiesPage() {
   return (
     <Manager>
     <div className="p-6">
-      <div className="flex gap-4 mb-4">
+      <div className="flex justify-center gap-4 mb-4 ">
         <button
           className={`px-4 py-2 rounded ${activeTab === 'penalty' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
           onClick={() => setActiveTab('penalty')}

@@ -35,36 +35,44 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
 
   const handleSubmit = async () => {
     if (!reason.trim()) return alert('Please enter a reason for endorsement');
-
+  
     try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+  
       setSubmitting(true);
-      const formData = new FormData();
-      formData.append('referenceNumber', collection.referenceNumber);
-      formData.append('reason', reason);
-      formData.append('penaltyAmount', penaltyAmount.toString());
-      formData.append('payableAmount', payableAmount.toString());
-      if (file) formData.append('file', file);
-      formData.append('dateEndorsed', new Date().toISOString());
-
+  
+      const payload = {
+        referenceNumber: collection.referenceNumber,
+        reason,
+        penaltyAmount,
+        payableAmount,
+      };
+  
       const response = await fetch(`http://localhost:3001/penalty/endorse`, {
         method: 'POST',
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       });
-
+  
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || 'Failed to submit endorsement');
       }
-
-      alert('✅ Penalty endorsement successfully submitted!');
+  
+      alert('Penalty endorsement successfully submitted!');
       onClose();
     } catch (error) {
       console.error('Error submitting endorsement:', error);
-      alert('❌ Failed to submit endorsement. Please try again.');
+      alert('Failed to submit endorsement. Please try again.');
     } finally {
       setSubmitting(false);
     }
   };
+  
 
   return (
     <AnimatePresence>
@@ -133,17 +141,6 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
                 />
               </div>
 
-              <div>
-                <label className="text-sm font-medium text-gray-600">Supporting File</label>
-                <div className="border p-3 rounded-lg flex items-center justify-between">
-                  <input
-                    type="file"
-                    accept="application/pdf,image/*"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  />
-                  {file && <span className="text-sm text-gray-500">{file.name}</span>}
-                </div>
-              </div>
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
