@@ -19,6 +19,7 @@ export const getManagerNavItems = (language: 'en' | 'ceb') => {
     { name: t.tab2, href: '/commonComponents/loanApplication' },
     { name: t.tab3, href: '/commonComponents/collection' },
     { name: t.tab4, href: '/commonComponents/agent' },
+    { name: "Endorsements", href: '/commonComponents/endorsement' },
   ];
 };
 

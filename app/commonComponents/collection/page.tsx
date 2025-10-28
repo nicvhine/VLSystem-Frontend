@@ -4,13 +4,18 @@ import React, { useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
+import { MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { useCollectionPage } from "./hooks";
+
+import PenaltyEndorseModal from "../modals/endorsementPenaltyModal";
 import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
+
 import { formatCurrency } from "../utils/formatters";
-import {  Collection } from "../utils/Types/collection";
+import { Collection } from "../utils/Types/collection";
 import Filter from "../utils/sortAndSearch";
 import {
   handleSaveNote,
@@ -22,7 +27,6 @@ import {
   handlePaymentModalClose
 } from "./functions";
 
-// Main collections page component
 export default function CollectionsPage() {
   const {
     searchQuery, setSearchQuery,
@@ -49,9 +53,11 @@ export default function CollectionsPage() {
     overallTotalPayments, overallCompletedPayments, overallCollectionRate
   } = useCollectionPage();
 
-  const [paymentLoading, setPaymentLoading] = React.useState(false); 
+  const [paymentLoading, setPaymentLoading] = React.useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+  const [selectedPenaltyCollection, setSelectedPenaltyCollection] = useState(null);
+  
   return (
     <Wrapper>
       <div className="min-h-screen bg-gray-50">
@@ -87,7 +93,6 @@ export default function CollectionsPage() {
 
             {/* Stats Cards */}
             <div className={isMobile ? "flex flex-col gap-4" : "col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6"}>
-              {/* Daily Progress */}
               <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
                 <div className="bg-blue-100 p-4 rounded-full shadow-sm">
                   <FiCheckCircle className="text-blue-600 w-6 h-6" />
@@ -99,7 +104,6 @@ export default function CollectionsPage() {
                 </div>
               </div>
 
-              {/* Daily Amount */}
               <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
                 <div className="bg-green-100 p-4 rounded-full shadow-sm">
                   <FiDollarSign className="text-green-600 w-6 h-6" />
@@ -111,7 +115,6 @@ export default function CollectionsPage() {
                 </div>
               </div>
 
-              {/* Overall Progress */}
               <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
                 <div className="bg-purple-100 p-4 rounded-full shadow-sm">
                   <FiCheckCircle className="text-purple-600 w-6 h-6" />
@@ -123,7 +126,6 @@ export default function CollectionsPage() {
                 </div>
               </div>
 
-              {/* Overall Amount */}
               <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
                 <div className="bg-indigo-100 p-4 rounded-full shadow-sm">
                   <FiDollarSign className="text-indigo-600 w-6 h-6" />
@@ -137,7 +139,6 @@ export default function CollectionsPage() {
             </div>
           </div>
 
-          {/* Filter & Search */}
           <Filter
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -152,14 +153,13 @@ export default function CollectionsPage() {
             isMobile={isMobile}
           />
 
-          {/* Print Button */}
           <div className={isMobile ? "flex justify-end mb-2" : "flex justify-end mb-4"}>
-          <button
-            onClick={() => handlePrint(setPrintMode)}
-            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"
-          >
-            {b.b11}
-          </button>
+            <button
+              onClick={() => handlePrint(setPrintMode)}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"
+            >
+              {b.b11}
+            </button>
           </div>
 
           {/* Collections Table */}
@@ -177,7 +177,7 @@ export default function CollectionsPage() {
                   {role !== "collector" && <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l21}</th>}
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l15}</th>
                   <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l44}</th>
-                  {role === "collector" && <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{t.l16}</th>}
+                  {role === "collector" && <th className="px-6 py-3.5 text-left text-sm font-medium text-gray-600 text-center">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -204,38 +204,57 @@ export default function CollectionsPage() {
                       }`}>{col.status}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">{col.note}</td>
+
+                    {/* NEW ACTIONS DROPDOWN */}
                     {role === "collector" && (
-                      <td className="px-6 py-4 flex flex-col gap-1">
-                        {col.periodBalance > 0 ? (
-                          <button
-                            onClick={() =>
-                              handleMakePayment(
-                                col, 
-                                setSelectedCollection,
-                                setPaymentAmount,
-                                setShowModal
-                              )
-                            }
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs font-medium"
-                          >
-                            Make Payment
-                          </button>
-                        ) : (
-                          <span className="text-green-600 text-xs">Paid</span>
-                        )}
-                        <button
-                          onClick={() =>
-                            handleAddNote(
-                              col,
-                              setSelectedCollection,
-                              setNoteText,
-                              setShowNoteModal
-                            )
-                          }
-                          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs font-medium"
-                        >
-                          {col.note?.trim() ? "Edit Note" : "Add Note"}
-                        </button>
+                      <td className="px-6 py-4 text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button className="p-2 rounded-full hover:bg-gray-100 transition">
+                              <MoreVertical className="w-5 h-5 text-gray-600" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            {col.periodBalance > 0 && (
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  handleMakePayment(
+                                    col,
+                                    setSelectedCollection,
+                                    setPaymentAmount,
+                                    setShowModal
+                                  )
+                                }
+                              >
+                                Make Payment
+                              </DropdownMenuItem>
+                            )}
+
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleAddNote(
+                                  col,
+                                  setSelectedCollection,
+                                  setNoteText,
+                                  setShowNoteModal
+                                )
+                              }
+                            >
+                              {col.note?.trim() ? "Edit Note" : "Add Note"}
+                            </DropdownMenuItem>
+
+                            {(col.status === "Past Due" || col.status === "Overdue") && (
+                                <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedPenaltyCollection(col);
+                                  setShowPenaltyModal(true);
+                                }}
+                              >
+                                Endorse Penalty
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </td>
                     )}
                   </tr>
@@ -307,6 +326,24 @@ export default function CollectionsPage() {
               )
             )}
           />
+
+          <PenaltyEndorseModal
+            isOpen={showPenaltyModal}
+            onClose={() => setShowPenaltyModal(false)}
+            collection={selectedPenaltyCollection}
+            onSubmit={async (formData) => {
+              try {
+                await fetch(`/api/collections/${formData.get('referenceNumber')}/endorse-penalty`, {
+                  method: "PUT",
+                  body: formData,
+                });
+                setShowPenaltyModal(false);
+              } catch (err) {
+                alert("Failed to endorse penalty");
+              }
+            }}
+          />
+
 
           {showErrorModal && <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />}
         </div>
