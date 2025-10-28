@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function TermsGateModal({
   language,
@@ -28,15 +29,41 @@ export default function TermsGateModal({
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  // ensure this component only renders on the client and after mount
   useEffect(() => {
-    setAnimateIn(true);
-    return () => setAnimateIn(false);
+    setMounted(true);
+    return () => setMounted(false);
   }, []);
-  return (
-    <div className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+
+  // Trigger animateIn one frame after mount so CSS transitions can run
+  useEffect(() => {
+    if (!mounted) return;
+    let raf = requestAnimationFrame(() => setAnimateIn(true));
+    return () => { cancelAnimationFrame(raf); setAnimateIn(false); };
+  }, [mounted]);
+  if (!mounted) return null;
+
+  const handleCancel = () => {
+    setAnimateIn(false);
+    setTimeout(() => onCancel(), 300);
+  };
+
+  const handleAccept = () => {
+    setAnimateIn(false);
+    setTimeout(() => onAccept(), 300);
+  };
+
+  const markup = (
+    // Backdrop sits above app UI but below any nested content modals (TOS/Privacy)
+    <div
+      style={{ zIndex: 1000 }}
+      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div
+        style={{ zIndex: 1001 }}
+        className={`bg-white rounded-xl shadow-2xl w-full max-w-xl p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
         {showCloseIcon && (
-          <button onClick={onCancel} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
+          <button onClick={handleCancel} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
         )}
         <h3 className="text-lg font-semibold text-gray-800 mb-3">
           {language === 'en' ? 'Terms of Service and Privacy Policy' : 'Mga Termino sa Serbisyo ug Palisiya sa Privacy'}
@@ -91,12 +118,12 @@ export default function TermsGateModal({
         </div>
         <div className="mt-4 flex justify-end gap-3">
           {showCancelButton && (
-            <button onClick={onCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
+            <button onClick={handleCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
               {language === 'en' ? 'Cancel' : 'Kanselahon'}
             </button>
           )}
           <button
-            onClick={onAccept}
+            onClick={handleAccept}
             disabled={enforceReading ? (!agree || !tosRead || !privacyRead) : !agree}
             className={`px-4 py-2 rounded-lg text-white ${enforceReading ? (agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed') : (agree ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed')}`}
           >
@@ -106,4 +133,8 @@ export default function TermsGateModal({
       </div>
     </div>
   );
+
+  const target = typeof document !== 'undefined' ? document.body : null;
+  if (!target) return null;
+  return createPortal(markup, target);
 }

@@ -1,34 +1,90 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function TermsContentModal({ language, onClose, onReadComplete }: { language: 'en' | 'ceb'; onClose: () => void; onReadComplete?: () => void }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [hasReachedEnd, setHasReachedEnd] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const [nearEnd, setNearEnd] = useState(false);
 
-  useEffect(() => { setAnimateIn(true); return () => setAnimateIn(false); }, []);
+  // Use rAF to ensure a frame passes before animating in (prevents no-op transitions)
+  useEffect(() => {
+    let raf = requestAnimationFrame(() => setAnimateIn(true));
+    return () => { cancelAnimationFrame(raf); setAnimateIn(false); };
+  }, []);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+
+    // Fallback scroll-based check
     const onScroll = () => {
-      const threshold = 24; // px tolerance
-      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
-      if (atEnd && !hasReachedEnd) {
+      // Robust progress + end detection
+      const maxScroll = Math.max(1, el.scrollHeight - el.clientHeight);
+      const progress = el.scrollTop / maxScroll;
+      if (progress >= 0.9 && !nearEnd) setNearEnd(true);
+
+      const thresholdPx = 8; // small tolerance for sub-pixel rounding
+      const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - thresholdPx;
+      if ((progress >= 0.97 || atEnd) && !hasReachedEnd) {
         setHasReachedEnd(true);
         onReadComplete?.();
       }
     };
     el.addEventListener('scroll', onScroll);
-    // Check immediately in case content fits viewport
+
+    // If content doesn't overflow, mark as read immediately
+    if (el.scrollHeight <= el.clientHeight + 1 && !hasReachedEnd) {
+      setHasReachedEnd(true);
+      onReadComplete?.();
+    }
+
+    // IntersectionObserver sentinel at bottom for robust detection
+    let observer: IntersectionObserver | null = null;
+    if (bottomRef.current) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (entry && entry.isIntersecting && !hasReachedEnd) {
+            setHasReachedEnd(true);
+            onReadComplete?.();
+          }
+        },
+        { root: el, threshold: 0, rootMargin: '0px 0px -1px 0px' }
+      );
+      observer.observe(bottomRef.current);
+    }
+
+    // Initial check
     onScroll();
-    return () => el.removeEventListener('scroll', onScroll);
+    // Extra pass after paint to catch late layout
+    requestAnimationFrame(onScroll);
+
+    return () => {
+      el.removeEventListener('scroll', onScroll);
+      if (observer && bottomRef.current) observer.unobserve(bottomRef.current);
+    };
   }, [hasReachedEnd, onReadComplete]);
 
-  return (
-    <div className={`fixed inset-0 z-60 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-        <button onClick={onClose} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
+  // Ensure client-only render to avoid hydration mismatch and allow portal
+  useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
+  // Per latest requirement: mark as read immediately upon opening the modal
+  useEffect(() => {
+    if (!hasReachedEnd) {
+      setHasReachedEnd(true);
+      onReadComplete?.();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (!mounted) return null;
+
+  const markup = (
+    <div style={{ zIndex: 1100 }} className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div style={{ zIndex: 1101 }} className={`bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+  <button onClick={() => { setAnimateIn(false); setTimeout(() => onClose(), 300); }} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
         <div ref={scrollRef} className="p-6 overflow-y-auto h-[80vh] pt-10">
           <h2 className="text-xl font-semibold mb-2">{language === 'en' ? 'Terms of Service' : 'Mga Termino sa Serbisyo'}</h2>
           <p className="text-sm text-gray-500 mb-4">Effective Date: {new Date().toLocaleDateString()}</p>
@@ -61,8 +117,24 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
               {language === 'en' ? 'Scroll to the bottom to mark as read' : 'I-scroll sa ubos aron ma-mark nga nabasa'}
             </div>
           )}
+          {!hasReachedEnd && (
+            <div className="mt-3 flex justify-center">
+              <button
+                type="button"
+                onClick={() => { setHasReachedEnd(true); onReadComplete?.(); }}
+                className={`px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700`}
+              >
+                {language === 'en' ? 'Mark as Read' : 'I-mark nga Nabasa'}
+              </button>
+            </div>
+          )}
+          {/* Sentinel used by IntersectionObserver to detect end-of-content */}
+          <div ref={bottomRef} className="h-1 w-full"></div>
         </div>
       </div>
     </div>
   );
+  const target = typeof document !== 'undefined' ? document.body : null;
+  if (!target) return null;
+  return createPortal(markup, target);
 }
