@@ -1,0 +1,169 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, UploadCloud } from 'lucide-react';
+import { formatCurrency } from '../utils/formatters';
+
+interface PenaltyEndorseModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  collection: any;
+}
+
+export default function PenaltyEndorseModal({ isOpen, onClose, collection }: PenaltyEndorseModalProps) {
+  const [reason, setReason] = useState('');
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [penaltyAmount, setPenaltyAmount] = useState(0);
+  const [payableAmount, setPayableAmount] = useState(0);
+
+  useEffect(() => {
+    if (!collection) return;
+
+    let penalty = 0;
+    if (collection.status === "Past Due") {
+      penalty = collection.periodAmount * 0.02; // 2%
+    } else if (collection.status === "Overdue") {
+      penalty = collection.periodAmount * 0.05; // 5%
+    }
+
+    setPenaltyAmount(penalty);
+    setPayableAmount(collection.periodAmount + penalty);
+  }, [collection]);
+
+  const handleSubmit = async () => {
+    if (!reason.trim()) return alert('Please enter a reason for endorsement');
+
+    try {
+      setSubmitting(true);
+      const formData = new FormData();
+      formData.append('referenceNumber', collection.referenceNumber);
+      formData.append('reason', reason);
+      formData.append('penaltyAmount', penaltyAmount.toString());
+      formData.append('payableAmount', payableAmount.toString());
+      if (file) formData.append('file', file);
+      formData.append('dateEndorsed', new Date().toISOString());
+
+      const response = await fetch(`http://localhost:3001/penalty/endorse`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to submit endorsement');
+      }
+
+      alert('✅ Penalty endorsement successfully submitted!');
+      onClose();
+    } catch (error) {
+      console.error('Error submitting endorsement:', error);
+      alert('❌ Failed to submit endorsement. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-white rounded-2xl shadow-xl w-[90%] max-w-md p-6 relative"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+          >
+            <button
+              onClick={onClose}
+              className="absolute top-3 right-3 p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Endorse Penalty</h2>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium text-gray-600">Reference Number</label>
+                <p className="text-gray-800 bg-gray-50 p-2 rounded">{collection?.referenceNumber}</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">Borrower Name</label>
+                <p className="text-gray-800 bg-gray-50 p-2 rounded">{collection?.name}</p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">Period Amount</label>
+                <p className="text-gray-800 bg-gray-50 p-2 rounded">
+                  {formatCurrency(collection?.periodAmount)}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">Penalty Amount</label>
+                <p className="text-gray-800 bg-gray-50 p-2 rounded">
+                  {formatCurrency(penaltyAmount)}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">Payable</label>
+                <p className="text-gray-800 bg-gray-50 p-2 rounded">
+                  {formatCurrency(payableAmount)}
+                </p>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">Reason for Endorsement</label>
+                <textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="w-full border rounded-lg p-2 mt-1 text-sm focus:ring focus:ring-blue-200"
+                  rows={3}
+                  placeholder="Explain why this penalty should be endorsed..."
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-600">Supporting File</label>
+                <div className="border p-3 rounded-lg flex items-center justify-between">
+                  <input
+                    type="file"
+                    accept="application/pdf,image/*"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  />
+                  {file && <span className="text-sm text-gray-500">{file.name}</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit Endorsement'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}

@@ -11,7 +11,7 @@ export interface Collection {
   paidAmount: number;
   loanBalance: number;
   periodBalance: number;
-  status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue';
+  status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue' | 'Past Due';
   collector: string;
   note?: string;
   collectionNumber: number;
