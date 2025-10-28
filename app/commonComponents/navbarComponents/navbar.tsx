@@ -97,7 +97,11 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
     const token = localStorage.getItem('token');
     if (token && role) {
       const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
-      fetch(`http://localhost:3001/notifications/${apiRole}`, {
+      const borrowersId = localStorage.getItem('borrowersId');
+      const url = apiRole === 'borrower' && borrowersId
+        ? `http://localhost:3001/notifications/borrower/${borrowersId}`
+        : `http://localhost:3001/notifications/${apiRole}`;
+      fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
@@ -306,7 +310,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                       onClick={async () => {
                         try {
                           const token = localStorage.getItem('token');
-                          await fetch(`http://localhost:3001/notifications/${role}/read-all`, {
+                          const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+                          await fetch(`http://localhost:3001/notifications/${apiRole}/read-all`, {
                             method: 'PUT',
                             headers: { Authorization: `Bearer ${token}` },
                           });
@@ -343,7 +348,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                             const token = localStorage.getItem('token');
                             const notifId = notif._id || notif.id;
                             if (!notif.read) {
-                              await fetch(`http://localhost:3001/notifications/${role}/${notifId}/read`, {
+                              const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+                              await fetch(`http://localhost:3001/notifications/${apiRole}/${notifId}/read`, {
                                 method: 'PUT',
                                 headers: { Authorization: `Bearer ${token}` },
                               });
@@ -360,9 +366,19 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                           }}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-sm">
-                              {initial}
-                            </div>
+                            {(notif.actorProfilePic || notif.actorprofilepic || notif.actor?.profilePic || notif.avatar) ? (
+                              <Image
+                                src={(notif.actorProfilePic || notif.actorprofilepic || notif.actor?.profilePic || notif.avatar) as string}
+                                alt="Avatar"
+                                width={32}
+                                height={32}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-sm">
+                                {initial}
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <div>
