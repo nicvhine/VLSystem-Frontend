@@ -30,7 +30,7 @@ export default function LoanStatisticsCharts() {
     }
   }, []);
 
-  const { loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(role);
+  const { loading, loanStats, collectionStats, typeStats, applicationStats, monthlyInterest, language, t } = useLoanStats(role);
 
   if (loading)
     return (
@@ -40,7 +40,6 @@ export default function LoanStatisticsCharts() {
     );
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i); 
-  const monthlyInterestData = loanStats.monthlyInterest?.filter((m) => m.year === selectedYear) || [];
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -48,15 +47,15 @@ export default function LoanStatisticsCharts() {
     labels: months,
     datasets: [
       {
-        label: `Monthly Interest (${selectedYear})`,
-        data: months.map((month, idx) => monthlyInterestData[idx]?.totalInterest || 0),
+        label: `${t.c1} (${selectedYear})`,
+        data: months.map((month, idx) => monthlyInterest[idx]?.totalInterest || 0),
         backgroundColor: "#ef4444",
       },
     ],
   };
 
   const collectionChartData = {
-    labels: ["Collectables", "Collected", "Unpaid"],
+    labels: [t.c8, t.c9, t.c10],
     datasets: [
       {
         label: "₱ Amount",
@@ -71,7 +70,7 @@ export default function LoanStatisticsCharts() {
   };
 
   const loanTypeChartData = {
-    labels: ["With Collateral", "Without Collateral", "Open-Term"],
+    labels: [t.c5, t.c6, t.c7],
     datasets: [
       {
         data: [
@@ -94,7 +93,7 @@ export default function LoanStatisticsCharts() {
         <div className="bg-gray-100/30 rounded-2xl p-4 shadow-sm border border-gray-200/50">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-              <FiDollarSign className="text-red-600" /> Monthly Interest
+              <FiDollarSign className="text-red-600" /> {t.c1}
             </div>
             <select
               value={selectedYear}
@@ -121,15 +120,15 @@ export default function LoanStatisticsCharts() {
         {/* Application Status */}
         <div className="bg-gray-100/30 rounded-2xl p-4 shadow-sm border border-gray-200/50">
           <div className="mb-3 flex items-center gap-2 text-lg font-semibold text-gray-800">
-            <FiUsers className="text-red-600" /> Application Status
+            <FiUsers className="text-red-600" /> {t.c2}
           </div>
           <div className="w-full h-60 md:h-72">
             <Bar
               data={{
-                labels: ["Applied", "Approved", "Denied"],
+                labels: [t.s1, t.s3, t.s4],
                 datasets: [
                   {
-                    label: "Applications",
+                    label: t.c4,
                     data: [
                       applicationStats.applied ?? 0,
                       applicationStats.approved ?? 0,
@@ -148,7 +147,7 @@ export default function LoanStatisticsCharts() {
       {/* Bottom row: Loan Type Pie */}
       <div className="bg-gray-100/30 rounded-2xl p-4 shadow-sm border border-gray-200/50">
         <div className="mb-2 flex items-center gap-2 text-lg font-semibold text-gray-800">
-          <FiPieChart className="text-red-600" /> Loan Types
+          <FiPieChart className="text-red-600" /> {t.c3}
         </div>
         <div className="w-full h-72 flex justify-center items-center">
           <div className="w-3/5 md:w-2/3 h-full">

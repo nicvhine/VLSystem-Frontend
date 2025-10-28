@@ -19,6 +19,18 @@ const statisticTranslation = {
     h6: "Daily Collection",
     h7: "Overall Progress",
     h8: "Overall Collection",
+
+    // Chart labels
+    c1: "Monthly Interest",
+    c2: "Application Status",
+    c3: "Loan Types",
+    c4: "Applications",
+    c5: "With Collateral",
+    c6: "Without Collateral",
+    c7: "Open-Term",
+    c8: "Collectables",
+    c9: "Collected",
+    c10: "Unpaid"
   },
   ceb: {
     // Application Status
@@ -41,6 +53,18 @@ const statisticTranslation = {
     h6: "Adlaw-adlaw nga Koleksyon",    
     h7: "Kinabug-osang Progreso",     
     h8: "Kinabug-osang Koleksyon",     
+
+    // Chart labels
+    c1: "Monthly nga Interest",
+    c2: "Status sa Aplikasyon",
+    c3: "Klase sa Pahulam",
+    c4: "Mga Aplikasyon",
+    c5: "Uban sa Collateral",
+    c6: "Wala sa Collateral",
+    c7: "Open-Term",
+    c8: "Mga Kolektables",
+    c9: "Nakolekta",
+    c10: "Wala Mabayri"
   },
 };
 

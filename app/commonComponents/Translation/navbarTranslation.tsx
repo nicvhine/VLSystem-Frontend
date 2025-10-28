@@ -52,7 +52,7 @@ const navbarTranslation = {
     tab8: "Mahitungod Kanamo",
     tab9: "Kontaka Kami",
     tab10: "Sulod",
-    tab11: "Mga Pahulam",
+    tab11: "Kasaysayan sa Pahulam",
     tab12: "Ledger",
 
     //Dropdown
@@ -75,14 +75,12 @@ const navbarTranslation = {
     t17: "Email Notifications",
     t18: "Pagdawat og notipikasyon pinaagi sa email",
     t19: "SMS Notifications",
-    t20: "Pagdawat og notipikasyon pinaagi sa text message"
-    ,
+    t20: "Pagdawat og notipikasyon pinaagi sa text message",
     t21: "Gina-update ang litrato sa profile...",
     t22: "Kuhaa",
     t23: "Ilisi",
     t24: "I-save",
-    t25: "I-cancel"
-    ,
+    t25: "I-cancel",
     t26: "Sigurado ka ba nga gusto nimo tangtangon ang litrato sa profile?"
   }
 };
