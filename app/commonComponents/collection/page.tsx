@@ -194,7 +194,7 @@ export default function CollectionsPage() {
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodAmount)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.paidAmount)}</td>
                     <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.periodBalance)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{col.collector}</td>
+                    {role !== "collector" && <td className="px-6 py-3.5 text-left text-sm font-medium text-gray-600">{col.collector}</td>}
                     <td className="px-6 py-4">
                       <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                         col.status === "Paid" ? "bg-green-100 text-green-800" :
