@@ -12,6 +12,7 @@ export interface Loan {
   appTotalInterestAmount: string;
   appMonthlyDue: string;
   loanType: string;
+  creditScore: number;
 }
 
 export interface CharacterReference {

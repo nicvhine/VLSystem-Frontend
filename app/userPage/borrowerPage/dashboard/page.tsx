@@ -26,7 +26,6 @@ export default function BorrowerDashboard() {
 
   const {
     allLoans,
-    activeLoan,
     collections,
     paidPayments,
     paymentProgress,
@@ -130,11 +129,7 @@ export default function BorrowerDashboard() {
                 paymentProgress={paymentProgress}
                 borrowerId={borrowerId}
               />
-              <CreditScoreCard
-                collections={collections}
-                paymentProgress={paymentProgress}
-                borrowerId={borrowerId}
-              />
+             <CreditScoreCard creditScore={displayedLoan.creditScore || 10} />
             </div>
           </div>
 

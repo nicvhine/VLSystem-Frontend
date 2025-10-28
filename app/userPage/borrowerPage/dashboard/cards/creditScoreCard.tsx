@@ -1,96 +1,102 @@
 'use client';
 
 import React from 'react';
-import { Collection } from '@/app/commonComponents/utils/Types/collection';
-import { useReloan } from '../function';
 
-interface PaymentProgressCardProps {
-  collections: Collection[];
-  paymentProgress: number;
-  borrowerId: string;
+interface CreditScoreCardProps {
+  creditScore: number; 
 }
 
-export default function CreditScoreCard({
-  collections,
-  paymentProgress,
-  borrowerId,
-}: PaymentProgressCardProps) {
-  const { handleReloan } = useReloan();
-  const isReloanAllowed = paymentProgress >= 70;
-
-  const paidCount = collections.filter(c => c.status === 'Paid').length;
-  const remainingCount = collections.filter(c => c.status !== 'Paid').length;
+export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
+  const percentage = Math.min(Math.max((creditScore / 10) * 100, 0), 100);
 
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - paymentProgress / 100);
+  const offset = circumference * (1 - percentage / 100);
+
+  const getColor = () => {
+    if (creditScore >= 8) return '#22c55e';
+    if (creditScore >= 5) return '#eab308';
+    return '#ef4444'; 
+  };
+
+  const getLabel = () => {
+    if (creditScore >= 8) return 'Excellent';
+    if (creditScore >= 5) return 'Good';
+    return 'Needs Improvement';
+  };
 
   return (
-    <div className="w-full md:w-1/2 bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-shadow duration-300">
-      <h2 className="text-m font-semibold text-gray-900 mb-6">Credit Score</h2>
+    <div className="w-full md:w-1/2 bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-all duration-300">
+      {/* Header */}
+      <h2 className="text-lg font-semibold text-gray-900 mb-6">Credit Score</h2>
 
-      {/* Circular Progress */}
-      <div className="relative w-44 h-44 md:w-52 md:h-52">
+      {/* Circular Gauge */}
+      <div className="relative w-40 h-40 md:w-48 md:h-48">
         <svg className="w-full h-full transform -rotate-90">
-          {/* Background Circle */}
+          {/* Background Circle (gray outline) */}
           <circle
             cx="50%"
             cy="50%"
             r={radius}
             stroke="#f3f4f6"
-            strokeWidth="14"
+            strokeWidth="12"
             fill="none"
           />
 
-          {/* Progress Circle */}
+          {/* Foreground Circle (progress/score) */}
           <circle
             cx="50%"
             cy="50%"
             r={radius}
-            stroke="url(#progressGradient)"
-            strokeWidth="14"
+            stroke={getColor()}
+            strokeWidth="12"
             fill="none"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
-            className="transition-all duration-800 ease-out"
+            className="transition-all duration-700 ease-out"
           />
-
-          {/* Gradient Definition */}
-          <defs>
-            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#22c55e" />  
-              <stop offset="50%" stopColor="#10b981" /> 
-              <stop offset="100%" stopColor="#059669" /> 
-            </linearGradient>
-          </defs>
         </svg>
 
-        {/* Center Text */}
+        {/* Center Value */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl md:text-5xl font-bold text-gray-900">{paymentProgress}%</span>
-          <span className="text-sm md:text-base text-gray-500 mt-1">Completed</span>
+          <span
+            className={`text-4xl md:text-5xl font-bold ${
+              creditScore >= 8
+                ? 'text-emerald-600'
+                : creditScore >= 5
+                ? 'text-yellow-600'
+                : 'text-red-600'
+            }`}
+          >
+            {creditScore.toFixed(1)}
+          </span>
+          <span className="text-sm text-gray-500 mt-1">out of 10</span>
         </div>
       </div>
 
-      {/* Reloan Button */}
-      <div className="mt-8 flex flex-col items-center">
-        <button
-          onClick={() => handleReloan(paymentProgress, borrowerId)}
-          disabled={!isReloanAllowed}
-          className={`px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300 ${
-            isReloanAllowed
-              ? 'bg-emerald-500 hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-300'
-              : 'bg-gray-300 cursor-not-allowed'
+      {/* Rating Label */}
+      <div className="mt-5 text-center">
+        <p
+          className={`text-sm font-semibold ${
+            creditScore >= 8
+              ? 'text-emerald-600'
+              : creditScore >= 5
+              ? 'text-yellow-600'
+              : 'text-red-600'
           }`}
         >
-          Reloan
-        </button>
-        {!isReloanAllowed && (
-          <span className="text-xs md:text-sm text-gray-400 mt-2 text-center">
-            You may only reloan once progress reaches 70%
-          </span>
-        )}
+          {getLabel()}
+        </p>
+
+        {/* Optional tip for user */}
+        <p className="text-xs text-gray-400 mt-1">
+          {creditScore >= 8
+            ? 'Keep up your consistent payments!'
+            : creditScore >= 5
+            ? 'On track — improve by paying on time.'
+            : 'Improve by completing payments regularly.'}
+        </p>
       </div>
     </div>
   );
