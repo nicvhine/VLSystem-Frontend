@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, Dispatch, SetStateAction } from "react";
 
 interface PrefillHookParams {
   borrowersId?: string;
@@ -30,7 +30,9 @@ interface PrefillHookParams {
   setCollateralDescription: (v: string) => void;
   setOwnershipStatus: (v: string) => void;
   setPrevProfilePicUrl: (v: string | null) => void;
-  setPrevDocumentsMeta: (v: any[]) => void;
+  setPrevDocumentsMeta: Dispatch<SetStateAction<any[]>>;
+  // Current previous documents metadata (for use actions)
+  prevDocumentsMeta?: any[];
   setIsPrefilled: (v: boolean) => void;
   setDocumentUploadError: (v: string) => void;
   setShowDocumentUploadErrorModal: (v: boolean) => void;
@@ -67,7 +69,8 @@ export function usePrefillAndUploads(params: PrefillHookParams) {
     setCollateralDescription,
     setOwnershipStatus,
     setPrevProfilePicUrl,
-    setPrevDocumentsMeta,
+  setPrevDocumentsMeta,
+  prevDocumentsMeta,
     setIsPrefilled,
     setDocumentUploadError,
     setShowDocumentUploadErrorModal,
@@ -192,8 +195,9 @@ export function usePrefillAndUploads(params: PrefillHookParams) {
     }
   }
 
-  async function handleUsePreviousDocument(index: number, prevDocumentsMeta: any[]) {
-    const doc = prevDocumentsMeta[index];
+  async function handleUsePreviousDocument(index: number) {
+    const list = Array.isArray(prevDocumentsMeta) ? prevDocumentsMeta : [];
+    const doc = list[index];
     if (!doc || !doc.filePath) return { ok: false, error: "No previous document" };
 
     try {

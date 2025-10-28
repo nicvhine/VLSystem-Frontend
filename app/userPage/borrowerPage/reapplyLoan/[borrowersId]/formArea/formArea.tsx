@@ -207,7 +207,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     setAppBusinessLoc, setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
     setAppReferences, setAppAgent,
     setCollateralType, setCollateralValue, setCollateralDescription, setOwnershipStatus,
-    setPrevProfilePicUrl, setPrevDocumentsMeta, setIsPrefilled,
+    setPrevProfilePicUrl, setPrevDocumentsMeta, prevDocumentsMeta, setIsPrefilled,
     setDocumentUploadError, setShowDocumentUploadErrorModal,
     setPhoto2x2, setUploadedFiles,
   });
