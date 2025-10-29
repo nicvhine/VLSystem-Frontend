@@ -90,13 +90,7 @@ export default function ForgotPasswordModal({
             <circle cx="10" cy="10" r="6" />
           </svg>
         ) };
-      case 'method':
-        return { title: 'Choose delivery method', icon: (
-          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6" />
-            <rect x="3" y="5" width="18" height="14" rx="2" />
-          </svg>
-        ) };
+      // no 'method' step in this branch
       case 'otp':
         return { title: 'Verify code', icon: (
           <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -131,11 +125,8 @@ export default function ForgotPasswordModal({
       case 'account':
         setPendingStep('role');
         break;
-      case 'method':
-        setPendingStep('account');
-        break;
       case 'otp':
-        setPendingStep('method');
+        setPendingStep('account');
         break;
       case 'reset':
         setPendingStep('otp');
@@ -204,6 +195,7 @@ export default function ForgotPasswordModal({
     if (otp === generatedOtp) setPendingStep('reset');
     else setError('Invalid OTP. Please try again.');
   };
+  // (state defined above)
 
   const doResetPassword = async () => {
     setError('');
@@ -318,29 +310,8 @@ export default function ForgotPasswordModal({
           </>
         )}
 
-        {/* Step 2: Choose where to send OTP */}
-        {step === 'method' && borrower && (
-          <>
-            <div className="space-y-3">
-              {borrower.email && (
-                <button
-                  onClick={() => handleSendOtp('email')}
-                  className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
-                >
-                  Send to Email ({maskEmail(borrower.email)})
-                </button>
-              )}
-              {borrower.phoneNumber && (
-                <button
-                  onClick={() => handleSendOtp('mobile')}
-                  className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
-                >
-                  Send to Mobile ({maskPhone(borrower.phoneNumber)})
-                </button>
-              )}
-            </div>
-          </>
-        )}
+        {/* There is no separate method step on this branch */}
+        {/* There is no separate method step on this branch */}
 
         {/* Step 3: OTP Verification */}
         {step === 'otp' && (
