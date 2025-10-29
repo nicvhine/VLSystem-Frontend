@@ -214,10 +214,21 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 ? '/userPage/borrowerPage/dashboard'
                 : '/'
             }
-            className="flex items-center space-x-2 text-xl font-semibold bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text text-transparent hover:from-red-700 hover:to-red-900 transition-all"
+            className="flex items-center space-x-2"
           >
-            <span>VLSystem</span>
+            <Image
+              src="/logo/VistulaLogo.png"
+              alt="Vistula Logo"
+              width={30}
+              height={20}
+              priority
+              className="object-contain"
+            />
+            <span className="text-sm font-semibold text-gray-700 tracking-tight">
+              VLSystem
+            </span>
           </Link>
+
 
           {/* Mobile Toggle */}
           <button
@@ -270,9 +281,9 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 checked={language === 'ceb'}
                 onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
               />
-              <div className="relative w-12 h-6 bg-gray-300 rounded-full transition">
+              <div className="relative w-12 h-6 bg-gray-200 rounded-full transition-colors duration-300">
                 <div
-                  className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition ${
+                  className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-300 ${
                     language === 'ceb' ? 'translate-x-6' : ''
                   }`}
                 />
