@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import SuccessModal from '@/app/commonComponents/modals/successModal';
 import emailjs from 'emailjs-com';
@@ -58,6 +58,8 @@ export default function ForgotPasswordModal({
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [borrower, setBorrower] = useState<any>(null);
   const [otp, setOtp] = useState('');
+  const otpLength = 6;
+  const otpRefs = useRef<Array<HTMLInputElement | null>>(Array.from({ length: 6 }, () => null));
   const [generatedOtp, setGeneratedOtp] = useState<string | null>(null);
   const [borrowerId, setBorrowerId] = useState<string | null>(null);
   const [newPassword, setNewPassword] = useState('');
@@ -67,6 +69,84 @@ export default function ForgotPasswordModal({
   const [successMsg, setSuccessMsg] = useState('');
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPasswordField, setShowConfirmPasswordField] = useState(false);
+
+  // Header meta and navigation helpers
+  const getStepMeta = () => {
+    switch (step) {
+      case 'role':
+        return { title: 'Forgot Password', icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V7.5A4.5 4.5 0 0 0 7.5 7.5v3" />
+            <rect x="5" y="10.5" width="14" height="10" rx="2" />
+            <circle cx="12" cy="16" r="1.3" />
+          </svg>
+        ) };
+      case 'account':
+        return { title: 'Find your account', icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35" />
+            <circle cx="10" cy="10" r="6" />
+          </svg>
+        ) };
+      case 'method':
+        return { title: 'Choose delivery method', icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l9 6 9-6" />
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+          </svg>
+        ) };
+      case 'otp':
+        return { title: 'Verify code', icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 9h2M11 9h2M15 9h2M7 13h2M11 13h2M15 13h2" />
+          </svg>
+        ) };
+      case 'reset':
+        return { title: 'Reset password', icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 7v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7 7V6a5 5 0 0 1 10 0v1" />
+          </svg>
+        ) };
+      case 'staff':
+        return { title: 'Staff password reset', icon: (
+          <svg viewBox="0 0 24 24" className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 21a9 9 0 0 1 18 0" />
+          </svg>
+        ) };
+      default:
+        return { title: 'Forgot Password', icon: null };
+    }
+  };
+
+  const goBack = () => {
+    switch (step) {
+      case 'role':
+        setShowForgotModal(false);
+        break;
+      case 'account':
+        setPendingStep('role');
+        break;
+      case 'method':
+        setPendingStep('account');
+        break;
+      case 'otp':
+        setPendingStep('method');
+        break;
+      case 'reset':
+        setPendingStep('otp');
+        break;
+      case 'staff':
+        setPendingStep('role');
+        break;
+      default:
+        setShowForgotModal(false);
+    }
+  };
 
   useEffect(() => {
     if (pendingStep) {
@@ -164,11 +244,7 @@ export default function ForgotPasswordModal({
   };
 
   return (
-    <div
-      className={`fixed inset-0 bg-black/50 flex justify-center items-center z-50 transition-opacity duration-300 ${
-        animateIn ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
+    <>
       {showSuccessModal && (
         <SuccessModal
           isOpen={showSuccessModal}
@@ -178,16 +254,31 @@ export default function ForgotPasswordModal({
       )}
 
       <div
-        className={`bg-white w-[400px] rounded-lg shadow-lg p-6 transform transition-all duration-300 ease-out ${
-          animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
-        }`}
+        className={`bg-white rounded-xl w-full p-0 text-black`}
       >
+        {/* Header */}
+        <div className={`flex items-center justify-between mb-5`}> 
+          <button
+            onClick={goBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-2 py-1"
+            aria-label="Go back"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="sr-only">Back</span>
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center">
+              {getStepMeta().icon}
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">{getStepMeta().title}</h2>
+          </div>
+          <div className="w-6" />
+        </div>
         {/* Step 0: Choose Role */}
         {step === 'role' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-6">
-              Forgot Password
-            </h2>
             <button
               onClick={() => setPendingStep('account')}
               className="w-full px-4 py-2 mb-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
@@ -206,7 +297,6 @@ export default function ForgotPasswordModal({
         {/* Step 1: Enter Email or Username */}
         {step === 'account' && (
           <>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Find your account</h2>
             <p className="text-sm text-gray-600 mb-3">
               Enter your email address or username to continue.
             </p>
@@ -231,9 +321,6 @@ export default function ForgotPasswordModal({
         {/* Step 2: Choose where to send OTP */}
         {step === 'method' && borrower && (
           <>
-            <h2 className="text-xl font-semibold text-gray-800 mb-4 text-center">
-              Where should we send the OTP?
-            </h2>
             <div className="space-y-3">
               {borrower.email && (
                 <button
@@ -258,17 +345,58 @@ export default function ForgotPasswordModal({
         {/* Step 3: OTP Verification */}
         {step === 'otp' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Verify Code</h2>
-            <input
-              type="text"
-              placeholder="Enter OTP"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 mb-4"
-            />
+            <div
+              className="flex justify-between gap-2 mb-4"
+              onPaste={(e) => {
+                const pasted = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, otpLength);
+                if (!pasted) return;
+                e.preventDefault();
+                const chars = pasted.split('');
+                const nextOtp = Array.from({ length: otpLength }, (_, i) => chars[i] || '').join('');
+                setOtp(nextOtp);
+                // Fill inputs
+                chars.forEach((ch, idx) => {
+                  const input = otpRefs.current[idx];
+                  if (input) input.value = ch;
+                });
+                const nextIndex = Math.min(chars.length, otpLength - 1);
+                otpRefs.current[nextIndex]?.focus();
+              }}
+            >
+              {Array.from({ length: otpLength }).map((_, index) => (
+                <input
+                  key={index}
+                  ref={(el) => { otpRefs.current[index] = el; }}
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  className="w-12 h-12 text-center text-lg border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                  onKeyDown={(e) => {
+                    const current = e.currentTarget;
+                    if (e.key === 'Backspace' || e.key === 'Delete') {
+                      if (!current.value && index > 0) {
+                        otpRefs.current[index - 1]?.focus();
+                      }
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    e.target.value = value.slice(0, 1);
+                    const otpArray = otp.split('').concat(Array(otpLength).fill('')).slice(0, otpLength);
+                    otpArray[index] = e.target.value || '';
+                    const nextOtp = otpArray.join('');
+                    setOtp(nextOtp);
+                    if (e.target.value && index < otpLength - 1) {
+                      otpRefs.current[index + 1]?.focus();
+                    }
+                  }}
+                />
+              ))}
+            </div>
             {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <button
-              disabled={!otp}
+              disabled={otp.length !== otpLength}
               onClick={handleVerifyOtp}
               className="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition disabled:opacity-50"
             >
@@ -280,21 +408,63 @@ export default function ForgotPasswordModal({
         {/* Step 4: Reset Password */}
         {step === 'reset' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Reset Password</h2>
-            <input
-              type="password"
-              placeholder="New Password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 mb-3"
-            />
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border rounded-md px-3 py-2 mb-4"
-            />
+            <div className="relative mb-3">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full border rounded-md px-3 py-2 pr-10"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowNewPassword((v) => !v)}
+                aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+              >
+                {showNewPassword ? (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.584 10.587A2 2 0 0 0 12 14a2 2 0 0 0 1.414-.586" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.88 4.49A9.53 9.53 0 0 1 12 4.25c5 0 9 4.75 9 7.75-.431 1.18-1.28 2.441-2.424 3.52M6.345 6.345C4.44 7.76 3 9.77 3 12c0 3 4 7.75 9 7.75 1.363 0 2.644-.324 3.793-.884" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s4-7.75 10-7.75S22 12 22 12s-4 7.75-10 7.75S2 12 2 12Z" />
+                    <circle cx="12" cy="12" r="3.25" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            <div className="relative mb-4">
+              <input
+                type={showConfirmPasswordField ? 'text' : 'password'}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full border rounded-md px-3 py-2 pr-10"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                onClick={() => setShowConfirmPasswordField((v) => !v)}
+                aria-label={showConfirmPasswordField ? 'Hide password' : 'Show password'}
+              >
+                {showConfirmPasswordField ? (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.584 10.587A2 2 0 0 0 12 14a2 2 0 0 0 1.414-.586" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.88 4.49A9.53 9.53 0 0 1 12 4.25c5 0 9 4.75 9 7.75-.431 1.18-1.28 2.441-2.424 3.52M6.345 6.345C4.44 7.76 3 9.77 3 12c0 3 4 7.75 9 7.75 1.363 0 2.644-.324 3.793-.884" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2 12s4-7.75 10-7.75S22 12 22 12s-4 7.75-10 7.75S2 12 2 12Z" />
+                    <circle cx="12" cy="12" r="3.25" />
+                  </svg>
+                )}
+              </button>
+            </div>
             {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
             <button
               disabled={!newPassword || !confirmPassword}
@@ -316,9 +486,6 @@ export default function ForgotPasswordModal({
         {/* Step 5: Staff Notice */}
         {step === 'staff' && (
           <>
-            <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">
-              Staff Password Reset
-            </h2>
             <p className="text-center text-gray-600 mb-6">
               Please contact your administrator to change your password.
             </p>
@@ -331,6 +498,6 @@ export default function ForgotPasswordModal({
           </>
         )}
       </div>
-    </div>
+    </>
   );
 }
