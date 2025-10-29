@@ -31,7 +31,7 @@ export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Credit Score</h2>
 
       {/* Circular Gauge */}
-      <div className="relative w-40 h-40 md:w-48 md:h-48">
+      <div className="relative w-44 h-44 md:w-52 md:h-52">
         <svg className="w-full h-full transform -rotate-90">
           {/* Background Circle (gray outline) */}
           <circle
@@ -39,7 +39,7 @@ export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
             cy="50%"
             r={radius}
             stroke="#f3f4f6"
-            strokeWidth="12"
+            strokeWidth="14"
             fill="none"
           />
 
@@ -48,8 +48,8 @@ export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
             cx="50%"
             cy="50%"
             r={radius}
-            stroke={getColor()}
-            strokeWidth="12"
+            stroke="url(#progressGradient)"
+            strokeWidth="14"
             fill="none"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
