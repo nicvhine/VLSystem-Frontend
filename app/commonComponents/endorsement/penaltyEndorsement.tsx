@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { formatCurrency } from "../utils/formatters";
 import ViewEndorsementModal from "../modals/viewEndorsement";
+import ErrorModal from "../modals/errorModal";
 
 type Props = {
   currentPage: number;
@@ -24,6 +25,8 @@ export default function PenaltyEndorsementTab({
   const [endorsements, setEndorsements] = useState<any[]>([]);
   const [selectedEndorsement, setSelectedEndorsement] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showError, setShowError] = useState(false);
 
   const fetchEndorsements = async () => {
     try {
@@ -39,7 +42,8 @@ export default function PenaltyEndorsementTab({
       setEndorsements(data);
     } catch (err: any) {
       console.error(err);
-      alert(err.message);
+      setErrorMsg(err?.message || "Something went wrong while fetching endorsements.");
+      setShowError(true);
     }
   };
 
@@ -72,6 +76,8 @@ export default function PenaltyEndorsementTab({
 
   return (
     <div className="relative">
+      {/* Toast modals */}
+      <ErrorModal isOpen={showError} message={errorMsg} onClose={() => setShowError(false)} />
       <table className="min-w-full border rounded-lg overflow-hidden">
         <thead>
           <tr>

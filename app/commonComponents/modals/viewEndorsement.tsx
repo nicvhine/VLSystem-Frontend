@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { formatCurrency, formatDate } from "../utils/formatters";
+import SuccessModal from "./successModal";
+import ErrorModal from "./errorModal";
 
 interface ViewEndorsementModalProps {
   isOpen: boolean;
@@ -17,6 +21,39 @@ export default function ViewEndorsementModal({
   endorsement,
 }: ViewEndorsementModalProps) {
   const [endorsements, setEndorsements] = useState<any[]>([]);
+  const [mounted, setMounted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Imperative helpers to mount the existing Success/Error modals to document.body
+  const mountImperativeModal = (element: React.ReactElement, duration = 5000) => {
+    if (typeof window === "undefined") return () => {};
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const cleanup = () => {
+      try {
+        root.unmount();
+      } catch (e) {
+        // ignore
+      }
+      if (container.parentNode) container.parentNode.removeChild(container);
+    };
+    root.render(element);
+    const timer = setTimeout(() => cleanup(), duration);
+    // return a function to close early
+    return () => {
+      clearTimeout(timer);
+      cleanup();
+    };
+  };
+
+  const showSuccess = (message: string, duration = 5000) => {
+    mountImperativeModal(<SuccessModal isOpen={true} message={message} onClose={() => {}} />, duration);
+  };
+
+  const showError = (message: string, duration = 5000) => {
+    mountImperativeModal(<ErrorModal isOpen={true} message={message} onClose={() => {}} />, duration);
+  };
 
   const fetchEndorsements = async () => {
     try {
@@ -32,7 +69,7 @@ export default function ViewEndorsementModal({
       setEndorsements(data);
     } catch (err: any) {
       console.error(err);
-      alert(err.message);
+      showError(err?.message || "Failed to fetch penalty endorsements.");
     }
   };
 
@@ -40,8 +77,14 @@ export default function ViewEndorsementModal({
     fetchEndorsements();
   }, []);
 
+  // Ensure portal only renders on client to avoid hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleApprove = async (id: string) => {
     try {
+      setSubmitting(true);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
@@ -55,17 +98,21 @@ export default function ViewEndorsementModal({
       });
 
       if (!res.ok) throw new Error("Failed to approve endorsement");
-      alert("Endorsement approved successfully!");
-      fetchEndorsements();
+      // close modal and show success modal imperatively for 5s
       onClose();
+      showSuccess("Endorsement approved successfully!");
+      fetchEndorsements();
     } catch (err: any) {
       console.error(err);
-      alert(err.message);
+      showError(err?.message || "Failed to approve endorsement.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handleReject = async (id: string) => {
     try {
+      setSubmitting(true);
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
@@ -79,22 +126,23 @@ export default function ViewEndorsementModal({
       });
 
       if (!res.ok) throw new Error("Failed to reject endorsement");
-      alert("Endorsement rejected successfully!");
-      fetchEndorsements();
       onClose();
+      showSuccess("Endorsement rejected successfully!");
+      fetchEndorsements();
     } catch (err: any) {
       console.error(err);
-      alert(err.message);
+      showError(err?.message || "Failed to reject endorsement.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (!endorsement) return null;
-
-  return (
+  if (!endorsement || !mounted) return null;
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[20000]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -105,10 +153,12 @@ export default function ViewEndorsementModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
           >
+            {/* Success/Error modals are mounted imperatively via `showSuccess`/`showError` */}
             {/* Close Button */}
             <button
-              onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+              onClick={() => { if (!submitting) onClose(); }}
+              disabled={submitting}
+              className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${submitting ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -198,22 +248,25 @@ export default function ViewEndorsementModal({
               {endorsement.status === "Pending" && (
                 <>
                   <button
-                    onClick={() => handleApprove(endorsement._id)}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    onClick={() => { if (!submitting) handleApprove(endorsement._id); }}
+                    disabled={submitting}
+                    className={`px-4 py-2 bg-green-600 text-white rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-green-700'}`}
                   >
                     Accept
                   </button>
                   <button
-                    onClick={() => handleReject(endorsement._id)}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    onClick={() => { if (!submitting) handleReject(endorsement._id); }}
+                    disabled={submitting}
+                    className={`px-4 py-2 bg-red-600 text-white rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-red-700'}`}
                   >
                     Reject
                   </button>
                 </>
               )}
               <button
-                onClick={onClose}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                onClick={() => { if (!submitting) onClose(); }}
+                disabled={submitting}
+                className={`px-4 py-2 bg-gray-600 text-white rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-700'}`}
               >
                 Close
               </button>
@@ -221,6 +274,7 @@ export default function ViewEndorsementModal({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }

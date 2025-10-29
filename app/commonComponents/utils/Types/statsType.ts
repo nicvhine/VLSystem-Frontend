@@ -35,4 +35,7 @@ export interface StatCardProps {
   color: string;
   icon: IconType;
   isAmount?: boolean;
+  large?: boolean;
+  className?: string;
+  compact?: boolean;
 }

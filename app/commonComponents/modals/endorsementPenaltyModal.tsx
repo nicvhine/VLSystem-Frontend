@@ -4,6 +4,34 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UploadCloud } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
+import SuccessModal from './successModal';
+import ErrorModal from './errorModal';
+import { createRoot } from 'react-dom/client';
+
+function mountModal(node: React.ReactElement, duration = 5000) {
+  if (typeof document === 'undefined') return;
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
+  const unmount = () => {
+    try { root.unmount(); } catch (e) { /* ignore */ }
+    if (container.parentNode) container.parentNode.removeChild(container);
+  };
+
+  root.render(React.cloneElement(node, { onClose: unmount } as any));
+
+  const timer = setTimeout(() => { unmount(); clearTimeout(timer); }, duration + 100);
+}
+
+function showSuccess(message: string, duration = 5000) {
+  mountModal(<SuccessModal isOpen={true} message={message} onClose={() => {}} />, duration);
+}
+
+function showError(message: string, duration = 5000) {
+  mountModal(<ErrorModal isOpen={true} message={message} onClose={() => {}} />, duration);
+}
+
 
 interface PenaltyEndorseModalProps {
   isOpen: boolean;
@@ -15,6 +43,8 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
   const [reason, setReason] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // use imperative SuccessModal/ErrorModal mounts via utils
 
   const [penaltyAmount, setPenaltyAmount] = useState(0);
   const [payableAmount, setPayableAmount] = useState(0);
@@ -34,21 +64,24 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
   }, [collection]);
 
   const handleSubmit = async () => {
-    if (!reason.trim()) return alert('Please enter a reason for endorsement');
-  
+    if (!reason.trim()) {
+      showError('Please enter a reason for endorsement');
+      return;
+    }
+
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
-  
+
       setSubmitting(true);
-  
+
       const payload = {
         referenceNumber: collection.referenceNumber,
         reason,
         penaltyAmount,
         payableAmount,
       };
-  
+
       const response = await fetch(`http://localhost:3001/penalty/endorse`, {
         method: 'POST',
         headers: {
@@ -57,17 +90,18 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
         },
         body: JSON.stringify(payload),
       });
-  
+
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(errorText || 'Failed to submit endorsement');
       }
-  
-      alert('Penalty endorsement successfully submitted!');
-      onClose();
-    } catch (error) {
+
+  // close modal then show success modal (imperatively mounted)
+  onClose();
+  showSuccess('Penalty endorsement successfully submitted!');
+    } catch (error: any) {
       console.error('Error submitting endorsement:', error);
-      alert('Failed to submit endorsement. Please try again.');
+      showError(error?.message || 'Failed to submit endorsement. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -89,9 +123,11 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
           >
+            {/* success/error toasts are mounted imperatively via `showSuccess` / `showError` */}
             <button
-              onClick={onClose}
-              className="absolute top-3 right-3 p-2 text-gray-500 hover:bg-gray-100 rounded-full"
+              onClick={() => { if (!submitting) onClose(); }}
+              disabled={submitting}
+              className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${submitting ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -145,8 +181,9 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
 
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={onClose}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+                onClick={() => { if (!submitting) onClose(); }}
+                disabled={submitting}
+                className={`px-4 py-2 text-gray-700 rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-100'}`}
               >
                 Cancel
               </button>
