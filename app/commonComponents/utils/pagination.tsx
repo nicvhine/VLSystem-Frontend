@@ -25,7 +25,9 @@ const Pagination: React.FC<PaginationProps> = ({
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black">
       <div className="text-sm text-gray-700">
         {totalCount === 0 ? (
-          <>0</>
+          <>
+            {tPagination[language].showing} <span className="font-medium">0</span> {t.l37}
+          </>
         ) : (
           <>
             {tPagination[language].showing}{" "}
