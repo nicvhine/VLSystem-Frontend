@@ -93,59 +93,72 @@ export default function LoanStatistics() {
         </>
       )}
 
-      {/* Application Status */}
-      <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <FiUsers className="text-red-600" /> {t.h3}
-        </h2>
-        <div className="flex flex-col gap-2">
-          <StatCard
-            label={t.s1}
-            value={applicationStats.applied ?? 0}
-            color="text-yellow-600"
-            icon={FiClock}
-          />
-          <StatCard
-            label={t.s3}
-            value={applicationStats.approved ?? 0}
-            color="text-green-600"
-            icon={FiCheckCircle}
-          />
-          <StatCard
-            label={t.s4}
-            value={applicationStats.denied ?? 0}
-            color="text-red-600"
-            icon={FiXCircle}
-          />
-        </div>
-      </section>
+      {/* Application Status + Loan Types grouped with controlled proportions for loan officer */}
+      <div className="flex flex-col gap-4 h-full">
+        <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 overflow-hidden">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <FiUsers className="text-red-600" /> {t.h3}
+          </h2>
+          <div className="flex flex-col gap-2 h-full">
+            <StatCard
+              label={t.s1}
+              value={applicationStats.applied ?? 0}
+              color="text-yellow-600"
+              icon={FiClock}
+              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              compact={role === 'loanOfficer'}
+            />
+            <StatCard
+              label={t.s3}
+              value={applicationStats.approved ?? 0}
+              color="text-green-600"
+              icon={FiCheckCircle}
+              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              compact={role === 'loanOfficer'}
+            />
+            <StatCard
+              label={t.s4}
+              value={applicationStats.denied ?? 0}
+              color="text-red-600"
+              icon={FiXCircle}
+              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              compact={role === 'loanOfficer'}
+            />
+          </div>
+        </section>
 
-      {/* Loan Types */}
-      <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
-        <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <FiPieChart className="text-red-600" /> {t.h4}
-        </h2>
-        <div className="flex flex-col gap-2">
-          <StatCard
-            label={s.l1}
-            value={typeStats.withCollateral ?? 0}
-            color="text-blue-600"
-            icon={FiUsers}
-          />
-          <StatCard
-            label={s.l2}
-            value={typeStats.withoutCollateral ?? 0}
-            color="text-green-600"
-            icon={FiUsers}
-          />
-          <StatCard
-            label={s.l3}
-            value={typeStats.openTerm ?? 0}
-            color="text-red-600"
-            icon={FiUsers}
-          />
-        </div>
-      </section>
+  <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 overflow-hidden">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+            <FiPieChart className="text-red-600" /> {t.h4}
+          </h2>
+          <div className="flex flex-col gap-2 h-full">
+            <StatCard
+              label={s.l1}
+              value={typeStats.withCollateral ?? 0}
+              color="text-blue-600"
+              icon={FiUsers}
+              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              compact={role === 'loanOfficer'}
+            />
+            <StatCard
+              label={s.l2}
+              value={typeStats.withoutCollateral ?? 0}
+              color="text-green-600"
+              icon={FiUsers}
+              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              compact={role === 'loanOfficer'}
+            />
+            <StatCard
+              label={s.l3}
+              value={typeStats.openTerm ?? 0}
+              color="text-red-600"
+              icon={FiUsers}
+              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              compact={role === 'loanOfficer'}
+            />
+          </div>
+        </section>
+      </div>
     </div>
   );
 }

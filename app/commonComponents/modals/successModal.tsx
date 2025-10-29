@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { SuccessModalProps } from '../utils/Types/modal';
+import { createPortal } from 'react-dom';
 
 /**
  * Success modal component with fade animations and auto-close functionality
@@ -36,7 +37,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose })
 
   if (!visible) return null;
 
-  return (
+  const content = (
     <>
       <div
         className={`fixed bottom-6 right-6 z-50 pointer-events-none min-w-[220px] max-w-xs transition-none ${animation === 'fade-in' ? 'success-fade-in' : ''} ${animation === 'fade-out' ? 'success-fade-out' : ''}`}
@@ -70,6 +71,12 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose })
       `}</style>
     </>
   );
+
+  if (typeof window !== 'undefined' && window.document) {
+    return createPortal(content, window.document.body);
+  }
+
+  return content;
 };
 
 export default SuccessModal;

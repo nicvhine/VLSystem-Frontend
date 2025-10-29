@@ -238,7 +238,7 @@ export default function ApplicationsPage() {
                       {/* View */}
                         <Link
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
-                          className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                          className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block whitespace-nowrap"
                         >
                           {t.view}
                         </Link>
