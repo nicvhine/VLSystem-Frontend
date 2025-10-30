@@ -5,6 +5,7 @@ import { Collection } from '@/app/commonComponents/utils/Types/collection';
 import { Loan } from '@/app/commonComponents/utils/Types/loan';
 import { handlePay } from '@/app/userPage/borrowerPage/dashboard/function';
 import { X } from 'lucide-react';
+import { useEscClose } from './modalUtils';
 
 interface CustomAmountModalProps {
   collection: Collection;
@@ -64,18 +65,12 @@ export default function CustomAmountModal({
     }
   };
 
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      // animate out then close
-      setAnimateIn(false);
-      setTimeout(() => onClose(), 150);
-    }
-  };
+  // disable backdrop click close (Esc/X-only). Use Escape to close instead.
+  useEscClose(() => { setAnimateIn(false); setTimeout(() => onClose(), 150); });
   if (typeof document === 'undefined') return null;
 
   return createPortal(
     <div
-      onClick={handleBackdropClick}
       className={`fixed inset-0 z-[99999] bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${animateIn ? 'opacity-100' : 'opacity-0'}`}
       role="dialog"
       aria-modal="true"

@@ -23,7 +23,9 @@ export default function LoanStatistics() {
     return 'loanOfficer';
   });
 
-  const { s, t, loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(role);
+  // normalize role for stats hook: treat 'head' as 'manager' (hooks expect 'manager' | 'loanOfficer')
+  const statsRole = role === 'head' ? 'manager' : role;
+  const { s, t, loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(statsRole as 'manager' | 'loanOfficer');
 
   if (loading) {
     return (
@@ -95,17 +97,18 @@ export default function LoanStatistics() {
 
       {/* Application Status + Loan Types grouped with controlled proportions for loan officer */}
       <div className="flex flex-col gap-4 h-full">
-        <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 overflow-hidden">
+  <section className={`bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 flex flex-col ${role === 'loanOfficer' ? 'overflow-auto' : 'overflow-hidden'}`}>
           <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
             <FiUsers className="text-red-600" /> {t.h3}
           </h2>
-          <div className="flex flex-col gap-2 h-full">
+          <div className="flex flex-col gap-1 flex-1">
             <StatCard
               label={t.s1}
               value={applicationStats.applied ?? 0}
               color="text-yellow-600"
               icon={FiClock}
-              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              // for loan officers, make cards flex so they evenly share the section height
+              className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
               compact={role === 'loanOfficer'}
             />
             <StatCard
@@ -113,7 +116,7 @@ export default function LoanStatistics() {
               value={applicationStats.approved ?? 0}
               color="text-green-600"
               icon={FiCheckCircle}
-              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
               compact={role === 'loanOfficer'}
             />
             <StatCard
@@ -121,23 +124,23 @@ export default function LoanStatistics() {
               value={applicationStats.denied ?? 0}
               color="text-red-600"
               icon={FiXCircle}
-              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+              className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
               compact={role === 'loanOfficer'}
             />
           </div>
         </section>
 
-  <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 overflow-hidden">
+  <section className={`bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 flex flex-col ${role === 'loanOfficer' ? 'overflow-auto' : 'overflow-hidden'}`}>
           <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
             <FiPieChart className="text-red-600" /> {t.h4}
           </h2>
-          <div className="flex flex-col gap-2 h-full">
+            <div className="flex flex-col gap-1 flex-1">
             <StatCard
               label={s.l1}
               value={typeStats.withCollateral ?? 0}
               color="text-blue-600"
               icon={FiUsers}
-              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+                className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
               compact={role === 'loanOfficer'}
             />
             <StatCard
@@ -145,7 +148,7 @@ export default function LoanStatistics() {
               value={typeStats.withoutCollateral ?? 0}
               color="text-green-600"
               icon={FiUsers}
-              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+                className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
               compact={role === 'loanOfficer'}
             />
             <StatCard
@@ -153,7 +156,7 @@ export default function LoanStatistics() {
               value={typeStats.openTerm ?? 0}
               color="text-red-600"
               icon={FiUsers}
-              className={role === 'loanOfficer' ? 'h-20 p-0.5' : 'flex-1 h-full p-0.5'}
+                className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
               compact={role === 'loanOfficer'}
             />
           </div>

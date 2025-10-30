@@ -1,6 +1,7 @@
 "use client";
 
 import { FiPrinter, FiX } from "react-icons/fi";
+import { useEscClose } from './modalUtils';
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 import { ReleaseFormModalProps } from "../utils/Types/modal";
@@ -164,6 +165,10 @@ export default function ReleaseFormModal({
       </div>
     </div>
   );
+
+  // close with animation when Escape is pressed
+  const handleCloseWithAnimation = () => { setAnimateIn(false); setTimeout(() => onClose(), 300); };
+  useEscClose(handleCloseWithAnimation);
 
   return typeof document !== "undefined"
     ? createPortal(modalContent, document.body)
