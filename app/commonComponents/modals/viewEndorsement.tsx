@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
+import { useEscClose } from './modalUtils';
 import { formatCurrency, formatDate } from "../utils/formatters";
 import SuccessModal from "./successModal";
 import ErrorModal from "./errorModal";
@@ -138,6 +139,10 @@ export default function ViewEndorsementModal({
   };
 
   if (!endorsement || !mounted) return null;
+
+  // close modal on Escape
+  useEscClose(onClose);
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -168,16 +173,16 @@ export default function ViewEndorsementModal({
             </h2>
 
             <div className="space-y-4 text-sm">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-gray-500 font-medium">Loan ID</label>
-                <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.loanId}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-gray-500 font-medium">Loan ID</label>
+                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.loanId}</p>
+                </div>
+                <div>
+                  <label className="text-gray-500 font-medium">Reference Number</label>
+                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.referenceNumber}</p>
+                </div>
               </div>
-              <div>
-                <label className="text-gray-500 font-medium">Reference Number</label>
-                <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.referenceNumber}</p>
-              </div>
-            </div>
 
               <div>
                 <label className="text-gray-500 font-medium">Borrower Name</label>
@@ -185,30 +190,30 @@ export default function ViewEndorsementModal({
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-gray-500 font-medium">Endorsed By</label>
-                <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.endorsedBy}</p>
-              </div>
-              <div>
+                <div>
+                  <label className="text-gray-500 font-medium">Endorsed By</label>
+                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.endorsedBy}</p>
+                </div>
+                <div>
                   <label className="text-gray-500 font-medium">Date Endorsed</label>
                   <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">
-                   {formatDate(endorsement.dateEndorsed)}
+                    {formatDate(endorsement.dateEndorsed)}
                   </p>
                 </div>
-            </div>
+              </div>
 
               <div>
                 <label className="text-gray-500 font-medium">Status</label>
                 <p
-                className={`p-2 rounded mt-1 font-medium ${
+                  className={`p-2 rounded mt-1 font-medium ${
                     endorsement.status === "Approved"
-                    ? "bg-green-100 text-green-700"
-                    : endorsement.status === "Rejected"
-                    ? "bg-red-100 text-red-700"
-                    : "bg-yellow-100 text-yellow-700"
-                }`}
+                      ? "bg-green-100 text-green-700"
+                      : endorsement.status === "Rejected"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
                 >
-                {endorsement.status}
+                  {endorsement.status}
                 </p>
               </div>
 

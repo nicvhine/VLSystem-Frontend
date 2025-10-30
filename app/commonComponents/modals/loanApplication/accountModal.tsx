@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { ModalCloseButton } from '../modalUtils';
 import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import SuccessModal from "../successModal";
 import ErrorModal from "../errorModal";
@@ -228,7 +229,6 @@ export default forwardRef(function AccountModal(_, ref) {
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
-        onClick={handleModalClose}
       >
         <div
           className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 ${
@@ -236,7 +236,10 @@ export default forwardRef(function AccountModal(_, ref) {
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-xl font-semibold text-black mb-2">Create Account</h2>
+          <div className="relative">
+            <h2 className="text-xl font-semibold text-black mb-2">Create Account</h2>
+            <ModalCloseButton onClose={handleModalClose} />
+          </div>
           <p className="text-sm text-gray-600 mb-4">Assign a collector and generate borrower credentials.</p>
           <p className="text-base text-black font-medium mb-3">{selectedApp?.appName}</p>
 

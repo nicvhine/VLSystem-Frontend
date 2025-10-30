@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "./errorModal";
 import ConfirmModal from "./confirmModal";
+import { ModalCloseButton, useEscClose } from './modalUtils';
 import { InterviewModalProps } from "../utils/Types/modal";
 
 /**
@@ -87,6 +88,9 @@ export default function InterviewModal({
     }, 150);
   };
 
+  // Escape key closes the modal
+  useEscClose(handleModalClose);
+
   // Validate and show confirmation before saving
   const handleSave = () => {
     const showError = (message: string) => {
@@ -144,7 +148,6 @@ export default function InterviewModal({
         className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
-        onClick={handleModalClose}
       >
         <div
           className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-150 ${
@@ -152,9 +155,10 @@ export default function InterviewModal({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <h2 className="text-xl font-semibold text-gray-900">Edit Interview Schedule</h2>
             <p className="text-sm text-gray-500">Update the borrower’s interview date and time.</p>
+            <ModalCloseButton onClose={handleModalClose} />
           </div>
 
           <div className="space-y-4">

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useEscClose } from './modalUtils';
 
 interface ReceiptModalProps {
   receiptUrl: string;
@@ -8,6 +9,8 @@ interface ReceiptModalProps {
 }
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptUrl, onClose }) => {
+  useEscClose(onClose);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-xl shadow-lg max-w-lg w-full p-6 relative">
