@@ -12,7 +12,7 @@ export default function Head({ children, isNavbarBlurred = false }: { children?:
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
-  const { showModal, countdown, stayLoggedIn, logout } = useInactivityLogout();
+  const { showModal, stayLoggedIn, logout } = useInactivityLogout();
 
   // Check authentication and password change requirements
   useEffect(() => {
