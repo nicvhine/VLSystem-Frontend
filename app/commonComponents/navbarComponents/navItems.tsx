@@ -29,6 +29,7 @@ export const getLoanOfficerNavItems = (language: 'en' | 'ceb') => {
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
     { name: t.tab4, href: '/commonComponents/agent' },
+    { name: "Endorsements", href: '/commonComponents/endorsement/penalty' },
   ];
 };
 
