@@ -12,7 +12,7 @@ export default function Collector({ children, isNavbarBlurred = false }: { child
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
-  const { showModal, countdown, stayLoggedIn, logout } = useInactivityLogout();
+  const { showModal, stayLoggedIn, logout } = useInactivityLogout();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -45,7 +45,7 @@ export default function Collector({ children, isNavbarBlurred = false }: { child
       
       {showModal && (
         <AreYouStillThereModal
-          countdown={countdown}
+        modalTimeout={20000} 
           onStay={stayLoggedIn}
           onLogout={logout}
         />

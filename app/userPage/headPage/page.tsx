@@ -46,7 +46,7 @@ export default function Head({ children, isNavbarBlurred = false }: { children?:
       
       {showModal && (
         <AreYouStillThereModal
-          countdown={countdown}
+          modalTimeout={20000} 
           onStay={stayLoggedIn}
           onLogout={logout}
         />
