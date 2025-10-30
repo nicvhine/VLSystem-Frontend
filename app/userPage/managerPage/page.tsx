@@ -12,7 +12,7 @@ export default function Manager({ children, isNavbarBlurred = false }: { childre
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
 
-  const { showModal, countdown, stayLoggedIn, logout } = useInactivityLogout();
+  const { showModal, stayLoggedIn, logout } = useInactivityLogout();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
