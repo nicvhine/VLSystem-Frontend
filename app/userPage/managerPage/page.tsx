@@ -37,6 +37,7 @@ export default function Manager({ children, isNavbarBlurred = false }: { childre
   return (
     <div className="min-h-screen bg-white">
       <Navbar role="manager" isBlurred={isNavbarBlurred} />
+      
       {showChangePasswordModal && (
         <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
       )}
@@ -45,7 +46,7 @@ export default function Manager({ children, isNavbarBlurred = false }: { childre
       
       {showModal && (
         <AreYouStillThereModal
-          countdown={countdown}
+          modalTimeout={20000} 
           onStay={stayLoggedIn}
           onLogout={logout}
         />
