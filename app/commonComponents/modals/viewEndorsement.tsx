@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useEscClose } from './modalUtils';
 import { formatCurrency, formatDate } from "../utils/formatters";
 import SuccessModal from "./successModal";
 import ErrorModal from "./errorModal";
@@ -141,7 +140,13 @@ export default function ViewEndorsementModal({
   if (!endorsement || !mounted) return null;
 
   // close modal on Escape
-  useEscClose(onClose);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && !submitting) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, submitting, onClose]);
 
   return createPortal(
     <AnimatePresence>

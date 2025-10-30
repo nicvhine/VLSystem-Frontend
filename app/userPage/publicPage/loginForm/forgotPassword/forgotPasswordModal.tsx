@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
 import emailjs from 'emailjs-com';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import SuccessModal from '@/app/commonComponents/modals/successModal';
@@ -171,11 +172,19 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
       )}
   
       <div
-        className={`bg-white w-[400px] rounded-lg shadow-lg p-6 transform transition-all duration-300 ease-out ${
+        className={`relative bg-white w-[400px] rounded-lg shadow-lg p-6 transform transition-all duration-300 ease-out ${
           animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Subtle close button (top-right) like the screenshot: small, minimal, no heavy background */}
+        <button
+          aria-label="Close forgot password modal"
+          onClick={() => setShowForgotModal(false)}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 p-1"
+        >
+          <X className="w-4 h-4" />
+        </button>
         {step === 'role' && <StepRole setPendingStep={setPendingStep} setShowForgotModal={setShowForgotModal} />}
         {step === 'account' && (
           <StepAccount

@@ -1,7 +1,6 @@
 'use client';
 
-import React from 'react';
-import { useEscClose } from './modalUtils';
+import React, { useEffect } from 'react';
 
 interface ReceiptModalProps {
   receiptUrl: string;
@@ -9,7 +8,11 @@ interface ReceiptModalProps {
 }
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ receiptUrl, onClose }) => {
-  useEscClose(onClose);
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

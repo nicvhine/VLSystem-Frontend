@@ -5,7 +5,6 @@ import { Collection } from '@/app/commonComponents/utils/Types/collection';
 import { Loan } from '@/app/commonComponents/utils/Types/loan';
 import { handlePay } from '@/app/userPage/borrowerPage/dashboard/function';
 import { X } from 'lucide-react';
-import { useEscClose } from './modalUtils';
 
 interface CustomAmountModalProps {
   collection: Collection;
@@ -66,7 +65,11 @@ export default function CustomAmountModal({
   };
 
   // disable backdrop click close (Esc/X-only). Use Escape to close instead.
-  useEscClose(() => { setAnimateIn(false); setTimeout(() => onClose(), 150); });
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') { setAnimateIn(false); setTimeout(() => onClose(), 150); } };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
   if (typeof document === 'undefined') return null;
 
   return createPortal(

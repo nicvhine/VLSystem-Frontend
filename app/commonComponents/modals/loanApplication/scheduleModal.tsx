@@ -1,10 +1,11 @@
 'use client';
 
+"use client";
+
 import { useState, useEffect } from "react";
-import { FiFileText } from "react-icons/fi";
+import { FiX, FiFileText } from "react-icons/fi";
 import emailjs from "emailjs-com";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
-import { ModalCloseButton, useEscClose } from "../modalUtils";
 import { SetScheduleModalProps } from "../../utils/Types/components";
 
 // API endpoint for loan applications
@@ -70,9 +71,13 @@ export default function SetScheduleModal({
   }, [isOpen]);
 
   // Close on Escape key unless processing
-  // Escape handling (use shared hook) - only close when not loading
-  const handleClose = () => { if (!loading) onClose(); };
-  useEscClose(handleClose);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !loading) onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose, loading]);
 
   if (!showModal) return null;
 
@@ -161,10 +166,11 @@ export default function SetScheduleModal({
       <SubmitOverlayToast open={loading} message="Saving schedule..." />
       <div
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-black transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"}`}
+      onMouseDown={() => { if (!loading) onClose(); }}
     >
       <div
-        className={`relative bg-white rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-out ${animateIn ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"}`}
-        onMouseDown={(e) => e.stopPropagation()}
+        className={`bg-white rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all duration-300 ease-out ${animateIn ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-4"}`}
+        onMouseDown={(e) => e.stopPropagation()} 
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
@@ -173,7 +179,13 @@ export default function SetScheduleModal({
             </div>
             <h2 className="text-xl font-semibold text-gray-900">Schedule Interview</h2>
           </div>
-          <ModalCloseButton onClose={handleClose} />
+          <button
+            onClick={() => { if (!loading) onClose(); }}
+            className={`text-gray-500 hover:text-gray-700 ${loading ? 'opacity-50 cursor-not-allowed hover:text-gray-500' : ''}`}
+            disabled={loading}
+          >
+            <FiX size={18} />
+          </button>
         </div>
 
         <div className="space-y-4">

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-import { ModalCloseButton } from '../modalUtils';
+// ModalCloseButton removed to revert to previous close UI
 import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import SuccessModal from "../successModal";
 import ErrorModal from "../errorModal";
@@ -238,7 +238,14 @@ export default forwardRef(function AccountModal(_, ref) {
         >
           <div className="relative">
             <h2 className="text-xl font-semibold text-black mb-2">Create Account</h2>
-            <ModalCloseButton onClose={handleModalClose} />
+            <button
+              onClick={handleModalClose}
+              className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${isProcessing ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
+              disabled={isProcessing}
+              aria-label="Close"
+            >
+              ×
+            </button>
           </div>
           <p className="text-sm text-gray-600 mb-4">Assign a collector and generate borrower credentials.</p>
           <p className="text-base text-black font-medium mb-3">{selectedApp?.appName}</p>

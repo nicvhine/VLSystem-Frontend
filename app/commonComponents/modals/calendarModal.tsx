@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "./errorModal";
 import ConfirmModal from "./confirmModal";
-import { ModalCloseButton, useEscClose } from './modalUtils';
+import { X } from 'lucide-react';
 import { InterviewModalProps } from "../utils/Types/modal";
 
 /**
@@ -89,7 +89,13 @@ export default function InterviewModal({
   };
 
   // Escape key closes the modal
-  useEscClose(handleModalClose);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isVisible && !isSaving) handleModalClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isVisible, isSaving]);
 
   // Validate and show confirmation before saving
   const handleSave = () => {
@@ -155,10 +161,15 @@ export default function InterviewModal({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="mb-4 relative">
+            <div className="mb-4 relative">
             <h2 className="text-xl font-semibold text-gray-900">Edit Interview Schedule</h2>
             <p className="text-sm text-gray-500">Update the borrower’s interview date and time.</p>
-            <ModalCloseButton onClose={handleModalClose} />
+            <button
+              onClick={handleModalClose}
+              className="absolute top-3 right-3 p-2 text-gray-500 rounded-full hover:bg-gray-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
           <div className="space-y-4">
