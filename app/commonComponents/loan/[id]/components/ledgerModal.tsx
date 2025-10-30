@@ -22,17 +22,23 @@ export default function LedgerModal({
     const fetchLedger = async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          `http://localhost:3001/payments/ledger/${loanId}`
-        );
+        const token = localStorage.getItem("token");
+        const res = await fetch(`http://localhost:3001/payments/ledger/${loanId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
-        setPayments(data.payments || []);
+        if (res.ok) {
+          setPayments(data.payments || []);
+        } else {
+          console.error("Error fetching ledger:", data.message || data.error);
+        }
       } catch (err) {
         console.error("Failed to fetch ledger:", err);
       } finally {
         setLoading(false);
       }
     };
+    
 
     fetchLedger();
   }, [isOpen, loanId]);
