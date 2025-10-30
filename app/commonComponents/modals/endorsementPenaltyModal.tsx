@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UploadCloud } from 'lucide-react';
-import { useEscClose } from './modalUtils';
 import { formatCurrency } from '../utils/formatters';
 import SuccessModal from './successModal';
 import ErrorModal from './errorModal';
@@ -65,7 +64,13 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
   }, [collection]);
 
   // close on Escape key
-  useEscClose(onClose);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && !submitting) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, submitting, onClose]);
 
   const handleSubmit = async () => {
     if (!reason.trim()) {

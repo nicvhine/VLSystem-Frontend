@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useEscClose } from '../modalUtils';
 import { createPortal } from "react-dom";
 
 export default function PrivacyContentModal({ language, onClose, onReadComplete }: { language: 'en' | 'ceb'; onClose: () => void; onReadComplete?: () => void }) {
@@ -75,10 +74,17 @@ export default function PrivacyContentModal({ language, onClose, onReadComplete 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  if (!mounted) return null;
-
   const handleClose = () => { setAnimateIn(false); setTimeout(() => onClose(), 300); };
-  useEscClose(handleClose);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setAnimateIn(false); setTimeout(() => onClose(), 300); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  if (!mounted) return null;
 
   const markup = (
     <div style={{ zIndex: 1100 }} className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
