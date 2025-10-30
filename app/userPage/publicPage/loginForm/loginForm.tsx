@@ -1,6 +1,5 @@
 'use client';
 
-// Login form with SMS verification step
 import { FormEvent, useState } from 'react';
 import { loginHandler } from './loginHandlers';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';

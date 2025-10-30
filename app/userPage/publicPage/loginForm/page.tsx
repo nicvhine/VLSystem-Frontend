@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginForm from './loginForm';
-import ForgotPasswordModal from './forgotPassword';
+import ForgotPasswordModal from './forgotPassword/forgotPasswordModal';
 
 interface LoginModalProps {
   isOpen: boolean;

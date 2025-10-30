@@ -1,0 +1,163 @@
+'use client';
+
+import React, { useState, useEffect } from "react";
+import { formatCurrency } from "../../utils/formatters";
+import ViewEndorsementModal from "../../modals/viewEndorsement";
+import ErrorModal from "../../modals/errorModal";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+import Filter from "../../utils/sortAndSearch";
+import Pagination from "../../utils/pagination";
+
+export default function PenaltyEndorsementTab() {
+  const [endorsements, setEndorsements] = useState<any[]>([]);
+  const [selectedEndorsement, setSelectedEndorsement] = useState<any | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [showError, setShowError] = useState(false);
+
+  // Pagination & filter state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("date");
+
+  const t = {
+    l13: "Date",
+    l14: "Amount",
+    noData: "No endorsements found.",
+  };
+
+  const fetchEndorsements = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) throw new Error("No token found");
+
+      const res = await fetch("http://localhost:3001/penalty", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch penalty endorsements");
+      const data = await res.json();
+      setEndorsements(data);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err?.message || "Something went wrong while fetching endorsements.");
+      setShowError(true);
+    }
+  };
+
+  useEffect(() => {
+    fetchEndorsements();
+  }, []);
+
+  // Filter & sort
+  const filtered = endorsements.filter(e =>
+    e.borrowerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    e.endorsedBy.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sorted = filtered.sort((a, b) => {
+    if (sortBy === "amount") return b.finalAmount - a.finalAmount;
+    if (sortBy === "date") return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return 0;
+  });
+
+  const totalCount = sorted.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const start = (currentPage - 1) * pageSize;
+  const paginated = sorted.slice(start, start + pageSize);
+
+  const handleView = (endorsement: any) => {
+    setSelectedEndorsement(endorsement);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedEndorsement(null);
+    fetchEndorsements();
+  };
+
+  return (
+    <LoanOfficer>
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-4 sm:px-6 py-8">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+            Penalty Endorsements
+          </h1>
+
+          <ErrorModal isOpen={showError} message={errorMsg} onClose={() => setShowError(false)} />
+
+          {/* Search & Sort */}
+          <Filter
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            sortOptions={[
+              { value: "date", label: t.l13 },
+              { value: "amount", label: t.l14 },
+            ]}
+            t={t}
+          />
+
+          {/* Endorsements Table */}
+          <div className="overflow-x-auto bg-white rounded-lg shadow-sm mt-4">
+            <table className="min-w-full">
+              <thead>
+                <tr>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Reference</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Borrower</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Endorser</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Penalty</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Payable</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {paginated.length > 0 ? (
+                  paginated.map(col => (
+                    <tr key={col._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.referenceNumber}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.borrowerName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{col.endorsedBy}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.penaltyAmount)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.finalAmount)}</td>
+                      <td className="px-6 py-4 text-sm"><span className="px-2 py-1 rounded text-xs">{col.status}</span></td>
+                      <td className="px-6 py-4 text-sm text-center">
+                        <button onClick={() => handleView(col)} className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700">View</button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="text-center text-gray-500 py-6 text-sm">{t.noData}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Component */}
+          <Pagination
+            totalCount={totalCount}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            setCurrentPage={setCurrentPage}
+            setPageSize={setPageSize}
+            language="en"
+          />
+
+          {/* View Modal */}
+          <ViewEndorsementModal
+            isOpen={isModalOpen}
+            onClose={handleModalClose}
+            endorsement={selectedEndorsement}
+          />
+        </div>
+      </div>
+    </LoanOfficer>
+  );
+}

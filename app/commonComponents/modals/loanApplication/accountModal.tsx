@@ -5,6 +5,7 @@ import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/uti
 import SuccessModal from "../successModal";
 import ErrorModal from "../errorModal";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
+import emailjs from "emailjs-com";
 
 // API endpoint for loan applications
 const API_URL = "http://localhost:3001/loan-applications";
@@ -20,6 +21,34 @@ interface Application {
   status?: string;
   borrowersId?: string; // must exist for reloan
 }
+
+const sendEmail = async ({
+  to_name,
+  email,
+  borrower_username,
+  borrower_password,
+  onError,
+}: {
+  to_name: string;
+  email?: string | null;
+  borrower_username: string;
+  borrower_password: string;
+  onError: (msg: string) => void;
+}) => {
+  if (!email) return;
+  try {
+    const result = await emailjs.send(
+      "service_eph6uoe",
+      "template_tjkad0u",
+      { to_name, email, borrower_username, borrower_password },
+      "-PgL14MSf1VScXI94"
+    );
+    console.log("Email sent:", result?.text || result);
+  } catch (error: any) {
+    console.error("EmailJS error:", error);
+    onError("Email failed: " + (error?.text || error.message || "Unknown error"));
+  }
+};
 
 // Modal component
 export default forwardRef(function AccountModal(_, ref) {
@@ -156,6 +185,21 @@ export default forwardRef(function AccountModal(_, ref) {
         );
         const loanData = await loanResponse.json();
         if (!loanResponse.ok) throw new Error(loanData?.error || "Failed to generate loan");
+
+        console.log("Sending email to:", selectedApp.appEmail);
+        await sendEmail({
+          to_name: selectedApp.appName,
+          email: selectedApp.appEmail,
+          borrower_username: borrowerData.borrower.username,
+          borrower_password: borrowerData.tempPassword,
+          onError: (msg: string) => {
+            console.error("Email error callback:", msg);
+            setErrorMessage(msg);
+            setErrorOpen(true);
+            setTimeout(() => setErrorOpen(false), 5000);
+          },
+        });
+
 
         setSuccessMessage("Account created and loan generated successfully.");
       }
