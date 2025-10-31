@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loan } from "@/app/commonComponents/utils/Types/loan";
 import { Collection, Payment } from "@/app/commonComponents/utils/Types/collection";
-import translations from "@/app/commonComponents/translation";
+import translations from "@/app/commonComponents/Translation";
 
 export default function useBorrowerDashboard(borrowersId: string | null) {
   const [allLoans, setAllLoans] = useState<Loan[]>([]);

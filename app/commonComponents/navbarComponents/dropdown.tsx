@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
 import { useState, useEffect, useRef } from 'react';
-import translations from '../translation';
+import translations from '../Translation';
 import { useProfilePicUpload } from './hooks/useProfilePicUpload';
 import SuccessModal from '@/app/commonComponents/modals/successModal';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';

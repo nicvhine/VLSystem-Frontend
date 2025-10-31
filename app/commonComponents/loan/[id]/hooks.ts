@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { LoanDetails } from "../../utils/Types/loan";
-import translations from "../../translation";
+import translations from "../../Translation";
 
 const API_URL = "http://localhost:3001/loans";
 

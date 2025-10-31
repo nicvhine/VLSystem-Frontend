@@ -6,7 +6,7 @@ import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatitic
 import Head from "../page";
 import { useLoanStats } from '@/app/commonComponents/statistics/hooks';
 import { StatCard } from '@/app/commonComponents/statistics/functions';
-import translations from '@/app/commonComponents/translation';
+import translations from '@/app/commonComponents/Translation';
 import { FiDollarSign, FiTrendingUp, FiPieChart, FiCheckCircle } from 'react-icons/fi';
 
 export default function HeadDashboard() {

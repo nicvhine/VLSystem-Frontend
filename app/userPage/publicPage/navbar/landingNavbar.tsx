@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { getLandingNavItems } from '@/app/commonComponents/navbarComponents/navItems';
-import translationData from '@/app/commonComponents/translation';
+import translationData from '@/app/commonComponents/Translation';
 
 interface LandingNavbarProps {
   language: 'en' | 'ceb';

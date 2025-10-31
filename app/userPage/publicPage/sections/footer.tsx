@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import translationData from '@/app/commonComponents/translation';
+import translationData from '@/app/commonComponents/Translation';
 
 // Props interface for footer component
 interface FooterProps {

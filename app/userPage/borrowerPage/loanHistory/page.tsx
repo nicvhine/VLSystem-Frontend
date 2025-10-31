@@ -7,7 +7,7 @@ import { formatDate, formatCurrency } from '@/app/commonComponents/utils/formatt
 import { motion, AnimatePresence } from 'framer-motion';
 import Pagination from '@/app/commonComponents/utils/pagination';
 import Borrower from '../page';
-import translations from '@/app/commonComponents/translation';
+import translations from '@/app/commonComponents/Translation';
 
 export default function LoanHistoryPage() {
   const [loans, setLoans] = useState<Loan[]>([]);

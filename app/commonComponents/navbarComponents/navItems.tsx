@@ -1,4 +1,4 @@
-import navbarTranslation from "../translation/navbarTranslation";
+import navbarTranslation from "../Translation/navbarTranslation";
 import { LandingNavItem } from "../utils/Types/navbar";
 
 export const getHeadNavItems = (language: 'en' | 'ceb') => {
