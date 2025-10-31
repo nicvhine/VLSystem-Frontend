@@ -62,7 +62,7 @@ export default function Borrower({ children }: {children?: React.ReactNode }) {
 
             {showModal && (
                 <AreYouStillThereModal
-                    modalTimeout={20000} 
+                    countdownSeconds={20}  
                     onStay={stayLoggedIn}
                     onLogout={logout}
                 />
