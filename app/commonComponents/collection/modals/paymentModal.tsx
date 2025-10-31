@@ -1,6 +1,5 @@
 'use client';
 
-import { Dispatch, SetStateAction } from "react";
 import { formatCurrency } from "../../utils/formatters";
 import ConfirmModal from "../../modals/confirmModal";
 import { PaymentModalProps } from "../../utils/Types/collection";

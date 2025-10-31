@@ -1,6 +1,5 @@
 'use client';
 
-// Login modal: wraps login form and forgot-password modal with open/close animation
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import LoginForm from './loginForm';
@@ -23,7 +22,6 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
-      // Small delay to trigger animation after mount
       const timer = setTimeout(() => setAnimateIn(true), 10);
       return () => clearTimeout(timer);
     } else {
@@ -32,7 +30,7 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
         setShowModal(false);
         setShowForgotModal(false);
         setForgotRole('');
-      }, 300); // Match transition duration
+      }, 300); 
       return () => clearTimeout(timer);
     }
   }, [isOpen]);

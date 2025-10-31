@@ -8,7 +8,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./calendar.css";
 import InterviewModal from "@/app/commonComponents/modals/calendarModal";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
-import translations from "@/app/commonComponents/Translation";
+import translations from "@/app/commonComponents/translation";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { Application } from "@/app/commonComponents/utils/Types/application";

@@ -62,7 +62,9 @@ export interface CharacterReference {
     dateStarted: string;
     businessLocation: string;
     totalPayable: string;
-    principal: string;
+    appLoanAmount: string;
+    dateDisbursed: string;
+    appLoanType: string;
     appMonthlyIncome?: number;
     creditScore?: number;
     status?: string;

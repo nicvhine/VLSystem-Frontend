@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import translationData from '@/app/commonComponents/Translation';
+import translationData from '@/app/commonComponents/translation';
 import { translateLoanType } from '@/app/commonComponents/utils/formatters';
 
 interface SimulatorModalProps {

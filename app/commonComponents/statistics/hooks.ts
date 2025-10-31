@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { LoanStats, CollectionStats, TypeStats, ApplicationStats, LoanTypeStat } from "../utils/Types/statsType";
-import translations from "../Translation";
+import translations from "../translation";
 
 export function useLoanStats(userType: "manager" | "loanOfficer") {
   const [loading, setLoading] = useState(true);

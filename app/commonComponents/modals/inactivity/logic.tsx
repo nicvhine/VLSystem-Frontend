@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function useInactivityLogout(inactivityTimeout = 50000) {
+export default function useInactivityLogout(inactivityTimeout = 500000) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);

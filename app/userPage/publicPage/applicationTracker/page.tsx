@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { TrackModalProps } from "@/app/commonComponents/utils/Types/components";
-import translations from "@/app/commonComponents/Translation";
+import translations from "@/app/commonComponents/translation";
 
 const progressSteps = {
   en: ["Pending", "Endorsed", "Accepted"],

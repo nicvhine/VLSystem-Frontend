@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { LoanDetails } from "../../utils/Types/loan";
 import translations from "../../translation";
 
-const API_URL = "http://localhost:3001/loans";
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL 
 
 export const useLoanDetails = (id: string) => {
   const [loan, setLoan] = useState<LoanDetails | null>(null);
@@ -17,7 +17,7 @@ export const useLoanDetails = (id: string) => {
     const fetchLoanDetails = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${API_URL}/${id}`, {
+        const response = await fetch(`${LOAN_URL}/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {

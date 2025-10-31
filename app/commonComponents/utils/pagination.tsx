@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import translations from "../Translation";
+import translations from "../translation";
 import { PaginationProps } from "./Types/pagination";
 
 const Pagination: React.FC<PaginationProps> = ({
