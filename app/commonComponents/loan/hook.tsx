@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { LoanDetails } from '../utils/Types/loan';
 import { fetchLoans } from './function';
-import translations from '../Translation';
+import translations from '../translation';
 
 export const useLoansPage = () => {
   const [loans, setLoans] = useState<LoanDetails[]>([]);
