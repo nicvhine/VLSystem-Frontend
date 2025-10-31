@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useProfileDropdownLogic } from './dropdownLogic';
 import ProfileSettingsPanel from './profileEditing';
 import { useState, useEffect, useRef } from 'react';
-import translations from '../Translation';
+import translations from '../translation';
 import { useProfilePicUpload } from './hooks/useProfilePicUpload';
 import SuccessModal from '@/app/commonComponents/modals/successModal';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
@@ -353,3 +353,4 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     </div>
   );
 }
+
