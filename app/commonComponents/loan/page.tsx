@@ -9,7 +9,7 @@ import Pagination from "../utils/pagination";
 import { useLoansPage } from "./hook";
 import { formatCurrency, formatDate } from "../utils/formatters";
 import Filter from "../utils/sortAndSearch";
-import translations from "../Translation";
+import translations from "../translation";
 
 export default function LoansPage() {
   const {
