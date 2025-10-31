@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import useIsMobile from "@/app/commonComponents/utils/useIsMobile";
 import { Collection } from "../utils/Types/collection";
-import translations from "../Translation";
+import translations from "../translation";
 
 // Role-based wrappers
 import Head from "@/app/userPage/headPage/page";
