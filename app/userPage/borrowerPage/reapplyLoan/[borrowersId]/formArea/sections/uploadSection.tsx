@@ -51,6 +51,14 @@ export default function UploadSection({
         ? previousProfileUrl
         : null;
 
+  // Extract previous profile filename (if available) without rendering its preview image
+  const prevProfileName =
+    typeof previousProfileUrl === 'object'
+      ? previousProfileUrl?.fileName || previousProfileUrl?.filePath?.split('/').pop() || null
+      : typeof previousProfileUrl === 'string'
+        ? previousProfileUrl.split('/').pop()
+        : null;
+
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmType, setConfirmType] = useState<'profile' | 'document' | 'prevProfile' | 'prevDocument' | null>(null);
   const [removeIndex, setRemoveIndex] = useState<number | null>(null);
@@ -124,7 +132,7 @@ export default function UploadSection({
               />
             </div>
             <p className="mt-2 text-sm text-gray-600">
-              {language === "en" ? "Previously uploaded 2x2" : "Naunang 2x2 nga litrato"}
+              {language === 'en' ? 'Previously uploaded 2x2' : 'Naunang 2x2 nga litrato'}
             </p>
             <div className="mt-2 flex items-center gap-2">
               {allowUsePreviousProfile ? (
@@ -261,37 +269,7 @@ export default function UploadSection({
           </div>
         )}
 
-        {/* Old docs metadata */}
-        {previousDocuments?.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <h5 className="text-sm font-medium text-gray-700">
-              {language === 'en'
-                ? 'Previously uploaded documents'
-                : 'Mga naunang dokumento'}
-            </h5>
-            {previousDocuments.map((doc, idx) => (
-              <div key={idx} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                <span className="text-sm text-gray-700">
-                  {doc.fileName || doc.filePath?.split('/').pop() || `Document ${idx + 1}`}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={async () => await onUsePreviousDocument?.(idx)}
-                    className="bg-green-500 text-white px-2 py-1 rounded text-xs hover:bg-green-600"
-                  >
-                    {language === 'en' ? 'Use' : 'Gamita'}
-                  </button>
-                  <button
-                    onClick={() => confirm('prevDocument', 'Remove this previous document?', idx)}
-                    className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
-                  >
-                    {language === 'en' ? 'Remove' : 'Tangtangon'}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Previous documents removed: borrowers must upload fresh documents */}
       </div>
 
       <ConfirmModal

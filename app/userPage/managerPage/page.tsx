@@ -46,7 +46,7 @@ export default function Manager({ children, isNavbarBlurred = false }: { childre
       
       {showModal && (
         <AreYouStillThereModal
-          modalTimeout={20000} 
+          countdownSeconds={20}  
           onStay={stayLoggedIn}
           onLogout={logout}
         />
