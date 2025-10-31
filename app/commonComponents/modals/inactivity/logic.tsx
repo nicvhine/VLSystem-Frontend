@@ -3,47 +3,50 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function useInactivityLogout(timeout = 5000) {
+export default function useInactivityLogout(inactivityTimeout = 5000) {
   const router = useRouter();
   const [showModal, setShowModal] = useState(false);
+  const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const activityTimer = useRef<NodeJS.Timeout | null>(null);
-
-  // Logout function
   const logout = () => {
     localStorage.clear();
     router.push('/');
   };
 
-  // Start the inactivity timer
-  const startInactivityTimer = () => {
-    if (activityTimer.current) clearTimeout(activityTimer.current);
-    activityTimer.current = setTimeout(() => {
-      setShowModal(true);
-    }, timeout);
+  const clearInactivityTimer = () => {
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+      inactivityTimer.current = null;
+    }
   };
 
-  // User chooses to stay logged in
+  const startInactivityTimer = () => {
+    clearInactivityTimer();
+    inactivityTimer.current = setTimeout(() => {
+      setShowModal(true); // show modal after inactivity
+    }, inactivityTimeout);
+  };
+
   const stayLoggedIn = () => {
-    setShowModal(false);
-    startInactivityTimer();
+    setShowModal(false); // hide modal
+    startInactivityTimer(); // restart inactivity timer
   };
 
   useEffect(() => {
     startInactivityTimer();
 
     const handleActivity = () => {
-      if (!showModal) startInactivityTimer();
+      startInactivityTimer(); // always reset timer on activity
     };
 
-    const events = ['mousemove', 'keydown', 'scroll'];
-    events.forEach(e => window.addEventListener(e, handleActivity));
+    const events = ['mousemove', 'keydown', 'scroll', 'click'];
+    events.forEach((e) => window.addEventListener(e, handleActivity));
 
     return () => {
-      events.forEach(e => window.removeEventListener(e, handleActivity));
-      if (activityTimer.current) clearTimeout(activityTimer.current);
+      events.forEach((e) => window.removeEventListener(e, handleActivity));
+      clearInactivityTimer();
     };
-  }, [showModal]);
+  }, []);
 
   return { showModal, stayLoggedIn, logout };
 }

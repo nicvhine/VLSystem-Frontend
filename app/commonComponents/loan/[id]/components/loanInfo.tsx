@@ -25,12 +25,12 @@ export default function LoanInfo({ client }: Props) {
             <p className="mt-2 text-2xl font-semibold text-gray-900">{client.totalLoans ?? "-"}</p>
           </div>
           <div className="rounded-md border border-gray-200 p-4">
-            <span className="text-xs uppercase text-gray-500">{s.l15}</span>
-            <p className="mt-2 text-2xl font-semibold text-gray-900">{client.status || "-"}</p>
+            <span className="text-xs uppercase text-gray-500">Total Submitted Applications</span>
+            <p className="mt-2 text-2xl font-semibold text-gray-900">{client.totalLoans ?? "-"}</p>
           </div>
           <div className="rounded-md border border-gray-200 p-4">
             <span className="text-xs uppercase text-gray-500">{s.l46}</span>
-            <p className="mt-2 text-2xl font-semibold text-gray-900">{client.score ?? "-"}</p>
+            <p className="mt-2 text-2xl font-semibold text-gray-900">{client.creditScore ?? "-"}</p>
           </div>
         </div>
       </section>

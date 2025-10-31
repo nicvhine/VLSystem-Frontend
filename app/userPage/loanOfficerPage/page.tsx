@@ -47,7 +47,7 @@ export default function LoanOfficer({ children, isNavbarBlurred = false }: LoanO
 
       {showModal && (
         <AreYouStillThereModal
-          modalTimeout={20000} 
+          countdownSeconds={20}  
           onStay={stayLoggedIn}
           onLogout={logout}
         />

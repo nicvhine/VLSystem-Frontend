@@ -64,7 +64,7 @@ export interface CharacterReference {
     totalPayable: string;
     principal: string;
     appMonthlyIncome?: number;
-    score?: number;
+    creditScore?: number;
     status?: string;
     totalLoans?: number;
     references?: CharacterReference[];
