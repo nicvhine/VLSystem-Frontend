@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { FiChevronDown } from "react-icons/fi";
 import { Application } from "../utils/Types/application";
-import translations from "../Translation";
+import translations from "../translation";
 import { authFetch, filterApplications } from "./function";
 import { formatCurrency, formatDate } from "../utils/formatters";
 import { useLoanApplicationPage } from "./hooks";
