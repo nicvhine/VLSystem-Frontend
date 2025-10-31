@@ -45,7 +45,7 @@ export default function Collector({ children, isNavbarBlurred = false }: { child
       
       {showModal && (
         <AreYouStillThereModal
-        modalTimeout={20000} 
+          modalTimeout={20000} 
           onStay={stayLoggedIn}
           onLogout={logout}
         />

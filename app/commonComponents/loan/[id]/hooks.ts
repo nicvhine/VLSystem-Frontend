@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from "react";
 import { LoanDetails } from "../../utils/Types/loan";
 import translations from "../../translation";
