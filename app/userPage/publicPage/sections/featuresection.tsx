@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import translations from '@/app/commonComponents/Translation'; 
+import translations from '@/app/commonComponents/translation'; 
 
 // Props interface for feature section component
 export interface FeatureSectionProps {

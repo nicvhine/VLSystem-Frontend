@@ -56,7 +56,6 @@ export default function LoansDetailPage({ params }: Props) {
       const data = await res.json();
   
       if (!data.hasClosure) {
-        // No previous closure, allow
         setInputModalOpen(true);
         return;
       }
@@ -81,7 +80,6 @@ export default function LoansDetailPage({ params }: Props) {
           return;
         }
   
-        // Allow re-endorsement after one month
         setInputModalOpen(true);
         return;
       }

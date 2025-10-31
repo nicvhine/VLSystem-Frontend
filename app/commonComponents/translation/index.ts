@@ -1,21 +1,21 @@
 import landingPageTranslation from "./landingPageTranslation";
 import navbarTranslation from "./navbarTranslation";
 import loanTermsTranslator from "./loanTermsTranslator";
-import simulatorTranslator from "../Translations/simulatorTranslation";
+import simulatorTranslator from "./simulatorTranslation";
 import errorTranslation from "./errorTranslation";
-import statisticTranslation from "../Translations/statisticsTranslation";
+import statisticTranslation from "./statisticsTranslation";
 import calendarTranslation from "./calendarTranslation";
-import viewApplicationTranslation from "../Translations/viewApplicationTranslation";
+import viewApplicationTranslation from "./viewApplicationTranslation";
 import buttonTranslation from "./buttonTranslation";
-import trackerApplication from "../Translations/trackerApplication";
-import viewLoanTranslation from "../Translations/viewLoanTranslation";
-import requirementsTranslation from "../Translations/requirementsTranslation";
+import trackerApplication from "./trackerApplication";
+import viewLoanTranslation from "./viewLoanTranslation";
+import requirementsTranslation from "./requirementsTranslation";
 import borrowerPageTranslation from "./borrowerPageTranslation";
 
 // New grouped translation files
 import applicationTranslation from "./applicationTranslation";
 import authTranslation from "./authTranslation";
-import publicTranslation from "../Translations/publicTranslation";
+import publicTranslation from "./publicTranslation";
 
 const translations = {
   landingPageTranslation,

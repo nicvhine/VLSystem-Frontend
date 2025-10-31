@@ -11,7 +11,7 @@ import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/Priv
 import useIsMobile from "../../../commonComponents/utils/useIsMobile";
 import { translateLoanType, getRequirements, getLoanProcessSteps } from "@/app/commonComponents/utils/formatters";
 import { useTrackerSections } from "./formArea/hooks/useTrackerSections";
-import translationData from '@/app/commonComponents/Translation';
+import translationData from '@/app/commonComponents/translation';
 
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');

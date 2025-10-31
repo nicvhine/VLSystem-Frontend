@@ -1,4 +1,4 @@
-import translationData from '@/app/commonComponents/Translation';
+import translationData from '@/app/commonComponents/translation';
 
 export interface AboutSectionProps {
   language: 'en' | 'ceb';

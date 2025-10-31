@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
-import translations from '../Translation';
+import translations from '../translation';
 import { ProfileEditingProps } from '../utils/Types/profileEditing';
 
 export default function ProfileSettingsPanel({

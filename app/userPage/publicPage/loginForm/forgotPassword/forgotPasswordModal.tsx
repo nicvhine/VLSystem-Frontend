@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import emailjs from 'emailjs-com';
-import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import SuccessModal from '@/app/commonComponents/modals/successModal';
 
 // Step components
@@ -45,6 +44,29 @@ const sendOtpViaEmail = async (toEmail: string, otp: string) => {
     );
   } catch (error) {
     console.error('EmailJS error:', error);
+  }
+};
+
+const sendOtpViaSMS = async (toNumber: string, otp: string) => {
+  try {
+    const expiry = new Date(Date.now() + 15 * 60000).toLocaleTimeString();
+    const message = `Your OTP is ${otp}. It will expire at ${expiry}.`;
+
+    const response = await fetch("https://api.semaphore.co/api/v4/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apikey: process.env.NEXT_PUBLIC_SEMAPHORE_API_KEY, 
+        number: toNumber,
+        message,
+        sendername: "VISTULA",
+      }),
+    });
+
+    const data = await response.json();
+    console.log("Semaphore response:", data);
+  } catch (error) {
+    console.error("Semaphore SMS error:", error);
   }
 };
 
@@ -108,8 +130,11 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
     setSelectedMethod(method);
     const newOtp = generateOtp();
     setGeneratedOtp(newOtp);
-    if (method === 'email') await sendOtpViaEmail(borrower.email, newOtp);
-    else console.log(`Would send OTP ${newOtp} to ${borrower.phoneNumber}`);
+    if (method === 'email') {
+      await sendOtpViaEmail(borrower.email, newOtp);
+    } else if (method === 'mobile') {
+      await sendOtpViaSMS(borrower.phoneNumber, newOtp);
+    }
     setOtp('');
     setPendingStep('otp');
   };

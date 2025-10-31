@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import translations from '@/app/commonComponents/Translation';
+import translations from '@/app/commonComponents/translation';
 
 // Props interface for testimonial section component
 export interface TestimonialSectionProps {

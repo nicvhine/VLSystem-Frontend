@@ -100,9 +100,9 @@ export default function LoanInfo({ client }: Props) {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {client.previousLoans.map((loan, idx) => (
                 <div key={idx} className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-800">{loan.type}</p>
+                  <p className="text-sm font-semibold text-gray-800">{loan.appLoanType}</p>
                   <div className="mt-2 space-y-1 text-sm text-gray-600">
-                    <p>{s.l4}: {formatCurrency(loan.principal)}</p>
+                    <p>{s.l4}: {formatCurrency(loan.appLoanAmount)}</p>
                     <p>{s.l13}: {formatDate(loan.dateDisbursed)}</p>
                     {loan.status && <p>{s.l15}: {loan.status}</p>}
                   </div>
