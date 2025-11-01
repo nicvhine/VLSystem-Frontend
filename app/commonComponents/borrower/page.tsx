@@ -8,13 +8,17 @@ import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import { useBorrowersList } from "./hooks";
 import Filter from "../utils/sortAndSearch";
+import translations from "../translation";
 
 export default function BorrowerPage() {
-  const { borrowers, loading, error, role } = useBorrowersList();
+  const { borrowers, loading, error, role, language } = useBorrowersList();
   const [overview, setOverview] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "status">("name");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const t = translations.borrowerTranslation[language];
+  const loanT = translations.loanTermsTranslator[language];
 
   const Wrapper =
     role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
@@ -56,7 +60,7 @@ export default function BorrowerPage() {
       <div className="min-h-screen bg-gray-50">
       <div className="mx-auto px-4 sm:px-6 py-8">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">
-            Borrowers
+            {t.h1}
           </h1>
 
           {/* === Filter === */}
@@ -66,16 +70,16 @@ export default function BorrowerPage() {
             sortBy={sortBy}
             setSortBy={setSortBy}
             sortOptions={[
-              { value: "name", label: "Name" },
-              { value: "status", label: "Status" },
+              { value: "name", label: t.s1 },
+              { value: "status", label: t.s2 },
             ]}
-            t={{}}
+            t={loanT}
           />
 
           {/* === Borrowers Table === */}
           <div className="overflow-x-auto bg-white rounded-xl shadow-md border border-gray-200">
             {loading ? (
-              <p className="p-4 text-center">Loading borrowers...</p>
+              <p className="p-4 text-center">{t.m1}</p>
             ) : error ? (
               <p className="p-4 text-center text-red-600">{error}</p>
             ) : (
@@ -83,22 +87,22 @@ export default function BorrowerPage() {
                 <thead>
                   <tr>
                     <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      ID
+                      {t.t1}
                     </th>
                     <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
+                      {t.t2}
                     </th>
                     <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
+                      {t.t3}
                     </th>
                     <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Phone
+                      {t.t4}
                     </th>
                     <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Borrowed (₱)
+                      {t.t5}
                     </th>
                     <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
+                      {t.t6}
                     </th>
                   </tr>
                 </thead>
@@ -136,7 +140,7 @@ export default function BorrowerPage() {
                               href={`/commonComponents/borrower/${b.borrowersId}`}
                               className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700 inline-block whitespace-nowrap"
                             >
-                              View
+                              {t.m3}
                             </Link>
                           </td>
                         </tr>
@@ -148,7 +152,7 @@ export default function BorrowerPage() {
                         colSpan={7}
                         className="text-center text-gray-500 py-6 text-sm"
                       >
-                        No borrowers found.
+                        {t.m2}
                       </td>
                     </tr>
                   )}

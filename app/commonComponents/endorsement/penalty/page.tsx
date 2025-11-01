@@ -7,6 +7,7 @@ import ErrorModal from "../../modals/errorModal";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import Filter from "../../utils/sortAndSearch";
 import Pagination from "../../utils/pagination";
+import translations from "../../translation";
 
 export default function PenaltyEndorsementTab() {
   const [endorsements, setEndorsements] = useState<any[]>([]);
@@ -20,12 +21,26 @@ export default function PenaltyEndorsementTab() {
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("date");
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== 'undefined') {
+      const storedLang = localStorage.getItem("loanOfficerLanguage") || localStorage.getItem("language") || 'en';
+      return (storedLang as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
 
-  const t = {
-    l13: "Date",
-    l14: "Amount",
-    noData: "No endorsements found.",
-  };
+  const t = translations.endorsementTranslation[language];
+  const loanT = translations.loanTermsTranslator[language];
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (e.detail?.userType === "loanOfficer" && e.detail?.language) {
+        setLanguage(e.detail.language);
+      }
+    };
+    window.addEventListener("languageChange", handler as EventListener);
+    return () => window.removeEventListener("languageChange", handler as EventListener);
+  }, []);
 
   const fetchEndorsements = async () => {
     try {
@@ -36,12 +51,12 @@ export default function PenaltyEndorsementTab() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch penalty endorsements");
+      if (!res.ok) throw new Error(t.m3);
       const data = await res.json();
       setEndorsements(data);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err?.message || "Something went wrong while fetching endorsements.");
+      setErrorMsg(err?.message || t.m5);
       setShowError(true);
     }
   };
@@ -83,7 +98,7 @@ export default function PenaltyEndorsementTab() {
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <h1 className="text-2xl font-semibold text-gray-800 mb-6">
-            Penalty Endorsements
+            {t.h1}
           </h1>
 
           <ErrorModal isOpen={showError} message={errorMsg} onClose={() => setShowError(false)} />
@@ -95,10 +110,10 @@ export default function PenaltyEndorsementTab() {
             sortBy={sortBy}
             setSortBy={setSortBy}
             sortOptions={[
-              { value: "date", label: t.l13 },
-              { value: "amount", label: t.l14 },
+              { value: "date", label: t.s1 },
+              { value: "amount", label: t.s2 },
             ]}
-            t={t}
+            t={loanT}
           />
 
           {/* Endorsements Table */}
@@ -106,13 +121,13 @@ export default function PenaltyEndorsementTab() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Reference</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Borrower</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Endorser</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Penalty</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Payable</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap text-center">Action</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p1}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p2}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p3}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p4}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p5}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p6}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap text-center">{t.p7}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -126,13 +141,13 @@ export default function PenaltyEndorsementTab() {
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.finalAmount)}</td>
                       <td className="px-6 py-4 text-sm"><span className="px-2 py-1 rounded text-xs">{col.status}</span></td>
                       <td className="px-6 py-4 text-sm text-center">
-                        <button onClick={() => handleView(col)} className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700">View</button>
+                        <button onClick={() => handleView(col)} className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700">{t.b1}</button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="text-center text-gray-500 py-6 text-sm">{t.noData}</td>
+                    <td colSpan={7} className="text-center text-gray-500 py-6 text-sm">{t.m1}</td>
                   </tr>
                 )}
               </tbody>
@@ -147,7 +162,7 @@ export default function PenaltyEndorsementTab() {
             pageSize={pageSize}
             setCurrentPage={setCurrentPage}
             setPageSize={setPageSize}
-            language="en"
+            language={language}
           />
 
           {/* View Modal */}

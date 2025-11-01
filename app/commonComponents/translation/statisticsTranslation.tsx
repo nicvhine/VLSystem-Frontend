@@ -30,7 +30,18 @@ const statisticTranslation = {
     c7: "Open-Term",
     c8: "Collectables",
     c9: "Collected",
-    c10: "Unpaid"
+    c10: "Unpaid",
+    c12: "Top 5 Borrowers",
+    c13: "Top Collectors",
+    c14: "Top 5 Agents",
+    c15: "Total Loans",
+    c16: "Total Applications",
+
+    // Messages
+    m1: "No borrowers found",
+    m2: "No agents found",
+    m3: "No collectors found",
+    m4: "Loading charts..."
   },
   ceb: {
     // Application Status
@@ -64,7 +75,18 @@ const statisticTranslation = {
     c7: "Open-Term",
     c8: "Mga Kolektables",
     c9: "Nakolekta",
-    c10: "Wala Mabayri"
+    c10: "Wala Mabayri",
+    c12: "Top 5 nga mga Nanghulam",
+    c13: "Top nga mga Kolektor",
+    c14: "Top 5 nga mga Ahente",
+    c15: "Kinatibuk-ang Pahulam",
+    c16: "Kinatibuk-ang Aplikasyon",
+
+    // Messages
+    m1: "Walay nakit-an nga mga nanghulam",
+    m2: "Walay nakit-an nga mga ahente",
+    m3: "Walay nakit-an nga mga kolektor",
+    m4: "Nag-load sa mga chart..."
   },
 };
 

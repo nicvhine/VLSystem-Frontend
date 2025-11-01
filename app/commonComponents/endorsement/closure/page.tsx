@@ -6,6 +6,7 @@
   import Pagination from "../../utils/pagination";
   import Manager from "@/app/userPage/managerPage/page";
   import { formatDate } from "../../utils/formatters";
+  import translations from "../../translation";
 
   export default function ClosureEndorsement() {
     const [endorsements, setEndorsements] = useState<any[]>([]);
@@ -17,12 +18,26 @@
     const [pageSize, setPageSize] = useState(10);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("date");
+    const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+      if (typeof window !== 'undefined') {
+        const storedLang = localStorage.getItem("managerLanguage") || localStorage.getItem("language") || 'en';
+        return (storedLang as 'en' | 'ceb') || 'en';
+      }
+      return 'en';
+    });
 
-    const t = {
-      l13: "Date",
-      l14: "Client Name",
-      noData: "No endorsements found.",
-    };
+    const t = translations.endorsementTranslation[language];
+    const loanT = translations.loanTermsTranslator[language];
+
+    useEffect(() => {
+      const handler = (e: any) => {
+        if (e.detail?.userType === "manager" && e.detail?.language) {
+          setLanguage(e.detail.language);
+        }
+      };
+      window.addEventListener("languageChange", handler as EventListener);
+      return () => window.removeEventListener("languageChange", handler as EventListener);
+    }, []);
 
     const fetchEndorsements = async () => {
       try {
@@ -33,13 +48,13 @@
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) throw new Error("Failed to fetch closure endorsements");
+        if (!res.ok) throw new Error(t.m4);
 
         const data = await res.json();
         setEndorsements(Array.isArray(data?.data) ? data.data : []);
       } catch (err: any) {
         console.error(err);
-        setErrorMsg(err?.message || "Something went wrong while fetching endorsements.");
+        setErrorMsg(err?.message || t.m5);
         setShowError(true);
       }
     };
@@ -88,7 +103,7 @@
           body: JSON.stringify({ status: action === "approve" ? "Approved" : "Rejected" }),
         });
 
-        if (!res.ok) throw new Error("Failed to update status");
+        if (!res.ok) throw new Error(t.m2);
 
         setEndorsements((prev) =>
           prev.map((e) =>
@@ -97,7 +112,7 @@
         );
       } catch (err) {
         console.error(err);
-        setErrorMsg("Failed to update status.");
+        setErrorMsg(t.m2);
         setShowError(true);
       }
     };
@@ -122,7 +137,7 @@
       <Manager>
         <div className="min-h-screen bg-gray-50">
           <div className="mx-auto px-4 sm:px-6 py-8">
-            <h1 className="text-2xl font-semibold text-gray-800 mb-6">Closure Endorsements</h1>
+            <h1 className="text-2xl font-semibold text-gray-800 mb-6">{t.h2}</h1>
 
             <ErrorModal
               isOpen={showError}
@@ -136,23 +151,23 @@
               sortBy={sortBy}
               setSortBy={setSortBy}
               sortOptions={[
-                { value: "date", label: t.l13 },
-                { value: "client", label: t.l14 },
+                { value: "date", label: t.s1 },
+                { value: "client", label: t.s3 },
               ]}
-              t={t}
+              t={loanT}
             />
 
             <div className="overflow-x-auto bg-white rounded-lg shadow-sm mt-4">
               <table className="min-w-full">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loan ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loan Balance</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Endorsed Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c1}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c2}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c3}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c4}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c5}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c6}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c7}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -177,7 +192,7 @@
                                 : "bg-gray-400 cursor-not-allowed"
                             }`}
                           >
-                            Approve
+                            {t.b2}
                           </button>
                           <button
                             onClick={() => handleAction(e.endorsementId, "reject")}
@@ -188,7 +203,7 @@
                                 : "bg-gray-400 cursor-not-allowed"
                             }`}
                           >
-                            Reject
+                            {t.b3}
                           </button>
                         </td>
 
@@ -196,7 +211,7 @@
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={7} className="text-center text-gray-500 py-6 text-sm">{t.noData}</td>
+                      <td colSpan={7} className="text-center text-gray-500 py-6 text-sm">{t.m1}</td>
                     </tr>
                   )}
                 </tbody>
@@ -210,7 +225,7 @@
               pageSize={pageSize}
               setCurrentPage={setCurrentPage}
               setPageSize={setPageSize}
-              language="en"
+              language={language}
             />
           </div>
         </div>
