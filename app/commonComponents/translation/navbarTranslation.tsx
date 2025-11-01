@@ -12,6 +12,8 @@ const navbarTranslation = {
     tab10: "Login",
     tab11: "Loan History",
     tab12: "Ledger",
+    tab13: "Borrowers",
+    tab14: "Endorsements",
 
     //Dropdown
     t1: "Change",
@@ -54,6 +56,8 @@ const navbarTranslation = {
     tab10: "Sulod",
     tab11: "Kasaysayan sa Pahulam",
     tab12: "Ledger",
+    tab13: "Mga Nanghulam",
+    tab14: "Mga Endorsement",
 
     //Dropdown
     t1: "Ilisi",

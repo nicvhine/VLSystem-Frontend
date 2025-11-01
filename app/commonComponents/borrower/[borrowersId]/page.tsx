@@ -7,6 +7,7 @@ import Head from "@/app/userPage/headPage/page";
 import Manager from "@/app/userPage/managerPage/page";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import { User } from "lucide-react";
+import translations from "../../translation";
 
 interface BorrowerPageProps {
   params: { borrowersId: string };
@@ -17,11 +18,36 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
   const { borrower, latestApplication, stats, loading, error } =
     useBorrowerDetails(borrowersId);
   const [role, setRole] = useState<"manager" | "head" | "loan officer">("manager");
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role") as typeof role | null;
     if (storedRole) setRole(storedRole);
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+    };
+    const langKey = storedRole ? keyMap[storedRole] || "language" : "language";
+    const storedLang = localStorage.getItem(langKey) || localStorage.getItem("language") || 'en';
+    if (storedLang) setLanguage(storedLang as 'en' | 'ceb');
   }, []);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (
+        (role === "head" && e.detail?.userType === "head") ||
+        (role === "loan officer" && e.detail?.userType === "loanOfficer") ||
+        (role === "manager" && e.detail?.userType === "manager")
+      ) {
+        if (e.detail?.language) setLanguage(e.detail.language);
+      }
+    };
+    window.addEventListener("languageChange", handler as EventListener);
+    return () => window.removeEventListener("languageChange", handler as EventListener);
+  }, [role]);
+
+  const t = translations.viewBorrowerTranslation[language];
 
   const Wrapper = role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
 
@@ -29,7 +55,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
     return (
       <Wrapper>
         <div className="flex justify-center items-center min-h-screen text-gray-500 text-lg">
-          Loading borrower details...
+          {t.m1}
         </div>
       </Wrapper>
     );
@@ -44,7 +70,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
   if (!borrower)
     return (
       <Wrapper>
-        <div className="text-center text-gray-500 mt-10 text-lg">No borrower found.</div>
+        <div className="text-center text-gray-500 mt-10 text-lg">{t.m2}</div>
       </Wrapper>
     );
 
@@ -85,7 +111,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
               </div>
               <h1 className="text-3xl font-bold tracking-tight">{mergedData.name}</h1>
               <p className="text-sm opacity-80 mt-1">
-                Borrower ID: {mergedData.borrowersId}
+                {t.a3}: {mergedData.borrowersId}
               </p>
             </div>
           </div>
@@ -93,63 +119,60 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
           {/* MAIN GRID */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* PERSONAL */}
-            <Card title="Personal Information">
+            <Card title={t.t1}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
-                <LabeledField label="Email" value={mergedData.email} />
-                <LabeledField label="Contact Number" value={mergedData.appContact} />
-                <LabeledField label="Address" value={mergedData.appAddress} span />
-                <LabeledField label="Date of Birth" value={mergedData.appDob} />
-                <LabeledField label="Marital Status" value={mergedData.appMarital} />
+                <LabeledField label={t.p1} value={mergedData.email} />
+                <LabeledField label={t.p2} value={mergedData.appContact} />
+                <LabeledField label={t.p3} value={mergedData.appAddress} span />
+                <LabeledField label={t.p4} value={mergedData.appDob} />
+                <LabeledField label={t.p5} value={mergedData.appMarital} />
                 {mergedData.appChildren && mergedData.appChildren !== "0" && (
-                  <LabeledField label="Children" value={mergedData.appChildren} />
+                  <LabeledField label={t.p6} value={mergedData.appChildren} />
                 )}
                 {mergedData.appSpouseName && (
-                  <LabeledField label="Spouse Name" value={mergedData.appSpouseName} />
+                  <LabeledField label={t.p7} value={mergedData.appSpouseName} />
                 )}
                 {mergedData.appSpouseOccupation && (
-                  <LabeledField
-                    label="Spouse Occupation"
-                    value={mergedData.appSpouseOccupation}
-                  />
+                  <LabeledField label={t.p8} value={mergedData.appSpouseOccupation} />
                 )}
               </div>
             </Card>
 
             {/* INCOME */}
-            <Card title="Income Information">
+            <Card title={t.t2}>
               {sourceOfIncome?.includes("business") ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
                   <LabeledField
-                    label="Monthly Income"
+                    label={t.i1}
                     value={`₱${mergedData.appMonthlyIncome}`}
                   />
-                  <LabeledField label="Type of Business" value={mergedData.appTypeBusiness} />
-                  <LabeledField label="Business Name" value={mergedData.appBusinessName} />
-                  <LabeledField label="Date Started" value={mergedData.appDateStarted} />
-                  <LabeledField label="Business Location" value={mergedData.appBusinessLoc} span />
+                  <LabeledField label={t.i2} value={mergedData.appTypeBusiness} />
+                  <LabeledField label={t.i3} value={mergedData.appBusinessName} />
+                  <LabeledField label={t.i4} value={mergedData.appDateStarted} />
+                  <LabeledField label={t.i5} value={mergedData.appBusinessLoc} span />
                 </div>
               ) : sourceOfIncome?.includes("employ") ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
                   <LabeledField
-                    label="Monthly Income"
+                    label={t.i1}
                     value={`₱${mergedData.appMonthlyIncome}`}
                   />
-                  <LabeledField label="Occupation" value={mergedData.appOccupation} />
-                  <LabeledField label="Employment Status" value={mergedData.appEmploymentStatus} />
-                  <LabeledField label="Company Name" value={mergedData.appCompanyName} />
+                  <LabeledField label={t.i6} value={mergedData.appOccupation} />
+                  <LabeledField label={t.i7} value={mergedData.appEmploymentStatus} />
+                  <LabeledField label={t.i8} value={mergedData.appCompanyName} />
                 </div>
               ) : (
                 <p className="text-gray-600 italic text-sm">
-                  No income information available.
+                  {t.m3}
                 </p>
               )}
             </Card>
           </div>
 
           {/* STATS SECTION */}
-          <Card title="Account Summary" className="mt-10">
+          <Card title={t.t3} className="mt-10">
             <p className="text-center text-sm text-gray-500 mt-6 italic"> 
-              {latestLoanId || latestAppId ? "Tap card to view latest loan or application" : "No available loan or application"} 
+              {latestLoanId || latestAppId ? t.m4 : t.m5} 
             </p> 
             <div className="grid grid-cols-2 gap-6 text-center mt-5">
               <Link
@@ -162,7 +185,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
                   latestLoanId ? "hover:scale-[1.03]" : "cursor-not-allowed opacity-60"
                 }`}
               >
-                <StatCard label="Total Loans" value={stats?.totalLoans ?? 0} />
+                <StatCard label={t.a1} value={stats?.totalLoans ?? 0} />
               </Link>
 
               <Link
@@ -175,7 +198,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
                   latestAppId ? "hover:scale-[1.03]" : "cursor-not-allowed opacity-60"
                 }`}
               >
-                <StatCard label="Applications" value={stats?.totalApplications ?? 0} />
+                <StatCard label={t.a2} value={stats?.totalApplications ?? 0} />
               </Link>          
               </div>
           </Card>

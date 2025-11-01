@@ -59,7 +59,7 @@ export default function LoanStatisticsTops() {
             {t.c12 || "Top 5 Borrowers"}
           </div>
           {topBorrowers.length === 0 ? (
-            <p className="text-gray-500">No borrowers found</p>
+            <p className="text-gray-500">{t.m1}</p>
           ) : (
             <ul className="list-decimal space-y-2">
               {topBorrowers.map((b: any) => (
@@ -78,7 +78,7 @@ export default function LoanStatisticsTops() {
             {t.c14 || "Top 5 Agents"}
           </div>
           {topAgents.length === 0 ? (
-            <p className="text-gray-500">No agents found</p>
+            <p className="text-gray-500">{t.m2}</p>
           ) : (
             <ul className="list-decimal space-y-2">
               {topAgents.map((a: any) => (
@@ -98,7 +98,7 @@ export default function LoanStatisticsTops() {
         {t.c13 || "Top Collectors"}
         </div>
         {topCollectors.length === 0 ? (
-          <p className="text-gray-500">No collectors found</p>
+          <p className="text-gray-500">{t.m3}</p>
         ) : (
           <div className="space-y-4">
             {topCollectors.map((c: any) => {

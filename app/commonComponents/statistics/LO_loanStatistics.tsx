@@ -48,7 +48,7 @@ export default function LoanStatisticsVertical() {
           {t.c14 || "Top 5 Agents"}
         </div>
         {topAgents.length === 0 ? (
-          <p className="text-gray-500">No agents found</p>
+          <p className="text-gray-500">{t.m2}</p>
         ) : (
           <ul className="list-decimal">
             {topAgents.map((a: any) => (

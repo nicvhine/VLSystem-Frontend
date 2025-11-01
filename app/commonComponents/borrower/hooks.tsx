@@ -11,10 +11,30 @@ export const useBorrowersList = () => {
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role") as typeof role | null;
-    const storedLang = localStorage.getItem("language") as "en" | "ceb" | null;
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+    };
+    const langKey = storedRole ? keyMap[storedRole] || "language" : "language";
+    const storedLang = localStorage.getItem(langKey) as "en" | "ceb" | null;
     if (storedRole) setRole(storedRole);
     if (storedLang) setLanguage(storedLang);
   }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (
+        (role === "head" && event.detail.userType === "head") ||
+        (role === "loan officer" && event.detail.userType === "loanOfficer") ||
+        (role === "manager" && event.detail.userType === "manager")
+      ) {
+        setLanguage(event.detail.language);
+      }
+    };
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
 
   useEffect(() => {
     const fetchBorrowers = async () => {
