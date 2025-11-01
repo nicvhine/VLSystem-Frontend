@@ -11,11 +11,10 @@ import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import translations from "@/app/commonComponents/translation";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
-import { Application } from "@/app/commonComponents/utils/Types/application";
-import { InterviewEvent } from "@/app/commonComponents/utils/Types/application";
+import { Application, InterviewEvent } from "@/app/commonComponents/utils/Types/application";
 import { InterviewCalendarProps } from "@/app/commonComponents/utils/Types/components";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
 
 // Calendar localization setup
 const locales = { "en-US": enUS };
@@ -27,16 +26,10 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-
-/**
- * Interview calendar component for loan officers
- * Displays scheduled interviews and allows scheduling management
- */
 export default function InterviewCalendar({ onModalToggle }: InterviewCalendarProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
-  // All hooks must be at the top level
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("loanOfficerLanguage") as 'en' | 'ceb') || 'en';
@@ -51,74 +44,76 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Convert applications with interview data to calendar events
+  // Map loan_applications to calendar events
   const mapApplicationsToEvents = (apps: Application[]): InterviewEvent[] =>
-    apps
-      .filter(app => app.interviewDate && app.interviewTime)
-      .map(app => {
-        const [hourStr = "0", minuteStr = "0"] = (app.interviewTime ?? "00:00").split(":");
-        const [yearStr = "1970", monthStr = "1", dayStr = "1"] = (app.interviewDate ?? "1970-01-01").split("-");
-        const start = new Date(
-          Number(yearStr) || 1970,
-          (Number(monthStr) || 1) - 1,
-          Number(dayStr) || 1,
-          Number(hourStr) || 0,
-          Number(minuteStr) || 0
-        );
-        const end = new Date(start);
-        end.setHours(end.getHours() + 1);
+  apps
+    .filter(app => app.interviewDate && app.interviewTime)
+    .map(app => {
+      const interviewDate = app.interviewDate!;
+      const interviewTime = app.interviewTime!;
 
-        return {
-          title: `${app.appName}`,
-          start,
-          end,
-          applicationId: app.applicationId,
-        };
-      });
+      const [hourStr = "0", minuteStr = "0"] = interviewTime.split(":");
+      const [yearStr, monthStr, dayStr] = interviewDate.split("-");
 
-  // Listen for language changes
+      const start = new Date(
+        Number(yearStr),
+        Number(monthStr) - 1,
+        Number(dayStr),
+        Number(hourStr),
+        Number(minuteStr)
+      );
+
+      const end = new Date(start);
+      end.setHours(end.getHours() + 1);
+
+      return {
+        title: app.appName || "Unnamed Applicant",
+        start,
+        end,
+        applicationId: app.applicationId,
+      };
+    });
+
+  // Handle language change
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       if (event.detail.userType === 'loanOfficer') {
         setLanguage(event.detail.language);
       }
     };
-
     window.addEventListener('languageChange', handleLanguageChange as EventListener);
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
   }, []);
 
   const t = translations.calendarTranslation[language];
 
-  // Fetch interview data from API
   useEffect(() => {
-    async function fetchInterviews() {
+    async function fetchApplications() {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${APPLICATION_URL}/interviews`, {
-          headers: { "Authorization": `Bearer ${token}` }
+        const res = await fetch(`${APPLICATION_URL}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) {
-          console.error("Failed to fetch interviews:", res.status, res.statusText);
+          console.error("Failed to fetch applications:", res.statusText);
           return;
         }
 
         const data: Application[] = await res.json();
-
-        setEvents(mapApplicationsToEvents(data));
         setApplications(data);
+        setEvents(mapApplicationsToEvents(data));
       } catch (err) {
-        console.error("Error fetching interviews:", err);
+        console.error("Error fetching applications:", err);
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchInterviews();
+    fetchApplications();
   }, []);
 
-  // Handle event selection to open interview modal
+  // Event clicked → open interview modal
   const handleSelectEvent = (event: InterviewEvent) => {
     const app = applications.find(a => a.applicationId === event.applicationId);
     if (!app) return;
@@ -127,27 +122,26 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     onModalToggle?.(true);
   };
 
-  // Close interview modal
   const handleCloseModal = () => {
     setShowModal(false);
     onModalToggle?.(false);
   };
 
-  // Save interview schedule changes
+  // Save updated schedule
   const handleSaveChanges = async (date: string, time: string) => {
     if (!selectedApp) return;
-  
+
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`${APPLICATION_URL}/${selectedApp.applicationId}/schedule-interview`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify({ interviewDate: date, interviewTime: time })
+        body: JSON.stringify({ interviewDate: date, interviewTime: time }),
       });
-  
+
       if (res.ok) {
         setModalMsg("Schedule updated!");
         setShowSuccessModal(true);
@@ -181,109 +175,105 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
           <LoadingSpinner size={6} />
         </div>
       ) : (
-      <>
-      {showSuccessModal && (
-        <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
-      )}
-      {showErrorModal && (
-        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
-      )}
-      <div className="bg-white p-4 rounded shadow text-black">
-  <h2 className="text-xl font-semibold mb-4 text-black">{t.c1}</h2>
-  {/* @ts-ignore: react-big-calendar type incompatibility with React 18+ */}
-  <RBC
-  localizer={localizer}
-  events={events}
-  startAccessor="start"
-  endAccessor="end"
-  selectable
-  views={['month', 'week', 'day', 'agenda']}
-  view={view}
-  onView={(newView: View) => {
-    if (["month", "week", "day", "agenda"].includes(newView)) {
-      setView(newView as "month" | "week" | "day" | "agenda");
-    }
-  }}  
-  date={date}
-  onNavigate={(newDate: Date) => setDate(newDate)}
-  popup
-  style={{ height: "75vh" }}
-  onSelectEvent={handleSelectEvent}
-  messages={{
-    today: t.c2,
-    previous: t.c3,
-    next: t.c4,
-    month: t.c5,
-    week: t.c6,
-    day: t.c7,
-    agenda: t.c8,
-    date: t.c9,
-    time: t.c10,
-    event: t.c11,
-    noEventsInRange: t.c12,
-    showMore: (total: number) => `+${total} more`
-  }}
-  eventPropGetter={(event: InterviewEvent) => {
-    const app = applications.find(a => a.applicationId === event.applicationId);
-    let baseClass = "";
-    const now = new Date();
-    const isPending = app?.status?.trim().toLowerCase() === "pending";
-    const interviewDateTime = app?.interviewDate && app?.interviewTime 
-      ? new Date(`${app.interviewDate}T${app.interviewTime}`) 
-      : null;
-    if (isPending && interviewDateTime && interviewDateTime < now) {
-      baseClass = "overdue-interview";
-    } else if (isPending) {
-      baseClass = "pending-interview";
-    } else {
-      baseClass = "completed-interview";
-    }
-    return {
-      className: baseClass,
-      style: {
-        padding: "2px 6px",
-        borderRadius: 6,
-        background: "#a0a7b4", // fallback if needed
-        cursor: "pointer"
-      }
-    };
-  }}
-  components={{
-    event: ({ event }: { event: InterviewEvent }) => {
-      // Truncate to 12 chars, show tooltip, but let bar fill cell
-      const display = event.title.length > 12 ? event.title.slice(0, 12) + "..." : event.title;
-      return (
-        <span
-          title={event.title}
-          style={{
-            display: "inline-block",
-            width: "100%",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            verticalAlign: "middle"
-          }}
-        >
-          {display}
-        </span>
-      );
-    }
-  }}
-/>
+        <>
+          {showSuccessModal && (
+            <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
+          )}
+          {showErrorModal && (
+            <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
+          )}
 
+          <div className="bg-white p-4 rounded shadow text-black">
+            <h2 className="text-xl font-semibold mb-4 text-black">{t.c1}</h2>
+            {/* @ts-ignore: react-big-calendar type issue */}
+            <RBC
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              selectable
+              views={['month', 'week', 'day', 'agenda']}
+              view={view}
+              onView={(newView: View) => {
+                if (["month", "week", "day", "agenda"].includes(newView)) {
+                  setView(newView as "month" | "week" | "day" | "agenda");
+                }
+              }}
+              date={date}
+              onNavigate={(newDate: Date) => setDate(newDate)}
+              popup
+              style={{ height: "75vh" }}
+              onSelectEvent={handleSelectEvent}
+              messages={{
+                today: t.c2,
+                previous: t.c3,
+                next: t.c4,
+                month: t.c5,
+                week: t.c6,
+                day: t.c7,
+                agenda: t.c8,
+                date: t.c9,
+                time: t.c10,
+                event: t.c11,
+                noEventsInRange: t.c12,
+                showMore: (total: number) => `+${total} more`,
+              }}
+              eventPropGetter={(event: InterviewEvent) => {
+                const app = applications.find(a => a.applicationId === event.applicationId);
+                const isPending = app?.status?.trim().toLowerCase() === "pending";
+              
+                // 🔴 Red if pending (not yet done)
+                // ⚫ Gray & crossed out if interview is done
+                const background = isPending ? "#dc2626" : "#9ca3af";
+                const textDecoration = isPending ? "none" : "line-through";
+                const color = isPending ? "white" : "#e5e7eb";
+              
+                return {
+                  style: {
+                    background,
+                    color,
+                    textDecoration,
+                    padding: "4px 8px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    fontWeight: 500,
+                  },
+                };
+              }}
+              
+              components={{
+                event: ({ event }: { event: InterviewEvent }) => {
+                  const display = event.title.length > 12 ? event.title.slice(0, 12) + "..." : event.title;
+                  return (
+                    <span
+                      title={event.title}
+                      style={{
+                        display: "inline-block",
+                        width: "100%",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {display}
+                    </span>
+                  );
+                },
+              }}
+            />
+          </div>
 
-      </div>
-      <InterviewModal
-        show={showModal}
-        onClose={handleCloseModal}
-        applicationId={selectedApp?.applicationId || ""}
-        currentDate={selectedApp?.interviewDate}
-        currentTime={selectedApp?.interviewTime}
-        onSave={handleSaveChanges}
-        onView={handleViewApplication}
-        appliedDate={selectedApp?.dateApplied}
-      />
-      </>
+          <InterviewModal
+            show={showModal}
+            onClose={handleCloseModal}
+            applicationId={selectedApp?.applicationId || ""}
+            currentDate={selectedApp?.interviewDate}
+            currentTime={selectedApp?.interviewTime}
+            onSave={handleSaveChanges}
+            onView={handleViewApplication}
+            appliedDate={selectedApp?.dateApplied}
+          />
+        </>
       )}
     </div>
   );

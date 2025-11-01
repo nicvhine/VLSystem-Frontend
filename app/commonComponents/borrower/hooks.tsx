@@ -43,7 +43,7 @@ export const useBorrowersList = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`{BORROWER_URL}`, {
+        const res = await fetch(`${BORROWER_URL}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {

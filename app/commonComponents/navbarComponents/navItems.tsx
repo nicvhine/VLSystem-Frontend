@@ -26,7 +26,6 @@ export const getManagerNavItems = (language: 'en' | 'ceb') => {
 export const getLoanOfficerNavItems = (language: 'en' | 'ceb') => {
   const t = navbarTranslation[language];
   return [
-    { name: t.tab13, href: '/commonComponents/borrower' },
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
     { name: t.tab4, href: '/commonComponents/agent' },
