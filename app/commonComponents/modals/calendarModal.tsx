@@ -4,21 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "./errorModal";
 import ConfirmModal from "./confirmModal";
-import { X } from 'lucide-react';
 import { InterviewModalProps } from "../utils/Types/modal";
 
-/**
- * Interview calendar modal component for scheduling loan interviews
- * Handles date/time selection with validation and confirmation
- * @param show - Boolean to control modal visibility
- * @param onClose - Callback function to close the modal
- * @param applicationId - ID of the application being scheduled
- * @param currentDate - Currently selected date
- * @param currentTime - Currently selected time
- * @param onSave - Callback function to save the schedule
- * @param onView - Callback function to view application details
- * @returns JSX element containing the interview calendar modal
- */
 export default function InterviewModal({
   show,
   onClose,
@@ -28,8 +15,8 @@ export default function InterviewModal({
   onSave,
   onView,
   appliedDate,
-}: InterviewModalProps) {
-  // Form state management
+  status, // ✅ added: pass application status here
+}: InterviewModalProps & { status?: string }) {
   const [date, setDate] = useState(currentDate || "");
   const [time, setTime] = useState(currentTime || "");
   const [showConfirm, setShowConfirm] = useState(false);
@@ -40,7 +27,9 @@ export default function InterviewModal({
   const [isSaving, setIsSaving] = useState(false);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Scheduling window: today through seven days after application date
+  // ✅ Determine if interview is done
+  const isDone = status?.trim().toLowerCase() !== "pending";
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const appliedDateObj = appliedDate ? new Date(appliedDate) : new Date(today);
@@ -51,7 +40,6 @@ export default function InterviewModal({
   const minDate = minDateObj.toISOString().split("T")[0];
   const maxDate = maxDateObj.toISOString().split("T")[0];
 
-  // Update form fields when props change
   useEffect(() => {
     setDate(currentDate || "");
     setTime(currentTime || "");
@@ -71,15 +59,20 @@ export default function InterviewModal({
 
   useEffect(() => {
     return () => {
-      if (errorTimerRef.current) {
-        clearTimeout(errorTimerRef.current);
-      }
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     };
   }, []);
-  if (!isVisible) return null;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isVisible && !isSaving) handleModalClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isVisible, isSaving]);
 
   const handleModalClose = () => {
-    if (isSaving) return; // prevent closing while saving
+    if (isSaving) return;
     setIsAnimating(false);
     setTimeout(() => {
       onClose();
@@ -88,23 +81,11 @@ export default function InterviewModal({
     }, 150);
   };
 
-  // Escape key closes the modal
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isVisible && !isSaving) handleModalClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isVisible, isSaving]);
-
-  // Validate and show confirmation before saving
   const handleSave = () => {
     const showError = (message: string) => {
       setErrorMessage(message);
       setErrorOpen(true);
-      if (errorTimerRef.current) {
-        clearTimeout(errorTimerRef.current);
-      }
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
       errorTimerRef.current = setTimeout(() => setErrorOpen(false), 2000);
     };
 
@@ -129,10 +110,10 @@ export default function InterviewModal({
       showError("Interview time must be between 9:00 AM and 6:00 PM.");
       return;
     }
+
     setShowConfirm(true);
   };
 
-  // Confirm and save schedule changes
   const handleConfirm = async () => {
     setShowConfirm(false);
     try {
@@ -143,10 +124,11 @@ export default function InterviewModal({
     }
   };
 
-  // Cancel saving changes
   const handleCancel = () => {
     setShowConfirm(false);
   };
+
+  if (!isVisible) return null;
 
   return (
     <>
@@ -161,69 +143,87 @@ export default function InterviewModal({
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-            <div className="mb-4 relative">
-            <h2 className="text-xl font-semibold text-gray-900">Edit Interview Schedule</h2>
-            <p className="text-sm text-gray-500">Update the borrower’s interview date and time.</p>
-            <button
-              onClick={handleModalClose}
-              className="absolute top-3 right-3 p-2 text-gray-500 rounded-full hover:bg-gray-100"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="mb-4 relative">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isDone ? "Interview Completed" : "Edit Interview Schedule"}
+            </h2>
+            <p className="text-sm mt-10 text-gray-500">
+              {isDone
+                ? "This interview has already been completed. You can only view the application."
+                : "Update the borrower’s interview date and time."}
+            </p>
           </div>
 
-          <div className="space-y-4">
-            <label className="block text-sm font-medium text-gray-700">
-              Interview Date
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                min={minDate}
-                max={maxDate}
-                className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
-              />
-            </label>
+          {/* Only show date/time inputs if still pending */}
+          {!isDone && (
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Interview Date
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  min={minDate}
+                  max={maxDate}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
+                />
+              </label>
 
-            <label className="block text-sm font-medium text-gray-700">
-              Interview Time
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
-              />
-            </label>
-          </div>
+              <label className="block text-sm font-medium text-gray-700">
+                Interview Time
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
+                />
+              </label>
+            </div>
+          )}
 
+          {/* Buttons */}
           <div className="flex justify-end space-x-2 pt-6">
-            <button
+            {isDone ? (
+              <button
+                type="button"
+                onClick={() => onView(applicationId)}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                View Application
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                  disabled={isSaving}
+                >
+                  {isSaving ? <ButtonContentLoading label="Saving..." /> : "Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onView(applicationId)}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSaving}
+                >
+                  View Application
+                </button>
+              </>
+            )}
+             <button
               type="button"
               onClick={handleModalClose}
               className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 transition disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSaving}
             >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-70 disabled:cursor-not-allowed"
-              disabled={isSaving}
-            >
-              {isSaving ? <ButtonContentLoading label="Saving..." /> : "Save Changes"}
-            </button>
-            <button
-              type="button"
-              onClick={() => onView(applicationId)}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSaving}
-            >
-              View Application
+              Close
             </button>
           </div>
         </div>
       </div>
+
+      {/* Error & Confirmation Modals */}
       <ErrorModal isOpen={errorOpen} message={errorMessage} onClose={() => setErrorOpen(false)} />
       <ConfirmModal
         show={showConfirm}

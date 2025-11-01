@@ -8,7 +8,7 @@ const borrowerTranslation = {
     t2: "Name",
     t3: "Email",
     t4: "Phone",
-    t5: "Total Borrowed (₱)",
+    t5: "Total Borrowed",
     t6: "Action",
 
     // Sort options
@@ -29,7 +29,7 @@ const borrowerTranslation = {
     t2: "Ngalan",
     t3: "Email",
     t4: "Telepono",
-    t5: "Kinatibuk-ang Nanghulam (₱)",
+    t5: "Kinatibuk-ang Nanghulam",
     t6: "Aksyon",
 
     // Sort options

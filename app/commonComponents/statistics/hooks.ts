@@ -48,7 +48,11 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
             fetch(`${STAT_URL}/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
           ]);
 
-          const typeData: LoanTypeStat[] = await typeRes.json();
+          const typeDataRes = await typeRes.json();
+          console.log("typeData response:", typeDataRes); // debug
+          const typeData: LoanTypeStat[] = Array.isArray(typeDataRes)
+            ? typeDataRes
+            : typeDataRes?.typeStats || [];
           const loanData = await loanRes.json();
           const collectionData: CollectionStats = await collectionRes.json();
           const appData: ApplicationStats = await appRes.json();

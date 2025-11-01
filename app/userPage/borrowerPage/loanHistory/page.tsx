@@ -146,7 +146,7 @@ export default function LoanHistoryPage() {
       <div className="min-h-screen bg-gray-50 p-6 md:p-12">
         <div className="max-w-screen-2xl mx-auto w-full">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-m font-semibold text-gray-800">{t.t1}</h1>
+            <h1 className="text-xl font-semibold text-gray-800">{t.t1}</h1>
           </div>
 
         {/* Top Metrics */}
