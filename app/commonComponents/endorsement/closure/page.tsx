@@ -2,6 +2,8 @@
 
   import React, { useState, useEffect } from "react";
   import ErrorModal from "../../modals/errorModal";
+  import SuccessModal from "../../modals/successModal";
+  import ConfirmModal from "../../modals/confirmModal";
   import Filter from "../../utils/sortAndSearch";
   import Pagination from "../../utils/pagination";
   import Manager from "@/app/userPage/managerPage/page";
@@ -13,6 +15,18 @@
     const [loanBalances, setLoanBalances] = useState<Record<string, number>>({});
     const [errorMsg, setErrorMsg] = useState("");
     const [showError, setShowError] = useState(false);
+
+    // Success modal state
+    const [showSuccess, setShowSuccess] = useState(false);
+    const [successMsg, setSuccessMsg] = useState("");
+
+    // Confirmation modal state
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    const [pendingAction, setPendingAction] = useState<{
+      id: string;
+      action: "approve" | "reject";
+    } | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -52,6 +66,9 @@
 
         const data = await res.json();
         setEndorsements(Array.isArray(data?.data) ? data.data : []);
+        // Clear any lingering error toast if fetch now succeeds
+        setShowError(false);
+        setErrorMsg("");
       } catch (err: any) {
         console.error(err);
         setErrorMsg(err?.message || t.m5);
@@ -94,6 +111,12 @@
         const token = localStorage.getItem("token");
         if (!token) return;
 
+        // Ensure only one toast shows for this action
+        setShowError(false);
+        setErrorMsg("");
+        setShowSuccess(false);
+        setSuccessMsg("");
+
         const res = await fetch(`http://localhost:3001/closure/${endorsementId}`, {
           method: "PUT",
           headers: {
@@ -103,16 +126,27 @@
           body: JSON.stringify({ status: action === "approve" ? "Approved" : "Rejected" }),
         });
 
-        if (!res.ok) throw new Error(t.m2);
+        if (!res.ok) {
+          let apiMsg = t.m2;
+          try {
+            const errBody = await res.json();
+            apiMsg = errBody?.message || apiMsg;
+          } catch {}
+          throw new Error(apiMsg);
+        }
 
         setEndorsements((prev) =>
           prev.map((e) =>
             e.endorsementId === endorsementId ? { ...e, status: action === "approve" ? "Approved" : "Rejected" } : e
           )
         );
+
+        // Show success toast
+        setSuccessMsg(action === "approve" ? "Endorsement approved." : "Endorsement rejected.");
+        setShowSuccess(true);
       } catch (err) {
         console.error(err);
-        setErrorMsg(t.m2);
+        setErrorMsg(err instanceof Error ? err.message : t.m2);
         setShowError(true);
       }
     };
@@ -145,6 +179,12 @@
               onClose={() => setShowError(false)}
             />
 
+            <SuccessModal
+              isOpen={showSuccess}
+              message={successMsg}
+              onClose={() => setShowSuccess(false)}
+            />
+
             <Filter
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -157,23 +197,23 @@
               t={loanT}
             />
 
-            <div className="overflow-x-auto bg-white rounded-lg shadow-sm mt-4">
+            <div className="w-full rounded-lg bg-white shadow-sm border border-gray-100 overflow-x-auto mt-4">
               <table className="min-w-full">
                 <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c1}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c2}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c3}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c4}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c5}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c6}</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t.c7}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.c1}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.c2}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.c3}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.c4}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.c5}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.c6}</th>
+                    <th className="bg-gray-50 px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap w-40">{t.c7}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {paginated.length > 0 ? (
                     paginated.map((e) => (
-                      <tr key={e._id} className="hover:bg-gray-50">
+                      <tr key={e._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-sm text-gray-900">{e.endorsementId}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{e.loanId}</td>
                         <td className="px-6 py-4 text-sm text-gray-900">{e.clientName}</td>
@@ -182,29 +222,31 @@
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">{formatDate(e.createdAt)}</td>
                         <td className="px-6 py-4 text-sm text-gray-500">{e.status}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900 flex gap-2">
-                          <button
-                            onClick={() => handleAction(e.endorsementId, "approve")}
-                            disabled={e.status !== "Pending"}
-                            className={`px-2 py-1 rounded text-white ${
-                              e.status === "Pending"
-                                ? "bg-green-600 hover:bg-green-700"
-                                : "bg-gray-400 cursor-not-allowed"
-                            }`}
-                          >
-                            {t.b2}
-                          </button>
-                          <button
-                            onClick={() => handleAction(e.endorsementId, "reject")}
-                            disabled={e.status !== "Pending"}
-                            className={`px-2 py-1 rounded text-white ${
-                              e.status === "Pending"
-                                ? "bg-red-600 hover:bg-red-700"
-                                : "bg-gray-400 cursor-not-allowed"
-                            }`}
-                          >
-                            {t.b3}
-                          </button>
+                        <td className="px-6 py-4 text-sm text-gray-900 w-40">
+                          <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+                          {e.status === "Pending" && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setPendingAction({ id: e.endorsementId, action: "approve" });
+                                  setShowConfirm(true);
+                                }}
+                                className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500/50`}
+                              >
+                                {t.b2}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setPendingAction({ id: e.endorsementId, action: "reject" });
+                                  setShowConfirm(true);
+                                }}
+                                className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/50`}
+                              >
+                                {t.b3}
+                              </button>
+                            </>
+                          )}
+                          </div>
                         </td>
 
                       </tr>
@@ -217,6 +259,34 @@
                 </tbody>
               </table>
             </div>
+
+            {/* Confirmation modal for actions */}
+            <ConfirmModal
+              show={showConfirm}
+              loading={actionLoading}
+              message={
+                pendingAction
+                  ? `Are you sure you want to ${pendingAction.action === "approve" ? "approve" : "reject"} this closure endorsement?`
+                  : undefined
+              }
+              onCancel={() => {
+                if (!actionLoading) {
+                  setShowConfirm(false);
+                  setPendingAction(null);
+                }
+              }}
+              onConfirm={async () => {
+                if (!pendingAction) return;
+                try {
+                  setActionLoading(true);
+                  await handleAction(pendingAction.id, pendingAction.action);
+                } finally {
+                  setActionLoading(false);
+                  setShowConfirm(false);
+                  setPendingAction(null);
+                }
+              }}
+            />
 
             <Pagination
               totalCount={totalCount}

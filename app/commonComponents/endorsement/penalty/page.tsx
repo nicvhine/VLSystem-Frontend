@@ -117,7 +117,7 @@ export default function PenaltyEndorsementTab() {
           />
 
           {/* Endorsements Table */}
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm mt-4">
+          <div className="w-full rounded-lg bg-white shadow-sm border border-gray-100 overflow-x-auto mt-4">
             <table className="min-w-full">
               <thead>
                 <tr>

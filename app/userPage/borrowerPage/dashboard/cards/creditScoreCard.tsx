@@ -3,10 +3,12 @@
 import React from 'react';
 
 interface CreditScoreCardProps {
-  creditScore: number; 
+  creditScore: number;
+  showTip?: boolean;
+  className?: string;
 }
 
-export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
+export default function CreditScoreCard({ creditScore, showTip = true, className = "" }: CreditScoreCardProps) {
   const percentage = Math.min(Math.max((creditScore / 10) * 100, 0), 100);
 
   const radius = 70;
@@ -26,7 +28,7 @@ export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
   };
 
   return (
-    <div className="w-full md:w-1/2 bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-all duration-300">
+    <div className={`w-full bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-all duration-300 ${className}`}>
       {/* Header */}
       <h2 className="text-lg font-semibold text-gray-900 mb-6">Credit Score</h2>
 
@@ -48,7 +50,7 @@ export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
             cx="50%"
             cy="50%"
             r={radius}
-            stroke="url(#progressGradient)"
+            stroke={getColor()}
             strokeWidth="14"
             fill="none"
             strokeDasharray={circumference}
@@ -88,15 +90,15 @@ export default function CreditScoreCard({ creditScore }: CreditScoreCardProps) {
         >
           {getLabel()}
         </p>
-
-        {/* Optional tip for user */}
-        <p className="text-xs text-gray-400 mt-1">
-          {creditScore >= 8
-            ? 'Keep up your consistent payments!'
-            : creditScore >= 5
-            ? 'On track — improve by paying on time.'
-            : 'Improve by completing payments regularly.'}
-        </p>
+        {showTip && (
+          <p className="text-xs text-gray-400 mt-1">
+            {creditScore >= 8
+              ? 'Keep up your consistent payments!'
+              : creditScore >= 5
+              ? 'On track — improve by paying on time.'
+              : 'Improve by completing payments regularly.'}
+          </p>
+        )}
       </div>
     </div>
   );
