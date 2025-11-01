@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
-// ModalCloseButton removed to revert to previous close UI
 import { ButtonContentLoading, LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import SuccessModal from "../successModal";
 import ErrorModal from "../errorModal";
@@ -23,6 +22,13 @@ interface Application {
   borrowersId?: string; // must exist for reloan
 }
 
+// Collector type
+interface Collector {
+  name: string;
+  userId: string;
+}
+
+// Send email helper
 const sendEmail = async ({
   to_name,
   email,
@@ -51,13 +57,12 @@ const sendEmail = async ({
   }
 };
 
-// Modal component
 export default forwardRef(function AccountModal(_, ref) {
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-  const [collectors, setCollectors] = useState<string[]>([]);
-  const [selectedCollector, setSelectedCollector] = useState("");
+  const [collectors, setCollectors] = useState<Collector[]>([]);
+  const [selectedCollectorId, setSelectedCollectorId] = useState("");
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorOpen, setErrorOpen] = useState(false);
@@ -69,7 +74,7 @@ export default forwardRef(function AccountModal(_, ref) {
   useImperativeHandle(ref, () => ({
     openModal(app: Application) {
       setSelectedApp(app);
-      setSelectedCollector("");
+      setSelectedCollectorId("");
       setIsVisible(true);
       setTimeout(() => setIsAnimating(true), 10);
     },
@@ -90,7 +95,7 @@ export default forwardRef(function AccountModal(_, ref) {
     setTimeout(() => {
       setIsVisible(false);
       setSelectedApp(null);
-      setSelectedCollector("");
+      setSelectedCollectorId("");
     }, 150);
   };
 
@@ -102,33 +107,39 @@ export default forwardRef(function AccountModal(_, ref) {
   }
 
   // Load collectors
-  useEffect(() => {
-    const fetchCollectors = async () => {
-      try {
-        setIsFetchingCollectors(true);
-        const res = await authFetch("http://localhost:3001/users/collectors");
-        if (!res.ok) throw new Error("Failed to fetch collectors");
-        const data = await res.json();
-        setCollectors(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsFetchingCollectors(false);
-      }
-    };
-    fetchCollectors();
-  }, []);
+useEffect(() => {
+  const fetchCollectors = async () => {
+    try {
+      setIsFetchingCollectors(true);
+      const res = await authFetch("http://localhost:3001/users/collectors");
+      if (!res.ok) throw new Error("Failed to fetch collectors");
 
-  // Handle account + loan or reloan
+      // Expect backend to return { name, userId } array
+      const data: Collector[] = await res.json();
+      setCollectors(data);
+    } catch (error) {
+      console.error("Error fetching collectors:", error);
+      setCollectors([]);
+    } finally {
+      setIsFetchingCollectors(false);
+    }
+  };
+
+  fetchCollectors();
+}, []);
+
+
   const handleCreateAccount = async (isReloan: boolean = false) => {
     if (!selectedApp) return;
 
-    if (!selectedCollector && !isReloan) {
+    if (!selectedCollectorId && !isReloan) {
       setErrorMessage("Please select a collector.");
       setErrorOpen(true);
       setTimeout(() => setErrorOpen(false), 5000);
       return;
     }
+
+    const selectedCollector = collectors.find(c => c.userId === selectedCollectorId);
 
     try {
       setIsProcessing(true);
@@ -162,7 +173,8 @@ export default forwardRef(function AccountModal(_, ref) {
             name: selectedApp.appName,
             role: "borrower",
             applicationId: selectedApp.applicationId,
-            assignedCollector: selectedCollector,
+            assignedCollector: selectedCollector?.name || "",
+            assignedCollectorId: selectedCollector?.userId || "",
           }),
         });
         const borrowerData = await borrowerRes.json();
@@ -200,7 +212,6 @@ export default forwardRef(function AccountModal(_, ref) {
             setTimeout(() => setErrorOpen(false), 5000);
           },
         });
-
 
         setSuccessMessage("Account created and loan generated successfully.");
       }
@@ -254,19 +265,22 @@ export default forwardRef(function AccountModal(_, ref) {
             <>
               <label className="block text-sm font-medium text-black mb-2">Assign Collector</label>
               <div className="relative">
-                <select
-                  value={selectedCollector}
-                  onChange={(e) => setSelectedCollector(e.target.value)}
-                  disabled={isFetchingCollectors || isProcessing}
-                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
-                >
-                  <option value="">
-                    {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
-                  </option>
-                  {collectors.map((name) => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
+              <select
+  value={selectedCollectorId}
+  onChange={(e) => setSelectedCollectorId(e.target.value)}
+  disabled={isFetchingCollectors || isProcessing}
+  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
+>
+  <option value="">
+    {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
+  </option>
+  {collectors.map((c) => (
+    <option key={c.userId} value={c.userId}>
+      {c.name}
+    </option>
+  ))}
+</select>
+
                 {isFetchingCollectors && <span className="absolute right-2 top-1/2 -translate-y-1/2"><LoadingSpinner size={4} /></span>}
               </div>
             </>
@@ -300,7 +314,6 @@ export default forwardRef(function AccountModal(_, ref) {
                 {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Generate Reloan"}
               </button>
             )}
-
           </div>
         </div>
       </div>

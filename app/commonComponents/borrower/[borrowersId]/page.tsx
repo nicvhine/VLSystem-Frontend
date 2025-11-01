@@ -67,7 +67,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
       <div className="min-h-screen bg-white flex justify-center">
         <div className="mx-auto px-4 sm:px-6 py-10 max-w-7xl w-full">
           {/* HEADER */}
-          <div className="bg-gradient-to-r from-red-700 to-red-600 py-10 text-center text-white rounded-3xl shadow-lg mb-10">
+          <div className="bg-gray-600 py-5 text-center text-white rounded-3xl shadow-lg mb-5">
             <div className="flex flex-col items-center">
               <div className="h-36 w-36 rounded-full overflow-hidden border-4 border-white mb-5 bg-white flex items-center justify-center">
                 {imageSrc ? (

@@ -7,7 +7,6 @@ export const getHeadNavItems = (language: 'en' | 'ceb') => {
     { name: "Borrowers", href: '/commonComponents/borrower' },
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
-    { name: t.tab3, href: '/commonComponents/collection' },
     { name: t.tab5, href: '/userPage/headPage/userPage' },
     { name: t.tab4, href: '/commonComponents/agent' },
   ];
@@ -19,7 +18,6 @@ export const getManagerNavItems = (language: 'en' | 'ceb') => {
     { name: "Borrowers", href: '/commonComponents/borrower' },
     { name: t.tab1, href: '/commonComponents/loan' },
     { name: t.tab2, href: '/commonComponents/loanApplication' },
-    { name: t.tab3, href: '/commonComponents/collection' },
     { name: t.tab4, href: '/commonComponents/agent' },
     { name: "Endorsements", href: '/commonComponents/endorsement/closure' },
   ];

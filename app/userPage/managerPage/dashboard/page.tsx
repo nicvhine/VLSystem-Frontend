@@ -1,34 +1,26 @@
 'use client';
 
-
-import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
-import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatiticsChart";
 import Manager from "../page";
+import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
+import LoanStatisticsTops from "@/app/commonComponents/statistics/loanStatisticsTops";
+import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsCharts";
 
 export default function ManagerDashboard() {
   return (
     <Manager>
-      <div className="h-screen w-full box-border bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden p-6">
-        {/* Two-column layout: left = stats (vertical), right = charts */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 p-6 overflow-auto">
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
 
-          {/* Left column - vertical stats */}
-          <div className="md:col-span-1 flex flex-col gap-4 overflow-auto">
+          {/* Left Column: Stats + Tops */}
+          <div className="flex flex-col gap-6 w-full lg:w-1/2">
             <LoanStatistics />
+            <LoanStatisticsTops />
           </div>
 
-          {/* Right column - charts arranged per sketch */}
-          <div className="md:col-span-2">
+          {/* Right Column: Charts */}
+          <div className="w-full lg:w-1/2 flex flex-col gap-6">
             <LoanStatisticsCharts />
           </div>
-
-          {/* === Right Panel: Audit Log ===
-          <section className="flex flex-col gap-6">
-            <div className="bg-white rounded-2xl shadow border border-gray-200 p-4 h-full overflow-y-auto">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Audit Log</h2>
-              <AuditLog />
-            </div>
-          </section> */}
 
         </div>
       </div>

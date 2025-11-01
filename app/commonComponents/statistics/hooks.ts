@@ -1,16 +1,17 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { LoanStats, CollectionStats, TypeStats, ApplicationStats, LoanTypeStat } from "../utils/Types/statsType";
+import { 
+  LoanStats, CollectionStats, TypeStats, ApplicationStats, LoanTypeStat, 
+  TopBorrower, TopCollector, TopAgent 
+} from "../utils/Types/statsType";
 import translations from "../translation";
 
 export function useLoanStats(userType: "manager" | "loanOfficer") {
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
     if (typeof window !== 'undefined') {
-      if (!localStorage.getItem('language')) {
-        localStorage.setItem('language', 'en');
-      }
+      if (!localStorage.getItem('language')) localStorage.setItem('language', 'en');
       return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
     }
     return 'en';
@@ -19,78 +20,54 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
   const t = translations.statisticTranslation[language];
   const s = translations.loanTermsTranslator[language];
 
-  const [loanStats, setLoanStats] = useState<LoanStats>({
-    totalPrincipal: 0,
-    totalInterest: 0,
-    typeStats: [],
-  });
-
-  const [collectionStats, setCollectionStats] = useState<CollectionStats>({
-    totalCollectables: 0,
-    totalCollected: 0,
-    totalUnpaid: 0,
-  });
-
-  const [typeStats, setTypeStats] = useState<TypeStats>({
-    withCollateral: 0,
-    withoutCollateral: 0,
-    openTerm: 0,
-  });
-
-  const [applicationStats, setApplicationStats] = useState<ApplicationStats>({
-    applied: 0,
-    approved: 0,
-    denied: 0,
-  });
-
+  const [loanStats, setLoanStats] = useState<LoanStats>({ totalPrincipal: 0, totalInterest: 0, typeStats: [] });
+  const [collectionStats, setCollectionStats] = useState<CollectionStats>({ totalCollectables: 0, totalCollected: 0, totalUnpaid: 0 });
+  const [typeStats, setTypeStats] = useState<TypeStats>({ withCollateral: 0, withoutCollateral: 0, openTerm: 0 });
+  const [applicationStats, setApplicationStats] = useState<ApplicationStats>({ applied: 0, approved: 0, denied: 0 });
   const [monthlyInterest, setMonthlyInterest] = useState<{ month: number; totalInterest: number }[]>(
     Array.from({ length: 12 }, (_, i) => ({ month: i + 1, totalInterest: 0 }))
   );
 
+  const [topBorrowers, setTopBorrowers] = useState<TopBorrower[]>([]);
+  const [topCollectors, setTopCollectors] = useState<TopCollector[]>([]);
+  const [topAgents, setTopAgents] = useState<TopAgent[]>([]);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    const fetchStats = async () => {
+    const fetchMainStats = async () => {
       try {
-        const urls = userType === "manager"
-          ? [
-              "http://localhost:3001/stat/loan-type-stats",
-              "http://localhost:3001/stat/loan-stats",
-              "http://localhost:3001/stat/collection-stats",
-              "http://localhost:3001/stat/applicationStatus-stats",
-              "http://localhost:3001/stat/monthly-interest?year=" + new Date().getFullYear(),
-            ]
-          : [
-              "http://localhost:3001/stat/applied-loan-type-stats",
-              "http://localhost:3001/stat/applicationStatus-stats",
-            ];
-
-        const responses = await Promise.all(
-          urls.map((url) => fetch(url, { headers: { Authorization: `Bearer ${token}` } }))
-        );
-
-        // Manager
         if (userType === "manager") {
-          const typeData: LoanTypeStat[] = await responses[0].json();
-          const loanData = await responses[1].json();
-          const collectionData: CollectionStats = await responses[2].json();
-          const appData: ApplicationStats = await responses[3].json();
-          const monthlyInterestData = await responses[4].json();
+          // Fetch main stats
+          const [typeRes, loanRes, collectionRes, appRes, monthlyRes] = await Promise.all([
+            fetch("http://localhost:3001/stat/loan-type-stats", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:3001/stat/loan-stats", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:3001/stat/collection-stats", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:3001/stat/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` } }),
+          ]);
+
+          const typeData: LoanTypeStat[] = await typeRes.json();
+          const loanData = await loanRes.json();
+          const collectionData: CollectionStats = await collectionRes.json();
+          const appData: ApplicationStats = await appRes.json();
 
           setLoanStats({ typeStats: typeData, ...loanData });
           setCollectionStats(collectionData);
           setApplicationStats(appData);
-          setMonthlyInterest(monthlyInterestData);
 
           const withCollateral = typeData.find(t => t.loanType === "Regular Loan With Collateral")?.count || 0;
           const withoutCollateral = typeData.find(t => t.loanType === "Regular Loan Without Collateral")?.count || 0;
           const openTerm = typeData.find(t => t.loanType === "Open-Term Loan")?.count || 0;
           setTypeStats({ withCollateral, withoutCollateral, openTerm });
-        } 
-        // Loan Officer
-        else {
-          const typeData: LoanTypeStat[] = await responses[0].json();
-          const appData: ApplicationStats = await responses[1].json();
+        } else {
+          // Loan officer stats
+          const [typeRes, appRes] = await Promise.all([
+            fetch("http://localhost:3001/stat/applied-loan-type-stats", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:3001/stat/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` } }),
+          ]);
+
+          const typeData: LoanTypeStat[] = await typeRes.json();
+          const appData: ApplicationStats = await appRes.json();
 
           const withCollateral = typeData.find(t => t.loanType === "Regular Loan With Collateral")?.count || 0;
           const withoutCollateral = typeData.find(t => t.loanType === "Regular Loan Without Collateral")?.count || 0;
@@ -99,32 +76,64 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
           setTypeStats({ withCollateral, withoutCollateral, openTerm });
           setApplicationStats(appData);
         }
-
-        setLoading(false);
       } catch (err) {
-        console.error("Failed to fetch loan stats:", err);
-        setLoading(false);
+        console.error("Failed to fetch main loan stats:", err);
       }
     };
 
-    fetchStats();
+    const fetchTopLists = async () => {
+      try {
+        if (userType === "manager") {
+          const [borrowerRes, collectorRes, agentRes] = await Promise.all([
+            fetch("http://localhost:3001/stat/top-borrowers", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:3001/stat/top-collectors", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch("http://localhost:3001/stat/top-agents", { headers: { Authorization: `Bearer ${token}` } }),
+          ]);
+
+          const borrowerData = await borrowerRes.json();
+          const collectorData = await collectorRes.json();
+          const agentData = await agentRes.json();
+
+          setTopBorrowers(borrowerData.topBorrowers || []);
+          setTopCollectors(collectorData || []);
+          setTopAgents(agentData || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch top lists:", err);
+      }
+    };
+
+    const fetchAll = async () => {
+      setLoading(true);
+      await Promise.all([fetchMainStats(), fetchTopLists()]);
+      setLoading(false);
+    };
+
+    fetchAll();
   }, [userType]);
 
   useEffect(() => {
     const handler = (e: any) => {
-      if (e?.detail?.userType === userType) {
-        setLanguage(e.detail.language);
-      }
+      if (e?.detail?.userType === userType) setLanguage(e.detail.language);
     };
-    if (typeof window !== "undefined") {
-      window.addEventListener("languageChange", handler);
-    }
+    if (typeof window !== "undefined") window.addEventListener("languageChange", handler);
     return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener("languageChange", handler);
-      }
+      if (typeof window !== "undefined") window.removeEventListener("languageChange", handler);
     };
   }, [userType]);
 
-  return { s, t, loading, loanStats, collectionStats, typeStats, applicationStats, monthlyInterest, language };
+  return { 
+    s, 
+    t, 
+    loading, 
+    loanStats, 
+    collectionStats, 
+    typeStats, 
+    applicationStats, 
+    monthlyInterest, 
+    language, 
+    topBorrowers, 
+    topCollectors, 
+    topAgents  
+  };
 }
