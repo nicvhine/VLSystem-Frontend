@@ -39,3 +39,22 @@ export interface StatCardProps {
   className?: string;
   compact?: boolean;
 }
+
+export interface TopBorrower {
+  borrowersId: string;
+  name: string;
+  totalBorrowedAmount: number;
+}
+
+export interface TopCollector {
+  collectorId: string;
+  name: string;
+  totalCollectedAmount: number; 
+  totalCollectables: number;
+}
+
+export interface TopAgent {
+  agentId: string;
+  name: string;
+  totalProcessedLoans: number;
+}

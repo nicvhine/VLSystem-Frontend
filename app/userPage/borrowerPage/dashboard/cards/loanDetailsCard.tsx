@@ -3,7 +3,7 @@
 import React from 'react';
 import { formatDate, translateLoanType } from '@/app/commonComponents/utils/formatters';
 import { LoanDetailsCardProps } from '@/app/commonComponents/utils/Types/components';
-import translations from '@/app/commonComponents/Translation';
+import translations from '@/app/commonComponents/translation';
 
 export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCardProps) {
   if (!activeLoan) return null;

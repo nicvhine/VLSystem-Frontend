@@ -2,11 +2,11 @@
 
 import AuditLog from "./auditLog";
 import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
-import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatiticsChart";
+import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsTops";
 import Head from "../page";
 import { useLoanStats } from '@/app/commonComponents/statistics/hooks';
 import { StatCard } from '@/app/commonComponents/statistics/functions';
-import translations from '@/app/commonComponents/Translation';
+import translations from '@/app/commonComponents/translation';
 import { FiDollarSign, FiTrendingUp, FiPieChart, FiCheckCircle } from 'react-icons/fi';
 
 export default function HeadDashboard() {

@@ -1,19 +1,8 @@
 'use client';
 
-import {
-  FiDollarSign,
-  FiTrendingUp,
-  FiCheckCircle,
-  FiXCircle,
-  FiUsers,
-  FiPieChart,
-  FiClock,
-} from "react-icons/fi";
-
 import { useState } from "react";
-import { useLoanStats } from "@/app/commonComponents/statistics/hooks";
+import { useLoanStats } from "./hooks";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
-import { StatCard } from "@/app/commonComponents/statistics/functions";
 
 export default function LoanStatistics() {
   const [role, setRole] = useState<'loanOfficer' | 'manager' | 'head'>(() => {
@@ -23,9 +12,8 @@ export default function LoanStatistics() {
     return 'loanOfficer';
   });
 
-  // normalize role for stats hook: treat 'head' as 'manager' (hooks expect 'manager' | 'loanOfficer')
   const statsRole = role === 'head' ? 'manager' : role;
-  const { s, t, loading, loanStats, collectionStats, typeStats, applicationStats } = useLoanStats(statsRole as 'manager' | 'loanOfficer');
+  const { s, t, loading, loanStats, collectionStats } = useLoanStats(statsRole as 'manager' | 'loanOfficer');
 
   if (loading) {
     return (
@@ -35,133 +23,42 @@ export default function LoanStatistics() {
     );
   }
 
-  return (
-    <div className="flex flex-col gap-4 w-full h-full">
+  // Stat row component
+  const StatRow = ({ label, value, isAmount }: any) => (
+    <div className="flex items-center justify-between py-1 text-sm">
+      <span className="text-gray-700 font-medium">{label}</span>
+      <span className="font-semibold text-gray-900">{isAmount ? `₱${value.toLocaleString()}` : value}</span>
+    </div>
+  );
 
+  return (
+    <div className="flex flex-col lg:flex-row gap-6">
       {(role === "manager" || role === "head") && (
-        <>
+        <div className="flex flex-col lg:flex-row gap-6 w-full">
           {/* Financial Overview */}
-          <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <FiDollarSign className="text-red-600" /> {t.h1}
-            </h2>
-            <div className="flex flex-col gap-2">
-              <StatCard
-                label={s.l4}
-                value={loanStats.totalPrincipal ?? 0}
-                color="text-green-600"
-                icon={FiDollarSign}
-                isAmount
-              />
-              <StatCard
-                label={s.l6}
-                value={loanStats.totalInterest ?? 0}
-                color="text-red-600"
-                icon={FiTrendingUp}
-                isAmount
-              />
+          <section className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all">
+            <div className="px-4 pt-3">
+              <h2 className="text-md font-semibold text-red-600 mb-6">{t.h1}</h2>
+            </div>
+            <div className="px-4 pb-3 flex flex-col gap-1">
+              <StatRow label={s.l4} value={loanStats.totalPrincipal ?? 0} isAmount />
+              <StatRow label={s.l6} value={loanStats.totalInterest ?? 0} isAmount />
             </div>
           </section>
 
           {/* Collection Status */}
-          <section className="bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <FiCheckCircle className="text-red-600" /> {t.h2}
-            </h2>
-            <div className="flex flex-col gap-2">
-              <StatCard
-                label={t.s5}
-                value={collectionStats.totalCollectables ?? 0}
-                color="text-blue-600"
-                icon={FiPieChart}
-                isAmount
-              />
-              <StatCard
-                label={t.s6}
-                value={collectionStats.totalCollected ?? 0}
-                color="text-green-600"
-                icon={FiCheckCircle}
-                isAmount
-              />
-              <StatCard
-                label={t.s7}
-                value={collectionStats.totalUnpaid ?? 0}
-                color="text-red-600"
-                icon={FiXCircle}
-                isAmount
-              />
+          <section className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all">
+            <div className="px-4 pt-3">
+              <h2 className="text-md font-semibold text-red-600 mb-6">{t.h2}</h2>
+            </div>
+            <div className="px-4 pb-3 flex flex-col gap-1">
+              <StatRow label={t.s5} value={collectionStats.totalCollectables ?? 0} isAmount />
+              <StatRow label={t.s6} value={collectionStats.totalCollected ?? 0} isAmount />
+              <StatRow label={t.s7} value={collectionStats.totalUnpaid ?? 0} isAmount />
             </div>
           </section>
-        </>
+        </div>
       )}
-
-      {/* Application Status + Loan Types grouped with controlled proportions for loan officer */}
-      <div className="flex flex-col gap-4 h-full">
-  <section className={`bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 flex flex-col ${role === 'loanOfficer' ? 'overflow-auto' : 'overflow-hidden'}`}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <FiUsers className="text-red-600" /> {t.h3}
-          </h2>
-          <div className="flex flex-col gap-1 flex-1">
-            <StatCard
-              label={t.s1}
-              value={applicationStats.applied ?? 0}
-              color="text-yellow-600"
-              icon={FiClock}
-              // for loan officers, make cards flex so they evenly share the section height
-              className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
-              compact={role === 'loanOfficer'}
-            />
-            <StatCard
-              label={t.s3}
-              value={applicationStats.approved ?? 0}
-              color="text-green-600"
-              icon={FiCheckCircle}
-              className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
-              compact={role === 'loanOfficer'}
-            />
-            <StatCard
-              label={t.s4}
-              value={applicationStats.denied ?? 0}
-              color="text-red-600"
-              icon={FiXCircle}
-              className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
-              compact={role === 'loanOfficer'}
-            />
-          </div>
-        </section>
-
-  <section className={`bg-white rounded-2xl p-4 shadow-md border border-gray-100 hover:shadow-lg transition-all w-full flex-1 flex flex-col ${role === 'loanOfficer' ? 'overflow-auto' : 'overflow-hidden'}`}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-            <FiPieChart className="text-red-600" /> {t.h4}
-          </h2>
-            <div className="flex flex-col gap-1 flex-1">
-            <StatCard
-              label={s.l1}
-              value={typeStats.withCollateral ?? 0}
-              color="text-blue-600"
-              icon={FiUsers}
-                className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
-              compact={role === 'loanOfficer'}
-            />
-            <StatCard
-              label={s.l2}
-              value={typeStats.withoutCollateral ?? 0}
-              color="text-green-600"
-              icon={FiUsers}
-                className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
-              compact={role === 'loanOfficer'}
-            />
-            <StatCard
-              label={s.l3}
-              value={typeStats.openTerm ?? 0}
-              color="text-red-600"
-              icon={FiUsers}
-                className={role === 'loanOfficer' ? 'flex-1 p-1' : 'flex-1 h-full p-0.5'}
-              compact={role === 'loanOfficer'}
-            />
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
