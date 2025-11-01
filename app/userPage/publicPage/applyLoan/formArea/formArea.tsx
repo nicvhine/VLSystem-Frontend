@@ -20,6 +20,8 @@ import { useFormSubmit } from "./hooks/useFormSubmit";
 import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function";
 import { useSectionProgress } from "./hooks/useSectionProgress";
 
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+
 interface FormAreaProps {
   loanType: string;
   language: "en" | "ceb";
@@ -56,7 +58,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
   const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
   const requiredDocumentsCount = loanTypeParam === "with" || loanTypeParam === "open-term" ? 6 : 4;
   const requires2x2 = true;
-  const API_URL = `http://localhost:3001/loan-applications/apply/${loanTypeParam}`;
+  const API_URL = `${APPLICATION_URL}/apply/${loanTypeParam}`;
 
   // Basic Info
   const [appName, setAppName] = useState("");

@@ -1,6 +1,8 @@
 'use client';
 import { useState, useEffect } from "react";
 
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+
 // Fetch all borrowers
 export const useBorrowersList = () => {
   const [borrowers, setBorrowers] = useState<any[]>([]);
@@ -41,7 +43,7 @@ export const useBorrowersList = () => {
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/borrowers", {
+        const res = await fetch(`{BORROWER_URL}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
@@ -79,8 +81,8 @@ export const useBorrowerDetails = (borrowersId: string) => {
       try {
         const token = localStorage.getItem("token");
 
-        // 1️⃣ Fetch borrower + latest application
-        const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
+        // Fetch borrower + latest application
+        const res = await fetch(`${BORROWER_URL}/${borrowersId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to fetch borrower details");
@@ -89,7 +91,7 @@ export const useBorrowerDetails = (borrowersId: string) => {
         setLatestApplication(borrowerData.latestApplication);
 
         // 2️⃣ Fetch borrower stats
-        const resStats = await fetch(`http://localhost:3001/borrowers/${borrowersId}/stats`, {
+        const resStats = await fetch(`${BORROWER_URL}/${borrowersId}/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!resStats.ok) throw new Error("Failed to fetch borrower stats");

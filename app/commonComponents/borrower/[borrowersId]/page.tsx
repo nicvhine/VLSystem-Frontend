@@ -9,6 +9,8 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import { User } from "lucide-react";
 import translations from "../../translation";
 
+const URL = process.env.NEXT_PUBLIC_URL
+
 interface BorrowerPageProps {
   params: { borrowersId: string };
 }
@@ -70,7 +72,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
   if (!borrower)
     return (
       <Wrapper>
-        <div className="text-center text-gray-500 mt-10 text-lg">{t.m2}</div>
+        <div className="text-center text-gray-900 mt-10 text-lg">{t.m2}</div>
       </Wrapper>
     );
 
@@ -80,7 +82,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
     hasProfilePic && mergedData.profilePic.filePath.startsWith("https")
       ? mergedData.profilePic.filePath
       : hasProfilePic
-      ? `http://localhost:3001/${mergedData.profilePic.filePath}`
+      ? `${URL}/${mergedData.profilePic.filePath}`
       : null;
 
   const latestLoanId = stats?.latestLoan?.loanId;
@@ -111,7 +113,7 @@ export default function BorrowerDetailPage({ params }: BorrowerPageProps) {
               </div>
               <h1 className="text-3xl font-bold tracking-tight">{mergedData.name}</h1>
               <p className="text-sm opacity-80 mt-1">
-                {t.a3}: {mergedData.borrowersId}
+               {mergedData.borrowersId}
               </p>
             </div>
           </div>

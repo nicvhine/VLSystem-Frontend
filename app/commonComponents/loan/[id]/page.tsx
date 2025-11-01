@@ -11,6 +11,8 @@ import EndorseInputModal from "./components/EndorseInputModal";
 import EndorseLetterModal from "./components/EndorseLetterModal";
 import ErrorModal from "../../modals/errorModal";
 
+const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL 
+
 // ------------------- Progress Circle -------------------
 interface ProgressCircleProps {
   value: number; // 0-100
@@ -172,7 +174,7 @@ export default function LoansDetailPage({ params }: Props) {
   useEffect(() => {
     if (!loan) return;
     const token = localStorage.getItem("token");
-    fetch(`http://localhost:3001/collections/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${COLLECTION_URL}/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => setCollections(data.collections || []))
       .catch(err => console.error("Failed to load collections:", err));
@@ -210,7 +212,7 @@ export default function LoansDetailPage({ params }: Props) {
               </button>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                  Loan Profile
+                  {loan.name}
                   <span className="text-gray-300">|</span>
                   <span className="text-gray-600">{loan.loanId}</span>
                 </h1>

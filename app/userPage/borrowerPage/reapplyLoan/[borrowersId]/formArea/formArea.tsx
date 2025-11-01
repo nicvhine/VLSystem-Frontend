@@ -25,6 +25,8 @@ import { handleFileChange, handleProfileChange, removeDocument, removeProfile } 
 import { useSectionProgress } from "./hooks/useSectionProgress";
 import { usePrefillAndUploads } from "./hooks/usePrefill";
 
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+
 interface FormAreaProps {
   loanType: string;
   language: "en" | "ceb";
@@ -71,7 +73,7 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
   const requiredDocumentsCount = loanTypeParam === "with" || loanTypeParam === "open-term" ? 6 : 4;
   const requires2x2 = true;
-  const API_URL = `http://localhost:3001/loan-applications/reloan/${loanTypeParam}`;
+  const API_URL = `${APPLICATION_URL}/reloan/${loanTypeParam}`;
 
   // Basic Info
   const [appName, setAppName] = useState("");

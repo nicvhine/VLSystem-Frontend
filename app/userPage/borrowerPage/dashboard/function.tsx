@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { Collection } from '@/app/commonComponents/utils/Types/collection';
 import { Loan } from '@/app/commonComponents/utils/Types/loan';
 
-const API_URL = 'http://localhost:3001';
+const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
 
 export async function handlePay(
   collection: Collection,
@@ -30,7 +30,7 @@ export async function handlePay(
       return;
     }
 
-    const response = await fetch(`${API_URL}/payments/paymongo/gcash`, {
+    const response = await fetch(`${PAYMENT_URL}/paymongo/gcash`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,11 +1,5 @@
 import { NextResponse } from "next/server";
 
-/**
- * API route for creating PayMongo checkout sessions
- * Handles payment processing setup for loan payments
- * @param req - Request object containing payment amount
- * @returns NextResponse with checkout session data or error
- */
 export async function POST(req: Request) {
   // Extract payment amount from request body
   const { amount } = await req.json();

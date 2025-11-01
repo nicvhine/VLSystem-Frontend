@@ -5,6 +5,8 @@ import { useLoanStats } from "@/app/commonComponents/statistics/hooks";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { formatCurrency } from "../utils/formatters";
 
+const STAT_URL = process.env.NEXT_PUBLIC_STAT_URL
+
 export default function LoanStatisticsTops() {
   const [role, setRole] = useState<"loanOfficer" | "manager">("loanOfficer");
   const [loanTypeStats, setLoanTypeStats] = useState<{ loanType: string; count: number }[]>([]);
@@ -25,8 +27,8 @@ export default function LoanStatisticsTops() {
     const fetchCharts = async () => {
       try {
         const [loanTypeRes, appStatusRes] = await Promise.all([
-          fetch("http://localhost:3001/stat/loan-type-stats", { headers: { Authorization: `Bearer ${token}` } }),
-          fetch("http://localhost:3001/stat/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${STAT_URL}/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${STAT_URL}/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         const loanTypeData = await loanTypeRes.json();

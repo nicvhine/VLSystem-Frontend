@@ -8,8 +8,7 @@ import emailjs from "emailjs-com";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import { SetScheduleModalProps } from "../../utils/Types/components";
 
-// API endpoint for loan applications
-const API_URL = "http://localhost:3001/loan-applications";
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
 
 /**
  * Modal component for setting interview schedule on a loan application
@@ -102,7 +101,7 @@ export default function SetScheduleModal({
       if (!id) throw new Error("Missing application id");
 
       // Save schedule (PUT)
-      const scheduleRes = await authFetch(`${API_URL}/${id}/schedule-interview`, {
+      const scheduleRes = await authFetch(`${APPLICATION_URL}/${id}/schedule-interview`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ interviewDate, interviewTime }),
@@ -114,7 +113,7 @@ export default function SetScheduleModal({
       }
 
       // Update status to Pending
-      await authFetch(`${API_URL}/${id}`, {
+      await authFetch(`${APPLICATION_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "Pending" }),

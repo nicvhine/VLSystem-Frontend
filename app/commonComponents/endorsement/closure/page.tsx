@@ -10,6 +10,9 @@
   import { formatDate } from "../../utils/formatters";
   import translations from "../../translation";
 
+  const CLOSURE_URL = process.env.NEXT_PUBLIC_CLOSURE_URL as string;
+  const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL
+  
   export default function ClosureEndorsement() {
     const [endorsements, setEndorsements] = useState<any[]>([]);
     const [loanBalances, setLoanBalances] = useState<Record<string, number>>({});
@@ -58,7 +61,7 @@
         const token = localStorage.getItem("token");
         if (!token) throw new Error("No token found");
 
-        const res = await fetch("http://localhost:3001/closure", {
+        const res = await fetch(CLOSURE_URL, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -89,7 +92,7 @@
           const balances: Record<string, number> = {};
           await Promise.all(
             endorsements.map(async (e) => {
-              const res = await fetch(`http://localhost:3001/loans/${e.loanId}`, {
+              const res = await fetch(`${LOAN_URL}/${e.loanId}`, {
                 headers: { Authorization: `Bearer ${token}` },
               });
               if (!res.ok) return;
@@ -117,7 +120,7 @@
         setShowSuccess(false);
         setSuccessMsg("");
 
-        const res = await fetch(`http://localhost:3001/closure/${endorsementId}`, {
+        const res = await fetch(`${CLOSURE_URL}/${endorsementId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",

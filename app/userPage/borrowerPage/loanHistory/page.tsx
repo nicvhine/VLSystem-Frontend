@@ -7,7 +7,9 @@ import { formatDate, formatCurrency } from '@/app/commonComponents/utils/formatt
 import { motion, AnimatePresence } from 'framer-motion';
 import Pagination from '@/app/commonComponents/utils/pagination';
 import Borrower from '../page';
-import translations from '@/app/commonComponents/Translation';
+import translations from '@/app/commonComponents/translation';
+
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL 
 
 export default function LoanHistoryPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -49,7 +51,7 @@ export default function LoanHistoryPage() {
       setLoading(true);
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, {
+        const res = await fetch(`${LOAN_URL}/all/${borrowersId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error('Failed to fetch loans');

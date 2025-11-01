@@ -45,6 +45,7 @@ export interface Application {
   appReferences?: CharacterReference[];
   profilePic?: string;
   isReloan?: boolean; 
+  dateApplied: string;
 }
 
 export interface ApplicationCardProps {

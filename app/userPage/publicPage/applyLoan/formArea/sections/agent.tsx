@@ -4,6 +4,8 @@ import { FC, useEffect, useState } from "react";
 import { Agent } from "@/app/commonComponents/utils/Types/agent";
 import { AgentDropdownProps } from "@/app/commonComponents/utils/Types/agent";
 
+const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL
+
 const AgentDropdown: FC<AgentDropdownProps> = ({
   language,
   appAgent,
@@ -17,7 +19,7 @@ const AgentDropdown: FC<AgentDropdownProps> = ({
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const res = await fetch("http://localhost:3001/agents/names");
+        const res = await fetch(`${AGENT_URL}/names`);
         if (!res.ok) throw new Error("Failed to fetch agents");
         const data = await res.json();
         setAgents(data.agents || []);

@@ -8,6 +8,9 @@ interface LoginParams {
   setShowSMSModal?: (show: boolean) => void;
 }
 
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+const USER_URL = process.env.NEXT_PUBLIC_USER_URL
+
 // Handle user login for both borrowers and staff
 export async function loginHandler({ username, password, onClose, router, setShowErrorModal, setErrorMsg, setShowSMSModal }: LoginParams) {
   if (!username || !password) {
@@ -18,7 +21,7 @@ export async function loginHandler({ username, password, onClose, router, setSho
 
   try {
     // Try borrower login first
-    const borrowerRes = await fetch('http://localhost:3001/borrowers/login', {
+    const borrowerRes = await fetch(`${BORROWER_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
@@ -54,7 +57,7 @@ export async function loginHandler({ username, password, onClose, router, setSho
     
     
     // Try staff login if borrower login failed
-    const staffRes = await fetch('http://localhost:3001/users/login', {
+    const staffRes = await fetch(`${USER_URL}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),

@@ -7,8 +7,10 @@ import ErrorModal from "../errorModal";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import emailjs from "emailjs-com";
 
-// API endpoint for loan applications
-const API_URL = "http://localhost:3001/loan-applications";
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const USER_URL = process.env.NEXT_PUBLIC_USER_URL
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
 
 // Interface for application data structure
 interface Application {
@@ -113,7 +115,7 @@ useEffect(() => {
   const fetchCollectors = async () => {
     try {
       setIsFetchingCollectors(true);
-      const res = await authFetch("http://localhost:3001/users/collectors");
+      const res = await authFetch(`${USER_URL}/collectors`);
       if (!res.ok) throw new Error("Failed to fetch collectors");
 
       // Expect backend to return { name, userId } array
@@ -150,7 +152,7 @@ useEffect(() => {
         if (!selectedApp.borrowersId) throw new Error("Borrower ID missing for reloan");
 
         // 1. Deactivate old loans
-        const deactivateRes = await authFetch(`http://localhost:3001/loans/reloan/${selectedApp.applicationId}`, {
+        const deactivateRes = await authFetch(`${LOAN_URL}/reloan/${selectedApp.applicationId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
         });
@@ -159,7 +161,7 @@ useEffect(() => {
 
         // 2. Generate new loan
         const loanResponse = await authFetch(
-          `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
+          `${LOAN_URL}/generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
         const loanData = await loanResponse.json();
@@ -167,7 +169,7 @@ useEffect(() => {
 
         // 3. Update borrower details based on the newest approved reloan
         const updateBorrowerRes = await authFetch(
-          `http://localhost:3001/borrowers/${selectedApp.borrowersId}`,
+          `${BORROWER_URL}/${selectedApp.borrowersId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -185,7 +187,7 @@ useEffect(() => {
         setSuccessMessage("Reloan generated successfully.");
       } else {
         // Create borrower account
-        const borrowerRes = await authFetch("http://localhost:3001/borrowers", {
+        const borrowerRes = await authFetch(`${BORROWER_URL}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -200,7 +202,7 @@ useEffect(() => {
         if (!borrowerRes.ok) throw new Error(borrowerData?.error || "Failed to create borrower account");
 
         // Set application status active
-        const appRes = await authFetch(`${API_URL}/${selectedApp.applicationId}`, {
+        const appRes = await authFetch(`${APPLICATION_URL}/${selectedApp.applicationId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "Active" }),
@@ -212,7 +214,7 @@ useEffect(() => {
 
         // Generate new loan
         const loanResponse = await authFetch(
-          `http://localhost:3001/loans/generate-loan/${selectedApp.applicationId}`,
+          `${LOAN_URL}/generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
         const loanData = await loanResponse.json();
