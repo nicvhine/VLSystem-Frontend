@@ -19,7 +19,9 @@ interface Application {
   appInterest?: number;
   appLoanTerms?: number;
   status?: string;
-  borrowersId?: string; // must exist for reloan
+  borrowersId?: string;
+  appContact: string;
+  profilePic: string;
 }
 
 // Collector type
@@ -162,6 +164,23 @@ useEffect(() => {
         );
         const loanData = await loanResponse.json();
         if (!loanResponse.ok) throw new Error(loanData?.error || "Failed to generate new loan");
+
+        // 3. Update borrower details based on the newest approved reloan
+        const updateBorrowerRes = await authFetch(
+          `http://localhost:3001/borrowers/${selectedApp.borrowersId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: selectedApp.appName, 
+              email: selectedApp.appEmail, 
+              phoneNumber: selectedApp.appContact, 
+              profilePic: selectedApp.profilePic, 
+            }),
+          }
+        );
+        const updateBorrowerData = await updateBorrowerRes.json();
+        if (!updateBorrowerRes.ok) throw new Error(updateBorrowerData?.error || "Failed to update borrower details");
 
         setSuccessMessage("Reloan generated successfully.");
       } else {
