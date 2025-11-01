@@ -68,7 +68,7 @@ export default function BorrowerPage() {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             sortBy={sortBy}
-            setSortBy={setSortBy}
+            setSortBy={(val: string) => setSortBy(val as "name" | "status")}
             sortOptions={[
               { value: "name", label: t.s1 },
               { value: "status", label: t.s2 },
@@ -115,7 +115,7 @@ export default function BorrowerPage() {
                       return (
                         <tr
                           key={b.borrowersId}
-                          className="hover:bg-red-50 transition-colors"
+                          className="hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-6 py-4 text-sm text-gray-900">
                             {b.borrowersId}
@@ -138,7 +138,7 @@ export default function BorrowerPage() {
                           <td className="px-6 py-4 text-sm">
                             <Link
                               href={`/commonComponents/borrower/${b.borrowersId}`}
-                              className="bg-red-600 text-white px-3 py-1 rounded-md text-xs hover:bg-red-700 inline-block whitespace-nowrap"
+                              className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block whitespace-nowrap"
                             >
                               {t.m3}
                             </Link>

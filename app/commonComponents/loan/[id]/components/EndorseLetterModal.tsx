@@ -4,6 +4,7 @@ import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
+import SuccessModal from "@/app/commonComponents/modals/successModal";
 
 // Helper to capitalize each word in a name
 const capitalizeWords = (str: string) =>
@@ -31,9 +32,11 @@ export default function EndorseLetterModal({
   const [authorizedName, setAuthorizedName] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reusable ErrorModal state
+  // Toast modals state
   const [showError, setShowError] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -60,8 +63,12 @@ export default function EndorseLetterModal({
 
   const handleSubmit = async () => {
     try {
-      setIsSubmitting(true);
-      setErrorMsg('');
+  setIsSubmitting(true);
+  // reset toasts
+  setErrorMsg('');
+  setShowError(false);
+  setSuccessMsg('');
+  setShowSuccess(false);
 
       const token = localStorage.getItem("token");
       const response = await fetch("http://localhost:3001/closure", {
@@ -85,16 +92,16 @@ export default function EndorseLetterModal({
         throw new Error(data.message || "Failed to submit endorsement");
       }
 
-      setErrorMsg("Endorsement successfully submitted!");
-      setShowError(true);
+      setSuccessMsg("Endorsement successfully submitted!");
+      setShowSuccess(true);
       setTimeout(() => {
-        setShowError(false);
+        setShowSuccess(false);
         onClose();
       }, 2000);
     } catch (error: any) {
       console.error("Error submitting endorsement:", error);
-      setErrorMsg(error.message || "Failed to submit endorsement. Please try again.");
-      setShowError(true);
+  setErrorMsg(error.message || "Failed to submit endorsement. Please try again.");
+  setShowError(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -187,6 +194,11 @@ export default function EndorseLetterModal({
         isOpen={showError}
         message={errorMsg}
         onClose={() => setShowError(false)}
+      />
+      <SuccessModal
+        isOpen={showSuccess}
+        message={successMsg}
+        onClose={() => setShowSuccess(false)}
       />
     </div>
   );
