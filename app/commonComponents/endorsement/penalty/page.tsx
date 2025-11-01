@@ -9,6 +9,7 @@ import Filter from "../../utils/sortAndSearch";
 import Pagination from "../../utils/pagination";
 import translations from "../../translation";
 
+const PENALTY_URL = process.env.NEXT_PUBLIC_PENALTY_URL as string;
 export default function PenaltyEndorsementTab() {
   const [endorsements, setEndorsements] = useState<any[]>([]);
   const [selectedEndorsement, setSelectedEndorsement] = useState<any | null>(null);
@@ -47,7 +48,7 @@ export default function PenaltyEndorsementTab() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch("http://localhost:3001/penalty", {
+      const res = await fetch(PENALTY_URL, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

@@ -1,7 +1,10 @@
 "use client";
+
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
+
+const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
 
 export default function PaymentSuccess({ params }: { params: { referenceNumber: string } }) {
   const router = useRouter();
@@ -18,7 +21,7 @@ export default function PaymentSuccess({ params }: { params: { referenceNumber: 
       const token = localStorage.getItem("token");
 
       const res = await fetch(
-        `http://localhost:3001/payments/${referenceNumber}/paymongo/success`,
+        `${PAYMENT_URL}/${referenceNumber}/paymongo/success`,
         {
           method: "POST",
           headers: {

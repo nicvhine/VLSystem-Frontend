@@ -7,7 +7,7 @@ import { Payment, Collection } from "@/app/commonComponents/utils/Types/collecti
 import { formatDate } from "@/app/commonComponents/utils/formatters";
 import ReceiptModal from "../modals/receipt";
 import Pagination from "@/app/commonComponents/utils/pagination";
-import translations from '@/app/commonComponents/Translation';
+import translations from '@/app/commonComponents/translation';
 
 export default function PaymentHistoryPage() {
   const [modalPayment, setModalPayment] = useState<Payment | null>(null);

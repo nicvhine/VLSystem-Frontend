@@ -2,6 +2,8 @@
 
 import { useEffect, Dispatch, SetStateAction } from "react";
 
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+
 interface PrefillHookParams {
   borrowersId?: string;
   loanTypeParam: string;
@@ -84,7 +86,7 @@ export function usePrefillAndUploads(params: PrefillHookParams) {
 
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
+        const res = await fetch(`${BORROWER_URL}/${borrowersId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

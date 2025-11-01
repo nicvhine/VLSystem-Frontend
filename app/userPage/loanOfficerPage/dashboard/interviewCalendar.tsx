@@ -15,6 +15,8 @@ import { Application } from "@/app/commonComponents/utils/Types/application";
 import { InterviewEvent } from "@/app/commonComponents/utils/Types/application";
 import { InterviewCalendarProps } from "@/app/commonComponents/utils/Types/components";
 
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+
 // Calendar localization setup
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
@@ -93,7 +95,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     async function fetchInterviews() {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/loan-applications/interviews", {
+        const res = await fetch(`${APPLICATION_URL}/interviews`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
@@ -137,7 +139,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/loan-applications/${selectedApp.applicationId}/schedule-interview`, {
+      const res = await fetch(`${APPLICATION_URL}/${selectedApp.applicationId}/schedule-interview`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -198,11 +200,10 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   views={['month', 'week', 'day', 'agenda']}
   view={view}
   onView={(newView: View) => {
-    // Only allow supported views
-    if (['month', 'week', 'day', 'agenda'].includes(newView)) {
-      setView(newView);
+    if (["month", "week", "day", "agenda"].includes(newView)) {
+      setView(newView as "month" | "week" | "day" | "agenda");
     }
-  }}
+  }}  
   date={date}
   onNavigate={(newDate: Date) => setDate(newDate)}
   popup
@@ -280,7 +281,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         currentTime={selectedApp?.interviewTime}
         onSave={handleSaveChanges}
         onView={handleViewApplication}
-        appliedDate={selectedApp?.appliedDate}
+        appliedDate={selectedApp?.dateApplied}
       />
       </>
       )}

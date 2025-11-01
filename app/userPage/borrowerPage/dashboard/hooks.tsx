@@ -5,6 +5,10 @@ import { Loan } from "@/app/commonComponents/utils/Types/loan";
 import { Collection, Payment } from "@/app/commonComponents/utils/Types/collection";
 import translations from "@/app/commonComponents/translation";
 
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL
+const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL
+const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
+
 export default function useBorrowerDashboard(borrowersId: string | null) {
   const [allLoans, setAllLoans] = useState<Loan[]>([]);
   const [activeLoan, setActiveLoan] = useState<Loan | null>(null);
@@ -92,7 +96,7 @@ useEffect(() => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:3001/loans/all/${borrowersId}`, {
+      const res = await fetch(`${LOAN_URL}/all/${borrowersId}`, {
         signal: controller.signal,
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -152,7 +156,7 @@ useEffect(() => {
     const fetchCollections = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/collections/schedule/${borrowersId}/${displayedLoan.loanId}`,
+          `${COLLECTION_URL}/schedule/${borrowersId}/${displayedLoan.loanId}`,
           { signal: controller.signal, headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch collections");
@@ -166,7 +170,7 @@ useEffect(() => {
     const fetchPayments = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/payments/ledger/${displayedLoan.loanId}`,
+          `${PAYMENT_URL}/ledger/${displayedLoan.loanId}`,
           { signal: controller.signal, headers: { Authorization: `Bearer ${token}` } }
         );
         if (!res.ok) throw new Error("Failed to fetch payments");

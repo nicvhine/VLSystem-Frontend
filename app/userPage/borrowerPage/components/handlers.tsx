@@ -4,6 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL
+const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+
 interface LoanDetails {
   loanId: string;
   name: string;
@@ -65,7 +70,7 @@ export function useBorrowerDashboard() {
       const borrowersId = localStorage.getItem('borrowersId');
       if (!borrowersId) return router.push('/');
 
-      fetch(`http://localhost:3001/loans/borrower-loans/${borrowersId}`, {
+      fetch(`${LOAN_URL}/borrower-loans/${borrowersId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => {
@@ -107,7 +112,7 @@ export function useBorrowerDashboard() {
   useEffect(() => {
     const fetchPayments = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/payments`);
+        const response = await fetch(`${PAYMENT_URL}`);
         const data = await response.json();
         setPayments(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -148,10 +153,10 @@ export function useBorrowerDashboard() {
 
     try {
       const [borrowerResponse, applicationsResponse] = await Promise.all([
-        fetch(`http://localhost:3001/borrowers/${borrowersId}`, {
+        fetch(`${BORROWER_URL}/${borrowersId}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch('http://localhost:3001/loan-applications', {
+        fetch(`${APPLICATION_URL}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);

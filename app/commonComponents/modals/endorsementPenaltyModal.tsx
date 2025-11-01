@@ -8,6 +8,8 @@ import SuccessModal from './successModal';
 import ErrorModal from './errorModal';
 import { createRoot } from 'react-dom/client';
 
+const PENALTY_URL = process.env.NEXT_PUBLIC_PENALTY_URL
+
 function mountModal(node: React.ReactElement, duration = 5000) {
   if (typeof document === 'undefined') return;
   const container = document.createElement('div');
@@ -91,7 +93,7 @@ export default function PenaltyEndorseModal({ isOpen, onClose, collection }: Pen
         payableAmount,
       };
 
-      const response = await fetch(`http://localhost:3001/penalty/endorse`, {
+      const response = await fetch(`${PENALTY_URL}/endorse`, {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",

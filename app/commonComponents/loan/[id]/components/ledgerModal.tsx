@@ -6,6 +6,8 @@ import { formatCurrency } from "@/app/commonComponents/utils/formatters";
 import { Payment } from "@/app/commonComponents/utils/Types/collection";
 import { LedgerModalProps } from "@/app/commonComponents/utils/Types/modal";
 
+const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
+
 export default function LedgerModal({
   isOpen,
   onClose,
@@ -23,7 +25,7 @@ export default function LedgerModal({
       setLoading(true);
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`http://localhost:3001/payments/ledger/${loanId}`, {
+        const res = await fetch(`${PAYMENT_URL}/ledger/${loanId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

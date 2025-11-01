@@ -7,6 +7,8 @@ import {
 } from "../utils/Types/statsType";
 import translations from "../translation";
 
+const STAT_URL = process.env.NEXT_PUBLIC_STAT_URL
+
 export function useLoanStats(userType: "manager" | "loanOfficer") {
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
@@ -39,11 +41,11 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
       try {
         if (userType === "manager") {
           // Fetch main stats
-          const [typeRes, loanRes, collectionRes, appRes, monthlyRes] = await Promise.all([
-            fetch("http://localhost:3001/stat/loan-type-stats", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("http://localhost:3001/stat/loan-stats", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("http://localhost:3001/stat/collection-stats", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("http://localhost:3001/stat/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` } }),
+          const [typeRes, loanRes, collectionRes, appRes] = await Promise.all([
+            fetch(`${STAT_URL}/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/loan-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/collection-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
           ]);
 
           const typeData: LoanTypeStat[] = await typeRes.json();
@@ -62,8 +64,8 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
         } else {
           // Loan officer stats
           const [typeRes, appRes] = await Promise.all([
-            fetch("http://localhost:3001/stat/applied-loan-type-stats", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("http://localhost:3001/stat/applicationStatus-stats", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/applied-loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
           ]);
 
           const typeData: LoanTypeStat[] = await typeRes.json();
@@ -85,9 +87,9 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
       try {
         if (userType === "manager") {
           const [borrowerRes, collectorRes, agentRes] = await Promise.all([
-            fetch("http://localhost:3001/stat/top-borrowers", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("http://localhost:3001/stat/top-collectors", { headers: { Authorization: `Bearer ${token}` } }),
-            fetch("http://localhost:3001/stat/top-agents", { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/top-borrowers`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/top-collectors`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${STAT_URL}/top-agents`, { headers: { Authorization: `Bearer ${token}` } }),
           ]);
 
           const borrowerData = await borrowerRes.json();

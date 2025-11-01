@@ -10,6 +10,8 @@ import { useBorrowersList } from "./hooks";
 import Filter from "../utils/sortAndSearch";
 import translations from "../translation";
 
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+
 export default function BorrowerPage() {
   const { borrowers, loading, error, role, language } = useBorrowersList();
   const [overview, setOverview] = useState<any>(null);
@@ -28,7 +30,7 @@ export default function BorrowerPage() {
     const fetchOverview = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:3001/borrowers/overview", {
+        const res = await fetch(`${BORROWER_URL}/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

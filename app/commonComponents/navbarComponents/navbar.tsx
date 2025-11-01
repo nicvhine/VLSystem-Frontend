@@ -18,6 +18,8 @@ import {
 import { NavbarProps } from '../utils/Types/navbar';
 import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../utils/notification';
 
+const NOTIFICATION_URL = process.env.NEXT_PUBLIC_NOTIFICATION_URL
+
 export default function Navbar({ role, isBlurred = false }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -99,8 +101,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
       const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
       const borrowersId = localStorage.getItem('borrowersId');
       const url = apiRole === 'borrower' && borrowersId
-        ? `http://localhost:3001/notifications/scheduled/${borrowersId}`
-        : `http://localhost:3001/notifications/${apiRole}`;
+        ? `${NOTIFICATION_URL}/scheduled/${borrowersId}`
+        : `${NOTIFICATION_URL}/${apiRole}`;
       fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -322,7 +324,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                         try {
                           const token = localStorage.getItem('token');
                           const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
-                          await fetch(`http://localhost:3001/notifications/${apiRole}/read-all`, {
+                          await fetch(`${NOTIFICATION_URL}/${apiRole}/read-all`, {
                             method: 'PUT',
                             headers: { Authorization: `Bearer ${token}` },
                           });
@@ -360,7 +362,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                             const notifId = notif._id || notif.id;
                             if (!notif.read) {
                               const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
-                              await fetch(`http://localhost:3001/notifications/${apiRole}/${notifId}/read`, {
+                              await fetch(`${NOTIFICATION_URL}/${apiRole}/${notifId}/read`, {
                                 method: 'PUT',
                                 headers: { Authorization: `Bearer ${token}` },
                               });

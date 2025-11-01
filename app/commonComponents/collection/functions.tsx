@@ -1,5 +1,8 @@
 import { Collection } from "../utils/Types/collection";
 
+const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
+const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL
+
 // Printing Sheet
 export const handlePrint = (setPrintMode: (v: boolean) => void) => {
   setPrintMode(true);
@@ -237,7 +240,7 @@ export const handleConfirmPayment = async (
     if (!token) throw new Error("No token found"); 
 
     const response = await fetch(
-      `http://localhost:3001/payments/${selectedCollection.referenceNumber}/cash`,
+      `${PAYMENT_URL}/${selectedCollection.referenceNumber}/cash`,
       {
         method: "POST",
        headers: {
@@ -283,7 +286,7 @@ export const handleSaveNote = async (
 
   try {
     const response = await fetch(
-      `http://localhost:3001/collections/${selectedCollection.referenceNumber}/note`,
+      `${COLLECTION_URL}/${selectedCollection.referenceNumber}/note`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
