@@ -1,5 +1,4 @@
 'use client';
-// Hook: shared account settings state for navbar profile dropdown
 import { useState } from 'react';
 
 export default function useAccountSettings() {
@@ -16,6 +15,7 @@ export default function useAccountSettings() {
   const [editingPhone, setEditingPhone] = useState('');
   const [activeSettingsTab, setActiveSettingsTab] = useState<'account' | 'notifications'>('account');
   const [phoneError, setPhoneError] = useState('');
+  const [emailError, setEmailError] = useState('');
   const [notificationPreferences, setNotificationPreferences] = useState<{ sms: boolean; email: boolean }>({
     sms: false,
     email: false,
@@ -37,5 +37,6 @@ export default function useAccountSettings() {
     activeSettingsTab, setActiveSettingsTab,
     notificationPreferences, setNotificationPreferences,
     phoneError, setPhoneError,
+    emailError, setEmailError,
   };
 }

@@ -19,6 +19,7 @@ interface ProfileDropdownProps {
   role: string;
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowOtpModal: React.Dispatch<React.SetStateAction<boolean>>;
   isDropdownOpen: boolean;
   setIsDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   profilePic: string;
@@ -36,6 +37,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMsg, setModalMsg] = useState('');
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
 
   // Dropdown logic hook
   const {
@@ -56,10 +58,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     confirmPassword,
     setConfirmPassword,
     notificationPreferences,
-    setNotificationPreferences,
     passwordError,
     setPasswordError,
     phoneError,
+    emailError,
+    setEmailError,
     setPhoneError,
     settingsSuccess,
     setSettingsSuccess,
@@ -69,15 +72,17 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     handleNotificationToggle,
     handleAccountSettingsUpdate,
     handleLogout,
-    emailVerificationSent,
     userEnteredCode,
     setUserEnteredCode,
     sendVerificationCode,
-    verifyEmailCode,
     smsVerificationSent,
     sendSmsVerificationCode,
     verifySmsCode,
-  } = useProfileDropdownLogic(setIsEditing);
+    emailVerified,
+    emailVerificationSent,
+    setEmailVerificationSent,
+    verifyEmailCode,
+  } = useProfileDropdownLogic(setIsEditing, setShowOtpModal);
 
   // Initialize language from localStorage
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
@@ -294,6 +299,8 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 setPasswordError={setPasswordError}
                 phoneError={phoneError}
                 setPhoneError={setPhoneError}
+                emailError={emailError}
+                setEmailError={setEmailError}
                 settingsSuccess={settingsSuccess}
                 setSettingsSuccess={setSettingsSuccess}
                 notificationPreferences={notificationPreferences}
@@ -307,6 +314,8 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 smsVerificationSent={smsVerificationSent}
                 sendSmsVerificationCode={sendSmsVerificationCode}
                 verifySmsCode={verifySmsCode}
+                setEmailVerificationSent={setEmailVerificationSent}  
+                emailVerified={emailVerified}                           
               />
             </div>
           </div>

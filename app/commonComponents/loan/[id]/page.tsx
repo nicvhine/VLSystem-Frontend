@@ -31,7 +31,7 @@ const ProgressCircle = ({ value, label, subLabel, displayValue, centerSubLabel }
 
   return (
     <div className="flex flex-col items-center bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">{label}</h2>
+      <h2 className="text-lg font-semibold text-red-700 mb-6">{label}</h2>
       <div className="relative w-44 h-44 md:w-52 md:h-52">
         <svg className="w-full h-full -rotate-90">
           <defs>
@@ -113,8 +113,8 @@ const StatusBadge = ({ status }: { status: string }) => {
 // ------------------- Info Component -------------------
 const Info = ({ label, value }: { label: string; value: any }) => (
   <div>
-    <p className="text-gray-400 text-xs uppercase">{label}</p>
-    <p className="font-semibold text-gray-800">{value}</p>
+    <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">{label}</p>
+    <p className="text-gray-800 text-sm font-medium">{value}</p>
   </div>
 );
 
@@ -213,8 +213,8 @@ export default function LoansDetailPage({ params }: Props) {
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
                   {loan.name}
-                  <span className="text-gray-300">|</span>
-                  <span className="text-gray-600">{loan.loanId}</span>
+                  <span className="text-red-700">|</span>
+                  <span className="text-red-700">{loan.loanId}</span>
                 </h1>
                 <div className="mt-2 flex items-center gap-3">
                   <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium uppercase ${loan.status === 'Active' ? 'bg-green-100 text-green-700' : loan.status === 'Closed' ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'}`}>
@@ -267,14 +267,13 @@ export default function LoansDetailPage({ params }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Loan Details */}
             <div className="md:col-span-2 bg-white rounded-3xl shadow-lg p-5 border border-gray-200 hover:shadow-2xl transition">
-              <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Loan Details</h2>
+              <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2">Loan Details</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
                 <Info label="Loan ID" value={loan.loanId} />
-                <Info label="Loan Type" value={loan.loanType} />
                 <Info label="Amount" value={`₱${Number(loan.appLoanAmount).toLocaleString()}`} />
+                <Info label="Loan Type" value={loan.loanType} />
                 <Info label="Terms" value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
                 <Info label="Interest Rate" value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
-                <Info label="Status" value={<StatusBadge status={loan.status || '—'} />} />
                 <Info label="Date Disbursed" value={loan.dateDisbursed || "—"} />
               </div>
             </div>
@@ -282,7 +281,7 @@ export default function LoansDetailPage({ params }: Props) {
             {/* Payment Tracker */}
             <div className="md:col-span-2">
               <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-5 h-[55vh] overflow-y-auto">
-                <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2 sticky top-0 bg-white z-10">Payment Tracker</h2>
+                <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2 sticky top-0 bg-white z-10">Payment Tracker</h2>
                 <PaymentTrackerCards collections={collections} />
               </div>
             </div>

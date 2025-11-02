@@ -43,10 +43,10 @@ export function useUsersLogic() {
   ) => {
     try {
       await emailjs.send(
-        "service_eph6uoe",
-        "template_knwr0fa",
+        "service_gsrml74",
+        "template_ry9tq57",
         { to_name, email, user_username, user_password },
-        "-PgL14MSf1VScXI94"
+        "6VII8ATdscjZi3UYW"
       );
     } catch (error: any) {
       onError("Failed to send email: " + (error?.text || error.message || "Unknown error"));

@@ -3,20 +3,19 @@ import emailjs from 'emailjs-com';
 import useAccountSettings from './accountSettings';
 
 export function useProfileDropdownLogic(
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>,
+  setShowOtpModal: React.Dispatch<React.SetStateAction<boolean>> 
+
 ) {
   const [currentPassword, setCurrentPassword] = useState('');
   const [emailVerificationCode, setEmailVerificationCode] = useState('');
   const [userEnteredCode, setUserEnteredCode] = useState('');
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
-
   const [smsVerificationCode, setSmsVerificationCode] = useState('');
   const [smsVerified, setSmsVerified] = useState(false);
   const [smsVerificationSent, setSmsVerificationSent] = useState(false);
   const [emailVerificationMessage, setEmailVerificationMessage] = useState('');
-
-
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const {
@@ -40,123 +39,172 @@ export function useProfileDropdownLogic(
     setPasswordError,
     phoneError,
     setPhoneError,
+    emailError,
+    setEmailError,
     settingsSuccess,
     setSettingsSuccess,
     activeSettingsTab,
     setActiveSettingsTab,
   } = useAccountSettings();
 
-  // Toggle account settings panel and reset related UI state
+  // Toggle account settings panel
   const toggleEdit = () => {
     setIsEditing((prev) => !prev);
     setActiveSettingsTab('account');
     setPasswordError('');
     setPhoneError('');
+    setEmailError('');
     setSettingsSuccess('');
     setIsEditingEmailField(false);
     setIsEditingPasswordField(false);
   };
 
-  // Clear session but keep language, set role to 'public', then return to login
+  // Logout handler
   const handleLogout = () => {
     if (typeof window === 'undefined') return;
-
     const currentLang = localStorage.getItem('language') || 'en';
-
     localStorage.clear();
-
     localStorage.setItem('language', currentLang);
     localStorage.setItem('role', 'public');
-
     window.location.href = '/';
   };
 
+  // Clear email states when changing
   useEffect(() => {
     setEmailVerified(false);
-    setEmailVerificationSent(false);
     setUserEnteredCode('');
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (editingEmail && emailRegex.test(editingEmail)) {
-      setPasswordError('');
+    if (emailError && editingEmail && !editingEmail.includes(" ")) {
+      setEmailError("");
     }
   }, [editingEmail]);
 
-  // Email verification: send + validate code
-  // Send email verification code via EmailJS after basic validation
-  const sendVerificationCode = async () => {
+  // Send verification code
+  const sendVerificationCode = async (): Promise<void> => {
+    setEmailError(""); 
+  
     if (!editingEmail || !editingEmail.trim()) {
-      setPasswordError('Please enter a valid email address.');
+      setEmailError("Please enter a valid email address.");
       return;
     }
-
+  
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(editingEmail)) {
-      setPasswordError('Invalid email format.');
+      setEmailError("Invalid email format.");
       return;
     }
-
+  
     try {
-      const res = await fetch('http://localhost:3001/users/check-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`http://localhost:3001/users/check-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: editingEmail }),
       });
-
+  
+      const data = await res.json();
+  
       if (res.status === 409) {
-        const data = await res.json();
-        setPasswordError(data.error || 'Email already in use.');
+        setEmailError(data.error || "Email already in use.");
+        setEmailVerificationSent(false);
         return;
       }
-
+  
+      if (!res.ok) {
+        setEmailError(data.error || "Failed to check email availability.");
+        return;
+      }
+  
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setEmailVerificationCode(code);
       setEmailVerified(false);
-
+  
       const time = new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString();
-
+  
       const templateParams = {
         to_email: editingEmail,
         passcode: code,
         time,
       };
-
+  
       const emailResponse = await emailjs.send(
-        'service_37inqad',
-        'template_ew6anbw',
+        "service_37inqad",
+        "template_ew6anbw",
         templateParams,
-        'gVN8M0DfvDrD5_W2M'
+        "gVN8M0DfvDrD5_W2M"
       );
-
+  
       if (emailResponse.status !== 200) {
-        setPasswordError('Email not found or could not be sent.');
+        setEmailError("Failed to send email verification.");
         return;
       }
-
+  
+      setEmailError("");
       setEmailVerificationSent(true);
-      setSettingsSuccess('Verification code sent to your new email.');
-    } catch (error: any) {
-      console.error('Failed to send email:', error);
-      setPasswordError('Failed to send verification code.');
+      setSettingsSuccess("Verification code sent to your new email.");
+      setUserEnteredCode("");
+    } catch (error) {
+      console.error("Failed to send verification:", error);
+      setEmailError("Network error. Please try again.");
     }
   };
 
-  // Check user-entered email code against the generated one
-  const verifyEmailCode = () => {
-    if (userEnteredCode === emailVerificationCode) {
-      setEmailVerified(true);
-      setPasswordError('');
-      setSettingsSuccess('✔ Email verified.'); 
-      setEmailVerificationMessage('✔ Email verified.'); 
-    } else {
-      setPasswordError('Incorrect verification code.');
-      setEmailVerificationMessage('Incorrect verification code.');
+  // Verify code
+  const verifyEmailCode = async (otpInput?: string) => {
+    const codeToCheck = otpInput ?? userEnteredCode;
+  
+    if (!codeToCheck) {
+      setEmailError("Please enter the verification code.");
+      return false;
     }
-  };
+  
+    if (codeToCheck !== emailVerificationCode) {
+      setEmailError("Incorrect verification code. Please try again.");
+      return false;
+    }
+  
+    // Mark email as verified
+    setEmailVerified(true);
+    setEmailVerificationSent(false);
+    setSettingsSuccess("Email verified successfully!");
+    setUserEnteredCode('');
+  
+    // Update email in backend
+    const userId = localStorage.getItem('userId');
+    const token = localStorage.getItem('token');
+    if (!token) return setEmailError("You must be logged in to update email.");
+  
+    try {
+      const emailRes = await fetch(`http://localhost:3001/users/${userId}/update-email`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ email: editingEmail }),
+      });
+  
+      if (emailRes.status === 409) {
+        const data = await emailRes.json();
+        setEmailError(data.error || 'Email already in use.');
+        return false;
+      }
+  
+      if (!emailRes.ok) throw new Error('Failed to update email.');
+  
+      localStorage.setItem('email', editingEmail);
+      setShowOtpModal(false);
+      setIsEditingEmailField(false);
+      setSettingsSuccess('✔ Email changed successfully.');
+      return true;
+    } catch (err) {
+      console.error(err);
+      setEmailError('Failed to update email.');
+      return false;
+    }
+  };  
   
 
-  // SMS verification: send + validate code
-  // Request an SMS code to be delivered to the provided phone number
+  // SMS Verification
   const sendSmsVerificationCode = async () => {
     if (!editingPhone || !editingPhone.trim()) {
       setPhoneError('Please enter a valid phone number.');
@@ -193,7 +241,6 @@ export function useProfileDropdownLogic(
     }
   };
 
-  // Validate SMS code
   const verifySmsCode = () => {
     if (userEnteredCode === smsVerificationCode) {
       setSmsVerified(true);
@@ -204,7 +251,6 @@ export function useProfileDropdownLogic(
     }
   };
 
-  // Toggle notification preference and persist to localStorage
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const updatedPrefs = {
       ...notificationPreferences,
@@ -214,10 +260,11 @@ export function useProfileDropdownLogic(
     localStorage.setItem('notificationPreferences', JSON.stringify(updatedPrefs));
   };
 
-  // Persist email/phone/password changes to backend with validation
+  // Update account settings
   const handleAccountSettingsUpdate = async () => {
     setPasswordError('');
     setPhoneError('');
+    setEmailError('');
     setSettingsSuccess('');
 
     const userId = localStorage.getItem('userId');
@@ -227,27 +274,33 @@ export function useProfileDropdownLogic(
       if (isEditingEmailField) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(editingEmail)) {
-          setPasswordError('Please enter a valid email address.');
+          setEmailError('Please enter a valid email address.');
           return;
         }
 
         if (!emailVerified) {
-          setPasswordError('Please verify your new email before saving.');
+          setEmailError('Please verify your new email before saving.');
           return;
         }
 
-        const emailRes = await fetch(
-          `http://localhost:3001/users/${userId}/update-email`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: editingEmail }),
-          }
-        );
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setEmailError('You must be logged in to update email.');
+          return false;
+        }
+
+        const emailRes = await fetch(`http://localhost:3001/users/${userId}/update-email`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, 
+          },
+          body: JSON.stringify({ email: editingEmail }),
+        });
 
         if (emailRes.status === 409) {
           const data = await emailRes.json();
-          setPasswordError(data.error || 'Email already in use.');
+          setEmailError(data.error || 'Email already in use.');
           return;
         }
 
@@ -256,12 +309,12 @@ export function useProfileDropdownLogic(
         }
 
         localStorage.setItem('email', editingEmail);
-
         setShowSuccessModal(true);
         setSettingsSuccess('✔ Email changed successfully.');
-        setTimeout(() => setSettingsSuccess(''), 4000); // auto-hide after 4s
+        setTimeout(() => setSettingsSuccess(''), 4000);
       }
 
+      // PHONE UPDATE
       if (isEditingPhoneField) {
         const phoneRes = await fetch(
           `http://localhost:3001/users/${userId}/update-phoneNumber`,
@@ -285,59 +338,53 @@ export function useProfileDropdownLogic(
         localStorage.setItem('phoneNumber', editingPhone);
       }
 
-      //Password update
+      // PASSWORD UPDATE
       if (isEditingPasswordField && newPassword) {
         if (newPassword !== confirmPassword) {
           setPasswordError('New Password and Confirm Password do not match.');
           return;
         }
 
-        try {
-          const borrowersId = localStorage.getItem('borrowersId') || '';
-          const userId = localStorage.getItem('userId') || '';
-          const role = localStorage.getItem('role') || '';
-          const token = localStorage.getItem('token') || '';
+        const borrowersId = localStorage.getItem('borrowersId') || '';
+        const userId = localStorage.getItem('userId') || '';
+        const role = localStorage.getItem('role') || '';
+        const token = localStorage.getItem('token') || '';
 
-          let endpoint = '';
-          let targetId = '';
+        let endpoint = '';
+        let targetId = '';
 
-          if (['loan officer', 'head', 'manager', 'collector'].includes(role?.toLowerCase() || '')) {
-            endpoint = 'users';
-            targetId = userId;
-          } else if (role?.toLowerCase() === 'borrower') {
-            endpoint = 'borrowers';
-            targetId = borrowersId;
-          } else {
-            setPasswordError('Invalid account role.');
-            return;
-          }
-
-          const passwordRes = await fetch(
-            `http://localhost:3001/${endpoint}/${targetId}/change-password`,
-            {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({ currentPassword, newPassword }),
-            }
-          );
-
-          if (!passwordRes.ok) {
-            const data = await passwordRes.json();
-            setPasswordError(data.message || 'Failed to update password.');
-            return;
-          }
-
-          setSettingsSuccess('✔ Password updated successfully!');
-          setTimeout(() => setSettingsSuccess(''), 4000);
-        } catch (error) {
-          console.error('Password update error:', error);
-          setPasswordError('Server error. Please try again.');
+        if (['loan officer', 'head', 'manager', 'collector'].includes(role.toLowerCase())) {
+          endpoint = 'users';
+          targetId = userId;
+        } else if (role.toLowerCase() === 'borrower') {
+          endpoint = 'borrowers';
+          targetId = borrowersId;
+        } else {
+          setPasswordError('Invalid account role.');
+          return;
         }
-      }
 
+        const passwordRes = await fetch(
+          `http://localhost:3001/${endpoint}/${targetId}/change-password`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ currentPassword, newPassword }),
+          }
+        );
+
+        if (!passwordRes.ok) {
+          const data = await passwordRes.json();
+          setPasswordError(data.message || 'Failed to update password.');
+          return;
+        }
+
+        setSettingsSuccess('✔ Password updated successfully!');
+        setTimeout(() => setSettingsSuccess(''), 4000);
+      }
 
       setIsEditingEmailField(false);
       setIsEditingPhoneField(false);
@@ -378,6 +425,8 @@ export function useProfileDropdownLogic(
     setPasswordError,
     phoneError,
     setPhoneError,
+    emailError,
+    setEmailError,
     settingsSuccess,
     setSettingsSuccess,
     activeSettingsTab,
@@ -397,5 +446,7 @@ export function useProfileDropdownLogic(
     smsVerificationSent,
     showSuccessModal,
     setShowSuccessModal,
+    emailVerified,
+    setEmailVerificationSent,
   };
 }

@@ -44,7 +44,7 @@ export default function LoanStatisticsVertical() {
 
       {/* Top Agents */}
       <section className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-        <div className="mb-4 flex items-center gap-2 text-m font-semibold text-yellow-500">
+        <div className="mb-4 flex items-center gap-2 text-m font-semibold text-red-600">
           {t.c14 || "Top 5 Agents"}
         </div>
         {topAgents.length === 0 ? (
