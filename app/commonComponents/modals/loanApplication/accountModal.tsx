@@ -49,10 +49,10 @@ const sendEmail = async ({
   if (!email) return;
   try {
     const result = await emailjs.send(
-      "service_eph6uoe",
-      "template_tjkad0u",
+      "service_c1qaot4",
+      "template_gqc0n98",
       { to_name, email, borrower_username, borrower_password },
-      "-PgL14MSf1VScXI94"
+      "oo7hIZjduEzSoqCY9"
     );
     console.log("Email sent:", result?.text || result);
   } catch (error: any) {

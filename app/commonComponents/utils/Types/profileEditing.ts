@@ -22,6 +22,8 @@ export interface ProfileEditingProps {
     setActiveSettingsTab: (v: 'account' | 'notifications') => void;
     passwordError: string;
     setPasswordError: (v: string) => void; 
+    emailError: string;
+    setEmailError: (v: string) => void; 
     phoneError: string;
     setPhoneError: (v: string) => void;
     settingsSuccess: string;
@@ -33,6 +35,7 @@ export interface ProfileEditingProps {
     handleNotificationToggle: (type: 'sms' | 'email') => void;
     handleAccountSettingsUpdate: () => void;
     emailVerificationSent: boolean;
+    setEmailVerificationSent: (v: boolean) => void; 
     userEnteredCode: string;
     setUserEnteredCode: (v: string) => void;
     sendVerificationCode: () => void;
@@ -40,5 +43,6 @@ export interface ProfileEditingProps {
     sendSmsVerificationCode: () => void;
     verifySmsCode: () => void;
     smsVerificationSent: boolean;
+    emailVerified: boolean;
   }
   

@@ -30,7 +30,7 @@ export default function CreditScoreCard({ creditScore, showTip = true, className
   return (
     <div className={`w-full bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-all duration-300 ${className}`}>
       {/* Header */}
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">Credit Score</h2>
+      <h2 className="text-lg font-semibold text-red-700 mb-6">Credit Score</h2>
 
       {/* Circular Gauge */}
       <div className="relative w-44 h-44 md:w-52 md:h-52">
