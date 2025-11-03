@@ -1,7 +1,6 @@
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+"use client";
+import { useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   otp: string;
@@ -9,6 +8,7 @@ type Props = {
   error: string;
   handleVerifyOtp: () => void;
   handleResendOtp: () => Promise<void>;
+  otpExpiresIn?: number; 
 };
 
 export default function StepOtp({
@@ -17,36 +17,44 @@ export default function StepOtp({
   error,
   handleVerifyOtp,
   handleResendOtp,
+  otpExpiresIn = 300, 
 }: Props) {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [timer, setTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(60);
+  const [expiryTimer, setExpiryTimer] = useState(otpExpiresIn);
 
-  const safeOtp = otp || ''; 
-
+  // Countdown for resend
   useEffect(() => {
-    if (timer <= 0) return;
-    const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => setResendTimer((t) => t - 1), 500);
     return () => clearInterval(interval);
-  }, [timer]);
+  }, [resendTimer]);
 
+  // Countdown for OTP expiry
+  useEffect(() => {
+    if (expiryTimer <= 0) return;
+    const interval = setInterval(() => setExpiryTimer((t) => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [expiryTimer]);
+
+  // Auto focus first input
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
 
   const handleChange = (value: string, index: number) => {
-    const sanitized = value.replace(/\D/g, '');
-    const otpArray = safeOtp.split('');
+    const sanitized = value.replace(/\D/g, "");
+    const otpArray = otp.split("");
     otpArray[index] = sanitized.slice(-1);
-    const newOtp = otpArray.join('').slice(0, 6);
+    const newOtp = otpArray.join("").slice(0, 6);
     setOtp(newOtp);
-
     if (sanitized && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !safeOtp[index] && index > 0)
+    if (e.key === "Backspace" && !otp[index] && index > 0)
       inputRefs.current[index - 1]?.focus();
   };
 
@@ -57,9 +65,9 @@ export default function StepOtp({
       if (inputRefs.current[i]) inputRefs.current[i].value = char;
     });
   };
-
+  
   const handleSubmit = async () => {
-    if (safeOtp.length !== 6) return;
+    if (otp.length !== 6) return;
     setIsVerifying(true);
     try {
       await handleVerifyOtp();
@@ -69,25 +77,38 @@ export default function StepOtp({
   };
 
   const handleResend = async () => {
+    if (resendTimer > 0) return;
     setIsResending(true);
     try {
       await handleResendOtp();
-      setTimer(60);
-      setOtp('');
+      setResendTimer(60);
+      setExpiryTimer(300); 
+      setOtp("");
       inputRefs.current[0]?.focus();
     } finally {
       setIsResending(false);
     }
   };
 
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec < 10 ? "0" + sec : sec}`;
+  };
+
   return (
     <div className="flex flex-col items-center text-center p-4">
-      <h2 className="text-2xl font-semibold text-gray-900 mb-2">OTP Verification</h2>
+      <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+        OTP Verification
+      </h2>
       <p className="text-sm text-gray-600 mb-6 max-w-sm">
-        Enter the 6-digit code sent to your registered email or phone number.
+        Enter the 6-digit code sent to your email. It will expire in{" "}
+        <span className="font-semibold text-red-600">
+          {formatTime(expiryTimer)}
+        </span>
+        .
       </p>
 
-      {/* OTP boxes */}
       <div className="flex justify-center gap-2.5 mb-5" onPaste={handlePaste}>
         {[...Array(6)].map((_, i) => (
           <input
@@ -95,19 +116,17 @@ export default function StepOtp({
             type="text"
             inputMode="numeric"
             maxLength={1}
-            value={safeOtp[i] || ''}
+            value={otp[i] || ""}
             onChange={(e) => handleChange(e.target.value, i)}
             onKeyDown={(e) => handleKeyDown(e, i)}
             ref={(el) => {
               if (el) inputRefs.current[i] = el;
             }}
-            className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border text-center text-xl font-semibold tracking-widest transition-all duration-150 shadow-sm 
-              ${
-                safeOtp[i]
-                  ? 'border-red-500 text-gray-900'
-                  : 'border-gray-300 text-gray-800'
-              }
-              focus:border-red-500 focus:ring-2 focus:ring-red-500/30 outline-none`}
+            className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border text-center text-xl font-semibold tracking-widest transition-all duration-150 shadow-sm ${
+              otp[i]
+                ? "border-red-500 text-gray-900"
+                : "border-gray-300 text-gray-800"
+            } focus:border-red-500 focus:ring-2 focus:ring-red-500/30 outline-none`}
           />
         ))}
       </div>
@@ -115,47 +134,41 @@ export default function StepOtp({
       {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
       <button
-        disabled={safeOtp.length !== 6 || isVerifying}
+        disabled={otp.length !== 6 || isVerifying || expiryTimer <= 0}
         onClick={handleSubmit}
-        className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:scale-95 transition-transform duration-150 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2"
+        className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:scale-95 transition-transform duration-150 disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {isVerifying ? (
           <>
-            <Loader2 className="animate-spin w-5 h-5" />
-            Verifying...
+            <Loader2 className="animate-spin w-5 h-5" /> Verifying...
           </>
         ) : (
-          'Verify'
+          "Verify"
         )}
       </button>
 
-      {/* Resend */}
       <div className="mt-4 text-sm text-gray-600">
-        {timer > 0 ? (
+        {resendTimer > 0 ? (
           <p>
-            Didn’t get the code?{' '}
+            Didn’t get the code?{" "}
             <span className="font-medium text-gray-800">
-              Resend available in {timer}s
+              Resend available in {resendTimer}s
             </span>
           </p>
         ) : (
-          <div className="flex items-center justify-center gap-2">
-            <span>Didn’t get the code?</span>
-            <button
-              onClick={handleResend}
-              disabled={isResending}
-              className="text-red-600 font-medium hover:underline disabled:opacity-50 flex items-center gap-1"
-            >
-              {isResending ? (
-                <>
-                  <Loader2 className="animate-spin w-4 h-4" />
-                  Sending...
-                </>
-              ) : (
-                'Resend Code'
-              )}
-            </button>
-          </div>
+          <button
+            onClick={handleResend}
+            disabled={isResending}
+            className="text-red-600 font-medium hover:underline disabled:opacity-50 flex items-center gap-1"
+          >
+            {isResending ? (
+              <>
+                <Loader2 className="animate-spin w-4 h-4" /> Sending...
+              </>
+            ) : (
+              "Resend Code"
+            )}
+          </button>
         )}
       </div>
     </div>

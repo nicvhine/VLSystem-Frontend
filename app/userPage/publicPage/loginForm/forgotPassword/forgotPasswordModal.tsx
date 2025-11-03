@@ -33,16 +33,15 @@ const maskPhone = (phone: string) => {
   return phone.replace(/(\d{2})\d{5}(\d{2})/, '$1*****$2');
 };
 
-const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const sendOtpViaEmail = async (toEmail: string, otp: string) => {
   try {
     const expiry = new Date(Date.now() + 15 * 60000).toLocaleTimeString();
     await emailjs.send(
-      'service_37inqad',
-      'template_ew6anbw',
+      'service_eph6uoe',
+      'template_nucwh85',
       { to_email: toEmail, passcode: otp, time: expiry },
-      'gVN8M0DfvDrD5_W2M'
+      '-PgL14MSf1VScXI94'
     );
   } catch (error) {
     console.error('EmailJS error:', error);
@@ -130,23 +129,55 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
   // Send OTP
   const handleSendOtp = async (method: 'email' | 'mobile') => {
     setSelectedMethod(method);
-    const newOtp = generateOtp();
-    setGeneratedOtp(newOtp);
-    if (method === 'email') {
-      await sendOtpViaEmail(borrower.email, newOtp);
-    } else if (method === 'mobile') {
-      await sendOtpViaSMS(borrower.phoneNumber, newOtp);
+    try {
+      const res = await fetch(`http://localhost:3001/otp/generate-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: borrower.email }),
+      });
+  
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate OTP");
+  
+      const newOtp = data.otp;
+      setGeneratedOtp(newOtp);
+  
+      if (method === "email") {
+        await sendOtpViaEmail(borrower.email, newOtp);
+      } else if (method === "mobile") {
+        await sendOtpViaSMS(borrower.phoneNumber, newOtp);
+      }
+  
+      setOtp("");
+      setPendingStep("otp");
+    } catch (err) {
+      console.error("Error sending OTP:", err);
+      setError("Failed to send OTP. Please try again.");
     }
-    setOtp('');
-    setPendingStep('otp');
   };
+  
+  
 
   // Verify OTP
   const handleVerifyOtp = async () => {
     setError('');
-    if (otp === generatedOtp) setPendingStep('reset');
-    else setError('Invalid OTP. Please try again.');
+    try {
+      const res = await fetch(`http://localhost:3001/otp/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: borrower.email, otp }),
+      });
+  
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Verification failed");
+  
+      setPendingStep('reset');
+    } catch (err: any) {
+      console.error("OTP verification error:", err);
+      setError(err.message || 'Invalid or expired OTP.');
+    }
   };
+  
 
   // Reset password
   const doResetPassword = async () => {

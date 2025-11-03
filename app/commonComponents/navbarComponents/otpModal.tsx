@@ -7,45 +7,59 @@ type Props = {
   otp: string;
   setOtp: (val: string) => void;
   error: string;
-  handleVerifyOtp: (otpInput?: string) => Promise<void>;
+  handleVerifyOtp: () => void;
   handleResendOtp: () => Promise<void>;
+  otpExpiresIn?: number; 
 };
 
-export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleResendOtp }: Props) {
+export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleResendOtp, otpExpiresIn = 300,  }: Props) {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [timer, setTimer] = useState(60);
+  const [resendTimer, setResendTimer] = useState(60);
+  const [expiryTimer, setExpiryTimer] = useState(otpExpiresIn);
 
-  // Debugging: Modal mount
+  // Countdown for resend
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const interval = setInterval(() => setResendTimer((t) => t - 1), 500);
+    return () => clearInterval(interval);
+  }, [resendTimer]);
+
+  // Countdown for OTP expiry
+  useEffect(() => {
+    if (expiryTimer <= 0) return;
+    const interval = setInterval(() => setExpiryTimer((t) => t - 1), 1000);
+    return () => clearInterval(interval);
+  }, [expiryTimer]);
+
   useEffect(() => {
     console.log('OTPModal mounted');
-    debugger; // <-- breakpoint
+    debugger; 
     inputRefs.current[0]?.focus();
     return () => {
       console.log('OTPModal unmounted');
-      debugger; // <-- breakpoint
+      debugger; 
     };
   }, []);
 
+  // Auto focus first input
   useEffect(() => {
-    if (timer <= 0) return;
-    const interval = setInterval(() => setTimer(prev => prev - 1), 1000);
-    return () => clearInterval(interval);
-  }, [timer]);
+    inputRefs.current[0]?.focus();
+  }, []);
 
   const handleChange = (value: string, index: number) => {
-    console.log('handleChange', value, index);
-    const sanitized = value.replace(/\D/g, '');
-    const otpArray = otp.split('');
+    const sanitized = value.replace(/\D/g, "");
+    const otpArray = otp.split("");
     otpArray[index] = sanitized.slice(-1);
-    const newOtp = otpArray.join('').slice(0, 6);
+    const newOtp = otpArray.join("").slice(0, 6);
     setOtp(newOtp);
     if (sanitized && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) inputRefs.current[index - 1]?.focus();
+    if (e.key === "Backspace" && !otp[index] && index > 0)
+      inputRefs.current[index - 1]?.focus();
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -57,38 +71,44 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
   };
 
   const handleSubmit = async () => {
-    console.log('Verify clicked, OTP:', otp);
-    debugger; 
     if (otp.length !== 6) return;
     setIsVerifying(true);
     try {
-      await handleVerifyOtp(otp);
-      console.log('handleVerifyOtp completed');
-    } catch (err) {
-      console.error('Error verifying OTP', err);
+      await handleVerifyOtp();
     } finally {
       setIsVerifying(false);
     }
   };
 
   const handleResend = async () => {
-    console.log('Resend clicked');
+    if (resendTimer > 0) return;
     setIsResending(true);
     try {
       await handleResendOtp();
-      setTimer(60);
-      setOtp('');
+      setResendTimer(60);
+      setExpiryTimer(300); 
+      setOtp("");
       inputRefs.current[0]?.focus();
     } finally {
       setIsResending(false);
     }
   };
 
+  const formatTime = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec < 10 ? "0" + sec : sec}`;
+  };
+
   return (
     <div className="flex flex-col items-center text-center p-4">
       <h2 className="text-2xl font-semibold text-gray-900 mb-2">OTP Verification</h2>
       <p className="text-sm text-gray-600 mb-6 max-w-sm">
-        Enter the 6-digit code sent to your registered email or phone number.
+        Enter the 6-digit code sent to your email. It will expire in{" "}
+        <span className="font-semibold text-red-600">
+          {formatTime(expiryTimer)}
+        </span>
+        .
       </p>
 
       <div className="flex justify-center gap-2.5 mb-5" onPaste={handlePaste}>
@@ -129,10 +149,10 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
       </button>
 
       <div className="mt-4 text-sm text-gray-600">
-        {timer > 0 ? (
+        {resendTimer > 0 ? (
           <p>
             Didn’t get the code?{' '}
-            <span className="font-medium text-gray-800">Resend available in {timer}s</span>
+            <span className="font-medium text-gray-800">Resend available in {resendTimer}s</span>
           </p>
         ) : (
           <div className="flex items-center justify-center gap-2">
