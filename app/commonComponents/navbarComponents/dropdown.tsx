@@ -110,6 +110,28 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
 
   const t = translations.navbarTranslation[language];
 
+  // Local email state to reflect immediate changes without full refresh
+  const [displayEmail, setDisplayEmail] = useState<string>(email);
+
+  // Keep displayEmail in sync with prop updates
+  useEffect(() => {
+    setDisplayEmail(email);
+  }, [email]);
+
+  // Listen for emailUpdated events to update UI immediately
+  useEffect(() => {
+    const onEmailUpdated = (e: Event) => {
+      try {
+        const ce = e as CustomEvent;
+        if (typeof ce.detail?.email === 'string') {
+          setDisplayEmail(ce.detail.email);
+        }
+      } catch {}
+    };
+    window.addEventListener('emailUpdated', onEmailUpdated as EventListener);
+    return () => window.removeEventListener('emailUpdated', onEmailUpdated as EventListener);
+  }, []);
+
   // Determine final image to show
   const [externalProfilePic, setExternalProfilePic] = useState<string | null>(null);
 
@@ -231,7 +253,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           <input type="file" id="profileUpload" accept="image/*" className="hidden" onChange={handleFileChange} />
         </div>
           <div className={`font-semibold text-lg text-center transition-all ${showPhotoActions ? 'mt-8' : ''}`}>{name}</div>
-          <div className="text-gray-400 text-sm text-center">{email}</div>
+          <div className="text-gray-400 text-sm text-center">{displayEmail}</div>
           <div className="text-red-600 text-xs font-medium text-center mt-1 uppercase tracking-wide">
             {role === 'borrower'
               ? 'Borrower'
@@ -275,7 +297,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
               <div className="h-px w-full bg-gray-200 mb-1" />
               <ProfileSettingsPanel
                 username={username}
-                email={email}
+                email={displayEmail}
                 phoneNumber={phoneNumber}
                 editingEmail={editingEmail}
                 setEditingEmail={setEditingEmail}

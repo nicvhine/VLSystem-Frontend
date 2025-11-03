@@ -30,15 +30,29 @@ export default function InterviewModal({
   const normalizedStatus = status?.trim().toLowerCase();
   const isDone = normalizedStatus !== "pending"; 
   
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const appliedDateObj = appliedDate ? new Date(appliedDate) : new Date(today);
-  appliedDateObj.setHours(0, 0, 0, 0);
+  // Helper to normalize a date to local midnight
+  const toDateOnly = (d: Date | string) => {
+    const dt = typeof d === 'string' ? new Date(d) : new Date(d);
+    return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+  };
+
+  const today = toDateOnly(new Date());
   const minDateObj = new Date(today);
-  const maxDateObj = new Date(appliedDateObj);
-  maxDateObj.setDate(maxDateObj.getDate() + 7);
+
+  // Compute allowed windows relative to the original interview date
+  const originalDateObj = currentDate ? toDateOnly(`${currentDate}T00:00:00`) : null;
+  const startOfWeekOriginal = originalDateObj ? new Date(originalDateObj.getFullYear(), originalDateObj.getMonth(), originalDateObj.getDate() - originalDateObj.getDay()) : null; // Sunday start
+  const endOfWeekOriginal = startOfWeekOriginal ? new Date(startOfWeekOriginal.getFullYear(), startOfWeekOriginal.getMonth(), startOfWeekOriginal.getDate() + 6) : null; // Saturday end
+  const weekAfterOriginal = originalDateObj ? new Date(originalDateObj.getFullYear(), originalDateObj.getMonth(), originalDateObj.getDate() + 7) : null;
+
+  // For input max, choose the furthest upper bound; HTML can't express union but we'll validate precisely on save
+  const maxUpper = (() => {
+    if (endOfWeekOriginal && weekAfterOriginal) return endOfWeekOriginal > weekAfterOriginal ? endOfWeekOriginal : weekAfterOriginal;
+    return weekAfterOriginal || endOfWeekOriginal || new Date(today);
+  })();
+
   const minDate = minDateObj.toISOString().split("T")[0];
-  const maxDate = maxDateObj.toISOString().split("T")[0];
+  const maxDate = maxUpper.toISOString().split("T")[0];
 
   useEffect(() => {
     setDate(currentDate || "");
@@ -94,11 +108,7 @@ export default function InterviewModal({
       return;
     }
 
-    const selectedDate = new Date(`${date}T00:00:00`);
-    if (selectedDate < minDateObj || selectedDate > maxDateObj) {
-      showError("Interview date must be within seven days of the application and not in the past.");
-      return;
-    }
+    const selectedDate = toDateOnly(`${date}T00:00:00`);
 
     const [hour, minute] = time.split(":").map(Number);
     if (Number.isNaN(hour) || Number.isNaN(minute)) {
@@ -109,6 +119,33 @@ export default function InterviewModal({
     if (hour < 9 || hour > 18 || (hour === 18 && minute > 0)) {
       showError("Interview time must be between 9:00 AM and 6:00 PM.");
       return;
+    }
+
+    // New validations per requirements
+    // 1) Not before today
+    if (selectedDate < minDateObj) {
+      showError("Interview date cannot be before today.");
+      return;
+    }
+
+    // 2) Not the exact same date AND time as original
+    if (originalDateObj && currentTime) {
+      const sameDay = selectedDate.getTime() === originalDateObj.getTime();
+      const sameTime = time === currentTime;
+      if (sameDay && sameTime) {
+        showError("New interview date and time cannot match the original schedule.");
+        return;
+      }
+    }
+
+    // 3) Allowed windows: same week as original OR within one week after the original date
+    if (originalDateObj && startOfWeekOriginal && endOfWeekOriginal && weekAfterOriginal) {
+      const inSameWeek = selectedDate >= startOfWeekOriginal && selectedDate <= endOfWeekOriginal;
+      const withinWeekAfter = selectedDate >= originalDateObj && selectedDate <= weekAfterOriginal;
+      if (!inSameWeek && !withinWeekAfter) {
+        showError("Interview date must be within the same week as the original date or within one week after the original date.");
+        return;
+      }
     }
 
     setShowConfirm(true);

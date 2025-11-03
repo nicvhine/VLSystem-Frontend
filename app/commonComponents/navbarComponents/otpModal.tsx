@@ -7,7 +7,7 @@ type Props = {
   otp: string;
   setOtp: (val: string) => void;
   error: string;
-  handleVerifyOtp: () => void;
+  handleVerifyOtp: () => Promise<void>;
   handleResendOtp: () => Promise<void>;
   otpExpiresIn?: number; 
 };
@@ -34,13 +34,7 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
   }, [expiryTimer]);
 
   useEffect(() => {
-    console.log('OTPModal mounted');
-    debugger; 
     inputRefs.current[0]?.focus();
-    return () => {
-      console.log('OTPModal unmounted');
-      debugger; 
-    };
   }, []);
 
   // Auto focus first input

@@ -149,7 +149,7 @@ export function useProfileDropdownLogic(
   };
 
   // Verify code
-  const verifyEmailCode = async (otpInput?: string) => {
+  const verifyEmailCode = async (otpInput?: string): Promise<boolean> => {
     const codeToCheck = otpInput ?? userEnteredCode;
   
     if (!codeToCheck) {
@@ -171,7 +171,10 @@ export function useProfileDropdownLogic(
     // Update email in backend
     const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
-    if (!token) return setEmailError("You must be logged in to update email.");
+    if (!token) {
+      setEmailError("You must be logged in to update email.");
+      return false;
+    }
   
     try {
       const emailRes = await fetch(`http://localhost:3001/users/${userId}/update-email`, {
@@ -192,6 +195,10 @@ export function useProfileDropdownLogic(
       if (!emailRes.ok) throw new Error('Failed to update email.');
   
       localStorage.setItem('email', editingEmail);
+      // Notify UI to reflect new email immediately
+      try {
+        window.dispatchEvent(new CustomEvent('emailUpdated', { detail: { email: editingEmail } }));
+      } catch {}
       setShowOtpModal(false);
       setIsEditingEmailField(false);
       setSettingsSuccess('✔ Email changed successfully.');
@@ -261,7 +268,7 @@ export function useProfileDropdownLogic(
   };
 
   // Update account settings
-  const handleAccountSettingsUpdate = async () => {
+  const handleAccountSettingsUpdate = async (): Promise<void> => {
     setPasswordError('');
     setPhoneError('');
     setEmailError('');
@@ -286,7 +293,7 @@ export function useProfileDropdownLogic(
         const token = localStorage.getItem('token');
         if (!token) {
           setEmailError('You must be logged in to update email.');
-          return false;
+          return;
         }
 
         const emailRes = await fetch(`http://localhost:3001/users/${userId}/update-email`, {
