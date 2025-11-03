@@ -11,13 +11,41 @@ const STAT_URL = process.env.NEXT_PUBLIC_STAT_URL
 
 export function useLoanStats(userType: "manager" | "loanOfficer") {
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
-    if (typeof window !== 'undefined') {
-      if (!localStorage.getItem('language')) localStorage.setItem('language', 'en');
-      return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
+  const [role, setRole] = useState<string | null>(null);
+  const [language, setLanguage] = useState<"en" | "ceb">("en");
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    setRole(storedRole);
+
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+    };
+
+    const langKey = keyMap[storedRole || ""] as keyof typeof keyMap;
+    const storedLanguage = localStorage.getItem(langKey) as "en" | "ceb";
+    if (storedLanguage) {
+      setLanguage(storedLanguage);
     }
-    return 'en';
-  });
+  }, []);
+
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (
+        (role === "head" && event.detail.userType === "head") ||
+        (role === "loan officer" && event.detail.userType === "loanOfficer") ||
+        (role === "manager" && event.detail.userType === "manager")
+      ) {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () =>
+      window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
 
   const t = translations.statisticTranslation[language];
   const s = translations.loanTermsTranslator[language];
