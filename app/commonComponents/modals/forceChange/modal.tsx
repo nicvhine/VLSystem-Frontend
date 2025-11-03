@@ -98,7 +98,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowCurrent(!showCurrent)}
               >
-                {showCurrent ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                {showCurrent ? <FiEye size={18} /> : <FiEyeOff size={18} />}
               </button>
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowNew(!showNew)}
               >
-                {showNew ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                {showNew ? <FiEye size={18} /> : <FiEyeOff size={18} />}
               </button>
             </div>
           </div>
@@ -168,7 +168,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 onClick={() => setShowConfirm(!showConfirm)}
               >
-                {showConfirm ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                {showConfirm ? <FiEye size={18} /> : <FiEyeOff size={18} />}
               </button>
             </div>
           </div>

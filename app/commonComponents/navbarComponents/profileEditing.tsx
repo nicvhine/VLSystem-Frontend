@@ -50,6 +50,36 @@ export default function ProfileSettingsPanel({
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [showOtpModal, setShowOtpModal] = useState(false);
 
+  // Initialize language from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedRole = localStorage.getItem('role');
+      setRole(storedRole);
+      
+      const keyMap: Record<string, string> = {
+        head: "headLanguage",
+        "loan officer": "loanOfficerLanguage",
+        manager: "managerLanguage",
+        borrower: "language",
+      };
+      const langKey = keyMap[storedRole || ""] as keyof typeof keyMap || "language";
+      const storedLanguage = localStorage.getItem(langKey) as "en" | "ceb" || "en";
+      setLanguage(storedLanguage);
+    }
+  }, []);
+
+  // Listen for language changes dynamically
+  useEffect(() => {
+    const handleLanguageChange = (event: CustomEvent) => {
+      const validRoles = ["borrower", "head", "loan officer", "manager"];
+      if (validRoles.includes(role || "") && event.detail.language) {
+        setLanguage(event.detail.language as "en" | "ceb");
+      }
+    };
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
+
   // ✅ Only show OTP modal if verification is required
   useEffect(() => {
     if (emailVerificationSent && !emailVerified) {
@@ -94,7 +124,7 @@ export default function ProfileSettingsPanel({
                     }}
                     className="text-xs text-red-600 font-medium"
                   >
-                    {isEditingEmailField ? 'Cancel' : 'Edit'}
+                    {isEditingEmailField ? t.t25 : t.t27}
                   </button>
                 </div>
 
@@ -151,7 +181,7 @@ export default function ProfileSettingsPanel({
                     }}
                     className="text-xs text-red-600 font-medium"
                   >
-                    {isEditingPhoneField ? 'Cancel' : 'Edit'}
+                    {isEditingPhoneField ? t.t25 : t.t27}
                   </button>
                 </div>
 
@@ -180,13 +210,12 @@ export default function ProfileSettingsPanel({
 
               {/* Password Section */}
               <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-700">{t.t15}</span>
+                <div className="flex justify-between mb-1">                  <span className="text-sm text-gray-700">{t.t34}</span>
                   <button
                     onClick={() => setIsEditingPasswordField(!isEditingPasswordField)}
                     className="text-xs text-red-600 font-medium"
                   >
-                    {isEditingPasswordField ? 'Cancel' : 'Edit'}
+                    {isEditingPasswordField ? t.t25 : t.t27}
                   </button>
                 </div>
 
@@ -200,21 +229,21 @@ export default function ProfileSettingsPanel({
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Current Password"
+                      placeholder={t.t28}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
                     />
                     <input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="New Password"
+                      placeholder={t.t29}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
                     />
                     <input
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm Password"
+                      placeholder={t.t30}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     />
                   </>
@@ -232,7 +261,7 @@ export default function ProfileSettingsPanel({
                     loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
                   }`}
                 >
-                  {loading ? 'Saving...' : 'Save Changes'}
+                  {loading ? t.t31 : t.t15}
                 </button>
               </div>
             </div>
@@ -240,9 +269,8 @@ export default function ProfileSettingsPanel({
         </div>
 
         <ConfirmModal
-          isOpen={showConfirm}
-          title="Confirm Save"
-          message="Are you sure you want to save changes?"
+          show={showConfirm}
+          message={t.t33}
           onConfirm={handleSaveWithConfirm}
           onCancel={() => setShowConfirm(false)}
         />
