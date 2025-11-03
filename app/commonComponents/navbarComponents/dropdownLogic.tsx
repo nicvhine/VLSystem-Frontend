@@ -127,10 +127,10 @@ export function useProfileDropdownLogic(
       };
   
       const emailResponse = await emailjs.send(
-        "service_37inqad",
-        "template_ew6anbw",
+        "service_eph6uoe",
+        "template_nucwh85",
         templateParams,
-        "gVN8M0DfvDrD5_W2M"
+        "-PgL14MSf1VScXI94"
       );
   
       if (emailResponse.status !== 200) {
