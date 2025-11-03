@@ -1,6 +1,8 @@
 'use client';
 
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useState } from 'react';
 
 type Props = {
   newPassword: string;
@@ -25,23 +27,44 @@ export default function StepReset({
   doResetPassword,
   resetLoading,
 }: Props) {
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
     <>
       <h2 className="text-xl font-semibold text-center text-gray-800 mb-4">Reset Password</h2>
-      <input
-        type="password"
-        placeholder="New Password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        className="w-full border rounded-md px-3 py-2 mb-3"
-      />
-      <input
-        type="password"
-        placeholder="Confirm Password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        className="w-full border rounded-md px-3 py-2 mb-4"
-      />
+      <div className="relative mb-3">
+        <input
+          type={showNewPassword ? 'text' : 'password'}
+          placeholder="New Password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          className="w-full border rounded-md px-3 py-2 pr-10"
+        />
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          onClick={() => setShowNewPassword(!showNewPassword)}
+        >
+          {showNewPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+        </button>
+      </div>
+      <div className="relative mb-4">
+        <input
+          type={showConfirmPassword ? 'text' : 'password'}
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          className="w-full border rounded-md px-3 py-2 pr-10"
+        />
+        <button
+          type="button"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+        >
+          {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+        </button>
+      </div>
       {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
       <button
         disabled={!newPassword || !confirmPassword}

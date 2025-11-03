@@ -42,6 +42,14 @@ const navbarTranslation = {
     t24: "Save",
     t25: "Cancel",
     t26: "Are you sure you want to remove your profile photo?",
+    t27: "Edit",
+    t28: "Current Password",
+    t29: "New Password",
+    t30: "Confirm Password",
+    t31: "Saving...",
+    t32: "Confirm Save",
+    t33: "Are you sure you want to save changes?",
+    t34: "Password",
   },
   ceb: {
     tab1: "Mga Pahulam",
@@ -85,7 +93,15 @@ const navbarTranslation = {
     t23: "Ilisi",
     t24: "I-save",
     t25: "I-cancel",
-    t26: "Sigurado ka ba nga gusto nimo tangtangon ang litrato sa profile?"
+    t26: "Sigurado ka ba nga gusto nimo tangtangon ang litrato sa profile?",
+    t27: "Ilisi",
+    t28: "Karon nga Password",
+    t29: "Bag-o nga Password",
+    t30: "Kumpirma ang Password",
+    t31: "Gina-save...",
+    t32: "Kumpirma ang Pag-save",
+    t33: "Sigurado ka ba nga gusto nimo i-save ang mga kausaban?",
+    t34: "Password"
   }
 };
 

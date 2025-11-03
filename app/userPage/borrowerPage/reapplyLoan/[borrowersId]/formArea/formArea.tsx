@@ -64,9 +64,9 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
   const loanTypeParam =
-    loanType === (language === "en" ? "Regular Loan With Collateral" : "Regular nga Pahulam (Naay Kolateral)")
+    loanType === "Regular Loan With Collateral"
       ? "with"
-      : loanType === (language === "en" ? "Regular Loan Without Collateral" : "Regular nga Pahulam (Walay Kolateral)")
+      : loanType === "Regular Loan Without Collateral"
       ? "without"
       : "open-term";
 
