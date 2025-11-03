@@ -33,14 +33,14 @@ export interface ProfileEditingProps {
       sms: boolean;
     };
     handleNotificationToggle: (type: 'sms' | 'email') => void;
-    handleAccountSettingsUpdate: () => void;
+    handleAccountSettingsUpdate: () => Promise<void>;
     emailVerificationSent: boolean;
     setEmailVerificationSent: (v: boolean) => void; 
     userEnteredCode: string;
     setUserEnteredCode: (v: string) => void;
-    sendVerificationCode: () => void;
-    verifyEmailCode: () => void;
-    sendSmsVerificationCode: () => void;
+    sendVerificationCode: () => Promise<void>;
+    verifyEmailCode: () => Promise<boolean>;
+    sendSmsVerificationCode: () => Promise<void>;
     verifySmsCode: () => void;
     smsVerificationSent: boolean;
     emailVerified: boolean;

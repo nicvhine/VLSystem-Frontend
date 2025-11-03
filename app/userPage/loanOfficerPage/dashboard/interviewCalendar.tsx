@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
+// @ts-ignore - react-big-calendar may not have bundled types in this project
 import { Calendar as RBC, dateFnsLocalizer, View } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale/en-US";
@@ -185,11 +186,36 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
         setSelectedApp(prev => (prev ? { ...prev, interviewDate: date, interviewTime: time } : prev));
         handleCloseModal();
       } else {
-        setModalMsg("Failed to update schedule");
+        // Try to extract a specific error message from server
+        let serverMessage = "Failed to update schedule";
+        try {
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            const data = await res.json();
+            serverMessage = data?.error || data?.message || serverMessage;
+          } else {
+            const text = await res.text();
+            if (text) serverMessage = text;
+          }
+        } catch {
+          // ignore parse errors and keep fallback
+        }
+        // Status-aware friendly messages
+        if (res.status === 404) {
+          // Often returns an HTML "Cannot PUT ..." page when the route isn't mounted
+          serverMessage = "Interview scheduling endpoint not found. Please ensure the backend is running and up to date.";
+        } else if (res.status === 401) {
+          serverMessage = "You are not authenticated. Please sign in again.";
+        } else if (res.status === 403) {
+          serverMessage = "You don't have permission to reschedule interviews.";
+        }
+        setModalMsg(serverMessage);
         setShowErrorModal(true);
       }
     } catch (err) {
       console.error("Error saving changes:", err);
+      setModalMsg((err as Error)?.message || "Network error while updating schedule");
+      setShowErrorModal(true);
     }
   };
 

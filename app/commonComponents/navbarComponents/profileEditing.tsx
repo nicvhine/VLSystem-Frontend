@@ -1,10 +1,14 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import translations from '../translation';
 import { ProfileEditingProps } from '../utils/Types/profileEditing';
 import OTPModal from './otpModal';
+import SuccessModal from '@/app/commonComponents/modals/successModal';
+import ErrorModal from '@/app/commonComponents/modals/errorModal';
+import SubmitOverlayToast from '@/app/commonComponents/utils/submitOverlayToast';
 
 export default function ProfileSettingsPanel({
   username,
@@ -49,6 +53,13 @@ export default function ProfileSettingsPanel({
   const [role, setRole] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpVisible, setOtpVisible] = useState(false);
+  const [otpAnimateIn, setOtpAnimateIn] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [modalMsg, setModalMsg] = useState('');
+  const router = useRouter();
+  const [sendingCode, setSendingCode] = useState(false);
 
   // Initialize language from localStorage
   useEffect(() => {
@@ -87,6 +98,20 @@ export default function ProfileSettingsPanel({
     }
   }, [emailVerificationSent, emailVerified]);
 
+  // Handle OTP modal mount/unmount animations
+  useEffect(() => {
+    if (showOtpModal) {
+      setOtpVisible(true);
+      const t = setTimeout(() => setOtpAnimateIn(true), 10);
+      return () => clearTimeout(t);
+    }
+    if (otpVisible) {
+      setOtpAnimateIn(false);
+      const t = setTimeout(() => setOtpVisible(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [showOtpModal]);
+
   const t = translations.navbarTranslation[language];
 
   const handleSaveWithConfirm = async () => {
@@ -94,6 +119,21 @@ export default function ProfileSettingsPanel({
     setLoading(true);
     await handleAccountSettingsUpdate();
     setLoading(false);
+  };
+
+  // Wrap OTP verify to show success/error modals and refresh on success
+  const handleVerifyOtpAndNotify = async () => {
+    const ok = await verifyEmailCode();
+    if (ok) {
+      setShowOtpModal(false);
+      setModalMsg('Email verified and updated successfully.');
+      setShowSuccessModal(true);
+      // UI updates immediately via event; no hard refresh needed
+    } else {
+      const msg = emailError || 'Failed to verify the code. Please try again.';
+      setModalMsg(msg);
+      setShowErrorModal(true);
+    }
   };
 
   return (
@@ -142,6 +182,7 @@ export default function ProfileSettingsPanel({
                       placeholder={email}
                     />
                     <button
+                      disabled={sendingCode}
                       onClick={async () => {
                         setEmailError('');
 
@@ -156,12 +197,17 @@ export default function ProfileSettingsPanel({
                           return;
                         }
 
-                        await sendVerificationCode();
+                        setSendingCode(true);
+                        try {
+                          await sendVerificationCode();
+                        } finally {
+                          setSendingCode(false);
+                        }
                         // ✅ modal logic handled in useEffect
                       }}
-                      className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                      className={`mt-2 px-3 py-1 text-sm rounded text-white ${sendingCode ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
                     >
-                      {t.t12}
+                      {sendingCode ? 'Sending…' : t.t12}
                     </button>
                   </>
                 )}
@@ -270,18 +316,18 @@ export default function ProfileSettingsPanel({
 
         <ConfirmModal
           show={showConfirm}
-          message={t.t33}
-          onConfirm={handleSaveWithConfirm}
+          message="Are you sure you want to save changes?"
+          onConfirm={() => { void handleSaveWithConfirm(); }}
           onCancel={() => setShowConfirm(false)}
         />
       </div>
 
       {/* ✅ OTP Modal Overlay */}
-      {showOtpModal &&
+      {otpVisible &&
   typeof window !== 'undefined' &&
   createPortal(
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative">
+    <div className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] transition-opacity duration-300 ${otpAnimateIn ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative transform transition-all duration-300 ease-out ${otpAnimateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}`}>
         <button
           onClick={() => setShowOtpModal(false)}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
@@ -292,7 +338,7 @@ export default function ProfileSettingsPanel({
           otp={userEnteredCode}
           setOtp={setUserEnteredCode}
           error={emailError}
-          handleVerifyOtp={verifyEmailCode}
+          handleVerifyOtp={handleVerifyOtpAndNotify}
           handleResendOtp={async (): Promise<void> => {
             await sendVerificationCode();
           }}
@@ -301,6 +347,20 @@ export default function ProfileSettingsPanel({
     </div>,
     document.body
 )}
+
+      {/* Loading toast via portal at bottom-right of the page (outside modal) */}
+      {typeof window !== 'undefined' && createPortal(
+        <SubmitOverlayToast open={sendingCode} message="Sending verification code..." variant="info" />,
+        document.body
+      )}
+
+      {/* Feedback toasts for OTP verify */}
+      {showSuccessModal && (
+        <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
+      )}
+      {showErrorModal && (
+        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
+      )}
 
     </>
   );
