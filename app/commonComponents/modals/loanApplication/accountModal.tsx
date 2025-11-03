@@ -32,6 +32,26 @@ interface Collector {
   userId: string;
 }
 
+// Simple validators
+const NAME_REGEX = /^[A-Za-zÀ-ÖØ-öø-ÿ'`\-\.\s]{2,80}$/; // letters, spaces, hyphen, apostrophe, dot
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+function validateName(name?: string | null): string | null {
+  const n = (name || "").trim();
+  if (!n) return "Name is required.";
+  if (!NAME_REGEX.test(n)) return "Enter a valid full name (letters only).";
+  // Require at least two words for better identity (optional, but helpful)
+  if (n.split(/\s+/).length < 2) return "Please include at least first and last name.";
+  return null;
+}
+
+function validateEmail(email?: string | null): { error: string | null; warning: string | null } {
+  const e = (email || "").trim();
+  if (!e) return { error: null, warning: "No email on file – credentials email will not be sent." };
+  if (!EMAIL_REGEX.test(e)) return { error: "Email format looks invalid.", warning: null };
+  return { error: null, warning: null };
+}
+
 // Send email helper
 const sendEmail = async ({
   to_name,
@@ -73,6 +93,11 @@ export default forwardRef(function AccountModal(_, ref) {
   const [errorMessage, setErrorMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCollectors, setIsFetchingCollectors] = useState(false);
+  const [collectorsError, setCollectorsError] = useState<string | null>(null);
+
+  // Derived field validations
+  const nameError = validateName(selectedApp?.appName);
+  const { error: emailError, warning: emailWarning } = validateEmail(selectedApp?.appEmail);
 
   // Expose openModal to parent
   useImperativeHandle(ref, () => ({
@@ -111,30 +136,55 @@ export default forwardRef(function AccountModal(_, ref) {
   }
 
   // Load collectors
-useEffect(() => {
-  const fetchCollectors = async () => {
-    try {
-      setIsFetchingCollectors(true);
-      const res = await authFetch(`${USER_URL}/collectors`);
-      if (!res.ok) throw new Error("Failed to fetch collectors");
+  useEffect(() => {
+    const fetchCollectors = async () => {
+      try {
+        setCollectorsError(null);
+        setIsFetchingCollectors(true);
+        const res = await authFetch(`${USER_URL}/collectors`);
+        if (!res.ok) {
+          let msg = "Failed to fetch collectors";
+          try {
+            const d = await res.json();
+            msg = d?.error || msg;
+          } catch {}
+          throw new Error(msg);
+        }
 
-      // Expect backend to return { name, userId } array
-      const data: Collector[] = await res.json();
-      setCollectors(data);
-    } catch (error) {
-      console.error("Error fetching collectors:", error);
-      setCollectors([]);
-    } finally {
-      setIsFetchingCollectors(false);
-    }
-  };
+        // Expect backend to return { name, userId } array
+        const data: Collector[] = await res.json();
+        setCollectors(Array.isArray(data) ? data : []);
+        if (!Array.isArray(data) || data.length === 0) setCollectorsError("No collectors available.");
+      } catch (error: any) {
+        console.error("Error fetching collectors:", error);
+        setCollectors([]);
+        setCollectorsError(error?.message || "Unable to load collectors.");
+      } finally {
+        setIsFetchingCollectors(false);
+      }
+    };
 
-  fetchCollectors();
-}, []);
+    fetchCollectors();
+  }, []);
 
 
   const handleCreateAccount = async (isReloan: boolean = false) => {
     if (!selectedApp) return;
+
+    // Cross-check validations
+    if (nameError) {
+      setErrorMessage(nameError);
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
+      return;
+    }
+
+    if (emailError) {
+      setErrorMessage(emailError);
+      setErrorOpen(true);
+      setTimeout(() => setErrorOpen(false), 5000);
+      return;
+    }
 
     if (!selectedCollectorId && !isReloan) {
       setErrorMessage("Please select a collector.");
@@ -156,16 +206,25 @@ useEffect(() => {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
         });
-        const deactivateData = await deactivateRes.json();
-        if (!deactivateRes.ok) throw new Error(deactivateData?.error || "Failed to deactivate old loans");
+        let deactivateErr: string | null = null;
+        if (!deactivateRes.ok) {
+          try {
+            const deactivateData = await deactivateRes.json();
+            deactivateErr = deactivateData?.error || null;
+          } catch {}
+          throw new Error(deactivateErr || "Failed to deactivate old loans");
+        }
 
         // 2. Generate new loan
         const loanResponse = await authFetch(
           `${LOAN_URL}/generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
-        const loanData = await loanResponse.json();
-        if (!loanResponse.ok) throw new Error(loanData?.error || "Failed to generate new loan");
+        if (!loanResponse.ok) {
+          let msg = "Failed to generate new loan";
+          try { const d = await loanResponse.json(); msg = d?.error || msg; } catch {}
+          throw new Error(msg);
+        }
 
         // 3. Update borrower details based on the newest approved reloan
         const updateBorrowerRes = await authFetch(
@@ -181,8 +240,11 @@ useEffect(() => {
             }),
           }
         );
-        const updateBorrowerData = await updateBorrowerRes.json();
-        if (!updateBorrowerRes.ok) throw new Error(updateBorrowerData?.error || "Failed to update borrower details");
+        if (!updateBorrowerRes.ok) {
+          let msg = "Failed to update borrower details";
+          try { const d = await updateBorrowerRes.json(); msg = d?.error || msg; } catch {}
+          throw new Error(msg);
+        }
 
         setSuccessMessage("Reloan generated successfully.");
       } else {
@@ -198,8 +260,19 @@ useEffect(() => {
             assignedCollectorId: selectedCollector?.userId || "",
           }),
         });
-        const borrowerData = await borrowerRes.json();
-        if (!borrowerRes.ok) throw new Error(borrowerData?.error || "Failed to create borrower account");
+        let borrowerData: any = null;
+        try { borrowerData = await borrowerRes.json(); } catch {}
+        if (!borrowerRes.ok) {
+          // Map common errors
+          const baseMsg = borrowerData?.error || "Failed to create borrower account";
+          const mapped =
+            borrowerRes.status === 409
+              ? "An account already exists for this borrower or application."
+              : borrowerRes.status === 400 || borrowerRes.status === 422
+              ? baseMsg
+              : baseMsg;
+          throw new Error(mapped);
+        }
 
         // Set application status active
         const appRes = await authFetch(`${APPLICATION_URL}/${selectedApp.applicationId}`, {
@@ -208,8 +281,9 @@ useEffect(() => {
           body: JSON.stringify({ status: "Active" }),
         });
         if (!appRes.ok) {
-          const errData = await appRes.json();
-          throw new Error(errData?.error || "Failed to update application status");
+          let msg = "Failed to update application status";
+          try { const errData = await appRes.json(); msg = errData?.error || msg; } catch {}
+          throw new Error(msg);
         }
 
         // Generate new loan
@@ -217,8 +291,11 @@ useEffect(() => {
           `${LOAN_URL}/generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
-        const loanData = await loanResponse.json();
-        if (!loanResponse.ok) throw new Error(loanData?.error || "Failed to generate loan");
+        if (!loanResponse.ok) {
+          let msg = "Failed to generate loan";
+          try { const d = await loanResponse.json(); msg = d?.error || msg; } catch {}
+          throw new Error(msg);
+        }
 
         console.log("Sending email to:", selectedApp.appEmail);
         await sendEmail({
@@ -280,29 +357,59 @@ useEffect(() => {
             </button>
           </div>
           <p className="text-sm text-gray-600 mb-4">Assign a collector and generate borrower credentials.</p>
-          <p className="text-base text-black font-medium mb-3">{selectedApp?.appName}</p>
+
+          {/* Applicant summary + validations */}
+          <div className="mb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-base text-black font-medium truncate" title={selectedApp?.appName || ''}>{selectedApp?.appName}</p>
+                {nameError && (
+                  <p className="text-xs text-red-600 mt-1" role="alert">{nameError}</p>
+                )}
+                <p className="text-sm text-gray-700 mt-1">
+                  {selectedApp?.appEmail ? (
+                    <>
+                      <span className="font-medium">Email:</span> {selectedApp.appEmail}
+                    </>
+                  ) : (
+                    <span className="italic text-gray-500">No email provided</span>
+                  )}
+                </p>
+                {emailError && (
+                  <p className="text-xs text-red-600 mt-1" role="alert">{emailError}</p>
+                )}
+                {!emailError && emailWarning && (
+                  <p className="text-xs text-amber-600 mt-1" role="status">{emailWarning}</p>
+                )}
+              </div>
+            </div>
+          </div>
 
           {!selectedApp?.borrowersId && (
             <>
               <label className="block text-sm font-medium text-black mb-2">Assign Collector</label>
               <div className="relative">
-              <select
-  value={selectedCollectorId}
-  onChange={(e) => setSelectedCollectorId(e.target.value)}
-  disabled={isFetchingCollectors || isProcessing}
-  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
->
-  <option value="">
-    {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
-  </option>
-  {collectors.map((c) => (
-    <option key={c.userId} value={c.userId}>
-      {c.name}
-    </option>
-  ))}
-</select>
+                <select
+                  value={selectedCollectorId}
+                  onChange={(e) => setSelectedCollectorId(e.target.value)}
+                  disabled={isFetchingCollectors || isProcessing}
+                  className="w-full px-3 py-2.5 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-red-500 focus:border-red-500 text-black disabled:bg-gray-100 disabled:text-gray-500"
+                  aria-invalid={!selectedCollectorId}
+                >
+                  <option value="">
+                    {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
+                  </option>
+                  {collectors.map((c) => (
+                    <option key={c.userId} value={c.userId}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
 
                 {isFetchingCollectors && <span className="absolute right-2 top-1/2 -translate-y-1/2"><LoadingSpinner size={4} /></span>}
+                {collectorsError && !isFetchingCollectors && (
+                  <p className="text-xs text-red-600 mt-2" role="alert">{collectorsError}</p>
+                )}
               </div>
             </>
           )}
@@ -320,7 +427,18 @@ useEffect(() => {
               <button
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed"
                 onClick={() => handleCreateAccount(false)}
-                disabled={isProcessing}
+                disabled={
+                  isProcessing ||
+                  !!nameError ||
+                  !!emailError ||
+                  !selectedCollectorId
+                }
+                aria-disabled={
+                  isProcessing ||
+                  !!nameError ||
+                  !!emailError ||
+                  !selectedCollectorId
+                }
               >
                 {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Create Account"}
               </button>
@@ -330,7 +448,7 @@ useEffect(() => {
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed"
                 onClick={() => handleCreateAccount(true)}
-                disabled={isProcessing}
+                disabled={isProcessing || !!nameError || !!emailError}
               >
                 {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Generate Reloan"}
               </button>

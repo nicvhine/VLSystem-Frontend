@@ -16,7 +16,7 @@ interface CreateUserModalProps {
       role: "head" | "manager" | "loan officer" | "collector";
       status?: "Active" | "Inactive";
     }
-  ) => Promise<{ success: boolean; fieldErrors?: { email?: string }; message?: string }> | void;
+  ) => Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> | void;
 }
 
 
@@ -36,6 +36,7 @@ export default function CreateUserModal({
   
   // Form validation errors
   const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
+  const [checking, setChecking] = useState<{ name?: boolean; email?: boolean; phoneNumber?: boolean }>({});
 
   // Modal state management
   const [showConfirm, setShowConfirm] = useState(false);
@@ -87,6 +88,37 @@ export default function CreateUserModal({
       ...prev,
       [name]: value,
     }));
+  };
+
+  // Async uniqueness checks
+  const USER_URL = process.env.NEXT_PUBLIC_USER_URL as string | undefined;
+
+  const checkFieldUniqueness = async (field: 'email' | 'phoneNumber' | 'name', value: string) => {
+    if (!USER_URL) return; // fallback: skip
+    if (!value?.trim()) return; // nothing to check
+    try {
+      setChecking((p) => ({ ...p, [field]: true }));
+      const endpoint = field === 'email' ? 'check-email' : field === 'phoneNumber' ? 'check-phone' : 'check-name';
+      const res = await fetch(`${USER_URL}/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value.trim() }),
+      });
+      if (res.status === 409) {
+        const msg = field === 'email' ? 'Email already in use.' : field === 'phoneNumber' ? 'Phone number already in use.' : 'Name already in use.';
+        setErrors((prev) => ({ ...prev, [field]: msg }));
+      } else if (!res.ok) {
+        // Non-409 errors: do not block, but show a soft hint
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      } else {
+        // available
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    } catch (e) {
+      // network error: do not block form
+    } finally {
+      setChecking((p) => ({ ...p, [field]: false }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -153,6 +185,7 @@ export default function CreateUserModal({
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.name}
               onChange={handleChange}
+              onBlur={() => checkFieldUniqueness('name', newUser.name)}
               minLength={2}
               maxLength={50}
               pattern="[A-Za-z ]+"
@@ -169,6 +202,7 @@ export default function CreateUserModal({
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.email}
               onChange={handleChange}
+              onBlur={() => checkFieldUniqueness('email', newUser.email)}
               required
               autoComplete="off"
             />
@@ -182,6 +216,7 @@ export default function CreateUserModal({
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.phoneNumber}
               onChange={handleChange}
+              onBlur={() => checkFieldUniqueness('phoneNumber', newUser.phoneNumber)}
               minLength={11}
               maxLength={11}
               pattern="\d{11}"
@@ -212,6 +247,11 @@ export default function CreateUserModal({
             <button
               type="submit"
               className="px-4 py-2 bg-red-600 text-white rounded-md"
+              disabled={
+                !!errors.name || !!errors.email || !!errors.phoneNumber ||
+                !newUser.name.trim() || !newUser.email.trim() || !newUser.phoneNumber.trim() ||
+                checking.name || checking.email || checking.phoneNumber
+              }
             >
               Create User
             </button>
