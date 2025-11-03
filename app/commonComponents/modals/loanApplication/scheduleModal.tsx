@@ -45,7 +45,6 @@ export default function SetScheduleModal({
   const [animateIn, setAnimateIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Precompute office-hour time slots (09:00 to 18:00)
   // Format HH:mm to 12-hour clock for email text
   function formatTimeTo12Hour(time: string) {
     const [hourStr, minute] = time.split(":");
@@ -128,13 +127,13 @@ export default function SetScheduleModal({
         )
       );
 
-      // send email (best-effort)
+      // send email
       if (application?.appEmail) {
         try {
           const formattedTime = formatTimeTo12Hour(interviewTime);
           await emailjs.send(
-            "service_xmh62vd",
-            "template_u19oksn",
+            "service_qped1bc",
+            "template_erh1i5o",
             {
               email: application.appEmail,
               to_name: application.appName,
@@ -142,7 +141,7 @@ export default function SetScheduleModal({
               interviewDate,
               interviewTime: formattedTime,
             },
-            "oXk6jvK9nrgWsbn_o"
+            "tJf8gH3v0pbZ9Cvbk"
           );
         } catch (err) {
           console.error("EmailJS error:", err);
@@ -151,7 +150,7 @@ export default function SetScheduleModal({
       }
 
       showSuccess("Interview scheduled.");
-      onClose(); // <-- notify parent to close modal
+      onClose(); 
     } catch (err) {
       console.error(err);
       showError("Unexpected error. Try again.");

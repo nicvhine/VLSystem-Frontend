@@ -15,7 +15,7 @@ export default function InterviewModal({
   onSave,
   onView,
   appliedDate,
-  status, // ✅ added: pass application status here
+  status,
 }: InterviewModalProps & { status?: string }) {
   const [date, setDate] = useState(currentDate || "");
   const [time, setTime] = useState(currentTime || "");
@@ -27,9 +27,9 @@ export default function InterviewModal({
   const [isSaving, setIsSaving] = useState(false);
   const errorTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ✅ Determine if interview is done
-  const isDone = status?.trim().toLowerCase() !== "pending";
-
+  const normalizedStatus = status?.trim().toLowerCase();
+  const isDone = normalizedStatus !== "pending"; 
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const appliedDateObj = appliedDate ? new Date(appliedDate) : new Date(today);

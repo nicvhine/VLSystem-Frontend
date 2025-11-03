@@ -19,14 +19,7 @@ interface CreateUserModalProps {
   ) => Promise<{ success: boolean; fieldErrors?: { email?: string }; message?: string }> | void;
 }
 
-/**
- * Modal component for creating new users
- * Handles form validation, user input, and confirmation before creation
- * @param isOpen - Boolean to control modal visibility
- * @param onClose - Callback function to close the modal
- * @param onCreate - Callback function to create the user with provided data
- * @returns JSX element containing the create user modal
- */
+
 export default function CreateUserModal({
   isOpen,
   onClose,

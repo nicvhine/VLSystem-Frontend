@@ -13,6 +13,7 @@ import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { Application, InterviewEvent } from "@/app/commonComponents/utils/Types/application";
 import { InterviewCalendarProps } from "@/app/commonComponents/utils/Types/components";
+import emailjs from "emailjs-com";
 
 const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
 
@@ -25,6 +26,14 @@ const localizer = dateFnsLocalizer({
   getDay,
   locales,
 });
+
+function formatTimeTo12Hour(time: string) {
+  const [hourStr, minute] = time.split(":");
+  let hour = parseInt(hourStr || "0", 10);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${hour}:${minute} ${ampm}`;
+}
 
 export default function InterviewCalendar({ onModalToggle }: InterviewCalendarProps) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -151,6 +160,27 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
             : app
         );
         setApplications(updatedApplications);
+
+        if (selectedApp.appEmail) {
+          try {
+            const formattedTime = formatTimeTo12Hour(time);
+            await emailjs.send(
+              "service_qped1bc", 
+              "template_1thbsnw",
+              {
+                email: selectedApp.appEmail,
+                to_name: selectedApp.appName,
+                address: selectedApp.appAddress,
+                interviewDate: date, 
+                interviewTime: formattedTime,
+              },
+              "tJf8gH3v0pbZ9Cvbk" 
+            );
+          } catch (err) {
+            console.error("EmailJS error:", err);
+          }
+        }
+
         setEvents(mapApplicationsToEvents(updatedApplications));
         setSelectedApp(prev => (prev ? { ...prev, interviewDate: date, interviewTime: time } : prev));
         handleCloseModal();
@@ -222,8 +252,6 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
                 const app = applications.find(a => a.applicationId === event.applicationId);
                 const isPending = app?.status?.trim().toLowerCase() === "pending";
               
-                // 🔴 Red if pending (not yet done)
-                // ⚫ Gray & crossed out if interview is done
                 const background = isPending ? "#dc2626" : "#9ca3af";
                 const textDecoration = isPending ? "none" : "line-through";
                 const color = isPending ? "white" : "#e5e7eb";
@@ -272,6 +300,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
             onSave={handleSaveChanges}
             onView={handleViewApplication}
             appliedDate={selectedApp?.dateApplied}
+            status={selectedApp?.status} 
           />
         </>
       )}

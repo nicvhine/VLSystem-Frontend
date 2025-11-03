@@ -141,7 +141,7 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
       due.getDate() === selected.getDate();
 
     const matchesCollector = role === "collector" ? col.collector === currentCollector : true;
-    const matchesSearch = col.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (col.name || "").toLowerCase().includes(searchQuery.toLowerCase());
 
     return sameDate && matchesCollector && matchesSearch;
   });

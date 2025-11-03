@@ -7,7 +7,7 @@ import { TrackModalProps } from "@/app/commonComponents/utils/Types/components";
 import translations from "@/app/commonComponents/translation";
 
 const progressSteps = {
-  en: ["Pending", "Endorsed", "Accepted"],
+  en: ["Pending", "Endorsed", "Approved"],
   ceb: ["Nagahulat", "Gipadala", "Gidawat"]
 };
 
