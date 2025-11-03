@@ -65,7 +65,9 @@ export function useUsersLogic() {
     }
   };
 
-  const handleCreateUser = async (input: Omit<User, "userId" | "lastActive" | "status">) => {
+  const handleCreateUser = async (
+    input: Omit<User, "userId" | "lastActive" | "status">
+  ): Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> => {
     try {
       const payload = { ...input };
       const token = localStorage.getItem("token");
@@ -76,10 +78,29 @@ export function useUsersLogic() {
       });
 
       if (!res.ok) {
-        const text = await res.text();
-        setErrorMessage(text || "Failed to create user");
+        // Try to parse server error
+        let msg = "Failed to create user";
+        try {
+          const data = await res.json();
+          msg = data?.error || data?.message || msg;
+        } catch {
+          try { msg = await res.text(); } catch {}
+        }
+
+        // Map known uniqueness errors to field-level errors
+        const fieldErrors: { email?: string; phoneNumber?: string; name?: string } = {};
+        if (/email\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.email = "Email already in use.";
+        if (/phone\s*number\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.phoneNumber = "Phone number already in use.";
+        if (/name\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.name = "Name already in use.";
+
+        if (fieldErrors.email || fieldErrors.phoneNumber || fieldErrors.name) {
+          // Let caller show inline errors
+          return { success: false, fieldErrors };
+        }
+
+        setErrorMessage(msg);
         setErrorModalOpen(true);
-        return;
+        return { success: false, message: msg };
       }
 
       const { user: createdUser, credentials } = await res.json();
@@ -97,11 +118,14 @@ export function useUsersLogic() {
           setErrorModalOpen(true);
           setTimeout(() => setErrorModalOpen(false), 5000);
         },
-      });      
+      });
+
+      return { success: true };
 
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to create user");
       setErrorModalOpen(true);
+      return { success: false, message: err.message };
     }
   };
 
