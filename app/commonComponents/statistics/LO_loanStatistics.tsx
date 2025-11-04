@@ -16,10 +16,24 @@ export default function LoanStatisticsVertical() {
   }
 
   // Stat row for all sections
+  const renderLabel = (text: string) => {
+    if (typeof text !== 'string') return text as any;
+    const idx = text.indexOf('(');
+    if (idx === -1) return text;
+    const before = text.slice(0, idx).trimEnd();
+    const paren = text.slice(idx).trim();
+    return (
+      <>
+        <span>{before}</span>{' '}
+        <span className="whitespace-nowrap">{paren}</span>
+      </>
+    );
+  };
+
   const StatRow = ({ label, value, isAmount }: any) => (
-    <div className="flex items-center justify-between py-1 text-sm">
-      <span className="text-gray-700 font-medium">{label}</span>
-      <span className="font-semibold text-gray-900">{isAmount ? `₱${value.toLocaleString()}` : value}</span>
+    <div className="grid grid-cols-[1fr_auto] items-start gap-x-3 py-1 text-sm">
+      <span className="text-gray-700 font-medium leading-snug min-w-0 break-words">{renderLabel(label)}</span>
+      <span className="font-semibold text-gray-900 text-right pl-2">{isAmount ? `₱${value.toLocaleString()}` : value}</span>
     </div>
   );
 
