@@ -41,6 +41,13 @@ export function getBorrowerNavItems(language: 'en' | 'ceb') {
   ];
 }
 
+export function getSysadNavItems(language: 'en' | 'ceb') {
+  const t = navbarTranslation[language];
+  return [
+    { name: "Logs", href: '/userPage/sysadPage/loanHistory'},
+    { name: "User Management", href: '/userPage/sysadPage/paymentHistory'},
+  ];
+}
 
 export const getLandingNavItems = (
   language: 'en' | 'ceb',
