@@ -6,6 +6,7 @@ import Sysad from "../page";
 import emailjs from "emailjs-com";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import ConfirmModal from "./confirmModal";
+import CreateUserModal from "../../headPage/userPage/createUserModal";
 
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
 
@@ -15,6 +16,8 @@ interface User {
   role: string;
   email: string;
   username: string;
+  phoneNumber: string;
+  status?: "Active" | "Inactive";
 }
 
 export default function UserManagementPage({ currentUserRole }: { currentUserRole: string }) {
@@ -23,7 +26,6 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
 
   // Add user modal
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [newUser, setNewUser] = useState({ name: "", email: "", role: "head" });
 
   // Reset password state
   const [resettingUserId, setResettingUserId] = useState<string | null>(null);
@@ -51,49 +53,68 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
     fetchUsers();
   }, []);
 
-  // Create new user
-  const handleAddUser = async () => {
-    if (!newUser.name || !newUser.email) return openErrorModal("Please fill in all fields.");
+  // Create new user function for CreateUserModal
+  const handleCreateUser = async (user: {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    role: "head" | "manager" | "loan officer" | "collector";
+    status?: "Active" | "Inactive";
+  }): Promise<{
+    success: boolean;
+    fieldErrors?: { name?: string; email?: string; phoneNumber?: string };
+    message?: string;
+  }> => {
+    // Validation
+    const errors: { name?: string; email?: string; phoneNumber?: string } = {};
+    if (!user.name) errors.name = "Name is required";
+    if (!user.email) errors.email = "Email is required";
+    if (!user.phoneNumber) errors.phoneNumber = "Phone number is required";
+
+    if (Object.keys(errors).length > 0) {
+      return { success: false, fieldErrors: errors, message: "Please fill all fields." };
+    }
+
     try {
       const res = await authFetch(`${USER_URL}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newUser),
+        body: JSON.stringify(user),
       });
-      if (!res.ok) throw new Error("Failed to create user");
+
+      if (!res.ok) {
+        const data = await res.json();
+        return { success: false, message: data?.error || "Failed to create user" };
+      }
 
       const createdUser = await res.json();
       setActiveStaff(prev => [...prev, createdUser]);
-      setShowAddUserModal(false);
-      setNewUser({ name: "", email: "", role: "head" });
+      return { success: true };
     } catch (err) {
       console.error(err);
-      openErrorModal("Error creating user.");
+      return { success: false, message: "Error creating user." };
     }
   };
 
-  // Initiate reset password (opens confirmation modal)
+  // Reset password handlers
   const initiateResetPassword = (user: User) => setConfirmUser(user);
   const cancelResetPassword = () => setConfirmUser(null);
 
-  // Reset password confirmed
   const handleResetPasswordConfirmed = async () => {
     if (!confirmUser) return;
 
     try {
       setResettingUserId(confirmUser.userId);
-
       const res = await authFetch(`${USER_URL}/reset-password/${confirmUser.userId}`, { method: "POST" });
       if (!res.ok) throw new Error("Failed to reset password");
 
       const { defaultPassword } = await res.json();
 
       // Send reset email
-      const emailParams = { to_name: confirmUser.name, to_email: confirmUser.email, temp_password: defaultPassword };
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_RESET_TEMPLATE_ID!,
-        emailParams,
+        { to_name: confirmUser.name, to_email: confirmUser.email, temp_password: defaultPassword },
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
 
@@ -112,10 +133,8 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
   return (
     <Sysad>
       <div className="min-h-screen bg-gray-50 py-10 px-6">
-        {/* Error Modal */}
         {errorMessage && <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />}
 
-        {/* Confirm Reset Modal */}
         {confirmUser && (
           <ConfirmModal
             isOpen={!!confirmUser}
@@ -173,45 +192,11 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
 
         {/* Add User Modal */}
         {showAddUserModal && (
-          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
-              <h2 className="text-lg font-semibold mb-4">Add Head User</h2>
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={newUser.name}
-                onChange={e => setNewUser({ ...newUser, name: e.target.value })}
-                className="w-full p-2 border rounded mb-3"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={newUser.email}
-                onChange={e => setNewUser({ ...newUser, email: e.target.value })}
-                className="w-full p-2 border rounded mb-3"
-              />
-              <input
-                type="text"
-                value="head"
-                disabled
-                className="w-full p-2 border rounded mb-3 bg-gray-100"
-              />
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setShowAddUserModal(false)}
-                  className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddUser}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Create
-                </button>
-              </div>
-            </div>
-          </div>
+          <CreateUserModal
+            isOpen={showAddUserModal}
+            onClose={() => setShowAddUserModal(false)}
+            onCreate={handleCreateUser}
+          />
         )}
       </div>
     </Sysad>
