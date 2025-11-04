@@ -39,7 +39,7 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await authFetch(`${APPLICATION_URL}`);
+        const response = await authFetch(`${APPLICATION_URL}/active`);
         const data = await response.json();
         setApplications(data);
       } catch (error) {
@@ -65,13 +65,28 @@ export default function ApplicationsPage() {
     { key: "Cleared", label: t.l29 },
     { key: "Approved", label: t.l30 },
     { key: "Disbursed", label: t.l31 },
-    { key: "Denied", label: t.l32 },
   ];
 
   const isMobile = useIsMobile();
   const Wrapper = role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
 
-
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Applied":
+        return "text-blue-600";
+      case "Pending":
+        return "text-amber-600";
+      case "Cleared":
+        return "text-purple-600";
+      case "Approved":
+        return "text-green-600";
+      case "Disbursed":
+        return "text-teal-600";
+      default:
+        return "text-gray-600";
+    }
+  };  
+  
   return (
     <Wrapper isNavbarBlurred={isModalVisible}>
       {showSuccessModal && (
@@ -150,6 +165,16 @@ export default function ApplicationsPage() {
             t={t}
             isMobile={isMobile}
           />
+          
+          {/* View Archive Link */}
+          <div className="flex justify-end mb-4">
+            <Link
+              href="/commonComponents/archive"
+              className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-2 transition-colors"
+            >
+              View Archive
+            </Link>
+          </div>
 
           {/* Table */}
           <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
@@ -226,10 +251,11 @@ export default function ApplicationsPage() {
 
                     {/* Status */}
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
-                        {application.status === "Onhold"
-                          ? "On Hold"
-                          : application.status}
+                      <span
+                        className={`px-3 py-1 text-sm font-semibold rounded-full 
+                          ${getStatusColor(application.status)}`}
+                      >
+                        {application.status}
                       </span>
                     </td>
 

@@ -2,7 +2,6 @@
 
 import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { FiArrowLeft } from "react-icons/fi";
 
 // Components
 import Navbar from "../../navbarComponents/navbar";
@@ -125,21 +124,25 @@ export default function ApplicationDetailsPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
 
-              {/*BACK BUTTON LOGIC*/}
+              {/*BACK BUTTON*/}
               <button
-                onClick={() => {
-                if (role === "head") {
-                    router.push("/commonComponents/loanApplication");
-                } else if (role === "manager") {
-                    router.push("/commonComponents/loanApplication")
-                }
-                else {
-                    router.push("/commonComponents/loanApplication");
-                }
-                }}
-                className="text-gray-400 hover:text-gray-600"
+                onClick={() => (typeof window !== "undefined" ? window.history.back() : null)}
+                className="mt-1 p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                aria-label="Go back"
+              >
+                {/* Left chevron icon */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-5 h-5"
                 >
-                <FiArrowLeft className="w-5 h-5" />
+                  <path
+                    fillRule="evenodd"
+                    d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
               </button>
 
               {/*HEADER*/}

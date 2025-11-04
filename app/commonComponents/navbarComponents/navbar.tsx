@@ -14,6 +14,7 @@ import {
   getLoanOfficerNavItems,
   getHeadNavItems,
   getBorrowerNavItems,
+  getSysadNavItems
 } from './navItems';
 import { NavbarProps } from '../utils/Types/navbar';
 import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../utils/notification';
@@ -45,6 +46,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
         return getLoanOfficerNavItems(language);
       case 'borrower':
         return getBorrowerNavItems(language);
+      case 'sysad':
+        return getSysadNavItems(language);
       default:
         return [];
     }
@@ -102,7 +105,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
       const borrowersId = localStorage.getItem('borrowersId');
       const url = apiRole === 'borrower' && borrowersId
         ? `${NOTIFICATION_URL}/scheduled/${borrowersId}`
-        : `${NOTIFICATION_URL}/${apiRole}`;
+        : `${NOTIFICATION_URL}/staff/${apiRole}`;
       fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -137,6 +140,9 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
         break;
       case 'borrower':
         setNavItems(getBorrowerNavItems(language));
+        break;
+      case 'sysad':
+        setNavItems(getSysadNavItems(language));
         break;
       default:
         setNavItems([]);
@@ -214,6 +220,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 ? '/userPage/loanOfficerPage/dashboard'
                 : role === 'borrower'
                 ? '/userPage/borrowerPage/dashboard'
+                : role === 'sysad'
+                ? '/userPage/sysadPage/dashboard'
                 : '/'
             }
             className="flex items-center space-x-2"

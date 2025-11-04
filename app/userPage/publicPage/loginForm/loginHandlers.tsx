@@ -8,113 +8,114 @@ interface LoginParams {
   setShowSMSModal?: (show: boolean) => void;
 }
 
-const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
+const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
 
 // Handle user login for both borrowers and staff
-export async function loginHandler({ username, password, onClose, router, setShowErrorModal, setErrorMsg, setShowSMSModal }: LoginParams) {
+export async function loginHandler({
+  username,
+  password,
+  onClose,
+  router,
+  setShowErrorModal,
+  setErrorMsg,
+  setShowSMSModal,
+}: LoginParams) {
   if (!username || !password) {
-    if (typeof setErrorMsg === 'function') setErrorMsg('Please enter both username and password.');
-    if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
+    if (typeof setErrorMsg === "function")
+      setErrorMsg("Please enter both username and password.");
+    if (typeof setShowErrorModal === "function") setShowErrorModal(true);
     return;
   }
 
   try {
-    // Try borrower login first
+    // --- Try borrower login first ---
     const borrowerRes = await fetch(`${BORROWER_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
 
-    // Handle successful borrower login
     if (borrowerRes.ok) {
       const data = await borrowerRes.json();
-      localStorage.setItem('token', data.token || '');
-      localStorage.setItem('fullName', data.fullName || data.name || data.username);
-      localStorage.setItem('email', data.email);
-      localStorage.setItem('role', 'borrower');
-      
-      if (data.borrowersId) localStorage.setItem('borrowersId', data.borrowersId);
-    
-      if (data.profilePic) {
-        localStorage.setItem('profilePic', data.profilePic);
-      }
-      
-    
-      if (data.email) localStorage.setItem('email', data.email);
-      if (data.phoneNumber) localStorage.setItem('phoneNumber', data.phoneNumber);
-    
+
+      localStorage.setItem("token", data.token || "");
+      localStorage.setItem("fullName", data.fullName || data.name || data.username);
+      localStorage.setItem("email", data.email);
+      localStorage.setItem("role", "borrower");
+
+      if (data.borrowersId) localStorage.setItem("borrowersId", data.borrowersId);
+      if (data.profilePic) localStorage.setItem("profilePic", data.profilePic);
+      if (data.phoneNumber) localStorage.setItem("phoneNumber", data.phoneNumber);
+
       data.isFirstLogin
-        ? localStorage.setItem('forcePasswordChange', 'true')
-        : localStorage.removeItem('forcePasswordChange');
-      
+        ? localStorage.setItem("forcePasswordChange", "true")
+        : localStorage.removeItem("forcePasswordChange");
+
       onClose();
-      router.push('/userPage/borrowerPage/dashboard');
+      router.push("/userPage/borrowerPage/dashboard");
       return;
     }
-    
-    
-    
-    // Try staff login if borrower login failed
+
+    // --- Try staff (including sysad) login ---
     const staffRes = await fetch(`${USER_URL}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
     });
 
-  // Handle successful staff login
-  if (staffRes.ok) {
-  const data = await staffRes.json();
-  const user = data.user; 
+    if (staffRes.ok) {
+      const data = await staffRes.json();
+      const user = data.user;
 
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('fullName', user.name || user.username || user.email);
-  localStorage.setItem('email', user.email);
-  localStorage.setItem('phoneNumber', user.phoneNumber);
-  localStorage.setItem('username', user.username);
-  localStorage.setItem('role', user.role?.toLowerCase() || 'staff');
-  localStorage.setItem('darkMode', user.darkMode?.toString() || 'false'); 
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("fullName", user.name || user.username || user.email);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("phoneNumber", user.phoneNumber);
+      localStorage.setItem("username", user.username);
+      localStorage.setItem("role", user.role?.toLowerCase() || "staff");
+      localStorage.setItem("darkMode", user.darkMode?.toString() || "false");
 
-  if (user.profilePic) {
-  const fullPicUrl = `${user.profilePic}`;
-  localStorage.setItem('profilePic', fullPicUrl);
-}
+      if (user.profilePic) {
+        localStorage.setItem("profilePic", `${user.profilePic}`);
+      }
 
+      if (user.role?.toLowerCase() === "collector") {
+        localStorage.setItem("collectorName", user.name);
+      }
 
-  if (user.role?.toLowerCase() === 'collector') {
-    localStorage.setItem('collectorName', user.name);
-  }
+      if (user.userId) {
+        localStorage.setItem("userId", user.userId);
+      }
 
-  if (user.userId) {
-    localStorage.setItem('userId', user.userId);
-  }
+      user.isFirstLogin
+        ? localStorage.setItem("forcePasswordChange", "true")
+        : localStorage.removeItem("forcePasswordChange");
 
-  user.isFirstLogin
-    ? localStorage.setItem('forcePasswordChange', 'true')
-    : localStorage.removeItem('forcePasswordChange');
+      onClose();
 
-  onClose();
+      // --- Redirect based on role ---
+      const redirectMap: Record<string, string> = {
+        sysad: "/userPage/sysadPage/dashboard",
+        head: "/userPage/headPage/dashboard",
+        manager: "/userPage/managerPage/dashboard",
+        "loan officer": "/userPage/loanOfficerPage/dashboard",
+        collector: "/commonComponents/collection",
+      };
 
-  // Redirect based on user role
-  const redirectMap: Record<string, string> = {
-    head: '/userPage/headPage/dashboard',
-    manager: '/userPage/managerPage/dashboard',
-    'loan officer': '/userPage/loanOfficerPage/dashboard', 
-    collector: '/commonComponents/collection',
-  };
+      const role = user.role?.toLowerCase();
+      router.push(redirectMap[role] || "/");
+      return;
+    }
 
-  router.push(redirectMap[user.role?.toLowerCase()] || '/');
-  return;
-}
-
-
-  // Handle login failure
-  if (typeof setErrorMsg === 'function') setErrorMsg('Invalid credentials or user not found.');
-  if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
+    // --- 3️ If both fail ---
+    if (typeof setErrorMsg === "function")
+      setErrorMsg("Invalid credentials or user not found.");
+    if (typeof setShowErrorModal === "function") setShowErrorModal(true);
   } catch (error) {
-    console.error('Login error:', error);
-    if (typeof setErrorMsg === 'function') setErrorMsg('Error connecting to the server.');
-    if (typeof setShowErrorModal === 'function') setShowErrorModal(true);
+    console.error("Login error:", error);
+    if (typeof setErrorMsg === "function")
+      setErrorMsg("Error connecting to the server.");
+    if (typeof setShowErrorModal === "function") setShowErrorModal(true);
   }
 }

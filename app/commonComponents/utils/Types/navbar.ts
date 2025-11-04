@@ -18,6 +18,6 @@ export interface MobileMenuProps {
 }
 
 export interface NavbarProps {
-  role: 'manager' | 'loanOfficer' | 'head' | 'collector' | 'borrower';
+  role: 'manager' | 'loanOfficer' | 'head' | 'collector' | 'borrower' | 'sysad';
   isBlurred?: boolean;
 }

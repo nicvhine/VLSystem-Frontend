@@ -227,7 +227,7 @@ export default function Page() {
                 </colgroup>
                 <thead>
                   <tr>
-                    {[t.l11, t.l12, "Email", t.l18, t.l40, t.l16].map((heading) => (
+                    {[t.l11, t.l12, "Email", t.l18, t.l40, "Status", t.l16].map((heading) => (
                       <th
                         key={heading}
                         className={`bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap${heading === "Actions" || heading === "Mga Aksyon" ? " text-center" : " text-left"}`}
@@ -258,6 +258,16 @@ export default function Page() {
                               <option value="manager">Manager</option>
                               <option value="loan officer">Loan Officer</option>
                               <option value="collector">Collector</option>
+                            </select>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <select
+                              className="border border-gray-300 rounded px-2 py-1 w-full"
+                              value={editFormData.status || 'active'}
+                              onChange={(e) => handleEditChange("status", e.target.value)}
+                            >
+                              <option value="Active">Active</option>
+                              <option value="Inactive">Inactive</option>
                             </select>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
@@ -299,6 +309,7 @@ export default function Page() {
                               {capitalizeWords(user.role)}
                             </span>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                             <div className="relative inline-flex items-center justify-center">
                               <button
