@@ -45,7 +45,7 @@ export function getSysadNavItems(language: 'en' | 'ceb') {
   const t = navbarTranslation[language];
   return [
     { name: "Logs", href: '/userPage/sysadPage/loanHistory'},
-    { name: "User Management", href: '/userPage/sysadPage/paymentHistory'},
+    { name: "User Management", href: '/userPage/sysadPage/userManagement'},
   ];
 }
 
