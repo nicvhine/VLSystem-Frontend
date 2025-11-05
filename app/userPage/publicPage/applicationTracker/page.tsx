@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation"; 
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { TrackModalProps } from "@/app/commonComponents/utils/Types/components";
@@ -11,9 +12,10 @@ const progressSteps = {
   ceb: ["Nagahulat", "Gipadala", "Gidawat"]
 };
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
 
-export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackModalProps) {
+export default function TrackModal({ isOpen, onClose, language = 'en' }: TrackModalProps) {
+  const router = useRouter(); 
   const [status, setStatus] = useState<string | null>(null);
   const [applicationId, setApplicationId] = useState("");
   const [showErrorModal, setShowErrorModal] = useState(false);
@@ -24,6 +26,7 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
 
   const t = translations.trackerApplication[language];
 
+  // Modal open/close animations
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
@@ -42,25 +45,20 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
     }
   }, [isOpen]);
 
+  // Prevent body scroll while modal is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-    return () => {
-      document.body.style.overflow = "auto";
-    };
+    if (isOpen) document.body.style.overflow = "hidden";
+    else document.body.style.overflow = "auto";
+
+    return () => { document.body.style.overflow = "auto"; };
   }, [isOpen]);
 
   if (!showModal) return null;
 
   const handleClose = () => {
-    if (isTracking) return
+    if (isTracking) return;
     setAnimateIn(false);
-    setTimeout(() => {
-      onClose();
-    }, 300); 
+    setTimeout(() => onClose(), 300);
   };
 
   const handleTrack = async () => {
@@ -72,7 +70,6 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
 
     try {
       setIsTracking(true);
-      // API: fetch application status by ID
       const res = await fetch(`${APPLICATION_URL}/${applicationId}`);
       if (!res.ok) {
         setStatus(null);
@@ -97,20 +94,24 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
   const getProgress = () => {
     if (!status) return 0;
     switch (status) {
+      case "Applied":
       case "Pending":
-        return 1;
-      case "On Hold":
-        return 2;
-      case "Accepted":
-        return 3;
+        return 1; // Pending
+      case "Cleared":
+        return 2; 
+      case "Approved":
       case "Disbursed":
-        return 4;
+      case "Active":
+        return 3; // Approved
       default:
-        return 1;
+        return 0;
     }
   };
 
-  if (!showModal) return null;
+  const handleReapply = () => {
+    router.push("/userPage/publicPage/applyLoan");
+    handleClose();
+  };
 
   return (
     <>
@@ -121,13 +122,14 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
         }`}
         onClick={handleClose}
       >
-        {/* Container */}
+        {/* Modal Container */}
         <div
           className={`bg-white rounded-lg p-6 w-full max-w-md shadow-lg transition-all duration-150 relative text-black ${
             animateIn ? "scale-100 opacity-100" : "scale-95 opacity-0"
           }`}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Close Button */}
           <button
             onClick={handleClose}
             disabled={isTracking}
@@ -135,66 +137,86 @@ export default function TrackModal({ isOpen, onClose, language = 'en'}: TrackMod
           >
             ✖
           </button>
-          <h2 className="text-xl font-semibold mb-1 text-black">{t.h2}</h2>
-          <p className="text-sm text-black mb-3">{t.n1}</p>
-        <input
-          type="text"
-          placeholder="Application ID"
-          className="w-full p-3 border border-gray-300 rounded-lg mb-4 uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-black placeholder-gray-400"
-          value={applicationId}
-          onChange={(e) => setApplicationId(e.target.value.toUpperCase())}
-        />
-        <div className={`flex justify-center ${status ? 'mb-4' : 'mb-0'}`}>
-          <button
-            onClick={isTracking ? undefined : handleTrack}
-            disabled={isTracking}
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
-          >
-            {isTracking ? (
-              <ButtonContentLoading label={t.t1} />
-            ) : (t.t2)}
-          </button>
-        </div>
-        {/* Progress */}
-        {status && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2 text-center">
-              {t.t3}
-            </h3>
-            <p className="text-center mb-6">
-              {t.t4} <span className="text-red-600 font-semibold">{status}</span>
-            </p>
-            <div className="flex items-center justify-between gap-2">
-              {progressSteps[language].map((step, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center relative">
-                  <div
-                    className={`w-10 h-10 flex items-center justify-center rounded-full font-semibold text-sm transition-all duration-300 ${
-                      index < getProgress()
-                        ? "bg-red-600 text-white shadow-lg"
-                        : "bg-gray-300 text-gray-600"
-                    }`}
-                  >
-                    {index < getProgress() ? "✓" : index + 1}
-                  </div>
-                  <span className={`mt-2 text-xs text-center font-medium ${
-                    index < getProgress() ? "text-red-600" : "text-gray-500"
-                  }`}>
-                    {step}
-                  </span>
-                  {index < progressSteps[language].length - 1 && (
-                    <div className="absolute top-5 left-full w-full h-0.5 bg-gray-300 z-[-1]">
-                      <div
-                        className={`h-0.5 bg-red-600 transition-all duration-500 ${
-                          index < getProgress() - 1 ? "w-full" : "w-0"
-                        }`}
-                      ></div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+
+          {/* Header */}
+          <h2 className="text-xl font-semibold mb-1">{t.h2}</h2>
+          <p className="text-sm mb-3">{t.n1}</p>
+
+          {/* Input */}
+          <input
+            type="text"
+            placeholder="Application ID"
+            className="w-full p-3 border border-gray-300 rounded-lg mb-4 uppercase focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent placeholder-gray-400"
+            value={applicationId}
+            onChange={(e) => setApplicationId(e.target.value.toUpperCase())}
+          />
+
+          {/* Track Button */}
+          <div className={`flex justify-center ${status ? 'mb-4' : 'mb-0'}`}>
+            <button
+              onClick={isTracking ? undefined : handleTrack}
+              disabled={isTracking}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {isTracking ? <ButtonContentLoading label={t.t1} /> : t.t2}
+            </button>
           </div>
-        )}
+
+          {/* Progress / Denied */}
+          {status && (
+            <div className="mt-6 p-4">
+              {status === "Denied" ? (
+                <div className="text-center text-black-600">
+                  { "Your application was denied."}
+                  <div className="flex flex-col gap-2 ">
+                    <button className="w-full text-red-600 py-2 rounded transition" onClick={handleReapply}>
+                      Click here to reapply
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between relative w-full">
+                  {progressSteps[language].map((step, index) => {
+                    const isCompleted = index < getProgress();
+                    const isLast = index === progressSteps[language].length - 1;
+
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center relative">
+                        {/* Step circle */}
+                        <div
+                          className={`w-10 h-10 flex items-center justify-center rounded-full font-semibold text-sm z-10 ${
+                            isCompleted ? "bg-red-600 text-white shadow-lg" : "bg-gray-300 text-gray-600"
+                          }`}
+                        >
+                          {isCompleted ? "✓" : index + 1}
+                        </div>
+
+                        {/* Step label */}
+                        <span
+                          className={`mt-2 text-xs text-center font-medium ${
+                            isCompleted ? "text-red-600" : "text-gray-500"
+                          }`}
+                        >
+                          {step}
+                        </span>
+
+                        {/* Connector line */}
+                        {!isLast && (
+                          <div className="absolute top-5 left-1/2 w-full h-0.5 bg-gray-300">
+                            <div
+                              className={`h-0.5 bg-red-600 transition-all duration-500 ${
+                                index < getProgress() - 1 ? "w-1/2" : "w-0"
+                              }`}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
