@@ -12,7 +12,7 @@ import StepMethod from './stepMethod';
 import StepOtp from './stepOtp';
 import StepReset from './stepReset';
 
-const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
 
 type Props = {
   forgotRole: string | null;
@@ -33,7 +33,7 @@ const maskPhone = (phone: string) => {
   return phone.replace(/(\d{2})\d{5}(\d{2})/, '$1*****$2');
 };
 
-
+// Send OTP via Email
 const sendOtpViaEmail = async (toEmail: string, otp: string) => {
   try {
     const expiry = new Date(Date.now() + 15 * 60000).toLocaleTimeString();
@@ -48,26 +48,20 @@ const sendOtpViaEmail = async (toEmail: string, otp: string) => {
   }
 };
 
-const sendOtpViaSMS = async (toNumber: string, otp: string) => {
+const sendOtpViaSMS = async (phoneNumber: string, otp: string) => {
   try {
-    const expiry = new Date(Date.now() + 15 * 60000).toLocaleTimeString();
-    const message = `Your OTP is ${otp}. It will expire at ${expiry}.`;
-
-    const response = await fetch("https://api.semaphore.co/api/v4/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        apikey: process.env.NEXT_PUBLIC_SEMAPHORE_API_KEY, 
-        number: toNumber,
-        message,
-        sendername: "VISTULA",
-      }),
-    });
+    const response = await fetch("http://localhost:3001/sms/sendOtp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phoneNumber, otp }),
+  });
 
     const data = await response.json();
-    console.log("Semaphore response:", data);
+    if (!response.ok) throw new Error(data.error || "Failed to send OTP SMS");
+    
+    console.log("OTP SMS sent:", data);
   } catch (error) {
-    console.error("Semaphore SMS error:", error);
+    console.error("OTP SMS error:", error);
   }
 };
 
@@ -126,7 +120,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
     }
   };
 
-  // Send OTP
+  // Send OTP (✅ fixed call)
   const handleSendOtp = async (method: 'email' | 'mobile') => {
     setSelectedMethod(method);
     try {
@@ -156,8 +150,6 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
     }
   };
   
-  
-
   // Verify OTP
   const handleVerifyOtp = async () => {
     setError('');
@@ -178,7 +170,6 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
     }
   };
   
-
   // Reset password
   const doResetPassword = async () => {
     setError('');
@@ -235,7 +226,6 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Subtle close button (top-right) like the screenshot: small, minimal, no heavy background */}
         <button
           aria-label="Close forgot password modal"
           onClick={() => setShowForgotModal(false)}
@@ -243,6 +233,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
         >
           <X className="w-4 h-4" />
         </button>
+
         {step === 'role' && <StepRole setPendingStep={setPendingStep} setShowForgotModal={setShowForgotModal} />}
         {step === 'account' && (
           <StepAccount
@@ -252,17 +243,13 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
             handleSearchAccount={handleSearchAccount}
           />
         )}
-        {step === 'method' && (
-          borrower ? (
-            <StepMethod
-              borrower={borrower}
-              maskEmail={maskEmail}
-              maskPhone={maskPhone}
-              handleSendOtp={handleSendOtp}
-            />
-          ) : (
-            <p className="text-red-600 text-center">Unable to load account details.</p>
-          )
+        {step === 'method' && borrower && (
+          <StepMethod
+            borrower={borrower}
+            maskEmail={maskEmail}
+            maskPhone={maskPhone}
+            handleSendOtp={handleSendOtp}
+          />
         )}
         {step === 'otp' && (
           <StepOtp
@@ -289,5 +276,4 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
       </div>
     </div>
   );
-  
 }

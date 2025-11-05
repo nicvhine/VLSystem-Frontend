@@ -12,8 +12,6 @@ export function useProfileDropdownLogic(
   const [userEnteredCode, setUserEnteredCode] = useState('');
   const [emailVerificationSent, setEmailVerificationSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
-  const [smsVerificationCode, setSmsVerificationCode] = useState('');
-  const [smsVerified, setSmsVerified] = useState(false);
   const [smsVerificationSent, setSmsVerificationSent] = useState(false);
   const [emailVerificationMessage, setEmailVerificationMessage] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -210,54 +208,6 @@ export function useProfileDropdownLogic(
     }
   };  
   
-
-  // SMS Verification
-  const sendSmsVerificationCode = async () => {
-    if (!editingPhone || !editingPhone.trim()) {
-      setPhoneError('Please enter a valid phone number.');
-      return;
-    }
-
-    try {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
-      setSmsVerificationCode(code);
-      setSmsVerified(false);
-
-      const response = await fetch('http://localhost:3001/api/send-sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phoneNumber: editingPhone,
-          code,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        console.error('Failed to send SMS:', data);
-        setPhoneError('Failed to send verification code via SMS.');
-        return;
-      }
-
-      setSmsVerificationSent(true);
-      setSettingsSuccess('Verification code sent to your phone number.');
-    } catch (error) {
-      console.error('SMS Error:', error);
-      setPhoneError('Could not send SMS verification.');
-    }
-  };
-
-  const verifySmsCode = () => {
-    if (userEnteredCode === smsVerificationCode) {
-      setSmsVerified(true);
-      setPhoneError('');
-      setSettingsSuccess('✔ Phone number verified.');
-    } else {
-      setPhoneError('Incorrect verification code.');
-    }
-  };
-
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const updatedPrefs = {
       ...notificationPreferences,
@@ -448,8 +398,6 @@ export function useProfileDropdownLogic(
     emailVerificationSent,
     userEnteredCode,
     setUserEnteredCode,
-    sendSmsVerificationCode,
-    verifySmsCode,
     smsVerificationSent,
     showSuccessModal,
     setShowSuccessModal,
