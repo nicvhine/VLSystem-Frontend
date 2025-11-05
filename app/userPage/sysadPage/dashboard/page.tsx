@@ -76,7 +76,7 @@ export default function SysAdDashboard() {
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800">Active Staff</h2>
             <a
-              href="/sysad/manage-staff"
+              href="/userPage/sysadPage/userManagement"
               className="text-blue-600 text-sm font-medium hover:underline"
             >
               View All
@@ -119,7 +119,7 @@ export default function SysAdDashboard() {
               Recent Logs
             </h2>
             <a
-              href="/sysad/logs"
+              href="/userPage/sysadPage/logs"
               className="text-blue-600 text-sm font-medium hover:underline ml-auto"
             >
               View All

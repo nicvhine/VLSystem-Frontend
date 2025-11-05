@@ -147,7 +147,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">User Management</h1>
+          <h1 className="text-lg font-bold text-gray-800">User Management</h1>
           <button
             onClick={() => setShowAddUserModal(true)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
