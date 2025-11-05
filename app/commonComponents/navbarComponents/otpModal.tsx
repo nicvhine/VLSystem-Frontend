@@ -7,12 +7,21 @@ type Props = {
   otp: string;
   setOtp: (val: string) => void;
   error: string;
+  setError?: (val: string) => void; 
   handleVerifyOtp: () => Promise<void>;
   handleResendOtp: () => Promise<void>;
   otpExpiresIn?: number; 
 };
 
-export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleResendOtp, otpExpiresIn = 300,  }: Props) {
+export default function OTPModal({
+  otp,
+  setOtp,
+  error,
+  setError,
+  handleVerifyOtp,
+  handleResendOtp,
+  otpExpiresIn = 300,
+}: Props) {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isResending, setIsResending] = useState(false);
@@ -22,7 +31,7 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
   // Countdown for resend
   useEffect(() => {
     if (resendTimer <= 0) return;
-    const interval = setInterval(() => setResendTimer((t) => t - 1), 500);
+    const interval = setInterval(() => setResendTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
   }, [resendTimer]);
 
@@ -37,23 +46,23 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
     inputRefs.current[0]?.focus();
   }, []);
 
-  // Auto focus first input
-  useEffect(() => {
-    inputRefs.current[0]?.focus();
-  }, []);
-
   const handleChange = (value: string, index: number) => {
-    const sanitized = value.replace(/\D/g, "");
-    const otpArray = otp.split("");
+    const sanitized = value.replace(/\D/g, '');
+    const otpArray = otp.split('');
     otpArray[index] = sanitized.slice(-1);
-    const newOtp = otpArray.join("").slice(0, 6);
+    const newOtp = otpArray.join('').slice(0, 6);
     setOtp(newOtp);
+
+    // Clear error when user types
+    if (setError && error) setError('');
+
     if (sanitized && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0)
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -62,6 +71,7 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
     pasteData.split('').forEach((char, i) => {
       if (inputRefs.current[i]) inputRefs.current[i].value = char;
     });
+    if (setError && error) setError('');
   };
 
   const handleSubmit = async () => {
@@ -81,8 +91,9 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
       await handleResendOtp();
       setResendTimer(60);
       setExpiryTimer(300); 
-      setOtp("");
+      setOtp('');
       inputRefs.current[0]?.focus();
+      if (setError && error) setError('');
     } finally {
       setIsResending(false);
     }
@@ -91,18 +102,15 @@ export default function OTPModal({ otp, setOtp, error, handleVerifyOtp, handleRe
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
-    return `${m}:${sec < 10 ? "0" + sec : sec}`;
+    return `${m}:${sec < 10 ? '0' + sec : sec}`;
   };
 
   return (
     <div className="flex flex-col items-center text-center p-4">
       <h2 className="text-2xl font-semibold text-gray-900 mb-2">OTP Verification</h2>
       <p className="text-sm text-gray-600 mb-6 max-w-sm">
-        Enter the 6-digit code sent to your email. It will expire in{" "}
-        <span className="font-semibold text-red-600">
-          {formatTime(expiryTimer)}
-        </span>
-        .
+        Enter the 6-digit code sent to your email. It will expire in{' '}
+        <span className="font-semibold text-red-600">{formatTime(expiryTimer)}</span>.
       </p>
 
       <div className="flex justify-center gap-2.5 mb-5" onPaste={handlePaste}>
