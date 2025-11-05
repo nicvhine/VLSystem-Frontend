@@ -5,6 +5,7 @@ import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import Sysad from "../page";
 import emailjs from "emailjs-com";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
+import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
 
@@ -35,6 +36,11 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const openErrorModal = (msg: string) => setErrorMessage(msg);
   const closeErrorModal = () => setErrorMessage(null);
+
+  // Success modal state
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const openSuccessModal = (msg: string) => setSuccessMessage(msg);
+  const closeSuccessModal = () => setSuccessMessage(null);
 
   // Fetch all users
   useEffect(() => {
@@ -118,10 +124,10 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
 
-      console.log(`Password reset successfully. New password: ${defaultPassword}`);
+      openSuccessModal(`Password reset successfully for ${confirmUser.name}. A temporary password has been sent to their email.`);
     } catch (err) {
       console.error("Reset password/email error:", err);
-      openErrorModal("Error resetting password.");
+      openErrorModal("Error resetting password. Please try again.");
     } finally {
       setResettingUserId(null);
       setConfirmUser(null);
@@ -134,6 +140,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
     <Sysad>
       <div className="min-h-screen bg-gray-50 py-10 px-6">
         {errorMessage && <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />}
+        {successMessage && <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={closeSuccessModal} />}
 
         {confirmUser && (
           <ConfirmModal
