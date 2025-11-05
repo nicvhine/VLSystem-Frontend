@@ -150,6 +150,9 @@ export function useProfileDropdownLogic(
   const verifyEmailCode = async (otpInput?: string): Promise<boolean> => {
     const codeToCheck = otpInput ?? userEnteredCode;
   
+    // Clear previous error before verifying
+    setEmailError("");
+  
     if (!codeToCheck) {
       setEmailError("Please enter the verification code.");
       return false;

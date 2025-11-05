@@ -123,6 +123,9 @@ export default function ProfileSettingsPanel({
 
   // Wrap OTP verify to show success/error modals and refresh on success
   const handleVerifyOtpAndNotify = async () => {
+    // Clear error before attempting verification
+    setEmailError('');
+    
     const ok = await verifyEmailCode();
     if (ok) {
       setShowOtpModal(false);
@@ -336,7 +339,11 @@ export default function ProfileSettingsPanel({
         </button>
         <OTPModal
           otp={userEnteredCode}
-          setOtp={setUserEnteredCode}
+          setOtp={(code) => {
+            setUserEnteredCode(code);
+            // Clear error when user starts typing
+            if (emailError) setEmailError('');
+          }}
           error={emailError}
           handleVerifyOtp={handleVerifyOtpAndNotify}
           handleResendOtp={async (): Promise<void> => {
