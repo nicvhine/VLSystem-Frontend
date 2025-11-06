@@ -1,4 +1,5 @@
 import navbarTranslation from "../translation/navbarTranslation";
+import sysadTranslation from "../translation/sysadTranslation";
 import { LandingNavItem } from "../utils/Types/navbar";
 
 export const getHeadNavItems = (language: 'en' | 'ceb') => {
@@ -42,10 +43,10 @@ export function getBorrowerNavItems(language: 'en' | 'ceb') {
 }
 
 export function getSysadNavItems(language: 'en' | 'ceb') {
-  const t = navbarTranslation[language];
+  const s = sysadTranslation[language];
   return [
-    { name: "Logs", href: '/userPage/sysadPage/logs'},
-    { name: "User Management", href: '/userPage/sysadPage/userManagement'},
+    { name: s.t2, href: '/userPage/sysadPage/logs'},
+    { name: s.t3, href: '/userPage/sysadPage/userManagement'},
   ];
 }
 

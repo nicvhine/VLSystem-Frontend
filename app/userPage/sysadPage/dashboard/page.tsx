@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
 import Sysad from "../page";
+import translations from "@/app/commonComponents/translation";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL;
 
@@ -13,6 +14,14 @@ export default function SysAdDashboard() {
   const [recentLogs, setRecentLogs] = useState<any[]>([]);
   const [totals, setTotals] = useState({ users: 0, borrowers: 0 });
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
+    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+  }, []);
+
+  const s = translations.sysadTranslation[language];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,7 +51,7 @@ export default function SysAdDashboard() {
   const totalUsers = totals.users || totalActiveStaff + totalBorrowers;
   const recentLogsLimited = recentLogs.slice(0, 8);
 
-  if (loading) return <p className="p-6 text-gray-500">Loading dashboard...</p>;
+  if (loading) return <p className="p-6 text-gray-500">{s.t69} dashboard...</p>;
 
   return (
     <Sysad>
@@ -51,7 +60,7 @@ export default function SysAdDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center gap-4">
             <div>
-              <h2 className="text-gray-600 text-sm">Active Staff</h2>
+              <h2 className="text-gray-600 text-sm">{s.t3}</h2>
               <p className="text-2xl font-semibold">{totalActiveStaff}</p>
             </div>
           </div>
@@ -65,7 +74,7 @@ export default function SysAdDashboard() {
 
           <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center gap-4">
             <div>
-              <h2 className="text-gray-600 text-sm">Total Users</h2>
+              <h2 className="text-gray-600 text-sm">{s.t1}</h2>
               <p className="text-2xl font-semibold">{totalUsers}</p>
             </div>
           </div>
@@ -74,7 +83,7 @@ export default function SysAdDashboard() {
         {/* Active Staff Table */}
         <div className="bg-white rounded-2xl shadow-sm mb-8">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Active Staff</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{s.t3}</h2>
             <a
               href="/userPage/sysadPage/userManagement"
               className="text-blue-600 text-sm font-medium hover:underline"
@@ -85,18 +94,10 @@ export default function SysAdDashboard() {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Username
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t39}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t38}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -116,7 +117,7 @@ export default function SysAdDashboard() {
         <div className="bg-white rounded-2xl shadow-sm">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              Recent Logs
+              {s.t2}
             </h2>
             <a
               href="/userPage/sysadPage/logs"
@@ -127,7 +128,7 @@ export default function SysAdDashboard() {
           </div>
           <ul className="divide-y divide-gray-100">
             {recentLogsLimited.length === 0 ? (
-              <li className="px-6 py-4 text-gray-500 text-sm">No logs yet.</li>
+              <li className="px-6 py-4 text-gray-500 text-sm">{s.t25}</li>
             ) : (
               recentLogsLimited.map((log) => (
                 <li key={log.logId} className="px-6 py-4 text-sm flex justify-between">

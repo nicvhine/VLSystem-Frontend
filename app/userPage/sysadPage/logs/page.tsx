@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import translations from "@/app/commonComponents/translation";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import Sysad from "../page";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
@@ -21,6 +22,31 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
+    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+    const onLang = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        const lang = ev.detail?.language;
+        if (lang === 'en' || lang === 'ceb') setLanguage(lang);
+      } catch {}
+    };
+    const onStorage = () => {
+      const l = localStorage.getItem('language');
+      if (l === 'en' || l === 'ceb') setLanguage(l);
+    };
+    window.addEventListener('languageChange', onLang as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('languageChange', onLang as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  const s = translations.sysadTranslation[language];
 
   const openErrorModal = (msg: string) => setErrorMessage(msg);
   const closeErrorModal = () => setErrorMessage(null);
@@ -29,13 +55,13 @@ export default function LogsPage() {
     const fetchLogs = async () => {
       try {
         const res = await authFetch(`${LOG_URL}/all`);
-        if (!res.ok) throw new Error("Failed to fetch logs");
+        if (!res.ok) throw new Error(s.t25);
   
         const data = await res.json();
         setLogs(Array.isArray(data) ? data : []); 
       } catch (err) {
         console.error(err);
-        openErrorModal("Failed to fetch logs");
+        openErrorModal(s.t25);
       } finally {
         setLoading(false);
       }
@@ -45,12 +71,12 @@ export default function LogsPage() {
   }, []);
   
 
-  if (loading) return <p className="p-6 text-gray-500">Loading logs...</p>;
+  if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t2.toLowerCase()}...</p>;
 
   return (
     <Sysad>
       <div className="min-h-screen bg-gray-50 py-10 px-6">
-        <h1 className="text-lg font-bold mb-6">System Activity Logs</h1>
+        <h1 className="text-lg font-bold mb-6">{s.t16}</h1>
 
         {errorMessage && (
           <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />
@@ -60,11 +86,11 @@ export default function LogsPage() {
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t24}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t20}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t22}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
