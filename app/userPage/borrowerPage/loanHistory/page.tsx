@@ -19,8 +19,6 @@ export default function LoanHistoryPage() {
   const [loanDetailsMap, setLoanDetailsMap] = useState<Record<string, any>>({});
   const [loadingDetailsId, setLoadingDetailsId] = useState<string | null>(null);
   const [lastDetailsAttemptId, setLastDetailsAttemptId] = useState<string | null>(null);
-  const [currentCollectionsPage, setCurrentCollectionsPage] = useState<number>(1);
-  const [collectionsPageSize, setCollectionsPageSize] = useState<number>(10);
   const [currentLoansPage, setCurrentLoansPage] = useState<number>(1);
   const [loansPageSize, setLoansPageSize] = useState<number>(10);
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
@@ -131,8 +129,6 @@ export default function LoanHistoryPage() {
 
       setLoanDetailsMap((p) => ({ ...p, [loanId]: data }));
       setExpandedLoanId(loanId);
-      // reset collections pagination when opening a loan
-      setCurrentCollectionsPage(1);
     } catch (err) {
       console.error('Error fetching loan details:', err);
       setError(t.t21);
@@ -255,8 +251,6 @@ export default function LoanHistoryPage() {
                             (() => {
                               const det = loanDetailsMap[loan.loanId] || {};
                               const collections = det.collections || [];
-                              const totalPagesCollections = Math.max(1, Math.ceil(collections.length / collectionsPageSize));
-                              const paginatedCollections = collections.slice((currentCollectionsPage - 1) * collectionsPageSize, currentCollectionsPage * collectionsPageSize);
                               const borrower = det.borrowerDetails || {};
                               return (
                                 <div className="space-y-4">
@@ -309,7 +303,7 @@ export default function LoanHistoryPage() {
                                             </tr>
                                           </thead>
                                           <tbody>
-                                            {paginatedCollections.map((c: any) => (
+                                            {collections.map((c: any) => (
                                               <tr key={c._id} className="border-t border-gray-100">
                                                 <td className="p-2">{c.collectionNumber}</td>
                                                 <td className="p-2">{c.dueDate ? new Date(c.dueDate).toLocaleDateString() : '-'}</td>
@@ -320,18 +314,6 @@ export default function LoanHistoryPage() {
                                             ))}
                                           </tbody>
                                         </table>
-                                      </div>
-
-                                      <div className="mt-3">
-                                        <Pagination
-                                          totalCount={collections.length}
-                                          currentPage={currentCollectionsPage}
-                                          totalPages={totalPagesCollections}
-                                          pageSize={collectionsPageSize}
-                                          setCurrentPage={setCurrentCollectionsPage}
-                                          setPageSize={(size: number) => { setCollectionsPageSize(size); setCurrentCollectionsPage(1); }}
-                                          language={language}
-                                        />
                                       </div>
                                       </>
                                     )}

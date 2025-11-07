@@ -10,6 +10,7 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
 import EndorseInputModal from "./components/EndorseInputModal";
 import EndorseLetterModal from "./components/EndorseLetterModal";
 import ErrorModal from "../../modals/errorModal";
+import { formatDateTime } from "../../utils/formatters";
 
 const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL 
 
@@ -300,7 +301,7 @@ export default function LoansDetailPage({ params }: Props) {
                 <Info label="Loan Type" value={loan.loanType} />
                 <Info label="Terms" value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
                 <Info label="Interest Rate" value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
-                <Info label="Date Disbursed" value={loan.dateDisbursed || "—"} />
+                <Info label="Date Disbursed" value={formatDateTime(loan.dateDisbursed)} />
               </div>
             </div>
 

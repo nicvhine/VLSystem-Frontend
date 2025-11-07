@@ -10,11 +10,20 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [nearEnd, setNearEnd] = useState(false);
 
-  // Use rAF to ensure a frame passes before animating in (prevents no-op transitions)
+  // Animation setup
   useEffect(() => {
-    let raf = requestAnimationFrame(() => setAnimateIn(true));
-    return () => { cancelAnimationFrame(raf); setAnimateIn(false); };
+    setMounted(true);
+    return () => setMounted(false);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    const timer = setTimeout(() => setAnimateIn(true), 10);
+    return () => { 
+      clearTimeout(timer);
+      setAnimateIn(false);
+    };
+  }, [mounted]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -22,12 +31,11 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
 
     // Fallback scroll-based check
     const onScroll = () => {
-      // Robust progress + end detection
       const maxScroll = Math.max(1, el.scrollHeight - el.clientHeight);
       const progress = el.scrollTop / maxScroll;
       if (progress >= 0.9 && !nearEnd) setNearEnd(true);
 
-      const thresholdPx = 8; // small tolerance for sub-pixel rounding
+      const thresholdPx = 8;
       const atEnd = el.scrollTop + el.clientHeight >= el.scrollHeight - thresholdPx;
       if ((progress >= 0.97 || atEnd) && !hasReachedEnd) {
         setHasReachedEnd(true);
@@ -58,9 +66,7 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
       observer.observe(bottomRef.current);
     }
 
-    // Initial check
     onScroll();
-    // Extra pass after paint to catch late layout
     requestAnimationFrame(onScroll);
 
     return () => {
@@ -69,9 +75,7 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
     };
   }, [hasReachedEnd, onReadComplete]);
 
-  // Ensure client-only render to avoid hydration mismatch and allow portal
-  useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
-  // Per latest requirement: mark as read immediately upon opening the modal
+  // Mark as read immediately upon opening
   useEffect(() => {
     if (!hasReachedEnd) {
       setHasReachedEnd(true);
@@ -79,11 +83,15 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const handleClose = () => { setAnimateIn(false); setTimeout(() => onClose(), 300); };
+
+  const handleClose = () => { 
+    setAnimateIn(false); 
+    setTimeout(() => onClose(), 300); 
+  };
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') { setAnimateIn(false); setTimeout(() => onClose(), 300); }
+      if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -92,13 +100,38 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
   if (!mounted) return null;
 
   const markup = (
-    <div style={{ zIndex: 1100 }} className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-      <div style={{ zIndex: 1101 }} className={`bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-  <button onClick={() => { setAnimateIn(false); setTimeout(() => onClose(), 300); }} className="absolute top-3 right-3 z-10 text-gray-400 hover:text-gray-700 transition text-2xl bg-white/80 rounded-full leading-none w-8 h-8 flex items-center justify-center" aria-label="Close">×</button>
-        <div ref={scrollRef} className="p-6 overflow-y-auto h-[80vh] pt-10">
-          <h2 className="text-xl font-semibold mb-2">{language === 'en' ? 'Terms of Service' : 'Mga Termino sa Serbisyo'}</h2>
-          <p className="text-sm text-gray-500 mb-4">Effective Date: {new Date().toLocaleDateString()}</p>
-          <div className="prose prose-sm max-w-none text-gray-700">
+    <div 
+      className={`fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}
+      onClick={handleClose}
+    >
+      <div 
+        className={`bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[85vh] overflow-hidden relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              {language === 'en' ? 'Terms of Service' : 'Mga Termino sa Serbisyo'}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              {language === 'en' ? 'Effective Date:' : 'Petsa sa Pagpatuman:'} {new Date().toLocaleDateString()}
+            </p>
+          </div>
+          <button 
+            onClick={handleClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+            aria-label="Close"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Content */}
+        <div ref={scrollRef} className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 88px)' }}>
+          <div className="prose prose-sm max-w-none text-gray-700 space-y-6">
             <h3>1. Introduction</h3>
             <p>These Terms govern your use of our loan application services and related features (the “Service”). By submitting an application, you agree to these Terms.</p>
             <h3>2. Eligibility</h3>

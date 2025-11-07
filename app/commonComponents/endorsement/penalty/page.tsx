@@ -128,7 +128,7 @@ export default function PenaltyEndorsementTab() {
                   <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p4}</th>
                   <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p5}</th>
                   <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p6}</th>
-                  <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap text-center">{t.p7}</th>
+                  <th className="bg-gray-50 px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">{t.p7}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -141,8 +141,15 @@ export default function PenaltyEndorsementTab() {
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.penaltyAmount)}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(col.finalAmount)}</td>
                       <td className="px-6 py-4 text-sm"><span className="px-2 py-1 rounded text-xs">{col.status}</span></td>
-                      <td className="px-6 py-4 text-sm text-center">
-                        <button onClick={() => handleView(col)} className="px-3 py-1 bg-gray-600 text-white rounded-md hover:bg-gray-700">{t.b1}</button>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex items-center justify-center">
+                          <button 
+                            onClick={() => handleView(col)} 
+                            className="px-4 py-1.5 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors text-xs font-medium"
+                          >
+                            {t.b1}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

@@ -26,6 +26,18 @@ export const formatDate = (dateString?: string) =>
       })
     : "-";
 
+export const formatDateTime = (dateString?: string) =>
+  dateString
+    ? new Date(dateString).toLocaleString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : "—";
+
 export const translateLoanType = (
   type?: string,
   language: "en" | "ceb" = "en"
