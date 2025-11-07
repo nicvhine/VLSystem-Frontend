@@ -134,22 +134,21 @@ export default function ProfileSettingsPanel({
   };
 
   // Wrap OTP verify to show success/error modals and refresh on success
-  const handleVerifyOtpAndNotify = async () => {
-    // Clear error before attempting verification
+  const handleVerifyOtpAndNotify = async (): Promise<void> => {
     setEmailError('');
-    
-    const ok = await verifyEmailCode();
+  
+    const ok = await verifyEmailCode(); 
     if (ok) {
       setShowOtpModal(false);
       setModalMsg('Email verified and updated successfully.');
       setShowSuccessModal(true);
-      // UI updates immediately via event; no hard refresh needed
     } else {
       const msg = emailError || 'Failed to verify the code. Please try again.';
       setModalMsg(msg);
       setShowErrorModal(true);
     }
   };
+  
 
   return (
     <>
@@ -353,7 +352,6 @@ export default function ProfileSettingsPanel({
         />
       </div>
 
-      {/* ✅ OTP Modal Overlay */}
       {otpVisible &&
   typeof window !== 'undefined' &&
   createPortal(
@@ -366,20 +364,20 @@ export default function ProfileSettingsPanel({
           ✕
         </button>
         <OTPModal
-        otp={userEnteredCode}
-        setOtp={(code) => setUserEnteredCode(code)}
-        error={otpType === 'email' ? emailError : phoneError}
-        handleVerifyOtp={
-          otpType === 'email'
-            ? handleVerifyOtpAndNotify
-            : verifySmsCode
-        }
-        handleResendOtp={
-          otpType === 'email'
-            ? async () => await sendEmailCode()
-            : async () => await sendSmsCode()
-        }
-      />
+          otp={userEnteredCode}
+          setOtp={(code) => setUserEnteredCode(code)}
+          error={otpType === 'email' ? emailError : phoneError}
+          handleVerifyOtp={
+            otpType === 'email'
+              ? handleVerifyOtpAndNotify
+              : async () => { await verifySmsCode(); } 
+          }
+          handleResendOtp={
+            otpType === 'email'
+              ? async () => await sendEmailCode()
+              : async () => await sendSmsCode()
+          }
+        />
       </div>
     </div>,
     document.body

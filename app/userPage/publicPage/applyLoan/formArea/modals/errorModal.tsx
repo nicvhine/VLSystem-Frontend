@@ -10,8 +10,10 @@ interface ModalProps {
 
 export function ErrorModal({ message, onClose }: ModalProps) {
     const [animateIn, setAnimateIn] = useState(false);
+    const [mounted, setMounted] = useState(false); // NEW
 
     useEffect(() => {
+        setMounted(true); // Only render portal on client
         setAnimateIn(true);
         return () => setAnimateIn(false);
     }, []);
@@ -30,7 +32,7 @@ export function ErrorModal({ message, onClose }: ModalProps) {
         header = "Document Upload Error";
     }
 
-    if (typeof document === 'undefined') return null;
+    if (!mounted) return null; // ✅ wait for client
 
     return createPortal(
         <div

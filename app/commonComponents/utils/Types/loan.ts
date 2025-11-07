@@ -20,6 +20,14 @@ export interface CharacterReference {
     contact: string;
     relation?: string;
   }
+
+export interface PreviousLoan {
+    appLoanType: string;    
+    appLoanAmount: number;    
+    dateDisbursed: string;   
+    status?: string;           
+}
+  
   
   export interface CurrentLoan {
     purpose: string;
@@ -72,10 +80,11 @@ export interface CharacterReference {
     references?: CharacterReference[];
     currentLoan?: CurrentLoan;
     profilePic?: ProfilePic;
-    previousLoans?: CurrentLoan[];
+    previousLoans?: PreviousLoan[];
     collateralType: string;
     collateralValue: string;
     collateralDescription: string;
     ownershipStatus: string;
+    balance?: number; 
   }
   

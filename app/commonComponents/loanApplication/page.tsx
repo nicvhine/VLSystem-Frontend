@@ -8,9 +8,9 @@ import translations from "../translation";
 import { authFetch, filterApplications } from "./function";
 import { formatCurrency, formatDate } from "../utils/formatters";
 import { useLoanApplicationPage } from "./hooks";
-import Head from "@/app/userPage/headPage/page";
-import Manager from "@/app/userPage/managerPage/page";
-import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+import Head from "@/app/userPage/headPage/layout";
+import Manager from "@/app/userPage/managerPage/layout";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/layout";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import Pagination from "../utils/pagination";
@@ -88,7 +88,7 @@ export default function ApplicationsPage() {
   };  
   
   return (
-    <Wrapper isNavbarBlurred={isModalVisible}>
+    <Wrapper>
       {showSuccessModal && (
         <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
       )}

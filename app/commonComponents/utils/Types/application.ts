@@ -29,7 +29,7 @@ export interface Application {
   lengthOfService?: string;
   otherIncome?: number;
   appLoanPurpose?: string;
-  appLoanAmount?: string;
+  appLoanAmount?: number;
   appLoanTerms?: string;
   appInterestRate?: number;
   appTotalInterestAmount?: number;
@@ -46,6 +46,9 @@ export interface Application {
   profilePic?: string;
   isReloan?: boolean; 
   dateApplied: string;
+  dateDisbursed: string;
+  appNetReleased: number;
+  appServiceFee: number;
 }
 
 export interface ApplicationCardProps {

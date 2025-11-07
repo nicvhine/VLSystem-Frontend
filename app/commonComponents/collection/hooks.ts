@@ -6,9 +6,9 @@ import { Collection } from "../utils/Types/collection";
 import translations from "../translation";
 
 // Role-based wrappers
-import Head from "@/app/userPage/headPage/page";
-import Manager from "@/app/userPage/managerPage/page";
-import Collector from "@/app/userPage/collectorPage/page";
+import Head from "@/app/userPage/headPage/layout";
+import Manager from "@/app/userPage/managerPage/layout";
+import Collector from "@/app/userPage/collectorPage/layout";
 
 export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void) => {
   const [searchQuery, setSearchQuery] = useState("");

@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 import { addMonthsSafe } from "./logic";
 import { formatCurrency, capitalizeWords } from "../../utils/formatters";
-import { AgreementModalProps } from "../../utils/type";
+import { AgreementModalProps } from "../../utils/Types/modal";
 
 /**
  * Signatory section component for loan agreement

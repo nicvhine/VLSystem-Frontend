@@ -34,7 +34,6 @@ export default function CollectionsPage() {
     selectedDate, setSelectedDate,
     collections, setCollections,
     filteredCollections,
-    selectedCollection, setSelectedCollection,
     paymentAmount, setPaymentAmount,
     showPaymentConfirm, setShowPaymentConfirm,
     showModal, setShowModal,
@@ -56,7 +55,9 @@ export default function CollectionsPage() {
   const [paymentLoading, setPaymentLoading] = React.useState(false);
   const [loading, setLoading] = useState(false);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
-  const [selectedPenaltyCollection, setSelectedPenaltyCollection] = useState(null);
+
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [selectedPenaltyCollection, setSelectedPenaltyCollection] = useState<Collection | null>(null);
   
   return (
     <Wrapper>
@@ -267,7 +268,7 @@ export default function CollectionsPage() {
           <PaymentModal
             isOpen={isPaymentModalVisible}
             isAnimating={isPaymentModalAnimating}
-            selectedCollection={selectedCollection}
+            selectedCollection={selectedCollection ?? undefined}
             paymentAmount={paymentAmount}
             setPaymentAmount={setPaymentAmount}
             showPaymentConfirm={showPaymentConfirm}
@@ -301,7 +302,7 @@ export default function CollectionsPage() {
           <NoteModal
             isOpen={isNoteModalVisible}
             isAnimating={isNoteModalAnimating}
-            selectedCollection={selectedCollection}
+            selectedCollection={selectedCollection ?? undefined}
             noteText={noteText}
             setNoteText={setNoteText}
             handleClose={() => handlePaymentModalClose(
@@ -343,7 +344,6 @@ export default function CollectionsPage() {
               }
             }}
           />
-
 
           {showErrorModal && <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />}
         </div>

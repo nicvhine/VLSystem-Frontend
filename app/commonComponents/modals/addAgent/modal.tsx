@@ -14,9 +14,9 @@ const AddAgentModal: FC<AddAgentModalProps> = ({
   newAgentName,
   setNewAgentName,
   newAgentPhone,
-  setNewAgentPhone
+  setNewAgentPhone,
+  loading = false, 
 }) => {
-  const loading = false;
 
   const { showConfirm, setShowConfirm, fieldErrors, genericError, isVisible, isAnimating, handleConfirm } =
     useAddAgentLogic(onAddAgent, show, loading);

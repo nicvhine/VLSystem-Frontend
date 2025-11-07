@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { ButtonDotsLoading, SubmitProgressModal } from "@/app/commonComponents/utils/loading";
 import { useRouter } from "next/navigation";
 
@@ -25,206 +25,203 @@ import { handleFileChange, handleProfileChange, removeDocument, removeProfile } 
 import { useSectionProgress } from "./hooks/useSectionProgress";
 import { usePrefillAndUploads } from "./hooks/usePrefill";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
 
 interface FormAreaProps {
   loanType: string;
   language: "en" | "ceb";
   isMobile?: boolean;
-  onProgressUpdate?: (progress: {
-    done: Record<string, boolean>;
-    missingCounts: Record<string, number>;
-    missingDetails: Record<string, string[]>;
-  }) => void;
-  borrowersId?: string | undefined;
+  borrowersId?: string;
+  onProgressUpdate?: (progress: any) => void;
+  onShowTermsModal?: () => void;
 }
 
-interface ProfilePicData {
-  fileName?: string;
-  filePath?: string | { url: string };
-  mimeType?: string;
-  secure_url?: string;
-  url?: string;
+export interface FormAreaRef {
+  submitForm: () => Promise<void>;
 }
 
-export default function FormArea({ loanType, language, isMobile, onProgressUpdate, borrowersId }: FormAreaProps) {
-  const COMPANY_NAME = "Vistula Lending Corporation";
-  const TERMS_VERSION = "1.0-draft";
-  const PRIVACY_VERSION = "1.0-draft";
+const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
+  ({ loanType, language, isMobile, onProgressUpdate, borrowersId, onShowTermsModal }, ref) => {
+    const COMPANY_NAME = "Vistula Lending Corporation";
+    const TERMS_VERSION = "1.0-draft";
+    const PRIVACY_VERSION = "1.0-draft";
 
-  const router = useRouter();
+    const router = useRouter();
 
-  const [loanId, setLoanId] = useState<string | null>(null);
-  const [isPrefilled, setIsPrefilled] = useState(false);
-  // borrowersId provided by parent page via route params
+    const [loanId, setLoanId] = useState<string | null>(null);
+    const [isPrefilled, setIsPrefilled] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [missingFields, setMissingFields] = useState<string[]>([]);
+    const loanTypeParam =
+      loanType === "Regular Loan With Collateral"
+        ? "with"
+        : loanType === "Regular Loan Without Collateral"
+        ? "without"
+        : "open-term";
 
-  const loanTypeParam =
-    loanType === "Regular Loan With Collateral"
-      ? "with"
-      : loanType === "Regular Loan Without Collateral"
-      ? "without"
-      : "open-term";
+    const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
+    const requiredDocumentsCount = loanTypeParam === "with" || loanTypeParam === "open-term" ? 6 : 4;
+    const requires2x2 = true;
+    const API_URL = `${APPLICATION_URL}/reloan/${loanTypeParam}`;
 
-  const requiresCollateral = loanTypeParam === "with" || loanTypeParam === "open-term";
-  const requiredDocumentsCount = loanTypeParam === "with" || loanTypeParam === "open-term" ? 6 : 4;
-  const requires2x2 = true;
-  const API_URL = `${APPLICATION_URL}/reloan/${loanTypeParam}`;
+    // Basic Info
+    const [appName, setAppName] = useState("");
+    const [appDob, setAppDob] = useState("");
+    const [appContact, setAppContact] = useState("");
+    const [appEmail, setAppEmail] = useState("");
+    const [appMarital, setAppMarital] = useState("");
+    const [appChildren, setAppChildren] = useState(0);
+    const [appSpouseName, setAppSpouseName] = useState("");
+    const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
+    const [appAddress, setAppAddress] = useState("");
 
-  // Basic Info
-  const [appName, setAppName] = useState("");
-  const [appDob, setAppDob] = useState("");
-  const [appContact, setAppContact] = useState("");
-  const [appEmail, setAppEmail] = useState("");
-  const [appMarital, setAppMarital] = useState("");
-  const [appChildren, setAppChildren] = useState(0);
-  const [appSpouseName, setAppSpouseName] = useState("");
-  const [appSpouseOccupation, setAppSpouseOccupation] = useState("");
-  const [appAddress, setAppAddress] = useState("");
+    // Source of Income 
+    const [sourceOfIncome, setSourceOfIncome] = useState("");
+    const [appTypeBusiness, setAppTypeBusiness] = useState("");
+    const [appBusinessName, setAppBusinessName] = useState("");
+    const [appDateStarted, setAppDateStarted] = useState("");
+    const [appBusinessLoc, setAppBusinessLoc] = useState("");
+    const [appMonthlyIncome, setAppMonthlyIncome] = useState<number>(0);
+    const [appOccupation, setAppOccupation] = useState("");
+    const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
+    const [appCompanyName, setAppCompanyName] = useState("");
+    const [occupationError, setOccupationError] = useState("");
 
-  // Source of Income 
-  const [sourceOfIncome, setSourceOfIncome] = useState("");
-  const [appTypeBusiness, setAppTypeBusiness] = useState("");
-  const [appBusinessName, setAppBusinessName] = useState("");
-  const [appDateStarted, setAppDateStarted] = useState("");
-  const [appBusinessLoc, setAppBusinessLoc] = useState("");
-  const [appMonthlyIncome, setAppMonthlyIncome] = useState<number>(0);
-  const [appOccupation, setAppOccupation] = useState("");
-  const [appEmploymentStatus, setAppEmploymentStatus] = useState("");
-  const [appCompanyName, setAppCompanyName] = useState("");
-  const [occupationError, setOccupationError] = useState("");
+    // References 
+    const [appReferences, setAppReferences] = useState([
+      { name: "", contact: "", relation: "" },
+      { name: "", contact: "", relation: "" },
+      { name: "", contact: "", relation: "" },
+    ]);
 
-  // References 
-  const [appReferences, setAppReferences] = useState([
-    { name: "", contact: "", relation: "" },
-    { name: "", contact: "", relation: "" },
-    { name: "", contact: "", relation: "" },
-  ]);
+    // Agent
+    const [appAgent, setAppAgent] = useState("");
+    const [agentMissingError, setAgentMissingError] = useState(false);
 
-  // Agent
-  const [appAgent, setAppAgent] = useState("");
-  const [agentMissingError, setAgentMissingError] = useState(false);
+    // Collateral 
+    const [collateralType, setCollateralType] = useState("");
+    const [collateralValue, setCollateralValue] = useState<number>(0);
+    const [collateralDescription, setCollateralDescription] = useState("");
+    const [ownershipStatus, setOwnershipStatus] = useState("");
+    const collateralTypeOptions = [
+      { value: "", label: language === "en" ? "Choose Collateral Type" : "Pilia ang klase sa kolateral" },
+      { value: "vehicle", label: language === "en" ? "Vehicle" : "Sakyanan" },
+      { value: "land", label: language === "en" ? "Land" : "Yuta" },
+      { value: "house", label: language === "en" ? "House" : "Balay" },
+    ];
 
-  // Collateral 
-  const [collateralType, setCollateralType] = useState("");
-  const [collateralValue, setCollateralValue] = useState<number>(0);
-  const [collateralDescription, setCollateralDescription] = useState("");
-  const [ownershipStatus, setOwnershipStatus] = useState("");
-  const collateralTypeOptions = [
-    { value: "", label: language === "en" ? "Choose Collateral Type" : "Pilia ang klase sa kolateral" },
-    { value: "vehicle", label: language === "en" ? "Vehicle" : "Sakyanan" },
-    { value: "land", label: language === "en" ? "Land" : "Yuta" },
-    { value: "house", label: language === "en" ? "House" : "Balay" },
-  ];
+    // Loan
+    const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
+    const [appLoanPurpose, setAppLoanPurpose] = useState("");
 
-  // Loan
-  const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
-  const [appLoanPurpose, setAppLoanPurpose] = useState("");
+    // Uploads 
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+    const [prevProfilePicUrl, setPrevProfilePicUrl] = useState<string | null>(null);
+    const [prevDocumentsMeta, setPrevDocumentsMeta] = useState<any[]>([]);
 
-  // Uploads 
-  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [photo2x2, setPhoto2x2] = useState<File[]>([]);
-  // Previous uploads metadata (do not auto-fetch blobs). User must opt-in to "Use previous".
-  const [prevProfilePicUrl, setPrevProfilePicUrl] = useState<string | null>(null);
-  const [prevDocumentsMeta, setPrevDocumentsMeta] = useState<any[]>([]);
+    // Compute section progress
+    useSectionProgress({
+      missingFields,
+      photo2x2,
+      requires2x2,
+      appAgent,
+      onProgressUpdate,
+    });
 
-  // Compute section progress
-  useSectionProgress({
-    missingFields,
-    photo2x2,
-    requires2x2,
-    appAgent,
-    onProgressUpdate,
-  });
+    // Previous Balance
+    const [previousBalance, setPreviousBalance] = useState<number>(0);
+    const [showBalanceField, setShowBalanceField] = useState(false);
+    const [balanceDecision, setBalanceDecision] = useState<'deduct' | 'addPrincipal'>('deduct');
 
-  // Previous Balance
-  const [previousBalance, setPreviousBalance] = useState<number>(0);
-  const [showBalanceField, setShowBalanceField] = useState(false);
-  const [balanceDecision, setBalanceDecision] = useState<'deduct' | 'addPrincipal'>('deduct');
-
-  useEffect(() => {
-    if (!borrowersId) {
-      console.warn("No borrowersId provided");
-      return;
-    }
-  
-    const fetchBalance = async () => {
-      try {
-        const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}/balance`);
-        const data = await res.json();
-  
-        // backend already returns { balance: number }
-        setPreviousBalance(data.balance || 0);
-      } catch (err) {
-        console.error("Failed to fetch active loan balance:", err);
-        setPreviousBalance(0);
+    useEffect(() => {
+      if (!borrowersId) {
+        console.warn("No borrowersId provided");
+        return;
       }
-    };
-  
-    fetchBalance();
-  }, [borrowersId]);
-  
-  
-  // Terms/Privacy Modal
-  const [showTermsModal, setShowTermsModal] = useState(false);
-  const [showTosContent, setShowTosContent] = useState(false);
-  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
-  const [tosRead, setTosRead] = useState(false);
-  const [privacyRead, setPrivacyRead] = useState(false);
+    
+      const fetchBalance = async () => {
+        try {
+          const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}/balance`);
+          const data = await res.json();
+          setPreviousBalance(data.balance || 0);
+        } catch (err) {
+          console.error("Failed to fetch active loan balance:", err);
+          setPreviousBalance(0);
+        }
+      };
+    
+      fetchBalance();
+    }, [borrowersId]);
 
-  // Document upload error modal
-  const [showDocumentUploadErrorModal, setShowDocumentUploadErrorModal] = useState(false);
-  const [documentUploadError, setDocumentUploadError] = useState("");
+    // Terms/Privacy Modal
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showTosContent, setShowTosContent] = useState(false);
+    const [showPrivacyContent, setShowPrivacyContent] = useState(false);
+    const [tosRead, setTosRead] = useState(false);
+    const [privacyRead, setPrivacyRead] = useState(false);
 
-  // Hooks
-  useUpdateMissingFields({
-    appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
-    appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
-    appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
-    requiresCollateral, requires2x2, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
-    photo2x2, uploadedFiles, missingFields, setMissingFields,
-  });
+    // Document upload error modal
+    const [showDocumentUploadErrorModal, setShowDocumentUploadErrorModal] = useState(false);
+    const [documentUploadError, setDocumentUploadError] = useState("");
 
-  const { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress } = useFormSubmit({
-    borrowersId: borrowersId , appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
-    appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
-    appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
-    requiresCollateral, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
-    photo2x2, uploadedFiles, missingFields, setMissingFields, setAgentMissingError,
-    API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language,
-    previousBalance,        
-    balanceDecision,       
-  });
-  
-  const { handleUsePreviousProfile, handleUsePreviousDocument } = usePrefillAndUploads({
-    borrowersId,
-    loanTypeParam,
-    setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
-    setAppSpouseName, setAppSpouseOccupation, setAppAddress,
-    setSourceOfIncome, setAppTypeBusiness, setAppBusinessName, setAppDateStarted,
-    setAppBusinessLoc, setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
-    setAppReferences, setAppAgent,
-    setCollateralType, setCollateralValue, setCollateralDescription, setOwnershipStatus,
-    setPrevProfilePicUrl, setPrevDocumentsMeta, prevDocumentsMeta, setIsPrefilled,
-    setDocumentUploadError, setShowDocumentUploadErrorModal,
-    setPhoto2x2, setUploadedFiles,
-  });
-  
-  useEffect(() => {
-    // appAgent can be a string or object (from prefill). Coerce to string safely before trim.
-    const rawAgent = appAgent ?? "";
-    let agentString = "";
-    if (typeof rawAgent === "string") agentString = rawAgent;
-    else if (rawAgent && typeof rawAgent === "object") agentString = (rawAgent as any).agentId ?? "";
-    else agentString = String(rawAgent || "");
-    if (agentString.includes("[object") || agentString.toLowerCase() === "null" || agentString.toLowerCase() === "undefined") agentString = "";
-    if (agentString.trim()) setAgentMissingError(false);
-  }, [appAgent]);
+    // Hooks
+    useUpdateMissingFields({
+      appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
+      appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
+      appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
+      requiresCollateral, requires2x2, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
+      photo2x2, uploadedFiles, missingFields, setMissingFields,
+    });
 
+    const { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress } = useFormSubmit({
+      borrowersId,
+      appName, appDob, appContact, appEmail, appMarital, appSpouseName, appSpouseOccupation, appAddress,
+      appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
+      appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
+      requiresCollateral, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
+      photo2x2, uploadedFiles, missingFields, setMissingFields, setAgentMissingError,
+      API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language,
+      previousBalance,
+      balanceDecision,
+    });
+
+    const { handleUsePreviousProfile, handleUsePreviousDocument } = usePrefillAndUploads({
+      borrowersId,
+      loanTypeParam,
+      setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
+      setAppSpouseName, setAppSpouseOccupation, setAppAddress,
+      setSourceOfIncome, setAppTypeBusiness, setAppBusinessName, setAppDateStarted,
+      setAppBusinessLoc, setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
+      setAppReferences, setAppAgent,
+      setCollateralType, setCollateralValue, setCollateralDescription, setOwnershipStatus,
+      setPrevProfilePicUrl, setPrevDocumentsMeta, prevDocumentsMeta, setIsPrefilled,
+      setDocumentUploadError, setShowDocumentUploadErrorModal,
+      setPhoto2x2, setUploadedFiles,
+    });
+
+    useImperativeHandle(ref, () => ({
+      submitForm: async () => {
+        const valid = await handleSubmit();
+        if (!valid) {
+          throw new Error("Please complete all required fields before submitting.");
+        }
+        onShowTermsModal?.();
+      },
+    }));
+
+    useEffect(() => {
+      const rawAgent = appAgent ?? "";
+      let agentString = "";
+      if (typeof rawAgent === "string") agentString = rawAgent;
+      else if (rawAgent && typeof rawAgent === "object") agentString = (rawAgent as any).agentId ?? "";
+      else agentString = String(rawAgent || "");
+      if (agentString.includes("[object") || agentString.toLowerCase() === "null" || agentString.toLowerCase() === "undefined") agentString = "";
+      if (agentString.trim()) setAgentMissingError(false);
+    }, [appAgent]);
 
   return (
     <div className="relative max-w-4xl mx-auto py-0">
@@ -416,3 +413,5 @@ export default function FormArea({ loanType, language, isMobile, onProgressUpdat
     </div>
   );
 }
+);
+export default FormArea;

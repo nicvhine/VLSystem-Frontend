@@ -520,6 +520,7 @@ export function useProfileDropdownLogic(
     setShowSuccessModal,
     emailVerified,
     setEmailVerificationSent,
+    setSmsVerificationSent,
     setSmsVerificationCode,
     setSmsVerified,
   };

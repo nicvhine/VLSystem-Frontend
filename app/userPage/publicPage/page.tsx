@@ -14,9 +14,9 @@ import Footer from './sections/footer';
 import LandingNavbar from './navbar/landingNavbar';
 
 // Modal components
-import LoginModal from './loginForm/page';
-import SimulatorModal from './loanSimulator/page';
-import TrackModal from './applicationTracker/page';
+import LoginModal from './loginForm/loginModal';
+import SimulatorModal from './loanSimulator/loanSimulatorModal';
+import TrackModal from './applicationTracker/trackModal';
 
 export default function LandingPage() {
   // Language state for bilingual support

@@ -1,6 +1,6 @@
 'use client';
 
-import Manager from "../page";
+import Manager from "../layout";
 import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
 import LoanStatisticsTops from "@/app/commonComponents/statistics/loanStatisticsTops";
 import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsCharts";

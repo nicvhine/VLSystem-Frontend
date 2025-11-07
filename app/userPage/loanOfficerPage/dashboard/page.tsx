@@ -1,7 +1,7 @@
 'use client';
 
 import LoanStatistics from "@/app/commonComponents/statistics/LO_loanStatistics";
-import LoanOfficer from "../page";
+import LoanOfficer from "../layout";
 import { useState } from "react";
 import InterviewCalendar from "./interviewCalendar";
 
@@ -9,7 +9,6 @@ export default function LoanOfficerDashboard() {
   const [isNavbarBlurred, setIsNavbarBlurred] = useState(false);
 
   return (
-    <LoanOfficer isNavbarBlurred={isNavbarBlurred}>
       <div className="min-h-screen bg-white relative z-10">
         <div className="bg-white px-6">
         </div>
@@ -25,6 +24,5 @@ export default function LoanOfficerDashboard() {
           </div>
         </div>
       </div>
-    </LoanOfficer>
   );
 }

@@ -8,6 +8,7 @@ import { formatDate } from "@/app/commonComponents/utils/formatters";
 import ReceiptModal from "../modals/receipt";
 import Pagination from "@/app/commonComponents/utils/pagination";
 import translations from '@/app/commonComponents/translation';
+import BorrowerClient from "../borrowerClient";
 
 export default function PaymentHistoryPage() {
   const [modalPayment, setModalPayment] = useState<Payment | null>(null);
@@ -68,7 +69,7 @@ export default function PaymentHistoryPage() {
   let runningBalance = totalPayable;
 
   return (
-    <Borrower>
+    <BorrowerClient>
       <div className="min-h-screen bg-gray-50 p-6 md:p-12">
         <div className="max-w-screen-2xl mx-auto w-full">
 
@@ -171,7 +172,7 @@ export default function PaymentHistoryPage() {
           )}
         </div>
       </div>
-    </Borrower>
+    </BorrowerClient>
   );
 }
 

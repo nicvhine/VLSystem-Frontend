@@ -2,9 +2,9 @@
 
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import Link from "next/link";
-import Head from "@/app/userPage/headPage/page";
-import Manager from "@/app/userPage/managerPage/page";
-import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+import Head from "@/app/userPage/headPage/layout";
+import Manager from "@/app/userPage/managerPage/layout";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/layout";
 import Pagination from "../utils/pagination";
 import { useLoansPage } from "./hook";
 import { formatCurrency, formatDate } from "../utils/formatters";
@@ -150,7 +150,7 @@ export default function LoansPage() {
                       colSpan={7}
                       className="text-center text-gray-500 py-6 text-sm"
                     >
-                      {t.noData || "No loans found."}
+                      {"No loans found."}
                     </td>
                   </tr>
                 )}

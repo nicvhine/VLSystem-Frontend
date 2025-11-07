@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
-import Sysad from "../page";
+import Sysad from "../layout";
 import emailjs from "emailjs-com";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
@@ -21,9 +22,11 @@ interface User {
   status?: "Active" | "Inactive";
 }
 
-export default function UserManagementPage({ currentUserRole }: { currentUserRole: string }) {
+export default function UserManagementPage() {
   const [activeStaff, setActiveStaff] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
+  const router = useRouter();
 
   // Add user modal
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -41,6 +44,30 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const openSuccessModal = (msg: string) => setSuccessMessage(msg);
   const closeSuccessModal = () => setSuccessMessage(null);
+
+  useEffect(() => {
+    const role = localStorage.getItem('role') || '';
+    if (!role) {
+      router.push('/');
+      return;
+    }
+    setCurrentUserRole(role);
+
+    const fetchUsers = async () => {
+      try {
+        const res = await authFetch(`${USER_URL}`);
+        const data = await res.json();
+        setActiveStaff(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        openErrorModal("Failed to fetch users.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [router]);
 
   // Fetch all users
   useEffect(() => {
