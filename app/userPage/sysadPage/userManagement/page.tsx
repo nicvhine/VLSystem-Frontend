@@ -11,6 +11,7 @@ import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
 import translations from "@/app/commonComponents/translation";
 
+
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
 
 interface User {

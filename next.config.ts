@@ -1,4 +1,3 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -18,14 +17,16 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
-        pathname: '/**', 
+        pathname: '/**',
       },
     ],
   },
 
-  // Increase Server Actions body size limit
-  serverActions: {
-    bodySizeLimit: '10mb', 
+  // ✅ Move serverActions under experimental
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
 };
 
