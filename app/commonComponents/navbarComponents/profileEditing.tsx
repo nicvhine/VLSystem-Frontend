@@ -14,14 +14,17 @@ export default function ProfileSettingsPanel({
   username,
   email,
   phoneNumber,
+
   editingEmail,
   setEditingEmail,
-  isEditingEmailField,
-  setIsEditingEmailField,
   editingPhone,
   setEditingPhone,
+
+  isEditingEmailField,
+  setIsEditingEmailField,
   isEditingPhoneField,
   setIsEditingPhoneField,
+
   isEditingPasswordField,
   setIsEditingPasswordField,
   currentPassword,
@@ -31,21 +34,27 @@ export default function ProfileSettingsPanel({
   confirmPassword,
   setConfirmPassword,
   passwordError,
+
   emailError,
   setEmailError,
   phoneError,
   setPhoneError,
+
   setSettingsSuccess,
+
   handleAccountSettingsUpdate,
+
   emailVerificationSent,
-  setEmailVerificationSent,
+  smsVerificationSent,
+
   userEnteredCode,
   setUserEnteredCode,
-  sendVerificationCode,
+  
+  sendEmailCode,
   verifyEmailCode,
-  sendSmsVerificationCode,
+  sendSmsCode,
   verifySmsCode,
-  smsVerificationSent,
+
   emailVerified,
 }: ProfileEditingProps) {
   const [showConfirm, setShowConfirm] = useState(false);
@@ -60,6 +69,8 @@ export default function ProfileSettingsPanel({
   const [modalMsg, setModalMsg] = useState('');
   const router = useRouter();
   const [sendingCode, setSendingCode] = useState(false);
+  const [otpType, setOtpType] = useState<'email' | 'sms' | null>(null);
+
 
   // Initialize language from localStorage
   useEffect(() => {
@@ -91,12 +102,13 @@ export default function ProfileSettingsPanel({
     return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
   }, [role]);
 
-  // ✅ Only show OTP modal if verification is required
+  // Only show OTP modal if verification is required
   useEffect(() => {
-    if (emailVerificationSent && !emailVerified) {
+    if ((emailVerificationSent && !emailVerified) || smsVerificationSent) {
       setShowOtpModal(true);
     }
-  }, [emailVerificationSent, emailVerified]);
+  }, [emailVerificationSent, emailVerified, smsVerificationSent]);
+  
 
   // Handle OTP modal mount/unmount animations
   useEffect(() => {
@@ -202,11 +214,10 @@ export default function ProfileSettingsPanel({
 
                         setSendingCode(true);
                         try {
-                          await sendVerificationCode();
+                          await sendEmailCode();
                         } finally {
                           setSendingCode(false);
                         }
-                        // ✅ modal logic handled in useEffect
                       }}
                       className={`mt-2 px-3 py-1 text-sm rounded text-white ${sendingCode ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
                     >
@@ -222,11 +233,13 @@ export default function ProfileSettingsPanel({
                   <span className="text-sm text-gray-700">{t.t14}</span>
                   <button
                     onClick={() => {
-                      if (isEditingPhoneField) {
-                        setPhoneError('');
-                        setEditingPhone('');
-                      }
                       setIsEditingPhoneField(!isEditingPhoneField);
+                      if (isEditingPhoneField) {
+                        setEditingPhone(phoneNumber);
+                        setUserEnteredCode('');
+                        setPhoneError('');
+                        setSettingsSuccess('');
+                      }
                     }}
                     className="text-xs text-red-600 font-medium"
                   >
@@ -234,7 +247,7 @@ export default function ProfileSettingsPanel({
                   </button>
                 </div>
 
-                {phoneError && <p className="text-sm text-red-600 mb-2 text-right">{phoneError}</p>}
+                {phoneError && <p className="text-sm text-red-600 mt-1">{phoneError}</p>}
 
                 {!isEditingPhoneField ? (
                   <span className="block text-base text-gray-900">{phoneNumber}</span>
@@ -248,10 +261,25 @@ export default function ProfileSettingsPanel({
                       placeholder={phoneNumber}
                     />
                     <button
-                      onClick={sendSmsVerificationCode}
-                      className="mt-2 px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-blue-700"
+                      disabled={sendingCode}
+                      onClick={async () => {
+                        setPhoneError('');
+
+                        if (!editingPhone || !editingPhone.trim()) {
+                          setPhoneError('Please enter a valid phone number.');
+                          return;
+                        }
+
+                        setSendingCode(true);
+                        try {
+                          await sendSmsCode();
+                        } finally {
+                          setSendingCode(false);
+                        }
+                      }}
+                      className={`mt-2 px-3 py-1 text-sm rounded text-white ${sendingCode ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
                     >
-                      {t.t12}
+                      {sendingCode ? 'Sending…' : t.t12}
                     </button>
                   </>
                 )}
@@ -338,18 +366,20 @@ export default function ProfileSettingsPanel({
           ✕
         </button>
         <OTPModal
-          otp={userEnteredCode}
-          setOtp={(code) => {
-            setUserEnteredCode(code);
-            // Clear error when user starts typing
-            if (emailError) setEmailError('');
-          }}
-          error={emailError}
-          handleVerifyOtp={handleVerifyOtpAndNotify}
-          handleResendOtp={async (): Promise<void> => {
-            await sendVerificationCode();
-          }}
-        />
+        otp={userEnteredCode}
+        setOtp={(code) => setUserEnteredCode(code)}
+        error={otpType === 'email' ? emailError : phoneError}
+        handleVerifyOtp={
+          otpType === 'email'
+            ? handleVerifyOtpAndNotify
+            : verifySmsCode
+        }
+        handleResendOtp={
+          otpType === 'email'
+            ? async () => await sendEmailCode()
+            : async () => await sendSmsCode()
+        }
+      />
       </div>
     </div>,
     document.body

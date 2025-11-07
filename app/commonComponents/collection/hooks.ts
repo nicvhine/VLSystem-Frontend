@@ -76,9 +76,6 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
     const fetchCollections = async () => {
       try {
         let url = "http://localhost:3001/collections";
-        if (role === "collector" && currentCollector) {
-          url += `?collector=${encodeURIComponent(currentCollector)}`;
-        }
   
         const token = localStorage.getItem("token");
         const response = await fetch(url, {
@@ -91,6 +88,8 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
   
         const data = await response.json();
         setCollections(Array.isArray(data) ? data : []);
+        console.log("Fetched collections:", data);
+
       } catch (error) {
         console.error("Failed to fetch collections:", error);
         setCollections([]);
@@ -98,8 +97,8 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
         setLoading(false);
       }
     };
-  
     fetchCollections();
+    
   }, [role, currentCollector]);
   
 
@@ -135,16 +134,18 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
   const filteredCollections = collections.filter((col) => {
     const due = new Date(col.dueDate);
     const selected = selectedDate;
+    
     const sameDate =
-      due.getFullYear() === selected.getFullYear() &&
-      due.getMonth() === selected.getMonth() &&
-      due.getDate() === selected.getDate();
-
-    const matchesCollector = role === "collector" ? col.collector === currentCollector : true;
+      !selectedDate ||
+      due.toDateString() === selected.toDateString();
+  
+    const userId = localStorage.getItem("userId");
+    const matchesCollector = role === "collector" ? col.collectorId === userId : true;
     const matchesSearch = (col.name || "").toLowerCase().includes(searchQuery.toLowerCase());
-
+  
     return sameDate && matchesCollector && matchesSearch;
   });
+  
 
   const overallCollections =
     role === "collector"

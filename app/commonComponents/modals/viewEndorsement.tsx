@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from "../utils/formatters";
 import SuccessModal from "./successModal";
 import ErrorModal from "./errorModal";
 
-const PENALTY_URL = process.env.NEXT_PUBLIC_PENALTY_URL
+const PENALTY_URL = process.env.NEXT_PUBLIC_PENALTY_URL;
 
 interface ViewEndorsementModalProps {
   isOpen: boolean;
@@ -26,23 +26,22 @@ export default function ViewEndorsementModal({
   const [mounted, setMounted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Imperative helpers to mount the existing Success/Error modals to document.body
+  // Mount success/error modals imperatively
   const mountImperativeModal = (element: React.ReactElement, duration = 5000) => {
     if (typeof window === "undefined") return () => {};
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
+
     const cleanup = () => {
       try {
         root.unmount();
-      } catch (e) {
-        // ignore
-      }
-      if (container.parentNode) container.parentNode.removeChild(container);
+      } catch {}
+      container.remove();
     };
+
     root.render(element);
-    const timer = setTimeout(() => cleanup(), duration);
-    // return a function to close early
+    const timer = setTimeout(cleanup, duration);
     return () => {
       clearTimeout(timer);
       cleanup();
@@ -50,13 +49,20 @@ export default function ViewEndorsementModal({
   };
 
   const showSuccess = (message: string, duration = 5000) => {
-    mountImperativeModal(<SuccessModal isOpen={true} message={message} onClose={() => {}} />, duration);
+    mountImperativeModal(
+      <SuccessModal isOpen={true} message={message} onClose={() => {}} />,
+      duration
+    );
   };
 
   const showError = (message: string, duration = 5000) => {
-    mountImperativeModal(<ErrorModal isOpen={true} message={message} onClose={() => {}} />, duration);
+    mountImperativeModal(
+      <ErrorModal isOpen={true} message={message} onClose={() => {}} />,
+      duration
+    );
   };
 
+  // Fetch penalty endorsements
   const fetchEndorsements = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -79,11 +85,21 @@ export default function ViewEndorsementModal({
     fetchEndorsements();
   }, []);
 
-  // Ensure portal only renders on client to avoid hydration issues
+  // Ensure portal only renders on client
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !submitting) onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, submitting, onClose]);
+
+  // Handle approve
   const handleApprove = async (id: string) => {
     try {
       setSubmitting(true);
@@ -100,7 +116,6 @@ export default function ViewEndorsementModal({
       });
 
       if (!res.ok) throw new Error("Failed to approve endorsement");
-      // close modal and show success modal imperatively for 5s
       onClose();
       showSuccess("Endorsement approved successfully!");
       fetchEndorsements();
@@ -112,6 +127,7 @@ export default function ViewEndorsementModal({
     }
   };
 
+  // Handle reject
   const handleReject = async (id: string) => {
     try {
       setSubmitting(true);
@@ -139,16 +155,8 @@ export default function ViewEndorsementModal({
     }
   };
 
+  // Safe render check — after all hooks
   if (!endorsement || !mounted) return null;
-
-  // close modal on Escape
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && !submitting) onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen, submitting, onClose]);
 
   return createPortal(
     <AnimatePresence>
@@ -165,12 +173,15 @@ export default function ViewEndorsementModal({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
           >
-            {/* Success/Error modals are mounted imperatively via `showSuccess`/`showError` */}
             {/* Close Button */}
             <button
-              onClick={() => { if (!submitting) onClose(); }}
+              onClick={() => {
+                if (!submitting) onClose();
+              }}
               disabled={submitting}
-              className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${submitting ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
+              className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${
+                submitting ? "opacity-40 pointer-events-none" : "hover:bg-gray-100"
+              }`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -187,7 +198,9 @@ export default function ViewEndorsementModal({
                 </div>
                 <div>
                   <label className="text-gray-500 font-medium">Reference Number</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.referenceNumber}</p>
+                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">
+                    {endorsement.referenceNumber}
+                  </p>
                 </div>
               </div>
 
@@ -249,10 +262,11 @@ export default function ViewEndorsementModal({
               {endorsement.remarks && (
                 <div>
                   <label className="text-gray-500 font-medium">Remarks</label>
-                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">{endorsement.remarks}</p>
+                  <p className="text-gray-900 bg-gray-50 p-2 rounded mt-1">
+                    {endorsement.remarks}
+                  </p>
                 </div>
               )}
-
             </div>
 
             {/* Action Buttons */}
@@ -260,25 +274,37 @@ export default function ViewEndorsementModal({
               {endorsement.status === "Pending" && (
                 <>
                   <button
-                    onClick={() => { if (!submitting) handleApprove(endorsement._id); }}
+                    onClick={() => {
+                      if (!submitting) handleApprove(endorsement._id);
+                    }}
                     disabled={submitting}
-                    className={`px-4 py-2 bg-green-600 text-white rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-green-700'}`}
+                    className={`px-4 py-2 bg-green-600 text-white rounded-lg ${
+                      submitting ? "opacity-50 pointer-events-none" : "hover:bg-green-700"
+                    }`}
                   >
                     Accept
                   </button>
                   <button
-                    onClick={() => { if (!submitting) handleReject(endorsement._id); }}
+                    onClick={() => {
+                      if (!submitting) handleReject(endorsement._id);
+                    }}
                     disabled={submitting}
-                    className={`px-4 py-2 bg-red-600 text-white rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-red-700'}`}
+                    className={`px-4 py-2 bg-red-600 text-white rounded-lg ${
+                      submitting ? "opacity-50 pointer-events-none" : "hover:bg-red-700"
+                    }`}
                   >
                     Reject
                   </button>
                 </>
               )}
               <button
-                onClick={() => { if (!submitting) onClose(); }}
+                onClick={() => {
+                  if (!submitting) onClose();
+                }}
                 disabled={submitting}
-                className={`px-4 py-2 bg-gray-600 text-white rounded-lg ${submitting ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-700'}`}
+                className={`px-4 py-2 bg-gray-600 text-white rounded-lg ${
+                  submitting ? "opacity-50 pointer-events-none" : "hover:bg-gray-700"
+                }`}
               >
                 Close
               </button>

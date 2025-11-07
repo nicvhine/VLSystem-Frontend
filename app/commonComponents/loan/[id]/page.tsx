@@ -169,16 +169,36 @@ export default function LoansDetailPage({ params }: Props) {
   const [endorsementData, setEndorsementData] = useState<{ reason: string; date: string } | null>(null);
   const [showWarning, setShowWarning] = useState(false);
   const [warningMsg, setWarningMsg] = useState("");
+  const [closureStatus, setClosureStatus] = useState<string | null>(null);
 
-  // Fetch collections
+
   useEffect(() => {
     if (!loan) return;
     const token = localStorage.getItem("token");
-    fetch(`${COLLECTION_URL}/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
+  
+    // Fetch collections
+    fetch(`${COLLECTION_URL}/${loan.loanId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
       .then(res => res.json())
       .then(data => setCollections(data.collections || []))
       .catch(err => console.error("Failed to load collections:", err));
+  
+    // ✅ Fetch closure info by loanId
+    fetch(`${process.env.NEXT_PUBLIC_CLOSURE_URL}/by-loan/${loan.loanId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.hasClosure) {
+          setClosureStatus(data.status); 
+        } else {
+          setClosureStatus(null);
+        }
+      })
+      .catch(err => console.error("Failed to check closure status:", err));
   }, [loan]);
+  
 
   if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">Loading loan details...</div>;
   if (!loan) return <div className="p-10 text-center text-red-500">Loan not found.</div>;
@@ -226,13 +246,19 @@ export default function LoansDetailPage({ params }: Props) {
             </div>
             {/* Right: Action */}
             <div className="flex items-center">
-              {role === "loan officer" && loan.status === "Active" && (
+              {role === "loan officer" && loan.status === "Active" && closureStatus !== "Pending" && (
                 <button
                   onClick={() => setInputModalOpen(true)}
                   className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 shadow transition"
                 >
                   Endorse for closure
                 </button>
+              )}
+
+              {closureStatus === "Pending" && (
+                <p className="text-sm text-gray-500 italic">
+                  A closure endorsement for this loan is currently pending.
+                </p>
               )}
             </div>
           </div>
