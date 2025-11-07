@@ -30,6 +30,7 @@ export default function SetScheduleModal({
   authFetch,
   showError,
   showSuccess,
+  a,
 }: SetScheduleModalProps) {
   const [interviewDate, setInterviewDate] = useState("");
   const [interviewTime, setInterviewTime] = useState("");
@@ -83,14 +84,14 @@ export default function SetScheduleModal({
   const handleSaveSchedule = async () => {
 
     if (!interviewDate || !interviewTime) {
-      showError("Please select both date and time.");
+      showError(a.sm5);
       return;
     }
 
     // Validate time is between 09:00 and 18:00
     const [hour, minute] = interviewTime.split(":").map(Number);
     if (hour < 9 || hour > 18 || (hour === 18 && minute > 0)) {
-      showError("Interview time must be between 9:00 AM and 6:00 PM.");
+      showError(a.sm6);
       return;
     }
 
@@ -106,7 +107,7 @@ export default function SetScheduleModal({
         body: JSON.stringify({ interviewDate, interviewTime }),
       });
       if (!scheduleRes.ok) {
-        showError("Could not schedule interview. Try again.");
+        showError(a.sm7);
         setLoading(false);
         return;
       }
@@ -149,11 +150,11 @@ export default function SetScheduleModal({
         }
       }
 
-      showSuccess("Interview scheduled.");
+      showSuccess(a.sm8);
       onClose(); 
     } catch (err) {
       console.error(err);
-      showError("Unexpected error. Try again.");
+      showError(a.sm9);
     } finally {
       setLoading(false);
     }
@@ -161,7 +162,7 @@ export default function SetScheduleModal({
 
   return (
     <>
-      <SubmitOverlayToast open={loading} message="Saving schedule..." />
+      <SubmitOverlayToast open={loading} message={a.sm1} />
       <div
       className={`fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 text-black transition-opacity duration-300 ${animateIn ? "opacity-100" : "opacity-0"}`}
       onMouseDown={() => { if (!loading) onClose(); }}
@@ -175,7 +176,7 @@ export default function SetScheduleModal({
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
               <FiFileText className="w-5 h-5 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">Schedule Interview</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{a.sm2}</h2>
           </div>
           <button
             onClick={() => { if (!loading) onClose(); }}
@@ -188,7 +189,7 @@ export default function SetScheduleModal({
 
         <div className="space-y-4">
           <label className="block">
-            <span className="text-sm text-gray-700">Interview Date</span>
+            <span className="text-sm text-gray-700">{a.sm3}</span>
             <input
               type="date"
               value={interviewDate}
@@ -201,7 +202,7 @@ export default function SetScheduleModal({
 
                 {/* ErrorModal is now rendered in parent page */}
           <label className="block">
-            <span className="text-sm text-gray-700">Interview Time</span>
+            <span className="text-sm text-gray-700">{a.sm4}</span>
             <input
               type="time"
               value={interviewTime}
@@ -218,7 +219,7 @@ export default function SetScheduleModal({
             type="button"
             disabled={loading}
           >
-            Cancel
+            {a.cm7}
           </button>
           <button
             onClick={handleSaveSchedule}
@@ -226,7 +227,7 @@ export default function SetScheduleModal({
             type="button"
             disabled={loading}
           >
-            {loading ? "Saving..." : "Schedule Interview"}
+            {loading ? a.sm10 : a.sm11}
           </button>
         </div>
       </div>

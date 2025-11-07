@@ -32,6 +32,7 @@ export interface ApplicationButtonsProps {
   setIsModalOpen: Dispatch<SetStateAction<boolean>>;
   modalRef: RefObject<any>;
   setIsAgreementOpen: Dispatch<SetStateAction<'loan' | 'release' | null>>;
+  a: any;
   showSuccess: (msg: string) => void;
   showError: (msg: string) => void;
 }
@@ -44,6 +45,7 @@ export interface SetScheduleModalProps {
     authFetch: (url: string, options?: RequestInit) => Promise<any>;
     showError: (msg: string) => void;
     showSuccess: (msg: string) => void;
+  a: any;
 }
 
 export interface DetailRowProps {

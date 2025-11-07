@@ -98,6 +98,7 @@ export function useApplicationData(apiUrl: string) {
 
   const t = translations.loanTermsTranslator[language];
   const l = translations.viewApplicationTranslation[language];
+  const a = translations.applicationActionsTranslation[language];
 
   return {
     applications,
@@ -107,6 +108,7 @@ export function useApplicationData(apiUrl: string) {
     language,
     t,
     l,
+    a,
     modalContainer,
   };
 }

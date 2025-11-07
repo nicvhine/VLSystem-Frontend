@@ -20,6 +20,7 @@ import sysadTranslation from "./sysadTranslation";
 import applicationTranslation from "./applicationTranslation";
 import authTranslation from "./authTranslation";
 import publicTranslation from "./publicTranslation";
+import applicationActionsTranslation from "./applicationActionsTranslation";
 
 const translations = {
   landingPageTranslation,
@@ -43,6 +44,7 @@ const translations = {
   applicationTranslation,
   authTranslation,
   publicTranslation,
+  applicationActionsTranslation,
 };
 
 export default translations;

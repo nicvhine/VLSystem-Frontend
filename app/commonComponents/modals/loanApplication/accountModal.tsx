@@ -6,6 +6,7 @@ import SuccessModal from "../successModal";
 import ErrorModal from "../errorModal";
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import emailjs from "emailjs-com";
+import applicationActionsTranslation from "../../translation/applicationActionsTranslation";
 
 const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL
@@ -81,7 +82,12 @@ const sendEmail = async ({
   }
 };
 
-export default forwardRef(function AccountModal(_, ref) {
+interface AccountModalProps {
+  a?: typeof applicationActionsTranslation.en;
+}
+
+export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, ref) {
+  const i = a ?? applicationActionsTranslation.en;
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
@@ -153,12 +159,12 @@ export default forwardRef(function AccountModal(_, ref) {
 
         // Expect backend to return { name, userId } array
         const data: Collector[] = await res.json();
-        setCollectors(Array.isArray(data) ? data : []);
-        if (!Array.isArray(data) || data.length === 0) setCollectorsError("No collectors available.");
+      setCollectors(Array.isArray(data) ? data : []);
+      if (!Array.isArray(data) || data.length === 0) setCollectorsError(i.ma6);
       } catch (error: any) {
         console.error("Error fetching collectors:", error);
         setCollectors([]);
-        setCollectorsError(error?.message || "Unable to load collectors.");
+      setCollectorsError(error?.message || i.ma8);
       } finally {
         setIsFetchingCollectors(false);
       }
@@ -187,7 +193,7 @@ export default forwardRef(function AccountModal(_, ref) {
     }
 
     if (!selectedCollectorId && !isReloan) {
-      setErrorMessage("Please select a collector.");
+      setErrorMessage(i.ma7);
       setErrorOpen(true);
       setTimeout(() => setErrorOpen(false), 5000);
       return;
@@ -246,7 +252,7 @@ export default forwardRef(function AccountModal(_, ref) {
           throw new Error(msg);
         }
 
-        setSuccessMessage("Reloan generated successfully.");
+        setSuccessMessage(i.ma13);
       } else {
         // Create borrower account
         const borrowerRes = await authFetch(`${BORROWER_URL}`, {
@@ -311,7 +317,7 @@ export default forwardRef(function AccountModal(_, ref) {
           },
         });
 
-        setSuccessMessage("Account created and loan generated successfully.");
+        setSuccessMessage(i.ma14);
       }
 
       setSuccessOpen(true);
@@ -333,7 +339,7 @@ export default forwardRef(function AccountModal(_, ref) {
 
   return (
     <>
-      <SubmitOverlayToast open={isProcessing} message="Processing action..." />
+      <SubmitOverlayToast open={isProcessing} message={i.to1} />
       <div
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
           isAnimating ? "opacity-100" : "opacity-0"
@@ -346,7 +352,7 @@ export default forwardRef(function AccountModal(_, ref) {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="relative">
-            <h2 className="text-xl font-semibold text-black mb-2">Create Account</h2>
+            <h2 className="text-xl font-semibold text-black mb-2">{i.ma1}</h2>
             <button
               onClick={handleModalClose}
               className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${isProcessing ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
@@ -356,7 +362,7 @@ export default forwardRef(function AccountModal(_, ref) {
               ×
             </button>
           </div>
-          <p className="text-sm text-gray-600 mb-4">Assign a collector and generate borrower credentials.</p>
+          <p className="text-sm text-gray-600 mb-4">{i.ma2}</p>
 
           {/* Applicant summary + validations */}
           <div className="mb-3">
@@ -371,9 +377,9 @@ export default forwardRef(function AccountModal(_, ref) {
                     <>
                       <span className="font-medium">Email:</span> {selectedApp.appEmail}
                     </>
-                  ) : (
-                    <span className="italic text-gray-500">No email provided</span>
-                  )}
+                ) : (
+                  <span className="italic text-gray-500">{i.ma10}</span>
+                )}
                 </p>
                 {emailError && (
                   <p className="text-xs text-red-600 mt-1" role="alert">{emailError}</p>
@@ -387,7 +393,7 @@ export default forwardRef(function AccountModal(_, ref) {
 
           {!selectedApp?.borrowersId && (
             <>
-              <label className="block text-sm font-medium text-black mb-2">Assign Collector</label>
+              <label className="block text-sm font-medium text-black mb-2">{i.ma3}</label>
               <div className="relative">
                 <select
                   value={selectedCollectorId}
@@ -397,7 +403,7 @@ export default forwardRef(function AccountModal(_, ref) {
                   aria-invalid={!selectedCollectorId}
                 >
                   <option value="">
-                    {isFetchingCollectors ? "Loading collectors..." : "Select a collector"}
+                    {isFetchingCollectors ? i.ma4 : i.ma5}
                   </option>
                   {collectors.map((c) => (
                     <option key={c.userId} value={c.userId}>
@@ -420,7 +426,7 @@ export default forwardRef(function AccountModal(_, ref) {
               onClick={handleModalClose}
               disabled={isProcessing}
             >
-              Cancel
+              {i.cm7}
             </button>
 
             {!selectedApp?.borrowersId && (
@@ -440,7 +446,7 @@ export default forwardRef(function AccountModal(_, ref) {
                   !selectedCollectorId
                 }
               >
-                {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Create Account"}
+                {isProcessing ? <ButtonContentLoading label={i.ma11} /> : i.b7}
               </button>
             )}
 
@@ -450,7 +456,7 @@ export default forwardRef(function AccountModal(_, ref) {
                 onClick={() => handleCreateAccount(true)}
                 disabled={isProcessing || !!nameError || !!emailError}
               >
-                {isProcessing ? <ButtonContentLoading label="Processing..." /> : "Generate Reloan"}
+                {isProcessing ? <ButtonContentLoading label={i.ma11} /> : i.ma9}
               </button>
             )}
           </div>
