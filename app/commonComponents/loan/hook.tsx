@@ -9,7 +9,7 @@ export const useLoansPage = () => {
   const [loans, setLoans] = useState<LoanDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'date' | 'amount' | ''>('');
+  const [sortBy, setSortBy] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<'All' | 'Active' | 'Overdue' | 'Closed'>('All');
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,9 +50,14 @@ export const useLoansPage = () => {
 
   // Sort loans
   const sortedLoans = [...filteredLoans].sort((a, b) => {
-    if (sortBy === 'date')
+    if (sortBy === 'date') {
       return new Date(b.dateDisbursed).getTime() - new Date(a.dateDisbursed).getTime();
-    if (sortBy === 'amount') return b.balance - a.balance;
+    }
+    if (sortBy === 'amount') {
+      const aBalance = a.currentLoan?.remainingBalance ?? 0;
+      const bBalance = b.currentLoan?.remainingBalance ?? 0;
+      return bBalance - aBalance;
+    }
     return 0;
   });
 
@@ -65,7 +70,11 @@ export const useLoansPage = () => {
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
-    setRole(storedRole);
+    if (storedRole === "manager" || storedRole === "head" || storedRole === "loan officer") {
+      setRole(storedRole);
+    } else {
+      setRole("manager"); 
+    }
 
     const keyMap: Record<string, string> = {
       head: "headLanguage",

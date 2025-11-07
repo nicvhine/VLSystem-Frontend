@@ -26,11 +26,16 @@ export const formatDate = (dateString?: string) =>
       })
     : "-";
 
+// -----------------------------
+// SSR-SAFE translateLoanType
+// -----------------------------
 export const translateLoanType = (
   type?: string,
   language: "en" | "ceb" = "en"
 ): string => {
-  const t = translations.loanTermsTranslator[language];
+  // Fallback to 'en' if translations not ready
+  const t = (translations.loanTermsTranslator?.[language] ?? translations.loanTermsTranslator.en);
+
   if (!type) return "—";
 
   const raw = type;
@@ -56,8 +61,11 @@ export const translateLoanType = (
   }
 };
 
-export const getRequirements = (type: string, language: "en" | "ceb") => {
-  const t = translations.requirementsTranslation[language];
+// -----------------------------
+// SSR-SAFE getRequirements
+// -----------------------------
+export const getRequirements = (type: string, language: "en" | "ceb" = "en") => {
+  const t = translations.requirementsTranslation?.[language] ?? translations.requirementsTranslation.en;
   const englishType = translateLoanType(type, "en");
 
   switch (englishType) {
@@ -75,7 +83,10 @@ export const getRequirements = (type: string, language: "en" | "ceb") => {
   }
 };
 
-export const getLoanProcessSteps = (language: "en" | "ceb") => {
-  const t = translations.requirementsTranslation[language];
+// -----------------------------
+// SSR-SAFE getLoanProcessSteps
+// -----------------------------
+export const getLoanProcessSteps = (language: "en" | "ceb" = "en") => {
+  const t = translations.requirementsTranslation?.[language] ?? translations.requirementsTranslation.en;
   return [t.t10, t.t11, t.t12, t.t13, t.t14];
 };

@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect } from "react";
 import { FiSearch, FiUserPlus, FiChevronDown, FiMoreVertical } from "react-icons/fi";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
-import Head from "../page";
 import { useUsersLogic } from "./hooks";
 import { User } from "@/app/commonComponents/utils/Types/userPage";
 
@@ -12,8 +11,6 @@ import CreateUserModal from "./createUserModal";
 import DecisionModal from "./modal";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import translations from "@/app/commonComponents/translation";
-
-// Use shared LoadingSpinner from common utils
 
 export default function Page() {
   const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
@@ -148,7 +145,6 @@ export default function Page() {
   }
   
   return (
-    <Head>
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
@@ -436,23 +432,22 @@ export default function Page() {
           {successMessage && (
             <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={() => setSuccessMessage("")} />
           )}
-        </div>
-      </div>
 
       {decisionConfig && (
-      <DecisionModal
-      isOpen={decisionModalOpen}
-      title={decisionConfig?.title || ""}
-      message={decisionConfig?.message || ""}
-      confirmText={decisionConfig?.confirmText}
-      danger={decisionConfig?.danger}
-      error={decisionConfig?.error} 
-      onConfirm={decisionConfig?.onConfirm || (() => {})}
-      onCancel={() => setDecisionModalOpen(false)}
-    />
-    
-    )}
+            <DecisionModal
+            isOpen={decisionModalOpen}
+            title={decisionConfig?.title || ""}
+            message={decisionConfig?.message || ""}
+            confirmText={decisionConfig?.confirmText}
+            danger={decisionConfig?.danger}
+            error={decisionConfig?.error} 
+            onConfirm={decisionConfig?.onConfirm || (() => {})}
+            onCancel={() => setDecisionModalOpen(false)}
+          />
+          
+          )}
 
-    </Head>
+        </div>
+      </div>
   );
 }

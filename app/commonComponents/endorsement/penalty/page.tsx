@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { formatCurrency } from "../../utils/formatters";
 import ViewEndorsementModal from "../../modals/viewEndorsement";
 import ErrorModal from "../../modals/errorModal";
-import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/layout";
 import Filter from "../../utils/sortAndSearch";
 import Pagination from "../../utils/pagination";
 import translations from "../../translation";

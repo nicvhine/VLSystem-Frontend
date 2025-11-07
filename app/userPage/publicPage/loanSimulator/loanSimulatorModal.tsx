@@ -36,10 +36,10 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const [animateIn, setAnimateIn] = useState(false);
   const [showResult, setShowResult] = useState(false);
 
-  // Debug: log when props change
-  useEffect(() => {
-    console.log('SimulatorModal props:', { isOpen, showModal });
-  }, [isOpen, showModal]);
+  const t = translationData.loanTermsTranslator[language];
+  const s = translationData.simulatorTranslator[language];
+  const pub = translationData.publicTranslation[language];
+
   const [result, setResult] = useState<{
     paymentPeriod: string;
     principalAmount: string;
@@ -52,16 +52,15 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   const paymentPeriod = 'monthly';
 
-  // Animation timing on open/close
+  // Modal open/close animations
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
-      // Small delay to trigger animation after mount
       const timer = setTimeout(() => setAnimateIn(true), 10);
       return () => clearTimeout(timer);
     } else {
       setAnimateIn(false);
-      const timer = setTimeout(() => setShowModal(false), 300); // Match transition duration
+      const timer = setTimeout(() => setShowModal(false), 300);
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -90,15 +89,10 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   ];
 
   useEffect(() => {
-    if (loanType === 'regularWith') {
-      setLoanOptions(withCollateralTable.map(opt => opt.amount));
-    } else if (loanType === 'regularWithout') {
-      setLoanOptions(withoutCollateralTable.map(opt => opt.amount));
-    } else if (loanType === 'openTerm') {
-      setLoanOptions(openTermTable.map(opt => opt.amount));
-    } else {
-      setLoanOptions([]);
-    }
+    if (loanType === 'regularWith') setLoanOptions(withCollateralTable.map(opt => opt.amount));
+    else if (loanType === 'regularWithout') setLoanOptions(withoutCollateralTable.map(opt => opt.amount));
+    else if (loanType === 'openTerm') setLoanOptions(openTermTable.map(opt => opt.amount));
+    else setLoanOptions([]);
 
     setSelectedLoanAmount('');
     setResult(null);
@@ -107,32 +101,18 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
 
   const calculateLoan = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!loanType || !selectedLoanAmount) return;
 
-    if (!loanType || !selectedLoanAmount) {
-      setResult(null);
-      setShowResult(false);
-      return;
-    }
-
-    // UI: reset animation state first
     setShowResult(false);
 
     const amt = Number(selectedLoanAmount);
     let loanOption: LoanOption | undefined;
 
-    if (loanType === 'regularWithout') {
-      loanOption = withoutCollateralTable.find(opt => opt.amount === amt);
-    } else if (loanType === 'regularWith') {
-      loanOption = withCollateralTable.find(opt => opt.amount === amt);
-    } else if (loanType === 'openTerm') {
-      loanOption = openTermTable.find(opt => opt.amount === amt);
-    }
+    if (loanType === 'regularWithout') loanOption = withoutCollateralTable.find(opt => opt.amount === amt);
+    else if (loanType === 'regularWith') loanOption = withCollateralTable.find(opt => opt.amount === amt);
+    else if (loanType === 'openTerm') loanOption = openTermTable.find(opt => opt.amount === amt);
 
-    if (!loanOption) {
-      setResult(null);
-      setShowResult(false);
-      return;
-    }
+    if (!loanOption) return;
 
     const rate = loanOption.interest;
     const months = 'months' in loanOption ? loanOption.months : 12;
@@ -148,21 +128,13 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
       interest: `₱${totalInterest.toLocaleString()}`,
       totalPayment: `₱${totalRepayment.toLocaleString()}`,
       loanTerm: `${months} ${pub.months}`,
-      paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
+      paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
     });
 
-    // UI: trigger animation after setting result
     setTimeout(() => setShowResult(true), 10);
   };
 
   if (!showModal) return null;
-
-  const t = translationData.loanTermsTranslator[language];
-  const s = translationData.simulatorTranslator[language];
-  const pub = translationData.publicTranslation[language];
 
   const resultLabels = {
     principalAmount: t.l4 + ':',
@@ -178,18 +150,13 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   return (
     <div className={`fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
       <div className={`bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6 transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-        >
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-          {pub.loanSimulation}
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">{pub.loanSimulation}</h2>
 
         <form onSubmit={calculateLoan} className="space-y-6">
           <div className="space-y-4">
@@ -200,13 +167,9 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 onChange={(e) => setLoanType(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
               >
-                <option value="">
-                  {pub.selectLoanType}
-                </option>
+                <option value="">{pub.selectLoanType}</option>
                 {["regularWithout", "regularWith", "openTerm"].map((type) => (
-                  <option key={type} value={type}>
-                    {translateLoanType(type, language)}
-                  </option>
+                  <option key={type} value={type}>{translateLoanType(type, language)}</option>
                 ))}
               </select>
             </div>
@@ -221,21 +184,14 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
                 >
                   <option value="">{pub.selectAmount}</option>
                   {loanOptions.map((amt) => (
-                    <option key={amt} value={amt}>
-                      ₱{amt.toLocaleString()}
-                    </option>
+                    <option key={amt} value={amt}>₱{amt.toLocaleString()}</option>
                   ))}
                 </select>
               </div>
             )}
           </div>
 
-          <button
-            type="submit"
-            className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition"
-          >
-            {pub.calculate}
-          </button>
+          <button type="submit" className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">{pub.calculate}</button>
         </form>
 
         {result && (
@@ -243,40 +199,18 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
             <h3 className="text-lg font-semibold mb-4 text-gray-800">{resultLabels.summary}</h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2">
               <div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.principalAmount}</div>
-                  <div>{result.principalAmount}</div>
-                </div>
-                <div className="mb-4">
-                <div className="font-semibold">{resultLabels.interestRate}</div>
-                <div>{result.interestRate}</div>
-              </div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.interest}</div>
-                  <div>{result.interest}</div>
-                </div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.totalPayment}</div>
-                  <div>{result.totalPayment}</div>
-                </div>
+                <div className="mb-4"><div className="font-semibold">{resultLabels.principalAmount}</div><div>{result.principalAmount}</div></div>
+                <div className="mb-4"><div className="font-semibold">{resultLabels.interestRate}</div><div>{result.interestRate}</div></div>
+                <div className="mb-4"><div className="font-semibold">{resultLabels.interest}</div><div>{result.interest}</div></div>
+                <div className="mb-4"><div className="font-semibold">{resultLabels.totalPayment}</div><div>{result.totalPayment}</div></div>
               </div>
 
               <div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.loanTerm}</div>
-                  <div>{result.loanTerm}</div>
-                </div>
-                <div className="mb-4">
-                  <div className="font-semibold">{resultLabels.paymentPerPeriod}</div>
-                  <div>{result.paymentPerPeriod}
-                  </div>
-                </div>
+                <div className="mb-4"><div className="font-semibold">{resultLabels.loanTerm}</div><div>{result.loanTerm}</div></div>
+                <div className="mb-4"><div className="font-semibold">{resultLabels.paymentPerPeriod}</div><div>{result.paymentPerPeriod}</div></div>
               </div>
             </div>
-
-            <div className="mt-4 text-sm text-gray-600 italic">
-              {resultLabels.explanation}
-            </div>
+            <div className="mt-4 text-sm text-gray-600 italic">{resultLabels.explanation}</div>
           </div>
         )}
       </div>

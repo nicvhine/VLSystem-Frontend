@@ -2,12 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, ChartOptions } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  ChartOptions,
+  ScriptableContext,
+} from 'chart.js';
+import ChartDataLabels, { Context as DatalabelsContext } from 'chartjs-plugin-datalabels';
 import translations from "../translation";
+
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-const STAT_URL = process.env.NEXT_PUBLIC_STAT_URL
+const STAT_URL = process.env.NEXT_PUBLIC_STAT_URL;
 
 type LoanTypeStat = { loanType: string; count: number };
 type ApplicationStatusStat = { applied: number; approved: number; denied: number };
@@ -68,14 +76,26 @@ export default function LoanStatisticsCharts() {
   const loanTypeChartData = {
     labels: loanTypeStats.map(l => l.loanType || 'Unknown'),
     datasets: [
-      { data: loanTypeStats.map(l => l.count), backgroundColor: gradientColors.slice(0, loanTypeStats.length), borderColor: '#fff', borderWidth: 2 }
+      {
+        data: loanTypeStats.map(l => l.count),
+        backgroundColor: gradientColors.slice(0, loanTypeStats.length),
+        borderColor: '#fff',
+        borderWidth: 2,
+        hoverOffset: 12,
+      }
     ]
   };
 
   const applicationStatusChartData = {
     labels: ['Applied','Approved','Denied'],
     datasets: [
-      { data: [applicationStatusStats.applied, applicationStatusStats.approved, applicationStatusStats.denied], backgroundColor: ['#facc15','#22c55e','#ef4444'], borderColor: '#fff', borderWidth: 2 }
+      {
+        data: [applicationStatusStats.applied, applicationStatusStats.approved, applicationStatusStats.denied],
+        backgroundColor: ['#facc15','#22c55e','#ef4444'],
+        borderColor: '#fff',
+        borderWidth: 2,
+        hoverOffset: 12,
+      }
     ]
   };
 
@@ -83,13 +103,24 @@ export default function LoanStatisticsCharts() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 13, weight: '500' } } },
+      legend: {
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle',
+          padding: 12,
+          font: {
+            size: 13,
+            weight: 500 
+          }
+        }
+      },
       tooltip: {
         callbacks: {
           label: (context) => {
             const value = context.raw as number;
-            const total = context.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
-            const percent = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+            const total = context.dataset.data.reduce((a: number, b: any) => a + Number(b), 0);
+            const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
             return `${context.label}: ${value} (${percent}%)`;
           }
         }
@@ -97,14 +128,14 @@ export default function LoanStatisticsCharts() {
       datalabels: {
         color: '#fff',
         font: { weight: 'bold', size: 12 },
-        formatter: (value: number, context: any) => {
-          const total = context.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
+        formatter: (value: number, context: DatalabelsContext) => {
+          const dataset = context.dataset.data as number[];
+          const total = dataset.reduce((a, b) => a + Number(b), 0);
           return total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '';
         }
       }
     },
     animation: { animateRotate: true, animateScale: true, duration: 1000 },
-    hoverOffset: 12,
   };
 
   return (

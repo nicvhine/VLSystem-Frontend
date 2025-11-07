@@ -174,24 +174,6 @@ export default function LoanHistory({ loans, translations, language }: LoanHisto
                   </div>
                 </div>
                 
-                {/* Payment History */}
-                {loadingPayments === loan.loanId ? (
-                  <div className="text-center py-4">
-                    <div className="inline-flex items-center justify-center gap-3">
-                      <LoadingSpinner size={4} />
-                      <p className="text-sm text-gray-600">{translations[language].loading}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <PaymentTable
-                    payments={allPayments}
-                    loanId={loan.loanId}
-                    monthlyDue={loan.monthlyDue}
-                    balance={loan.balance}
-                    translations={translations}
-                    language={language}
-                  />
-                )}
               </div>
             </div>
           )}

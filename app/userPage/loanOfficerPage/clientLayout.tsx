@@ -1,17 +1,21 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 import ChangePasswordModal from "@/app/commonComponents/modals/forceChange/modal";
 import useInactivityLogout from "@/app/commonComponents/modals/inactivity/logic";
 import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/modal";
-import Navbar from "@/app/commonComponents/navbarComponents/navbar";
 
-export default function Manager({ children, isNavbarBlurred = false }: { children?: React.ReactNode; isNavbarBlurred?: boolean }) {
+interface Props {
+  children: ReactNode;
+  isNavbarBlurred?: boolean;
+}
+
+export default function ClientLayout({ children, isNavbarBlurred = false }: Props) {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();
-
   const { showModal, stayLoggedIn, logout } = useInactivityLogout();
 
   useEffect(() => {
@@ -27,30 +31,17 @@ export default function Manager({ children, isNavbarBlurred = false }: { childre
       setShowChangePasswordModal(true);
     }
 
-    setIsCheckingAuth(false); 
+    setIsCheckingAuth(false);
   }, [router]);
 
-  if (isCheckingAuth) {
-    return <div className="min-h-screen bg-white"></div>; 
-  }
+  if (isCheckingAuth) return <div className="min-h-screen bg-white"></div>;
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar role="manager" isBlurred={isNavbarBlurred} />
-      
-      {showChangePasswordModal && (
-        <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
-      )}
-
+      <Navbar role="loanOfficer" isBlurred={isNavbarBlurred} />
+      {showChangePasswordModal && <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />}
       {children}
-      
-      {showModal && (
-        <AreYouStillThereModal
-          countdownSeconds={20}  
-          onStay={stayLoggedIn}
-          onLogout={logout}
-        />
-      )}
+      {showModal && <AreYouStillThereModal countdownSeconds={20} onStay={stayLoggedIn} onLogout={logout} />}
     </div>
   );
 }

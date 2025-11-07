@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { getLandingNavItems } from '@/app/commonComponents/navbarComponents/navItems';
 import translationData from '@/app/commonComponents/translation';
+import { LandingNavItem } from '@/app/commonComponents/utils/Types/navbar';
 
 interface LandingNavbarProps {
   language: 'en' | 'ceb';
@@ -46,11 +47,12 @@ export default function LandingNavbar({
 
   // Smooth scroll (used for full nav)
   const smoothScrollTo = (elementId: string) => {
+    if (typeof window === 'undefined') return; 
     const element = document.getElementById(elementId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  };
+  };  
 
   const navItems: LandingNavItem[] = getLandingNavItems(language, smoothScrollTo, setIsCalculationOpen);
   const pub = translationData.publicTranslation[language];

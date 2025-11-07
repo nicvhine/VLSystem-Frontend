@@ -21,7 +21,7 @@ export function useSectionProgress({
   appAgent,
   onProgressUpdate,
 }: UseSectionProgressParams) {
-  const prevProgressRef = useRef<Progress>();
+  const prevProgressRef = useRef<Progress | undefined>(undefined);
 
   useEffect(() => {
     const done: Record<string, boolean> = {};

@@ -35,6 +35,7 @@ export interface AddAgentModalProps {
     newAgentPhone: string;
     setNewAgentPhone: (phone: string) => void;
     onAddAgent: () => Promise<AddAgentResult>;
+    loading?: boolean; 
 }
 
 export interface AgentDropdownProps {

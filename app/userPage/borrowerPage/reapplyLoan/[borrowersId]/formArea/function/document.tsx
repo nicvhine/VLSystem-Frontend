@@ -59,7 +59,7 @@ export const handleProfileChange = async (
 export const handleFileChange = (
   e: React.ChangeEvent<HTMLInputElement>,
   uploadedFiles: File[],
-  setUploadedFiles: (files: File[]) => void,
+  setUploadedFiles: React.Dispatch<React.SetStateAction<File[]>>, 
   requiredDocumentsCount: number,
   language: 'en' | 'ceb' = 'en',
   setDocumentUploadError?: (msg: string) => void,
@@ -70,10 +70,14 @@ export const handleFileChange = (
   const files = Array.from(input.files);
   if (!files.length) return;
 
-  setUploadedFiles(prev => {
-    const remaining = requiredDocumentsCount - prev.length;
+  setUploadedFiles((prev: File[]) => { 
+  const remaining = requiredDocumentsCount - prev.length;
     if (remaining <= 0) {
-      setDocumentUploadError?.(language === "en" ? `You can only upload up to ${requiredDocumentsCount} documents for this loan type.` : `Hangtod ${requiredDocumentsCount} ka dokumento lang ang pwede i-upload para ani nga klase sa loan.`);
+      setDocumentUploadError?.(
+        language === "en"
+          ? `You can only upload up to ${requiredDocumentsCount} documents for this loan type.`
+          : `Hangtod ${requiredDocumentsCount} ka dokumento lang ang pwede i-upload para ani nga klase sa loan.`
+      );
       setShowDocumentUploadErrorModal?.(true);
       input.value = "";
       return prev;
@@ -81,7 +85,11 @@ export const handleFileChange = (
 
     const toAdd = files.slice(0, remaining);
     if (files.length > remaining) {
-      setDocumentUploadError?.(language === "en" ? `Only ${remaining} more ${remaining === 1 ? "document is" : "documents are"} allowed (max ${requiredDocumentsCount}). Extra files were not added.` : `${remaining} na lang ka ${remaining === 1 ? "dokumento" : "mga dokumento"} ang pwede (max ${requiredDocumentsCount}). Ang sobra wala gi-dugang.`);
+      setDocumentUploadError?.(
+        language === "en"
+          ? `Only ${remaining} more ${remaining === 1 ? "document is" : "documents are"} allowed (max ${requiredDocumentsCount}). Extra files were not added.`
+          : `${remaining} na lang ka ${remaining === 1 ? "dokumento" : "mga dokumento"} ang pwede (max ${requiredDocumentsCount}). Ang sobra wala gi-dugang.`
+      );
       setShowDocumentUploadErrorModal?.(true);
     }
 
@@ -89,6 +97,7 @@ export const handleFileChange = (
     return [...prev, ...toAdd];
   });
 };
+
 
 export const removeProfile = (setPhoto2x2: (files: File[]) => void) => {
   setPhoto2x2([]);

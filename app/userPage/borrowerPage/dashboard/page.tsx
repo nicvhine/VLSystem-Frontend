@@ -17,6 +17,7 @@ import PaymentProgressCard from './cards/paymentProgressCard';
 import UpcomingCollectionCard from './cards/upcomingCard';
 import PaidCollectionCard from './cards/paidCollectionCard';
 import CreditScoreCard from './cards/creditScoreCard';
+import BorrowerClient from '../borrowerClient';
 
 export default function BorrowerDashboard() {
   const borrowersId =
@@ -110,7 +111,7 @@ export default function BorrowerDashboard() {
     : [];
 
   return (
-    <Borrower>
+    <BorrowerClient>
       {loading ? (
         <div className="flex justify-center items-center py-8">
           <LoadingSpinner />
@@ -216,6 +217,6 @@ export default function BorrowerDashboard() {
           )}
         </div>
       )}
-    </Borrower>
+    </BorrowerClient>
   );
 }

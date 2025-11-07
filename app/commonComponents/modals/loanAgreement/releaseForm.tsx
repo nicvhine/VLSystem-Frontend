@@ -136,7 +136,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
 
             <p className="flex gap-50">
               <span>
-                <strong>Approved Loan Amount: </strong>{formatCurrency(application.appLoanAmount)}
+              <strong>Approved Loan Amount: </strong>{formatCurrency(application.appLoanAmount ?? 0)}
               </span>
               <span>
                 <strong>Net Released: </strong>{formatCurrency(application.appNetReleased)}

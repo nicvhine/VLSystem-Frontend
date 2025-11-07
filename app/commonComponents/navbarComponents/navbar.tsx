@@ -58,6 +58,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -472,6 +473,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                   profilePic={profilePic || ''}
                   isEditing={isEditingProfile}
                   setIsEditing={setIsEditingProfile}
+                  setShowOtpModal={setShowOtpModal} 
                 />
             </div>
           </div>

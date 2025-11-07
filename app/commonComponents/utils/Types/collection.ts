@@ -43,6 +43,8 @@ export interface NoteModalProps extends BaseModalProps<Collection> {
   noteText: string;
   setNoteText: Dispatch<SetStateAction<string>>;
   handleSaveNote: () => void;
+  handleClose: () => void;  
+  selectedCollection?: Collection;  
 }
 
 export interface PaymentModalProps extends BaseModalProps<Collection> {
@@ -52,4 +54,6 @@ export interface PaymentModalProps extends BaseModalProps<Collection> {
   setShowPaymentConfirm: Dispatch<SetStateAction<boolean>>;
   handleConfirmPayment: () => void;
   paymentLoading: boolean;
+  handleClose: () => void;   
+  selectedCollection?: Collection;  
 }

@@ -3,11 +3,9 @@
 import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
 import LoanStatisticsTops from "@/app/commonComponents/statistics/loanStatisticsTops";
 import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsCharts";
-import Head from "../page";
 
 export default function HeadDashboard() {
   return (
-    <Head>
       <div className="min-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 p-6 overflow-auto">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-6">
 
@@ -24,6 +22,5 @@ export default function HeadDashboard() {
 
         </div>
       </div>
-    </Head>
   );
 }
