@@ -17,6 +17,10 @@ export interface ConfirmModalProps {
     loading?: boolean;
     applicationId?: string;
     status?: string;
+    title?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
+    processingLabel?: string;
 }
 
 export interface ErrorModalProps {

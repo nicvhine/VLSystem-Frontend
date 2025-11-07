@@ -46,6 +46,7 @@ export default function ApplicationDetailsPage() {
     language,
     t,
     l,
+    a,
     modalContainer,
   } = useApplicationData("http://localhost:3001/loan-applications");
 
@@ -176,6 +177,7 @@ export default function ApplicationDetailsPage() {
                   setIsModalOpen={setIsModalOpen}
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}
+                  a={a}
                   showSuccess={showSuccess}
                   showError={showError}
                 />
@@ -216,6 +218,7 @@ export default function ApplicationDetailsPage() {
             authFetch={authFetch}
             showError={showError}
             showSuccess={showSuccess}
+            a={a}
           />
           <ErrorModal
             isOpen={errorModalOpen}
@@ -244,7 +247,7 @@ export default function ApplicationDetailsPage() {
             />
           )}
 
-          <AccountModal ref={modalRef} />
+          <AccountModal ref={modalRef} a={a} />
         </div>
         </Wrapper>
     );

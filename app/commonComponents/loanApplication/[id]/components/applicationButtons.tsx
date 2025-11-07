@@ -22,6 +22,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   setIsModalOpen,
   modalRef,
   setIsAgreementOpen,
+  a,
   showSuccess,
   showError,
 }) => {
@@ -49,6 +50,11 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
     setShowDocsDropdown(!showDocsDropdown);
   };
 
+  const statusMessage = (status: string) =>
+    a.cm2
+      .replace("{id}", application.applicationId)
+      .replace("{status}", status);
+
   return (
     <>
       {application.status === "Applied" && role === "loan officer" && (
@@ -57,13 +63,13 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             onClick={() => setIsModalOpen(true)}
             className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium"
           >
-            SET SCHEDULE
+            {a.b1}
           </button>
           <button
             onClick={() => handleDenyApplication(application, setApplications, authFetch, showSuccess, showError)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
-            DISMISS
+            {a.b2}
           </button>
         </>
       )}
@@ -73,7 +79,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           onClick={() => modalRef.current?.openModal(application)}
           className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium"
         >
-        {application.isReloan ? "Assign Collector" : "Create Account"}
+          {application.isReloan ? a.b6 : a.b7}
         </button>
       )}
 
@@ -86,7 +92,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
-            CLEAR
+            {a.b3}
           </button>
           <button
             onClick={() => {
@@ -95,12 +101,15 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
-            DISMISS
+            {a.b2}
           </button>
           <ConfirmModal
             show={showConfirm.type === 'clear'}
-            applicationId={application.applicationId}
-            status="Cleared"
+            message={statusMessage("Cleared")}
+            title={a.cm1}
+            confirmLabel={a.cm6}
+            cancelLabel={a.cm7}
+            processingLabel={a.cm5}
             onConfirm={async () => {
               setShowConfirm({ type: null });
               try {
@@ -114,7 +123,11 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           />
           <ConfirmModal
             show={showConfirm.type === 'dismissPending'}
-            message="Do you want to dismiss this pending loan application?"
+            message={a.cm3}
+            title={a.cm1}
+            confirmLabel={a.cm6}
+            cancelLabel={a.cm7}
+            processingLabel={a.cm5}
             onConfirm={async () => {
               setShowConfirm({ type: null });
               try {
@@ -138,7 +151,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
-            APPROVE
+            {a.b8}
           </button>
           <button
             onClick={() => {
@@ -147,12 +160,15 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
-            DENY
+            {a.b9}
           </button>
       <ConfirmModal
         show={showConfirm.type === 'approve'}
-        applicationId={application.applicationId}
-        status="Approved"
+        message={statusMessage("Approved")}
+        title={a.cm1}
+        confirmLabel={a.cm6}
+        cancelLabel={a.cm7}
+        processingLabel={a.cm5}
         onConfirm={async () => {
           setShowConfirm({ type: null });
           try {
@@ -166,7 +182,11 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       />
       <ConfirmModal
         show={showConfirm.type === 'deny'}
-        message="Do you want to deny this loan application?"
+        message={a.cm4}
+        title={a.cm1}
+        confirmLabel={a.cm6}
+        cancelLabel={a.cm7}
+        processingLabel={a.cm5}
         onConfirm={async () => {
           setShowConfirm({ type: null });
           try {
@@ -190,12 +210,15 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             }}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
           >
-            Disburse
+            {a.b4}
           </button>
           <ConfirmModal
             show={showConfirm.type === 'disburse'}
-            applicationId={application.applicationId}
-            status="Disbursed"
+            message={statusMessage("Disbursed")}
+            title={a.cm1}
+            confirmLabel={a.cm6}
+            cancelLabel={a.cm7}
+            processingLabel={a.cm5}
             onConfirm={async () => {
               setShowConfirm({ type: null });
               try {
@@ -217,7 +240,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             onClick={toggleDropdown}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
-            Documents
+            {a.b5}
           </button>
 
           {showDocsDropdown && dropdownPos && createPortal(
@@ -233,13 +256,13 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
                 onClick={() => handleDocumentClick("loan")}
                 className="w-full text-left px-4 py-2 hover:bg-red-700"
               >
-                Loan Agreement
+                {a.b10}
               </button>
               <button
                 onClick={() => handleDocumentClick("release")}
                 className="w-full text-left px-4 py-2 hover:bg-red-700"
               >
-                Release Form
+                {a.b11}
               </button>
             </div>,
             document.body
@@ -247,7 +270,7 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
         </>
       )}
 
-      <SubmitOverlayToast open={isActing} message="Processing action..." />
+      <SubmitOverlayToast open={isActing} message={a.to1} />
     </>
   );
 };

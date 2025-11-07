@@ -24,6 +24,10 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
   loading = false,
   applicationId,
   status,
+  title,
+  confirmLabel,
+  cancelLabel,
+  processingLabel,
 }) => {
   // Animation state management
   const [animateIn, setAnimateIn] = useState(false);
@@ -44,6 +48,14 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
 
   if (!visible) return null;
 
+  const header = title ?? "Confirmation";
+  const confirmText = confirmLabel ?? "Confirm";
+  const cancelText = cancelLabel ?? "Cancel";
+  const processingText = processingLabel ?? "Processing...";
+  const bodyText = message || (applicationId && status
+    ? `Are you sure you want to set the status for loan application ${applicationId} to ${status}?`
+    : "Are you sure you want to continue?");
+
   const modalContent = (
     <div
       className={`fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}
@@ -53,26 +65,22 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
         className={`bg-white rounded-lg shadow-lg w-full max-w-sm p-6 relative text-black transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <h2 className="text-lg font-semibold mb-4 text-center">Confirmation</h2>
-        <p className="mb-6 text-center">
-          {applicationId && status
-            ? `Are you sure you want to set the status for loan application ${applicationId} to ${status}?`
-            : message}
-        </p>
+        <h2 className="text-lg font-semibold mb-4 text-center">{header}</h2>
+        <p className="mb-6 text-center">{bodyText}</p>
         <div className="flex justify-end gap-4">
           <button
             className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
             onClick={onConfirm}
             disabled={loading}
           >
-            {loading ? "Processing..." : "Confirm"}
+            {loading ? processingText : confirmText}
           </button>
           <button
             className={`px-4 py-2 rounded bg-gray-200 text-gray-700 ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-300'}`}
             onClick={onCancel}
             disabled={loading}
           >
-            Cancel
+            {cancelText}
           </button>
         </div>
       </div>
