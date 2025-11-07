@@ -17,7 +17,7 @@ const teamMembers = [
   { name: "Rodelo Lepiten", role: { en: "Head Collector", ceb: "Pangulo sa Kolektor" }, img: "/idPics/idRodelo.png" },
   { name: "Shiela May Lepon", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idShiela.png" },
   { name: "Morgan Thomas", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idMorgan.png" },
-  { name: "Ryan Martinez", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idRyan.pn  g" },
+  { name: "Ryan Martinez", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idRyan.png" },
   { name: "Olivia Hernandez", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idOlivia.png" },
   { name: "Kevin Lee", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idKevin.png" },
   { name: "Amy Gonzalez", role: { en: "Collector", ceb: "Kolektor" }, img: "/idPics/idAmy.png" },

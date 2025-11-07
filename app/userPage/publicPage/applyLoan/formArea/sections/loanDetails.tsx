@@ -262,11 +262,11 @@ export default function LoanDetails({
             const months = selectedLoan.months || 12;
 
             let serviceCharge = 0;
-            if (loanAmount >= 10000 && loanAmount <= 20000) {
+            if (loanAmount >= 6000 && loanAmount <= 20000) {
               serviceCharge = loanAmount * 0.05; 
             } else if (loanAmount >= 25000 && loanAmount <= 45000) {
               serviceCharge = 1000; 
-            } else if (loanAmount >= 50000 && loanAmount <= 500000) {
+            } else if (loanAmount >= 50000) {
               serviceCharge = loanAmount * 0.03;
             }
 
