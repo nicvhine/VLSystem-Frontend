@@ -162,6 +162,9 @@ export default function UserManagementPage() {
     }
   };
 
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const s = translations.sysadTranslation[language];
+  
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t3.toLowerCase()}...</p>;
 
   return (
