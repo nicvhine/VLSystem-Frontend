@@ -2,14 +2,17 @@ export interface ProfileEditingProps {
     username: string;
     email: string;
     phoneNumber: string;
+
     editingEmail: string;
     setEditingEmail: (v: string) => void;
-    isEditingEmailField: boolean;
-    setIsEditingEmailField: (v: boolean) => void;
     editingPhone: string;
     setEditingPhone: (v: string) => void;
+
+    isEditingEmailField: boolean;
+    setIsEditingEmailField: (v: boolean) => void;
     isEditingPhoneField: boolean;
     setIsEditingPhoneField: (v: boolean) => void;
+
     isEditingPasswordField: boolean;
     setIsEditingPasswordField: (v: boolean) => void;
     currentPassword: string;
@@ -18,31 +21,33 @@ export interface ProfileEditingProps {
     setNewPassword: (v: string) => void;
     confirmPassword: string;
     setConfirmPassword: (v: string) => void;
-    activeSettingsTab: string;
-    setActiveSettingsTab: (v: 'account' | 'notifications') => void;
     passwordError: string;
     setPasswordError: (v: string) => void; 
+
     emailError: string;
     setEmailError: (v: string) => void; 
     phoneError: string;
     setPhoneError: (v: string) => void;
+
     settingsSuccess: string;
     setSettingsSuccess: (v: string) => void;
-    notificationPreferences: {
-      email: boolean;
-      sms: boolean;
-    };
-    handleNotificationToggle: (type: 'sms' | 'email') => void;
+
     handleAccountSettingsUpdate: () => Promise<void>;
+
     emailVerificationSent: boolean;
     setEmailVerificationSent: (v: boolean) => void; 
+    smsVerificationSent: boolean;
+    setSmsVerificationSent: (v: boolean) => void; 
+
     userEnteredCode: string;
     setUserEnteredCode: (v: string) => void;
-    sendVerificationCode: () => Promise<void>;
+
+    sendEmailCode: () => Promise<void>;
     verifyEmailCode: () => Promise<boolean>;
-    sendSmsVerificationCode: () => Promise<void>;
+    sendSmsCode: () => Promise<void>;
     verifySmsCode: () => void;
-    smsVerificationSent: boolean;
-    emailVerified: boolean;
+
+
+    emailVerified: boolean;  
   }
   

@@ -13,6 +13,7 @@ export interface Collection {
   periodBalance: number;
   status: 'Paid' | 'Partial' | 'Unpaid' | 'Overdue' | 'Past Due';
   collector: string;
+  collectorId: string;
   note?: string;
   collectionNumber: number;
   mode?: string;

@@ -15,6 +15,8 @@ export function useProfileDropdownLogic(
   const [smsVerificationSent, setSmsVerificationSent] = useState(false);
   const [emailVerificationMessage, setEmailVerificationMessage] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [smsVerificationCode, setSmsVerificationCode] = useState('');
+  const [smsVerified, setSmsVerified] = useState(false);
 
   const {
     editingEmail,
@@ -77,8 +79,8 @@ export function useProfileDropdownLogic(
     }
   }, [editingEmail]);
 
-  // Send verification code
-  const sendVerificationCode = async (): Promise<void> => {
+  //EMAIL CODE 
+  const sendEmailCode = async (): Promise<void> => {
     setEmailError(""); 
   
     if (!editingEmail || !editingEmail.trim()) {
@@ -146,7 +148,6 @@ export function useProfileDropdownLogic(
     }
   };
 
-  // Verify code
   const verifyEmailCode = async (otpInput?: string): Promise<boolean> => {
     const codeToCheck = otpInput ?? userEnteredCode;
   
@@ -196,7 +197,6 @@ export function useProfileDropdownLogic(
       if (!emailRes.ok) throw new Error('Failed to update email.');
   
       localStorage.setItem('email', editingEmail);
-      // Notify UI to reflect new email immediately
       try {
         window.dispatchEvent(new CustomEvent('emailUpdated', { detail: { email: editingEmail } }));
       } catch {}
@@ -210,6 +210,118 @@ export function useProfileDropdownLogic(
       return false;
     }
   };  
+
+  //SMS CODE
+  const sendSmsCode = async () => {
+    setPhoneError("");
+    if (!editingPhone) {
+      setPhoneError("Please enter a phone number.");
+      return;
+    }
+  
+    try {
+      // Check if phone number is already in use
+      const checkRes = await fetch("http://localhost:3001/users/check-phone", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: editingPhone }), // use phone, not email
+      });
+  
+      const checkData = await checkRes.json();
+  
+      if (checkRes.status === 409) {
+        setPhoneError(checkData.error || "Phone number already in use.");
+        setSmsVerificationSent(false);
+        return;
+      }
+  
+      // Generate OTP
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+  
+      setSmsVerificationCode(code);
+      setSmsVerified(false);
+  
+      // Send OTP via SMS
+      const sendRes = await fetch("http://localhost:3001/sms/otpCode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: editingPhone, code }),
+      });
+  
+      if (!sendRes.ok) {
+        setPhoneError("Failed to send OTP. Please try again.");
+        setSmsVerificationSent(false);
+        return;
+      }
+  
+      setSmsVerificationSent(true);
+    } catch (err) {
+      console.error(err);
+      setPhoneError("Something went wrong. Please try again.");
+      setSmsVerificationSent(false);
+    }
+  };
+
+  const verifySmsCode = async (otpInput?: string): Promise<boolean> => {
+    const codeToCheck = otpInput ?? userEnteredCode;
+
+    setPhoneError("");
+  
+    if (!codeToCheck) {
+      setPhoneError("Please enter the verification code.");
+      return false;
+    }
+  
+    if (codeToCheck !== smsVerificationCode) {
+      setPhoneError("Incorrect verification code. Please try again.");
+      return false;
+    }
+
+    setSmsVerified(true);
+    setSmsVerificationSent(false);
+    setSettingsSuccess("Email verified successfully!");
+    setUserEnteredCode('');
+
+     // Update email in backend
+     const userId = localStorage.getItem('userId');
+     const token = localStorage.getItem('token');
+     if (!token) {
+       setEmailError("You must be logged in to update email.");
+       return false;
+     }
+  
+    try {
+      const res = await fetch(`http://localhost:3001/users/${userId}/update-phoneNumber`, {
+        method: "PUT",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ phoneNumber: editingPhone }),
+      });
+  
+      if (res.status === 409) {
+        const data = await res.json();
+        setPhoneError(data.error || "Phone number already in use.");
+        return false;
+      }
+  
+      if (!res.ok) throw new Error("Failed to update phone number.");
+  
+      localStorage.setItem("phoneNumber", editingPhone);
+      try {
+        window.dispatchEvent(new CustomEvent('phoneNumberUpdated', { detail: { phoneNumber: editingPhone } }));
+      } catch {}
+      setShowOtpModal(false);
+      setIsEditingPhoneField(false);
+      setSettingsSuccess('✔ Email changed successfully.');
+      return true;
+    } catch (err) {
+      console.error(err);
+      setPhoneError("Failed to update phone number.");
+      return false;
+    }
+  };
   
   const handleNotificationToggle = (type: 'sms' | 'email') => {
     const updatedPrefs = {
@@ -395,8 +507,10 @@ export function useProfileDropdownLogic(
     handleNotificationToggle,
     handleAccountSettingsUpdate,
     handleLogout,
-    sendVerificationCode,
+    sendEmailCode,
+    sendSmsCode,
     verifyEmailCode,
+    verifySmsCode,
     emailVerificationMessage,
     emailVerificationSent,
     userEnteredCode,
@@ -406,5 +520,7 @@ export function useProfileDropdownLogic(
     setShowSuccessModal,
     emailVerified,
     setEmailVerificationSent,
+    setSmsVerificationCode,
+    setSmsVerified,
   };
 }

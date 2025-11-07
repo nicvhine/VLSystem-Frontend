@@ -76,7 +76,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     setUserEnteredCode,
     sendVerificationCode,
     smsVerificationSent,
-    sendSmsVerificationCode,
+    sendSmsCode,    
     verifySmsCode,
     emailVerified,
     emailVerificationSent,
@@ -315,8 +315,6 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 setNewPassword={setNewPassword}
                 confirmPassword={confirmPassword}
                 setConfirmPassword={setConfirmPassword}
-                activeSettingsTab={activeSettingsTab}
-                setActiveSettingsTab={setActiveSettingsTab}
                 passwordError={passwordError}
                 setPasswordError={setPasswordError}
                 phoneError={phoneError}
@@ -325,7 +323,6 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 setEmailError={setEmailError}
                 settingsSuccess={settingsSuccess}
                 setSettingsSuccess={setSettingsSuccess}
-                notificationPreferences={notificationPreferences}
                 handleNotificationToggle={handleNotificationToggle}
                 handleAccountSettingsUpdate={handleAccountSettingsUpdate}
                 emailVerificationSent={emailVerificationSent}
@@ -334,7 +331,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 sendVerificationCode={sendVerificationCode}
                 verifyEmailCode={verifyEmailCode}
                 smsVerificationSent={smsVerificationSent}
-                sendSmsVerificationCode={sendSmsVerificationCode}
+                sendSmsCode={sendSmsCode}
                 verifySmsCode={verifySmsCode}
                 setEmailVerificationSent={setEmailVerificationSent}  
                 emailVerified={emailVerified}                           
