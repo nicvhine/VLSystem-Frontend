@@ -8,6 +8,7 @@ import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
+import translations from "@/app/commonComponents/translation";
 
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
 
@@ -24,6 +25,31 @@ interface User {
 export default function UserManagementPage({ currentUserRole }: { currentUserRole: string }) {
   const [activeStaff, setActiveStaff] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
+    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+    const onLang = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        const lang = ev.detail?.language;
+        if (lang === 'en' || lang === 'ceb') setLanguage(lang);
+      } catch {}
+    };
+    const onStorage = () => {
+      const l = localStorage.getItem('language');
+      if (l === 'en' || l === 'ceb') setLanguage(l);
+    };
+    window.addEventListener('languageChange', onLang as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('languageChange', onLang as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  const s = translations.sysadTranslation[language];
 
   // Add user modal
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -51,7 +77,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
         setActiveStaff(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching users:", err);
-        openErrorModal("Failed to fetch users.");
+        openErrorModal(s.t47);
       } finally {
         setLoading(false);
       }
@@ -78,7 +104,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
     if (!user.phoneNumber) errors.phoneNumber = "Phone number is required";
 
     if (Object.keys(errors).length > 0) {
-      return { success: false, fieldErrors: errors, message: "Please fill all fields." };
+      return { success: false, fieldErrors: errors, message: s.t67 };
     }
 
     try {
@@ -90,7 +116,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
 
       if (!res.ok) {
         const data = await res.json();
-        return { success: false, message: data?.error || "Failed to create user" };
+        return { success: false, message: data?.error || s.t67 };
       }
 
       const createdUser = await res.json();
@@ -98,7 +124,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
       return { success: true };
     } catch (err) {
       console.error(err);
-      return { success: false, message: "Error creating user." };
+      return { success: false, message: s.t67 };
     }
   };
 
@@ -112,7 +138,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
     try {
       setResettingUserId(confirmUser.userId);
       const res = await authFetch(`${USER_URL}/reset-password/${confirmUser.userId}`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to reset password");
+      if (!res.ok) throw new Error(s.t67);
 
       const { defaultPassword } = await res.json();
 
@@ -124,17 +150,17 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
 
-      openSuccessModal(`Password reset successfully for ${confirmUser.name}. A temporary password has been sent to their email.`);
+      openSuccessModal(`${s.t34} ${confirmUser.name}. ${s.t51}.`);
     } catch (err) {
       console.error("Reset password/email error:", err);
-      openErrorModal("Error resetting password. Please try again.");
+      openErrorModal(s.t67);
     } finally {
       setResettingUserId(null);
       setConfirmUser(null);
     }
   };
 
-  if (loading) return <p className="p-6 text-gray-500">Loading users...</p>;
+  if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t3.toLowerCase()}...</p>;
 
   return (
     <Sysad>
@@ -145,8 +171,8 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
         {confirmUser && (
           <ConfirmModal
             isOpen={!!confirmUser}
-            title="Reset Password"
-            message={`Are you sure you want to reset password for ${confirmUser.name}?`}
+            title={s.t34}
+            message={`${s.t73} ${confirmUser.name}?`}
             onConfirm={handleResetPasswordConfirmed}
             onCancel={cancelResetPassword}
           />
@@ -154,12 +180,12 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-lg font-bold text-gray-800">User Management</h1>
+          <h1 className="text-lg font-bold text-gray-800">{s.t3}</h1>
           <button
             onClick={() => setShowAddUserModal(true)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
-            Add Head User
+            {s.t31}
           </button>
         </div>
 
@@ -168,11 +194,11 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
           <table className="min-w-full divide-y divide-gray-100">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t39}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t38}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t43}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -188,7 +214,7 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
                       disabled={resettingUserId === user.userId}
                       className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
                     >
-                      {resettingUserId === user.userId ? "Resetting..." : "Reset Password"}
+                      {resettingUserId === user.userId ? `${s.t34}...` : s.t34}
                     </button>
                   </td>
                 </tr>
