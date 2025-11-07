@@ -83,9 +83,10 @@ export default function ProfileSettingsPanel({
         "loan officer": "loanOfficerLanguage",
         manager: "managerLanguage",
         borrower: "language",
+        sysad: "language",
       };
       const langKey = keyMap[storedRole || ""] as keyof typeof keyMap || "language";
-      const storedLanguage = localStorage.getItem(langKey) as "en" | "ceb" || "en";
+      const storedLanguage = (localStorage.getItem(langKey) as "en" | "ceb") || (localStorage.getItem('language') as "en" | "ceb") || "en";
       setLanguage(storedLanguage);
     }
   }, []);
@@ -93,13 +94,21 @@ export default function ProfileSettingsPanel({
   // Listen for language changes dynamically
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
-      const validRoles = ["borrower", "head", "loan officer", "manager"];
+      const validRoles = ["borrower", "head", "loan officer", "manager", "sysad"];
       if (validRoles.includes(role || "") && event.detail.language) {
         setLanguage(event.detail.language as "en" | "ceb");
       }
     };
+    const onStorage = () => {
+      const l = localStorage.getItem('language');
+      if (l === 'en' || l === 'ceb') setLanguage(l);
+    };
     window.addEventListener("languageChange", handleLanguageChange as EventListener);
-    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
   }, [role]);
 
   // Only show OTP modal if verification is required
@@ -346,7 +355,7 @@ export default function ProfileSettingsPanel({
 
         <ConfirmModal
           show={showConfirm}
-          message="Are you sure you want to save changes?"
+          message={t.t33}
           onConfirm={() => { void handleSaveWithConfirm(); }}
           onCancel={() => setShowConfirm(false)}
         />

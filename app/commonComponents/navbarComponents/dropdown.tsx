@@ -100,7 +100,8 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
         (role === 'head' && event.detail.userType === 'head') ||
         (role === 'loan officer' && event.detail.userType === 'loanOfficer') ||
         (role === 'manager' && event.detail.userType === 'manager') ||
-        (role === 'borrower' && event.detail.userType === 'borrower')
+        (role === 'borrower' && event.detail.userType === 'borrower') ||
+        (role === 'sysad' && event.detail.userType === 'sysad')
       ) {
         setLanguage(event.detail.language);
       }

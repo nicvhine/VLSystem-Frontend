@@ -14,6 +14,7 @@ import borrowerPageTranslation from "./borrowerPageTranslation";
 import borrowerTranslation from "./borrowerTranslation";
 import endorsementTranslation from "./endorsementTranslation";
 import viewBorrowerTranslation from "./viewBorrowerTranslation";
+import sysadTranslation from "./sysadTranslation";
 
 // New grouped translation files
 import applicationTranslation from "./applicationTranslation";
@@ -37,6 +38,7 @@ const translations = {
   borrowerTranslation,
   endorsementTranslation,
   viewBorrowerTranslation,
+  sysadTranslation,
   // New grouped translations
   applicationTranslation,
   authTranslation,

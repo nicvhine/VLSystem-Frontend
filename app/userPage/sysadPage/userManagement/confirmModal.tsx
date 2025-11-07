@@ -2,6 +2,7 @@
 
 import { FC, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import translations from "@/app/commonComponents/translation";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -14,6 +15,31 @@ interface ConfirmModalProps {
 const ConfirmModal: FC<ConfirmModalProps> = ({ isOpen, title = "Confirm", message, onConfirm, onCancel }) => {
   const [visible, setVisible] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
+    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+    const onLang = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        const lang = ev.detail?.language;
+        if (lang === 'en' || lang === 'ceb') setLanguage(lang);
+      } catch {}
+    };
+    const onStorage = () => {
+      const l = localStorage.getItem('language');
+      if (l === 'en' || l === 'ceb') setLanguage(l);
+    };
+    window.addEventListener('languageChange', onLang as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('languageChange', onLang as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  const s = translations.sysadTranslation[language];
 
   useEffect(() => {
     if (isOpen) {
@@ -49,13 +75,13 @@ const ConfirmModal: FC<ConfirmModalProps> = ({ isOpen, title = "Confirm", messag
             onClick={onConfirm}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold transition"
           >
-            Confirm
+            {s.t75}
           </button>
           <button
             onClick={onCancel}
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
           >
-            Cancel
+            {s.t6}
           </button>
         </div>
       </div>
