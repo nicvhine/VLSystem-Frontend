@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
-import Sysad from "../layout";
 import translations from "@/app/commonComponents/translation";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL;
@@ -54,8 +53,7 @@ export default function SysAdDashboard() {
   if (loading) return <p className="p-6 text-gray-500">{s.t69} dashboard...</p>;
 
   return (
-    <Sysad>
-      <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-gray-50 py-10 px-6">
         {/* Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center gap-4">
@@ -141,6 +139,5 @@ export default function SysAdDashboard() {
         </div>
 
       </div>
-    </Sysad>
   );
 }

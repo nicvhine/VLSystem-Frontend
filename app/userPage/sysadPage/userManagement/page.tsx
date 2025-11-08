@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
-import Sysad from "../layout";
 import emailjs from "emailjs-com";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
@@ -169,8 +168,7 @@ export default function UserManagementPage() {
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t3.toLowerCase()}...</p>;
 
   return (
-    <Sysad>
-      <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-gray-50 py-10 px-6">
         {errorMessage && <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />}
         {successMessage && <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={closeSuccessModal} />}
 
@@ -238,6 +236,5 @@ export default function UserManagementPage() {
           />
         )}
       </div>
-    </Sysad>
   );
 }

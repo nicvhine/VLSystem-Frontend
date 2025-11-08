@@ -374,7 +374,11 @@ export default function ProfileSettingsPanel({
         </button>
         <OTPModal
           otp={userEnteredCode}
-          setOtp={(code) => setUserEnteredCode(code)}
+          setOtp={(code) => {
+            setUserEnteredCode(code);
+            if (otpType === 'email') setEmailError('');
+            else setPhoneError('');
+          }}
           error={otpType === 'email' ? emailError : phoneError}
           handleVerifyOtp={
             otpType === 'email'
