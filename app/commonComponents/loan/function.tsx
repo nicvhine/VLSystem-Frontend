@@ -1,12 +1,12 @@
 import { LoanDetails } from "../utils/Types/loan";
 
-const API_URL = "http://localhost:3001/loans";
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL;
 
 export const fetchLoans = async (token: string | null): Promise<LoanDetails[]> => {
   if (!token) return [];
   
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(`${LOAN_URL}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

@@ -10,6 +10,8 @@ import Head from "@/app/userPage/headPage/layout";
 import Manager from "@/app/userPage/managerPage/layout";
 import Collector from "@/app/userPage/collectorPage/layout";
 
+const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL;
+
 export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("");
@@ -75,7 +77,7 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        let url = "http://localhost:3001/collections";
+        let url = `${COLLECTION_URL}`;
   
         const token = localStorage.getItem("token");
         const response = await fetch(url, {

@@ -5,14 +5,7 @@ import { format } from 'date-fns';
 import { Fragment } from 'react';
 import { ReceiptModalProps } from '@/app/commonComponents/utils/Types/modal';
 
-/**
- * Receipt modal component for displaying payment receipts
- * Shows payment details in a printable format with company branding
- * @param isOpen - Boolean to control modal visibility
- * @param onClose - Callback function to close the modal
- * @param payment - Payment data to display in the receipt
- * @returns JSX element containing the receipt modal
- */
+
 export default function ReceiptModal({ isOpen, onClose, payment }: ReceiptModalProps) {
   if (!payment) return null;
 

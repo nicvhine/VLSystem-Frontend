@@ -10,7 +10,8 @@ import Borrower from '../page';
 import translations from '@/app/commonComponents/translation';
 import BorrowerClient from '../borrowerClient';
 
-const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL 
+const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL;
+const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL;
 
 export default function LoanHistoryPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
@@ -91,7 +92,7 @@ export default function LoanHistoryPage() {
     setError('');
 
     try {
-      const res = await fetch(`http://localhost:3001/loans/details/${loanId}`, {
+      const res = await fetch(`${LOAN_URL}/details/${loanId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -110,7 +111,7 @@ export default function LoanHistoryPage() {
       try {
         const borrowersIdLocal = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : null;
         if (borrowersIdLocal) {
-          const schedRes = await fetch(`http://localhost:3001/collections/schedule/${borrowersIdLocal}/${loanId}`, {
+          const schedRes = await fetch(`${COLLECTION_URL}/schedule/${borrowersIdLocal}/${loanId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (schedRes.ok) {

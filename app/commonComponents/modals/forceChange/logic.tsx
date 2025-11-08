@@ -4,10 +4,9 @@ import { useState, useCallback, useEffect } from 'react';
 import SuccessModal from '../successModal';
 import ErrorModal from '../errorModal';
 
-/**
- * Custom hook for password change functionality
- * Handles validation, security features, and API communication
- */
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
+const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
+
 export function useChangePassword(
   id: string | null,
   role: 'user' | 'borrower',
@@ -38,8 +37,8 @@ export function useChangePassword(
       try {
         const endpoint =
           role === 'borrower'
-            ? `http://localhost:3001/borrowers/${borrowersId}`
-            : `http://localhost:3001/users/${userId}`;
+            ? `${BORROWER_URL}/${borrowersId}`
+            : `${USER_URL}/${userId}`;
 
         const res = await fetch(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
@@ -101,8 +100,8 @@ export function useChangePassword(
     try {
       const endpoint =
         role === 'borrower'
-          ? `http://localhost:3001/borrowers/${borrowersId}/change-password`
-          : `http://localhost:3001/users/${userId}/change-password`;
+          ? `${BORROWER_URL}/${borrowersId}/change-password`
+          : `${USER_URL}/${userId}/change-password`;
 
       const res = await fetch(endpoint, {
         method: 'PUT',
