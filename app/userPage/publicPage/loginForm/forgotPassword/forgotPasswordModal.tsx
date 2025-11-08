@@ -13,6 +13,8 @@ import StepOtp from './stepOtp';
 import StepReset from './stepReset';
 
 const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
+const SMS_URL = process.env.NEXT_PUBLIC_SMS_URL;
+const OTP_URL = process.env.NEXT_PUBLIC_OTP_URL;
 
 type Props = {
   forgotRole: string | null;
@@ -50,7 +52,7 @@ const sendOtpViaEmail = async (toEmail: string, otp: string) => {
 
 const sendOtpViaSMS = async (phoneNumber: string, otp: string) => {
   try {
-    const response = await fetch("http://localhost:3001/sms/sendOtp", {
+    const response = await fetch(`${SMS_URL}/sendOtp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ phoneNumber, otp }),
@@ -124,7 +126,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
   const handleSendOtp = async (method: 'email' | 'mobile') => {
     setSelectedMethod(method);
     try {
-      const res = await fetch(`http://localhost:3001/otp/generate-otp`, {
+      const res = await fetch(`${OTP_URL}/generate-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: borrower.email }),
@@ -154,7 +156,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
   const handleVerifyOtp = async () => {
     setError('');
     try {
-      const res = await fetch(`http://localhost:3001/otp/verify-otp`, {
+      const res = await fetch(`${OTP_URL}/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: borrower.email, otp }),

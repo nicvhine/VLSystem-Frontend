@@ -7,6 +7,8 @@ import { FiEdit } from "react-icons/fi";
 import EditPrincipalModal from "@/app/commonComponents/modals/editPrincipalModal";
 import { Application } from "@/app/commonComponents/utils/Types/application";
 
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
+
 export default function LoanComputationCard({ application, t, l }: LoanComputationCardProps) {
   const [loanApp, setLoanApp] = useState(application);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -21,7 +23,7 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:3001/loan-applications/${loanApp.applicationId}/principal`,
+        `${APPLICATION_URL}/${loanApp.applicationId}/principal`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

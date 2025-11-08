@@ -31,7 +31,7 @@ import IncomeCharactedCard from "./cards/incomeCharacterCard";
 //Translation 
 import { translateLoanType } from "../../utils/formatters";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL 
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL; 
 
 export default function ApplicationDetailsPage() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function ApplicationDetailsPage() {
     l,
     a,
     modalContainer,
-  } = useApplicationData("http://localhost:3001/loan-applications");
+  } = useApplicationData(`${APPLICATION_URL}`);
 
   const uiRole: 'head' | 'manager' | 'loanOfficer' | 'collector' | 'borrower' = (() => {
     const r = (role || '').toLowerCase();
@@ -173,7 +173,7 @@ export default function ApplicationDetailsPage() {
                   role={role}
                   setApplications={setApplications}
                   authFetch={authFetch}
-                  API_URL={API_URL ?? "http://localhost:3001/loan-applications"}
+                  API_URL={`${APPLICATION_URL}`}
                   setIsModalOpen={setIsModalOpen}
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}

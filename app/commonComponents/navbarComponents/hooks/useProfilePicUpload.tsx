@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 
+const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
+
 interface UseProfilePicUploadParams {
   currentProfilePic: string;
   username: string;
@@ -43,7 +45,7 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
 
     try {
       setIsWorking(true);
-      const res = await fetch(`http://localhost:3001/users/${userId}/upload-profile`, {
+      const res = await fetch(`${USER_URL}/${userId}/upload-profile`, {
         method: 'POST',
         body: formData,
         headers: { Authorization: `Bearer ${token}` },
@@ -77,7 +79,7 @@ export function useProfilePicUpload({ currentProfilePic, username }: UseProfileP
 
     try {
       setIsWorking(true);
-      const res = await fetch(`http://localhost:3001/users/${userId}/remove-profile`, {
+      const res = await fetch(`${USER_URL}/${userId}/remove-profile`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

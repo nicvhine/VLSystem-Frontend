@@ -2,6 +2,8 @@
 import { FiUser } from "react-icons/fi";
 import { ProfileCardProps } from "@/app/commonComponents/utils/Types/components";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 export default function ProfileCard({ application }: ProfileCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 flex-shrink-0">
@@ -15,7 +17,7 @@ export default function ProfileCard({ application }: ProfileCardProps) {
               src={
                 (application.profilePic as any).filePath.startsWith("http")
                   ? (application.profilePic as any).filePath
-                  : `http://localhost:3001/${
+                  : `${BASE_URL}/${
                       (application.profilePic as any).filePath
                     }`
               }

@@ -26,6 +26,7 @@ import { useSectionProgress } from "./hooks/useSectionProgress";
 import { usePrefillAndUploads } from "./hooks/usePrefill";
 
 const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
+const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
 
 interface FormAreaProps {
   loanType: string;
@@ -145,7 +146,7 @@ const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
     
       const fetchBalance = async () => {
         try {
-          const res = await fetch(`http://localhost:3001/borrowers/${borrowersId}/balance`);
+          const res = await fetch(`${BORROWER_URL}/${borrowersId}/balance`);
           const data = await res.json();
           setPreviousBalance(data.balance || 0);
         } catch (err) {

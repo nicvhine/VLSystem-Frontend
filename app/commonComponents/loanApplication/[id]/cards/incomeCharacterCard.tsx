@@ -7,6 +7,8 @@ import { formatCurrency, capitalizeWords } from "@/app/commonComponents/utils/fo
 import WithCollateral from "../customization/withCollateral";
 import OpenTerm from "../customization/openTerm";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+
 export default function IncomeCharactedCard({ application, l, t }: ApplicationDetailsTabsProps) {
   const [activeTab, setActiveTab] = useState<"income" | "references" | "collateral">("income");
 
@@ -187,7 +189,7 @@ export default function IncomeCharactedCard({ application, l, t }: ApplicationDe
                       href={
                         doc.filePath.startsWith("http")
                           ? doc.filePath
-                          : `http://localhost:3001/${doc.filePath}`
+                          : `${BASE_URL}/${doc.filePath}`
                       }
                       target="_blank"
                       rel="noopener noreferrer"

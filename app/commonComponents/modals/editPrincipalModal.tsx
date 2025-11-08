@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { FiX } from "react-icons/fi";
 
+const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
+
 interface LoanPreview {
   principal: number;
   months: number;
@@ -108,7 +110,7 @@ export default function EditPrincipalModal({
   useEffect(() => {
     const fetchApp = async () => {
       try {
-        const res = await fetch(`http://localhost:3001/loan-applications/${applicationId}`);
+        const res = await fetch(`${APPLICATION_URL}/${applicationId}`);
         if (!res.ok) throw new Error("Failed to fetch application");
         const data: LoanApplication = await res.json();
         setLoanApp(data);
@@ -175,7 +177,7 @@ export default function EditPrincipalModal({
     }
 
     try {
-      const res = await fetch(`http://localhost:3001/loan-applications/${applicationId}/principal`, {
+      const res = await fetch(`${APPLICATION_URL}/${applicationId}/principal`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ newPrincipal: amount }),
