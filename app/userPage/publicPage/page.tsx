@@ -17,6 +17,8 @@ import LandingNavbar from './navbar/landingNavbar';
 import LoginModal from './loginForm/loginModal';
 import SimulatorModal from './loanSimulator/loanSimulatorModal';
 import TrackModal from './applicationTracker/trackModal';
+import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';
+import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
 
 export default function LandingPage() {
   // Language state for bilingual support
@@ -29,6 +31,8 @@ export default function LandingPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   // Ensure only one modal is open at a time
   const openLogin = (open: boolean) => {
@@ -124,11 +128,15 @@ export default function LandingPage() {
         </section>
 
         <section id="footer">
-          <Footer language={language} />
+          <Footer 
+            language={language}
+            onPrivacyClick={() => setIsPrivacyOpen(true)}
+            onTermsClick={() => setIsTermsOpen(true)}
+          />
         </section>
       </div>
 
-      {/* Modals: login, simulator, tracker */}
+      {/* Modals: login, simulator, tracker, privacy, terms */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => openLogin(false)}
@@ -144,6 +152,18 @@ export default function LandingPage() {
         onClose={() => openTrack(false)}
         language={language}
       />
+      {isPrivacyOpen && (
+        <PrivacyContentModal
+          language={language}
+          onClose={() => setIsPrivacyOpen(false)}
+        />
+      )}
+      {isTermsOpen && (
+        <TermsContentModal
+          language={language}
+          onClose={() => setIsTermsOpen(false)}
+        />
+      )}
     </>
   );
 }
