@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
-import translations from "@/app/commonComponents/translation";
+import { useTranslation } from "../translationHook";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL;
 
@@ -13,15 +13,8 @@ export default function SysAdDashboard() {
   const [recentLogs, setRecentLogs] = useState<any[]>([]);
   const [totals, setTotals] = useState({ users: 0, borrowers: 0 });
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
-    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
-  }, []);
-
-  const s = translations.sysadTranslation[language];
-
+  const { s } = useTranslation();
+   
   useEffect(() => {
     const fetchData = async () => {
       try {

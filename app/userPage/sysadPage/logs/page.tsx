@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import translations from "@/app/commonComponents/translation";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
+import { useTranslation } from "../translationHook";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL 
 
@@ -22,30 +22,7 @@ export default function LogsPage() {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
-    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
-    const onLang = (e: Event) => {
-      try {
-        const ev = e as CustomEvent;
-        const lang = ev.detail?.language;
-        if (lang === 'en' || lang === 'ceb') setLanguage(lang);
-      } catch {}
-    };
-    const onStorage = () => {
-      const l = localStorage.getItem('language');
-      if (l === 'en' || l === 'ceb') setLanguage(l);
-    };
-    window.addEventListener('languageChange', onLang as EventListener);
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener('languageChange', onLang as EventListener);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, []);
-
-  const s = translations.sysadTranslation[language];
+  const { s } = useTranslation();
 
   const openErrorModal = (msg: string) => setErrorMessage(msg);
   const closeErrorModal = () => setErrorMessage(null);
