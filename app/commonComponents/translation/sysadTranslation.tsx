@@ -89,6 +89,44 @@ const sysadTranslation = {
     t74: "Are you sure you want to proceed?",
     t75: "Yes",
     t76: "No",
+
+    // Dashboard
+    t77: "Users",
+    t78: "Borrowers",
+    t79: "View All",
+
+    // Log Actions
+    action_CREATE_USER: "Create User",
+    action_DELETE_USER: "Delete User",
+    action_RESET_PASSWORD: "Reset Password",
+    action_UPLOAD_PROFILE_PIC: "Upload Profile Picture",
+    action_REMOVE_PROFILE_PIC: "Remove Profile Picture",
+    action_Change_Password: "Change Password",
+    action_Update_Email: "Update Email",
+    action_Update_Phone: "Update Phone",
+    action_Edit_Staff: "Edit Staff",
+    action_CREATE_LOAN_APPLICATION: "Create Loan Application",
+    action_UPDATE_LOAN_APPLICATION: "Update Loan Application",
+    action_UPDATE_PRINCIPAL: "Update Principal",
+    action_CREATE_AGENT: "Create Agent",
+
+    // Log Description Patterns
+    desc_Created_new_user: "Created new user",
+    desc_Reset_password: "Reset password for",
+    desc_Uploaded_profile_picture: "Uploaded profile picture for",
+    desc_Removed_profile_picture: "Removed profile picture for",
+    desc_changed_password: "changed password for",
+    desc_updated_email: "updated email to",
+    desc_updated_phone_number: "updated phone number to",
+    desc_updated_details: "updated details for",
+    desc_New_loan_application: "New",
+    desc_loan_application_submitted: "loan application submitted",
+    desc_Updated_loan_application: "Updated loan application",
+    desc_Created_new_agent: "Created new agent",
+    desc_Deleted_user: "Deleted user",
+    desc_Scheduled_interview: "Scheduled interview for loan application",
+    desc_on: "on",
+    desc_at: "at",
   },
   ceb: {
     // Sections
@@ -180,6 +218,44 @@ const sysadTranslation = {
     t74: "Sigurado ka bang magpadayon?",
     t75: "Oo",
     t76: "Dili",
+
+    // Dashboard
+    t77: "Mga Tiggamit",
+    t78: "Mga Nanghulam",
+    t79: "Tan-awa ang Tanan",
+
+    // Log Actions
+    action_CREATE_USER: "Paghimo og Tiggamit",
+    action_DELETE_USER: "Pagtangtang og Tiggamit",
+    action_RESET_PASSWORD: "I-reset ang Password",
+    action_UPLOAD_PROFILE_PIC: "I-upload ang Profile Picture",
+    action_REMOVE_PROFILE_PIC: "Tangtanga ang Profile Picture",
+    action_Change_Password: "Usba ang Password",
+    action_Update_Email: "I-update ang Email",
+    action_Update_Phone: "I-update ang Telepono",
+    action_Edit_Staff: "Usba ang Staff",
+    action_CREATE_LOAN_APPLICATION: "Paghimo og Loan Application",
+    action_UPDATE_LOAN_APPLICATION: "I-update ang Loan Application",
+    action_UPDATE_PRINCIPAL: "I-update ang Principal",
+    action_CREATE_AGENT: "Paghimo og Agent",
+
+    // Log Description Patterns
+    desc_Created_new_user: "Naghimo og bag-ong tiggamit",
+    desc_Reset_password: "I-reset ang password alang sa",
+    desc_Uploaded_profile_picture: "Na-upload ang profile picture alang sa",
+    desc_Removed_profile_picture: "Natangtang ang profile picture alang sa",
+    desc_changed_password: "giusab ang password alang sa",
+    desc_updated_email: "gi-update ang email ngadto sa",
+    desc_updated_phone_number: "gi-update ang numero sa telepono ngadto sa",
+    desc_updated_details: "gi-update ang detalye alang sa",
+    desc_New_loan_application: "Bag-ong",
+    desc_loan_application_submitted: "loan application gipasa",
+    desc_Updated_loan_application: "Gi-update ang loan application",
+    desc_Created_new_agent: "Naghimo og bag-ong agent",
+    desc_Deleted_user: "Natangtang ang user",
+    desc_Scheduled_interview: "Nag-schedule og interview para sa loan application",
+    desc_on: "sa",
+    desc_at: "sa",
   }
 };
 

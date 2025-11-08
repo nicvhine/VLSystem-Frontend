@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { useTranslation } from "../translationHook";
+import { translateAction, translateDescription } from "../utils/logTranslation";
+import { formatDate } from "@/app/commonComponents/utils/formatters";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL 
 
@@ -21,8 +23,7 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-  const { s } = useTranslation();
+  const { s, language } = useTranslation();
 
   const openErrorModal = (msg: string) => setErrorMessage(msg);
   const closeErrorModal = () => setErrorMessage(null);
@@ -71,11 +72,11 @@ export default function LogsPage() {
             <tbody className="divide-y divide-gray-100">
             {logs.map((log) => (
             <tr key={log.logId} className="hover:bg-gray-50 transition">
-                <td className="px-6 py-4 text-sm text-gray-600">{log.createdAt ? new Date(log.createdAt).toLocaleString() : "-"}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{log.createdAt ? formatDate(log.createdAt, language) : "-"}</td>
                 <td className="px-6 py-4 text-sm text-gray-800">{typeof log.name === "string" ? log.name : JSON.stringify(log.name)}</td>
                 <td className="px-6 py-4 text-sm text-gray-600 capitalize">{typeof log.role === "string" ? log.role : JSON.stringify(log.role)}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{typeof log.action === "string" ? log.action : JSON.stringify(log.action)}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{typeof log.description === "string" ? log.description : JSON.stringify(log.description)}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{typeof log.action === "string" ? translateAction(log.action, language) : JSON.stringify(log.action)}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{typeof log.description === "string" ? translateDescription(log.description, language) : JSON.stringify(log.description)}</td>
             </tr>
             ))}
             </tbody>

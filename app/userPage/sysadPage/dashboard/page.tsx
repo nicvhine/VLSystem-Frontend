@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
 import { useTranslation } from "../translationHook";
+import { translateDescription } from "../utils/logTranslation";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL;
 
@@ -13,7 +14,7 @@ export default function SysAdDashboard() {
   const [recentLogs, setRecentLogs] = useState<any[]>([]);
   const [totals, setTotals] = useState({ users: 0, borrowers: 0 });
   const [loading, setLoading] = useState(true);
-  const { s } = useTranslation();
+  const { s, language } = useTranslation();
    
   useEffect(() => {
     const fetchData = async () => {
@@ -58,7 +59,7 @@ export default function SysAdDashboard() {
 
           <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center gap-4">
             <div>
-              <h2 className="text-gray-600 text-sm">Borrowers</h2>
+              <h2 className="text-gray-600 text-sm">{s.t78}</h2>
               <p className="text-2xl font-semibold">{totalBorrowers}</p>
             </div>
           </div>
@@ -79,7 +80,7 @@ export default function SysAdDashboard() {
               href="/userPage/sysadPage/userManagement"
               className="text-blue-600 text-sm font-medium hover:underline"
             >
-              View All
+              {s.t79}
             </a>
           </div>
           <table className="min-w-full divide-y divide-gray-100">
@@ -92,12 +93,12 @@ export default function SysAdDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {activeStaff.slice(0, 5).map((s) => (
-                <tr key={s.userId} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-sm text-gray-800">{s.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 capitalize">{s.role}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{s.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{s.username}</td>
+              {activeStaff.slice(0, 5).map((staff) => (
+                <tr key={staff.userId} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 text-sm text-gray-800">{staff.name}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600 capitalize">{staff.role}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{staff.email}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{staff.username}</td>
                 </tr>
               ))}
             </tbody>
@@ -114,7 +115,7 @@ export default function SysAdDashboard() {
               href="/userPage/sysadPage/logs"
               className="text-blue-600 text-sm font-medium hover:underline ml-auto"
             >
-              View All
+              {s.t79}
             </a>
           </div>
           <ul className="divide-y divide-gray-100">
@@ -123,8 +124,8 @@ export default function SysAdDashboard() {
             ) : (
               recentLogsLimited.map((log) => (
                 <li key={log.logId} className="px-6 py-4 text-sm flex justify-between">
-                  <span className="text-gray-700">{log.description}</span>
-                  <span className="text-gray-400 text-xs">{formatDate(log.createdAt)}</span>
+                  <span className="text-gray-700">{typeof log.description === "string" ? translateDescription(log.description, language) : log.description}</span>
+                  <span className="text-gray-400 text-xs">{formatDate(log.createdAt, language)}</span>
                 </li>
               ))
             )}

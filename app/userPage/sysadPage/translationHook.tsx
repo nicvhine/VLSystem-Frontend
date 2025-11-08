@@ -29,6 +29,7 @@ export const useTranslation = () => {
       const s = translations.sysadTranslation[language];
 
     return{
-        s
+        s,
+        language
     }
 }
