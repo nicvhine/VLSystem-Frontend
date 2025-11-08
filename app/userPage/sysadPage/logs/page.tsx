@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import translations from "@/app/commonComponents/translation";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
-import Sysad from "../layout";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL 
@@ -74,8 +73,7 @@ export default function LogsPage() {
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t2.toLowerCase()}...</p>;
 
   return (
-    <Sysad>
-      <div className="min-h-screen bg-gray-50 py-10 px-6">
+    <div className="min-h-screen bg-gray-50 py-10 px-6">
         <h1 className="text-lg font-bold mb-6">{s.t16}</h1>
 
         {errorMessage && (
@@ -107,6 +105,5 @@ export default function LogsPage() {
           </table>
         </div>
       </div>
-    </Sysad>
   );
 }

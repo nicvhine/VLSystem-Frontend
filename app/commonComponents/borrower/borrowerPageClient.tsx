@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Head from '@/app/userPage/headPage/layout';
-import Manager from '@/app/userPage/managerPage/layout';
-import LoanOfficer from '@/app/userPage/loanOfficerPage/layout';
+import Navbar from '@/app/commonComponents/navbarComponents/navbar';
 import { useBorrowersList } from './hooks';
 import Filter from '../utils/sortAndSearch';
 import translations from '../translation';
@@ -22,8 +20,8 @@ export default function BorrowerPageClient() {
   const t = translations.borrowerTranslation[language];
   const loanT = translations.loanTermsTranslator[language];
 
-  const Wrapper =
-    role === 'loan officer' ? LoanOfficer : role === 'head' ? Head : Manager;
+  // Map role to navbar role format
+  const navbarRole = role === 'loan officer' ? 'loanOfficer' : role === 'head' ? 'head' : 'manager';
 
   useEffect(() => {
     const fetchOverview = async () => {
@@ -54,9 +52,11 @@ export default function BorrowerPageClient() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto px-4 sm:px-6 py-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">{t.h1}</h1>
+    <div className="min-h-screen bg-white">
+      <Navbar role={navbarRole} />
+      <div className="min-h-screen bg-gray-50">
+        <div className="mx-auto px-4 sm:px-6 py-8">
+          <h1 className="text-2xl font-semibold text-gray-800 mb-6">{t.h1}</h1>
 
         <Filter
           searchQuery={searchQuery}
@@ -133,6 +133,7 @@ export default function BorrowerPageClient() {
               </tbody>
             </table>
           )}
+        </div>
         </div>
       </div>
     </div>
