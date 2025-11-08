@@ -14,6 +14,7 @@ export default function TermsGateModal({
   acceptLabel,
   showCloseIcon = true,
   showCancelButton = true,
+  showAgreementCheckbox = true,
 }: {
   language: "en" | "ceb";
   onAccept: () => void;
@@ -26,6 +27,7 @@ export default function TermsGateModal({
   acceptLabel?: string;
   showCloseIcon?: boolean;
   showCancelButton?: boolean;
+  showAgreementCheckbox?: boolean;
 }) {
   const [animateIn, setAnimateIn] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -93,29 +95,33 @@ export default function TermsGateModal({
             </button>
           </div>
         </div>
-        <label className="mt-4 flex items-start gap-3 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
-            disabled={enforceReading ? (!tosRead || !privacyRead) : false}
-            title={enforceReading && (!tosRead || !privacyRead) ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
-            className={`mt-1 h-4 w-4 border-gray-300 rounded ${enforceReading && (!tosRead || !privacyRead) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
-          />
-          <span>
-            {language === 'en'
-              ? 'I have read and agree to the Terms of Service and Privacy Policy.'
-              : 'Nabasa ug nisugot ko sa Terms of Service ug Privacy Policy.'}
-          </span>
-        </label>
-        <div className="mt-2 text-xs text-gray-500">
-          {enforceReading && !tosRead && (
-            <div>• {language === 'en' ? 'Please open and read the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
-          )}
-          {enforceReading && !privacyRead && (
-            <div>• {language === 'en' ? 'Please open and read the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
-          )}
-        </div>
+        {showAgreementCheckbox && (
+          <>
+            <label className="mt-4 flex items-start gap-3 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+                disabled={enforceReading ? (!tosRead || !privacyRead) : false}
+                title={enforceReading && (!tosRead || !privacyRead) ? (language === 'en' ? 'Open and scroll both documents first' : 'Abliha ug i-scroll ang duha ka dokumento una') : undefined}
+                className={`mt-1 h-4 w-4 border-gray-300 rounded ${enforceReading && (!tosRead || !privacyRead) ? 'text-gray-400 cursor-not-allowed' : 'text-red-600'}`}
+              />
+              <span>
+                {language === 'en'
+                  ? 'I have read and agree to the Terms of Service and Privacy Policy.'
+                  : 'Nabasa ug nisugot ko sa Terms of Service ug Privacy Policy.'}
+              </span>
+            </label>
+            <div className="mt-2 text-xs text-gray-500">
+              {enforceReading && !tosRead && (
+                <div>• {language === 'en' ? 'Please open and read the Terms of Service.' : 'Palihug abliha ug basaha ang Terms of Service.'}</div>
+              )}
+              {enforceReading && !privacyRead && (
+                <div>• {language === 'en' ? 'Please open and read the Privacy Policy.' : 'Palihug abliha ug basaha ang Privacy Policy.'}</div>
+              )}
+            </div>
+          </>
+        )}
         <div className="mt-4 flex justify-end gap-3">
           {showCancelButton && (
             <button onClick={handleCancel} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
@@ -124,8 +130,12 @@ export default function TermsGateModal({
           )}
           <button
             onClick={handleAccept}
-            disabled={enforceReading ? (!agree || !tosRead || !privacyRead) : !agree}
-            className={`px-4 py-2 rounded-lg text-white ${enforceReading ? (agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed') : (agree ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed')}`}
+            disabled={showAgreementCheckbox ? (enforceReading ? (!agree || !tosRead || !privacyRead) : !agree) : false}
+            className={`px-4 py-2 rounded-lg text-white ${
+              showAgreementCheckbox
+                ? (enforceReading ? (agree && tosRead && privacyRead ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed') : (agree ? 'bg-red-600 hover:bg-red-700' : 'bg-red-300 cursor-not-allowed'))
+                : 'bg-red-600 hover:bg-red-700'
+            }`}
           >
             {acceptLabel ?? (language === 'en' ? 'Accept and Submit' : 'Mouyon ug Isumite')}
           </button>

@@ -293,9 +293,9 @@ export default function LoanDetails({
             const adjustedLoan = balanceDecision === "addPrincipal" ? baseLoan + previousBalance : baseLoan;
 
             let serviceCharge = 0;
-            if (adjustedLoan >= 10000 && adjustedLoan <= 20000) serviceCharge = adjustedLoan * 0.05;
-            else if (adjustedLoan > 20000 && adjustedLoan <= 45000) serviceCharge = 1000;
-            else if (adjustedLoan > 45000 && adjustedLoan <= 500000) serviceCharge = adjustedLoan * 0.03;
+            if (adjustedLoan >= 6000 && adjustedLoan <= 20000) serviceCharge = adjustedLoan * 0.05;
+            else if (adjustedLoan >= 25000 && adjustedLoan <= 45000) serviceCharge = 1000;
+            else if (adjustedLoan >= 50000) serviceCharge = adjustedLoan * 0.03;
 
             const interestRate = Number(selectedLoan.interest) / 100;
             const months = selectedLoan.months || 12;

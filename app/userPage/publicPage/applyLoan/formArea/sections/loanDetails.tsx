@@ -163,10 +163,6 @@ export default function LoanDetails({
                       ? `Pwede nga kantidad: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Ang interest mosunod sa kantidad. Wala'y fixed nga termino.`
                       : `Pwede nga kantidad: ${formatAmt(minAmount)} – ${formatAmt(maxAmount)}. Ang interest ug termino mo-depende sa imong kantidad.`);
 
-                const tipNote = language === 'en'
-                  ? `Tip: Amounts above the maximum use the highest bracket's rate.`
-                  : `Tip: Kung molapas sa maximum, gamiton ang rate sa pinakataas nga bracket.`;
-
                 return (
                   <span className="relative inline-flex group align-middle">
                     <button
@@ -183,7 +179,6 @@ export default function LoanDetails({
                     >
                       <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-100 rotate-45 border-l border-t border-gray-200"></div>
                       <p className="leading-snug">{tipMain}</p>
-                      <p className="mt-1 text-[10px] text-gray-600">{tipNote}</p>
                     </div>
                   </span>
                 );
@@ -262,11 +257,11 @@ export default function LoanDetails({
             const months = selectedLoan.months || 12;
 
             let serviceCharge = 0;
-            if (loanAmount >= 10000 && loanAmount <= 20000) {
+            if (loanAmount >= 6000 && loanAmount <= 20000) {
               serviceCharge = loanAmount * 0.05; 
             } else if (loanAmount >= 25000 && loanAmount <= 45000) {
               serviceCharge = 1000; 
-            } else if (loanAmount >= 50000 && loanAmount <= 500000) {
+            } else if (loanAmount >= 50000) {
               serviceCharge = loanAmount * 0.03;
             }
 

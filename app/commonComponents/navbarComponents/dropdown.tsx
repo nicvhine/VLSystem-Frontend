@@ -10,6 +10,9 @@ import SuccessModal from '@/app/commonComponents/modals/successModal';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import SubmitOverlayToast from '@/app/commonComponents/utils/submitOverlayToast';
+import TermsGateModal from '@/app/commonComponents/modals/termsPrivacy/TermsGateModal';
+import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';
+import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
 
 interface ProfileDropdownProps {
   name: string;
@@ -38,6 +41,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   const [modalMsg, setModalMsg] = useState('');
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+
+  // Terms and Privacy modals
+  const [showTermsGate, setShowTermsGate] = useState(false);
+  const [showTosContent, setShowTosContent] = useState(false);
+  const [showPrivacyContent, setShowPrivacyContent] = useState(false);
 
   // Dropdown logic hook
   const {
@@ -350,7 +358,12 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
         </div>
 
         <div className="text-xs text-center text-gray-400 py-2 border-t border-gray-100 mt-0.5">
-          {t.t7}
+          <button
+            onClick={() => setShowTermsGate(true)}
+            className="hover:text-gray-600 transition-colors hover:underline"
+          >
+            {t.t7}
+          </button>
         </div>
       </div>
 
@@ -380,7 +393,37 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
       {showErrorModal && (
         <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
       )}
+
+      {/* Terms and Privacy Modals */}
+      {showTermsGate && (
+        <TermsGateModal
+          language={language}
+          onAccept={() => setShowTermsGate(false)}
+          onCancel={() => setShowTermsGate(false)}
+          onOpenTos={() => setShowTosContent(true)}
+          onOpenPrivacy={() => setShowPrivacyContent(true)}
+          enforceReading={false}
+          showCancelButton={false}
+          acceptLabel={language === 'en' ? 'Close' : 'Isara'}
+          showAgreementCheckbox={false}
+        />
+      )}
+      
+      {showTosContent && (
+        <TermsContentModal
+          language={language}
+          onClose={() => setShowTosContent(false)}
+        />
+      )}
+      
+      {showPrivacyContent && (
+        <PrivacyContentModal
+          language={language}
+          onClose={() => setShowPrivacyContent(false)}
+        />
+      )}
     </div>
   );
 }
+
 

@@ -26,9 +26,7 @@ export const formatDate = (dateString?: string) =>
       })
     : "-";
 
-// -----------------------------
-// SSR-SAFE translateLoanType
-// -----------------------------
+
 export const translateLoanType = (
   type?: string,
   language: "en" | "ceb" = "en"
@@ -61,9 +59,6 @@ export const translateLoanType = (
   }
 };
 
-// -----------------------------
-// SSR-SAFE getRequirements
-// -----------------------------
 export const getRequirements = (type: string, language: "en" | "ceb" = "en") => {
   const t = translations.requirementsTranslation?.[language] ?? translations.requirementsTranslation.en;
   const englishType = translateLoanType(type, "en");
@@ -83,10 +78,8 @@ export const getRequirements = (type: string, language: "en" | "ceb" = "en") => 
   }
 };
 
-// -----------------------------
-// SSR-SAFE getLoanProcessSteps
-// -----------------------------
 export const getLoanProcessSteps = (language: "en" | "ceb" = "en") => {
   const t = translations.requirementsTranslation?.[language] ?? translations.requirementsTranslation.en;
   return [t.t10, t.t11, t.t12, t.t13, t.t14];
 };
+

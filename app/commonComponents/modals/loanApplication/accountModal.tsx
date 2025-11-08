@@ -321,9 +321,15 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
       }
 
       setSuccessOpen(true);
+      
+      // Close account modal after 2 seconds
+      setTimeout(() => {
+        handleModalClose();
+      }, 2000);
+      
+      // Close success modal after 5 seconds
       setTimeout(() => {
         setSuccessOpen(false);
-        handleModalClose();
       }, 5000);
     } catch (error: any) {
       console.error(error);
