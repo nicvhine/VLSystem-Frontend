@@ -14,9 +14,9 @@ import AccountModal from "@/app/commonComponents/modals/loanApplication/accountM
 import ApplicationButtons from "./components/applicationButtons";
 
 // Wrappers
-import Head from "@/app/userPage/headPage/page";
-import Manager from "@/app/userPage/managerPage/page";
-import LoanOfficer from "@/app/userPage/loanOfficerPage/page";
+import Head from "@/app/userPage/headPage/layout";
+import Manager from "@/app/userPage/managerPage/layout";
+import LoanOfficer from "@/app/userPage/loanOfficerPage/layout";
 
 // Hooks
 import { useApplicationData } from "./hooks";

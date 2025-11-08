@@ -39,6 +39,7 @@ interface PenaltyEndorseModalProps {
   isOpen: boolean;
   onClose: () => void;
   collection: any;
+  onSubmit: (formData: FormData) => Promise<void>; 
 }
 
 export default function PenaltyEndorseModal({ isOpen, onClose, collection }: PenaltyEndorseModalProps) {

@@ -1,10 +1,10 @@
 'use client';
 
-// Hook: profile picture preview, upload, and cancel handlers
 import { useState } from 'react';
 
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL
-const URL = process.env.NEXT_PUBLIC_URL
+const BASE_URL = process.env.NEXT_PUBLIC_URL; 
+
 // Manage profile picture preview and upload lifecycle
 export default function useProfilePic() {
   const [profilePic, setProfilePic] = useState<string | null>(null);
@@ -25,24 +25,24 @@ export default function useProfilePic() {
   // Upload selected image to backend and persist URL
   const handleSaveProfilePic = async () => {
     if (!previewPic) return;
-
+  
     const fileInput = document.getElementById('profileUpload') as HTMLInputElement;
     const file = fileInput?.files?.[0];
     if (!file) return;
-
+  
     const formData = new FormData();
     formData.append('profilePic', file);
-
+  
     const userId = localStorage.getItem('userId');
     try {
       const res = await fetch(`${USER_URL}/${userId}/upload-profile`, {
         method: 'POST',
         body: formData,
       });
-
+  
       const data = await res.json();
       if (data.profilePic) {
-        const fullUrl = `${URL}${data.profilePic}`;
+        const fullUrl = `${BASE_URL}${data.profilePic}`;
         setProfilePic(fullUrl);
         setOriginalPic(fullUrl);
         localStorage.setItem('profilePic', fullUrl);

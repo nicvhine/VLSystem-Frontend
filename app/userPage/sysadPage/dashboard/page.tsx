@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
-import Sysad from "../page";
+import Sysad from "../layout";
 import translations from "@/app/commonComponents/translation";
 
 const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL;

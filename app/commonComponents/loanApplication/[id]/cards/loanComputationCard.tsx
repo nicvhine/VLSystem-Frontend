@@ -5,6 +5,7 @@ import { formatCurrency } from "@/app/commonComponents/utils/formatters";
 import { LoanComputationCardProps } from "@/app/commonComponents/utils/Types/components";
 import { FiEdit } from "react-icons/fi";
 import EditPrincipalModal from "@/app/commonComponents/modals/editPrincipalModal";
+import { Application } from "@/app/commonComponents/utils/Types/application";
 
 export default function LoanComputationCard({ application, t, l }: LoanComputationCardProps) {
   const [loanApp, setLoanApp] = useState(application);
@@ -32,8 +33,7 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
 
       const data = await res.json();
 
-      // Normalize fields as strings for consistent UI rendering
-      xtedApp = {
+      const updatedApp = {
         ...data.updatedApp,
         appLoanAmount: String(data.updatedApp.appLoanAmount),
         appLoanTerms: String(data.updatedApp.appLoanTerms),
@@ -44,7 +44,7 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
         appMonthlyDue: String(data.updatedApp.appMonthlyDue),
         appNetReleased: String(data.updatedApp.appNetReleased),
         appServiceFee: String(data.updatedApp.appServiceFee),
-      };
+      };      
 
       setLoanApp(updatedApp);
       setIsEditOpen(false);
@@ -129,11 +129,14 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
         onSave={(newAmount) => {
           setLoanApp(prev => {
             if (!prev) return prev;
-            return {
+            const updated: Application = {
               ...prev,
-              appLoanAmount: newAmount, 
+              appLoanAmount: newAmount,
+
             };
+            return updated;
           });
+          
           setIsEditOpen(false);
         }}
         onClose={() => setIsEditOpen(false)}

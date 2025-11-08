@@ -26,23 +26,14 @@ export const formatDate = (dateString?: string) =>
       })
     : "-";
 
-export const formatDateTime = (dateString?: string) =>
-  dateString
-    ? new Date(dateString).toLocaleString("en-PH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : "—";
 
 export const translateLoanType = (
   type?: string,
   language: "en" | "ceb" = "en"
 ): string => {
-  const t = translations.loanTermsTranslator[language];
+  // Fallback to 'en' if translations not ready
+  const t = (translations.loanTermsTranslator?.[language] ?? translations.loanTermsTranslator.en);
+
   if (!type) return "—";
 
   const raw = type;
@@ -68,8 +59,8 @@ export const translateLoanType = (
   }
 };
 
-export const getRequirements = (type: string, language: "en" | "ceb") => {
-  const t = translations.requirementsTranslation[language];
+export const getRequirements = (type: string, language: "en" | "ceb" = "en") => {
+  const t = translations.requirementsTranslation?.[language] ?? translations.requirementsTranslation.en;
   const englishType = translateLoanType(type, "en");
 
   switch (englishType) {
@@ -87,7 +78,8 @@ export const getRequirements = (type: string, language: "en" | "ceb") => {
   }
 };
 
-export const getLoanProcessSteps = (language: "en" | "ceb") => {
-  const t = translations.requirementsTranslation[language];
+export const getLoanProcessSteps = (language: "en" | "ceb" = "en") => {
+  const t = translations.requirementsTranslation?.[language] ?? translations.requirementsTranslation.en;
   return [t.t10, t.t11, t.t12, t.t13, t.t14];
 };
+

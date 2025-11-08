@@ -14,11 +14,9 @@ import Footer from './sections/footer';
 import LandingNavbar from './navbar/landingNavbar';
 
 // Modal components
-import LoginModal from './loginForm/page';
-import SimulatorModal from './loanSimulator/page';
-import TrackModal from './applicationTracker/page';
-import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';
-import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
+import LoginModal from './loginForm/loginModal';
+import SimulatorModal from './loanSimulator/loanSimulatorModal';
+import TrackModal from './applicationTracker/trackModal';
 
 export default function LandingPage() {
   // Language state for bilingual support
@@ -31,8 +29,6 @@ export default function LandingPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [isTrackOpen, setIsTrackOpen] = useState(false);
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isTermsOpen, setIsTermsOpen] = useState(false);
 
   // Ensure only one modal is open at a time
   const openLogin = (open: boolean) => {
@@ -128,15 +124,11 @@ export default function LandingPage() {
         </section>
 
         <section id="footer">
-          <Footer 
-            language={language}
-            onPrivacyClick={() => setIsPrivacyOpen(true)}
-            onTermsClick={() => setIsTermsOpen(true)}
-          />
+          <Footer language={language} />
         </section>
       </div>
 
-      {/* Modals: login, simulator, tracker, privacy, terms */}
+      {/* Modals: login, simulator, tracker */}
       <LoginModal
         isOpen={isLoginOpen}
         onClose={() => openLogin(false)}
@@ -152,18 +144,6 @@ export default function LandingPage() {
         onClose={() => openTrack(false)}
         language={language}
       />
-      {isPrivacyOpen && (
-        <PrivacyContentModal
-          language={language}
-          onClose={() => setIsPrivacyOpen(false)}
-        />
-      )}
-      {isTermsOpen && (
-        <TermsContentModal
-          language={language}
-          onClose={() => setIsTermsOpen(false)}
-        />
-      )}
     </>
   );
 }

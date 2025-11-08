@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Pagination from '@/app/commonComponents/utils/pagination';
 import Borrower from '../page';
 import translations from '@/app/commonComponents/translation';
+import BorrowerClient from '../borrowerClient';
 
 const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL 
 
@@ -138,7 +139,7 @@ export default function LoanHistoryPage() {
   };
 
   return (
-    <Borrower>
+    <BorrowerClient>
       <div className="min-h-screen bg-gray-50 p-6 md:p-12">
         <div className="max-w-screen-2xl mx-auto w-full">
           <div className="flex items-center justify-between mb-6">
@@ -273,12 +274,8 @@ export default function LoanHistoryPage() {
                                     <div>
                                       <p className="text-xs text-gray-500">{t.t8}</p>
                                       <p className="font-medium text-gray-800">{det.name || (loan as any).name || '-'}</p>
-                                      <p className="text-xs text-gray-500 mt-1">{borrower.contact || '-'}</p>
-                                      <p className="text-xs text-gray-500">{borrower.address || '-'}</p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-gray-500">{t.t9}</p>
-                                      <p className="font-medium text-gray-800">{det.paymentSchedule || (loan as any).paymentSchedule || '-'}</p>
                                       <p className="text-xs text-gray-500 mt-1">{t.t10}: {formatCurrency(det.paidAmount ?? (loan as any).paidAmount ?? 0)}</p>
                                       <p className="text-xs text-gray-500">{t.t11}: {formatCurrency(det.balance ?? (loan as any).balance ?? (det.appTotalPayable ?? (loan as any).appTotalPayable ?? 0))}</p>
                                     </div>
@@ -349,6 +346,6 @@ export default function LoanHistoryPage() {
         )}
         </div>
       </div>
-    </Borrower>
+    </BorrowerClient>
   );
 }

@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import { authFetch } from "@/app/commonComponents/loanApplication/function";
-import Sysad from "../page";
+import Sysad from "../layout";
 import emailjs from "emailjs-com";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
 import translations from "@/app/commonComponents/translation";
+
 
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
 
@@ -22,34 +24,11 @@ interface User {
   status?: "Active" | "Inactive";
 }
 
-export default function UserManagementPage({ currentUserRole }: { currentUserRole: string }) {
+export default function UserManagementPage() {
   const [activeStaff, setActiveStaff] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-
-  useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('language') : null;
-    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
-    const onLang = (e: Event) => {
-      try {
-        const ev = e as CustomEvent;
-        const lang = ev.detail?.language;
-        if (lang === 'en' || lang === 'ceb') setLanguage(lang);
-      } catch {}
-    };
-    const onStorage = () => {
-      const l = localStorage.getItem('language');
-      if (l === 'en' || l === 'ceb') setLanguage(l);
-    };
-    window.addEventListener('languageChange', onLang as EventListener);
-    window.addEventListener('storage', onStorage);
-    return () => {
-      window.removeEventListener('languageChange', onLang as EventListener);
-      window.removeEventListener('storage', onStorage);
-    };
-  }, []);
-
-  const s = translations.sysadTranslation[language];
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
+  const router = useRouter();
 
   // Add user modal
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -67,6 +46,30 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const openSuccessModal = (msg: string) => setSuccessMessage(msg);
   const closeSuccessModal = () => setSuccessMessage(null);
+
+  useEffect(() => {
+    const role = localStorage.getItem('role') || '';
+    if (!role) {
+      router.push('/');
+      return;
+    }
+    setCurrentUserRole(role);
+
+    const fetchUsers = async () => {
+      try {
+        const res = await authFetch(`${USER_URL}`);
+        const data = await res.json();
+        setActiveStaff(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        openErrorModal("Failed to fetch users.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [router]);
 
   // Fetch all users
   useEffect(() => {
@@ -160,6 +163,9 @@ export default function UserManagementPage({ currentUserRole }: { currentUserRol
     }
   };
 
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const s = translations.sysadTranslation[language];
+  
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t3.toLowerCase()}...</p>;
 
   return (
