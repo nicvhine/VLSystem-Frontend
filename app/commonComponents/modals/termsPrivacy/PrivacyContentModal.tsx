@@ -130,31 +130,31 @@ export default function PrivacyContentModal({ language, onClose, onReadComplete 
 
         {/* Content */}
         <div ref={scrollRef} className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 88px)' }}>
-          <div className="prose prose-sm max-w-none text-gray-700 space-y-6">
-            <h3>1. Scope</h3>
-            <p>This Policy explains how we collect, use, disclose, and protect your personal data when you apply for and use our Service.</p>
-            <h3>2. Data We Collect</h3>
-            <p>Includes identification details, contact information, demographic data, financial and employment details, references, documents, device and usage data.</p>
-            <h3>3. Purposes of Processing</h3>
-            <p>To evaluate your application, perform credit and risk assessments, comply with legal obligations, communicate with you, and improve the Service.</p>
-            <h3>4. Legal Bases</h3>
-            <p>We process data based on your consent, performance of a contract, legal obligations, and legitimate interests such as fraud prevention and Service improvement.</p>
-            <h3>5. Sharing and Disclosure</h3>
-            <p>We may share data with regulators, credit bureaus, payment and verification partners, affiliates, and service providers subject to appropriate safeguards.</p>
-            <h3>6. Data Retention</h3>
-            <p>We retain personal data only as long as necessary for the purposes stated and as required by law and regulatory guidelines.</p>
-            <h3>7. Your Rights</h3>
-            <p>You may access, correct, or request deletion of your data, withdraw consent, and object to processing, subject to applicable laws.</p>
-            <h3>8. Security</h3>
-            <p>We implement organizational, technical, and physical safeguards to protect your information from unauthorized access and misuse.</p>
-            <h3>9. International Transfers</h3>
-            <p>Where data is transferred across borders, we ensure appropriate protection consistent with applicable data protection laws.</p>
-            <h3>10. Cookies and Tracking</h3>
-            <p>We may use cookies and similar technologies for analytics and functionality. You can control cookies via your browser settings.</p>
-            <h3>11. Updates</h3>
-            <p>We may update this Policy from time to time. Material updates will be communicated via the app or email.</p>
-            <h3>12. Contact</h3>
-            <p>For privacy inquiries or complaints, contact our Data Protection Officer via the contact details in the app.</p>
+          <div className="prose prose-sm max-w-none text-gray-700 space-y-3">
+            <h3 className="text-gray-700 mb-1">1. Scope</h3>
+            <p className="text-gray-700">This Policy explains how we collect, use, disclose, and protect your personal data when you apply for and use our Service.</p>
+            <h3 className="text-gray-700 mb-1">2. Data We Collect</h3>
+            <p className="text-gray-700">Includes identification details, contact information, demographic data, financial and employment details, references, documents, device and usage data.</p>
+            <h3 className="text-gray-700 mb-1">3. Purposes of Processing</h3>
+            <p className="text-gray-700">To evaluate your application, perform credit and risk assessments, comply with legal obligations, communicate with you, and improve the Service.</p>
+            <h3 className="text-gray-700 mb-1">4. Legal Bases</h3>
+            <p className="text-gray-700">We process data based on your consent, performance of a contract, legal obligations, and legitimate interests such as fraud prevention and Service improvement.</p>
+            <h3 className="text-gray-700 mb-1">5. Sharing and Disclosure</h3>
+            <p className="text-gray-700">We may share data with regulators, credit bureaus, payment and verification partners, affiliates, and service providers subject to appropriate safeguards.</p>
+            <h3 className="text-gray-700 mb-1">6. Data Retention</h3>
+            <p className="text-gray-700">We retain personal data only as long as necessary for the purposes stated and as required by law and regulatory guidelines.</p>
+            <h3 className="text-gray-700 mb-1">7. Your Rights</h3>
+            <p className="text-gray-700">You may access, correct, or request deletion of your data, withdraw consent, and object to processing, subject to applicable laws.</p>
+            <h3 className="text-gray-700 mb-1">8. Security</h3>
+            <p className="text-gray-700">We implement organizational, technical, and physical safeguards to protect your information from unauthorized access and misuse.</p>
+            <h3 className="text-gray-700 mb-1">9. International Transfers</h3>
+            <p className="text-gray-700">Where data is transferred across borders, we ensure appropriate protection consistent with applicable data protection laws.</p>
+            <h3 className="text-gray-700 mb-1">10. Cookies and Tracking</h3>
+            <p className="text-gray-700">We may use cookies and similar technologies for analytics and functionality. You can control cookies via your browser settings.</p>
+            <h3 className="text-gray-700 mb-1">11. Updates</h3>
+            <p className="text-gray-700">We may update this Policy from time to time. Material updates will be communicated via the app or email.</p>
+            <h3 className="text-gray-700 mb-1">12. Contact</h3>
+            <p className="text-gray-700">For privacy inquiries or complaints, contact our Data Protection Officer via the contact details in the app.</p>
           </div>
           {!hasReachedEnd && (
             <div className="mt-4 text-xs text-gray-500 text-center">

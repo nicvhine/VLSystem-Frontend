@@ -131,29 +131,29 @@ export default function TermsContentModal({ language, onClose, onReadComplete }:
 
         {/* Content */}
         <div ref={scrollRef} className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(85vh - 88px)' }}>
-          <div className="prose prose-sm max-w-none text-gray-700 space-y-6">
-            <h3>1. Introduction</h3>
-            <p>These Terms govern your use of our loan application services and related features (the “Service”). By submitting an application, you agree to these Terms.</p>
-            <h3>2. Eligibility</h3>
-            <p>Applicants must be of legal age and capable of entering into binding contracts. Additional eligibility criteria may apply based on loan products.</p>
-            <h3>3. Application and Verification</h3>
-            <p>You authorize us to collect and verify information, contact references, and conduct credit checks with authorized bureaus or partners.</p>
-            <h3>4. Interest, Fees, and Charges</h3>
-            <p>Interest rates, service charges, penalties, and any other fees applicable to your loan will be disclosed to you prior to approval and form part of your loan agreement.</p>
-            <h3>5. Repayment and Default</h3>
-            <p>Repayments must be made on schedule. Late or missed payments may incur penalties, collections actions, and affect your credit standing.</p>
-            <h3>6. Communications</h3>
-            <p>You consent to receive communications (SMS, email, calls, in-app notifications) related to your application and account.</p>
-            <h3>7. Data Privacy</h3>
-            <p>Your information is processed in accordance with our Privacy Policy. Do not submit third-party data unless you have obtained proper consent.</p>
-            <h3>8. Prohibited Use</h3>
-            <p>Do not submit false documents, misrepresent identity, or use the Service for unlawful purposes.</p>
-            <h3>9. Changes to the Service</h3>
-            <p>We may update the Service or these Terms from time to time. Material changes will be communicated through the app or by email.</p>
-            <h3>10. Governing Law</h3>
-            <p>These Terms are governed by applicable laws of your jurisdiction. Disputes shall be resolved by competent courts as provided by law.</p>
-            <h3>11. Contact Us</h3>
-            <p>For questions about these Terms, contact our support team through the details provided in the app.</p>
+          <div className="prose prose-sm max-w-none text-gray-700 space-y-3">
+            <h3 className="text-gray-700 mb-1">1. Introduction</h3>
+            <p className="text-gray-700">These Terms govern your use of our loan application services and related features (the "Service"). By submitting an application, you agree to these Terms.</p>
+            <h3 className="text-gray-700 mb-1">2. Eligibility</h3>
+            <p className="text-gray-700">Applicants must be of legal age and capable of entering into binding contracts. Additional eligibility criteria may apply based on loan products.</p>
+            <h3 className="text-gray-700 mb-1">3. Application and Verification</h3>
+            <p className="text-gray-700">You authorize us to collect and verify information, contact references, and conduct credit checks with authorized bureaus or partners.</p>
+            <h3 className="text-gray-700 mb-1">4. Interest, Fees, and Charges</h3>
+            <p className="text-gray-700">Interest rates, service charges, penalties, and any other fees applicable to your loan will be disclosed to you prior to approval and form part of your loan agreement.</p>
+            <h3 className="text-gray-700 mb-1">5. Repayment and Default</h3>
+            <p className="text-gray-700">Repayments must be made on schedule. Late or missed payments may incur penalties, collections actions, and affect your credit standing.</p>
+            <h3 className="text-gray-700 mb-1">6. Communications</h3>
+            <p className="text-gray-700">You consent to receive communications (SMS, email, calls, in-app notifications) related to your application and account.</p>
+            <h3 className="text-gray-700 mb-1">7. Data Privacy</h3>
+            <p className="text-gray-700">Your information is processed in accordance with our Privacy Policy. Do not submit third-party data unless you have obtained proper consent.</p>
+            <h3 className="text-gray-700 mb-1">8. Prohibited Use</h3>
+            <p className="text-gray-700">Do not submit false documents, misrepresent identity, or use the Service for unlawful purposes.</p>
+            <h3 className="text-gray-700 mb-1">9. Changes to the Service</h3>
+            <p className="text-gray-700">We may update the Service or these Terms from time to time. Material changes will be communicated through the app or by email.</p>
+            <h3 className="text-gray-700 mb-1">10. Governing Law</h3>
+            <p className="text-gray-700">These Terms are governed by applicable laws of your jurisdiction. Disputes shall be resolved by competent courts as provided by law.</p>
+            <h3 className="text-gray-700 mb-1">11. Contact Us</h3>
+            <p className="text-gray-700">For questions about these Terms, contact our support team through the details provided in the app.</p>
           </div>
           {!hasReachedEnd && (
             <div className="mt-4 text-xs text-gray-500 text-center">
