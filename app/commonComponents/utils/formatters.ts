@@ -17,14 +17,43 @@ export const capitalizeWords = (text?: string) => {
     .join(" ");
 };
 
-export const formatDate = (dateString?: string) =>
-  dateString
-    ? new Date(dateString).toLocaleDateString("en-PH", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
-    : "-";
+// Cebuano month names
+const cebuanoMonths: { [key: number]: string } = {
+  0: "Enero",
+  1: "Pebrero",
+  2: "Marso",
+  3: "Abril",
+  4: "Mayo",
+  5: "Hunyo",
+  6: "Hulyo",
+  7: "Agosto",
+  8: "Septiyembre",
+  9: "Oktubre",
+  10: "Nobiyembre",
+  11: "Disyembre",
+};
+
+export const formatDate = (dateString?: string, language: "en" | "ceb" = "en") => {
+  if (!dateString) return "-";
+  
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+  
+  if (language === "ceb") {
+    // Custom Cebuano date formatting
+    const month = cebuanoMonths[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    return `${month} ${day}, ${year}`;
+  } else {
+    // English date formatting
+    return date.toLocaleDateString("en-PH", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+};
 
 export const formatDateTime = (dateString?: string) =>
   dateString

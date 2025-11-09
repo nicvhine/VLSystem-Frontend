@@ -8,7 +8,7 @@ import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
-import translations from "@/app/commonComponents/translation";
+import { useTranslation } from "../translationHook";
 
 
 const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
@@ -46,6 +46,9 @@ export default function UserManagementPage() {
   const openSuccessModal = (msg: string) => setSuccessMessage(msg);
   const closeSuccessModal = () => setSuccessMessage(null);
 
+  // Translation hook
+  const { s } = useTranslation();
+
   useEffect(() => {
     const role = localStorage.getItem('role') || '';
     if (!role) {
@@ -61,31 +64,15 @@ export default function UserManagementPage() {
         setActiveStaff(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Error fetching users:", err);
-        openErrorModal("Failed to fetch users.");
+        openErrorModal(s.t67);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  // Fetch all users
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await authFetch(`${USER_URL}`);
-        const data = await res.json();
-        setActiveStaff(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Error fetching users:", err);
-        openErrorModal(s.t47);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
 
   // Create new user function for CreateUserModal
   const handleCreateUser = async (user: {
@@ -161,9 +148,6 @@ export default function UserManagementPage() {
       setConfirmUser(null);
     }
   };
-
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
-  const s = translations.sysadTranslation[language];
   
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t3.toLowerCase()}...</p>;
 
