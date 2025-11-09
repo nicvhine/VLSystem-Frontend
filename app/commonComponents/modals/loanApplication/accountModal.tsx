@@ -8,10 +8,7 @@ import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast"
 import emailjs from "emailjs-com";
 import applicationActionsTranslation from "../../translation/applicationActionsTranslation";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL
-const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL
-const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Interface for application data structure
 interface Application {
@@ -147,7 +144,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
       try {
         setCollectorsError(null);
         setIsFetchingCollectors(true);
-        const res = await authFetch(`${USER_URL}/collectors`);
+        const res = await authFetch(`${BASE_URL}/users/collectors`);
         if (!res.ok) {
           let msg = "Failed to fetch collectors";
           try {
@@ -208,7 +205,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
         if (!selectedApp.borrowersId) throw new Error("Borrower ID missing for reloan");
 
         // 1. Deactivate old loans
-        const deactivateRes = await authFetch(`${LOAN_URL}/reloan/${selectedApp.applicationId}`, {
+        const deactivateRes = await authFetch(`${BASE_URL}/loans/reloan/${selectedApp.applicationId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
         });
@@ -223,7 +220,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
 
         // 2. Generate new loan
         const loanResponse = await authFetch(
-          `${LOAN_URL}/generate-loan/${selectedApp.applicationId}`,
+          `${BASE_URL}/loans/generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
         if (!loanResponse.ok) {
@@ -234,7 +231,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
 
         // 3. Update borrower details based on the newest approved reloan
         const updateBorrowerRes = await authFetch(
-          `${BORROWER_URL}/${selectedApp.borrowersId}`,
+          `${BASE_URL}/borrowers/${selectedApp.borrowersId}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -255,7 +252,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
         setSuccessMessage(i.ma13);
       } else {
         // Create borrower account
-        const borrowerRes = await authFetch(`${BORROWER_URL}`, {
+        const borrowerRes = await authFetch(`${BASE_URL}/borrowers`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -281,7 +278,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
         }
 
         // Set application status active
-        const appRes = await authFetch(`${APPLICATION_URL}/${selectedApp.applicationId}`, {
+        const appRes = await authFetch(`${BASE_URL}/loan-applications/${selectedApp.applicationId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: "Active" }),
@@ -294,7 +291,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
 
         // Generate new loan
         const loanResponse = await authFetch(
-          `${LOAN_URL}/generate-loan/${selectedApp.applicationId}`,
+          `${BASE_URL}/loans_generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
         if (!loanResponse.ok) {

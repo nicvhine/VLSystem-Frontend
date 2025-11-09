@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 
-const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 interface LoanDetails {
   loanId: string;
@@ -72,7 +72,7 @@ export default function LoanHistory({ loans, translations, language }: LoanHisto
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${PAYMENT_URL}?loanId=${loanId}`, {
+      const response = await fetch(`${BASE_URL}/payments/?loanId=${loanId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       

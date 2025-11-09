@@ -3,7 +3,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { AddAgentParams, Agent, FieldErrors } from '../utils/Types/agent';
 
-const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Normalize agent object from API
 export const normalizeAgent = (raw: any): Agent => ({
@@ -35,7 +35,7 @@ export const fetchAgents = async (
       return;
     }
 
-    const res = await fetch(`${AGENT_URL}`, {
+    const res = await fetch(`${BASE_URL}/agents}`, {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     });
 
@@ -97,7 +97,7 @@ export const handleAddAgent = async ({
     const token = localStorage.getItem('token');
     if (!token) return { success: false, message: 'No token found. Please log in again.' };
 
-    const res = await fetch(`${AGENT_URL}`, {
+    const res = await fetch(`${BASE_URL}/agents`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: nameTrim, phoneNumber: phoneTrim }),

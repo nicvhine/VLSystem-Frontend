@@ -17,7 +17,7 @@ const progressSteps = {
   ceb: ["Nagahulat", "Gipadala", "Gidawat"]
 };
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function TrackModal({ isOpen, onClose, language = "en" }: TrackModalProps) {
   const router = useRouter(); 
@@ -75,7 +75,7 @@ export default function TrackModal({ isOpen, onClose, language = "en" }: TrackMo
 
     try {
       setIsTracking(true);
-      const res = await fetch(`${APPLICATION_URL}/${applicationId}`);
+      const res = await fetch(`${BASE_URL}/loan-applications/${applicationId}`);
       if (!res.ok) {
         setStatus(null);
         setErrorMsg(t.er2);

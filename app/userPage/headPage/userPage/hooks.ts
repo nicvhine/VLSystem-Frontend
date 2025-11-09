@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import emailjs from "emailjs-com";
 import type { User, DecisionConfig } from "@/app/commonComponents/utils/Types/userPage";
 
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 export function useUsersLogic() {
   const [users, setUsers] = useState<User[]>([]);
@@ -23,7 +23,7 @@ export function useUsersLogic() {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await fetch(`${USER_URL}`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${BASE_URL}/users`, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) throw new Error("Failed to fetch users.");
       const data = await res.json();
       setUsers(data);
@@ -71,7 +71,7 @@ export function useUsersLogic() {
     try {
       const payload = { ...input };
       const token = localStorage.getItem("token");
-      const res = await fetch(`${USER_URL}`, {
+      const res = await fetch(`${BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
@@ -138,7 +138,7 @@ export function useUsersLogic() {
       onConfirm: async () => {
         try {
           const token = localStorage.getItem("token");
-          const res = await fetch(`${USER_URL}/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+          const res = await fetch(`${BASE_URL}/users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
           if (!res.ok) throw new Error(await res.text() || "Failed to delete user");
           setUsers((prev) => prev.filter(u => u.userId !== userId));
           setDecisionModalOpen(false);
@@ -162,7 +162,7 @@ export function useUsersLogic() {
         try {
           const payload: Partial<User> = { ...editFormData, status: editFormData.status ?? "Active" };
           const token = localStorage.getItem("token");
-          const res = await fetch(`${USER_URL}/${editingUserId}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+          const res = await fetch(`${BASE_URL}/users/${editingUserId}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
           const data = await res.json();
           if (!res.ok) { setDecisionConfig(prev => prev ? { ...prev, error: data.message } : prev); return; }
           setUsers(prev => prev.map(u => u.userId === data.user.userId ? data.user : u));

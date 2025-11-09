@@ -7,7 +7,7 @@ import { useTranslation } from "../translationHook";
 import { translateAction, translateDescription } from "../utils/logTranslation";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
 
-const LOG_URL = process.env.NEXT_PUBLIC_LOG_URL 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL 
 
 interface LogEntry {
   logId: string;
@@ -31,7 +31,7 @@ export default function LogsPage() {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const res = await authFetch(`${LOG_URL}/all`);
+        const res = await authFetch(`${BASE_URL}/sysad/all`);
         if (!res.ok) throw new Error(s.t25);
   
         const data = await res.json();

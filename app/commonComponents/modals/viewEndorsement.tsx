@@ -9,7 +9,7 @@ import { formatCurrency, formatDate } from "../utils/formatters";
 import SuccessModal from "./successModal";
 import ErrorModal from "./errorModal";
 
-const PENALTY_URL = process.env.NEXT_PUBLIC_PENALTY_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface ViewEndorsementModalProps {
   isOpen: boolean;
@@ -68,7 +68,7 @@ export default function ViewEndorsementModal({
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch(`${PENALTY_URL}`, {
+      const res = await fetch(`${BASE_URL}/penalty`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -106,7 +106,7 @@ export default function ViewEndorsementModal({
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch(`${PENALTY_URL}/${id}/approve`, {
+      const res = await fetch(`${BASE_URL}/penalty/${id}/approve`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -134,7 +134,7 @@ export default function ViewEndorsementModal({
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch(`${PENALTY_URL}/${id}/reject`, {
+      const res = await fetch(`${BASE_URL}/penalty/${id}/reject`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

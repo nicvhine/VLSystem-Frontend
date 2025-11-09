@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { User } from "lucide-react";
 import translations from "../../translation";
 
-const URL = process.env.NEXT_PUBLIC_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Dynamically import layouts to prevent server/client conflicts
 const Head = dynamic(() => import("@/app/userPage/headPage/layout"), { ssr: false });
@@ -88,7 +88,7 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
     hasProfilePic && mergedData.profilePic.filePath.startsWith("https")
       ? mergedData.profilePic.filePath
       : hasProfilePic
-      ? `${URL}/${mergedData.profilePic.filePath}`
+      ? `${BASE_URL}/${mergedData.profilePic.filePath}`
       : null;
 
   const latestLoanId = stats?.latestLoan?.loanId;

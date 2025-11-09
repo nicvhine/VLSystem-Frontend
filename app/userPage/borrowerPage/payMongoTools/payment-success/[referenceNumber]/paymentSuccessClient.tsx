@@ -8,7 +8,7 @@ interface Props {
   referenceNumber: string;
 }
 
-const PAYMENT_URL = process.env.NEXT_PUBLIC_PAYMENT_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function PaymentSuccessClient({ referenceNumber }: Props) {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function PaymentSuccessClient({ referenceNumber }: Props) {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${PAYMENT_URL}/${referenceNumber}/paymongo/success`, {
+      const res = await fetch(`${BASE_URL}/payments/${referenceNumber}/paymongo/success`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

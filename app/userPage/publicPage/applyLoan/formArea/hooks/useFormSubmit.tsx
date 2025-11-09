@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 interface UseFormSubmitProps {
   appName: string;
@@ -236,7 +236,7 @@ export function useFormSubmit(props: UseFormSubmitProps) {
         // start background polling (fire-and-forget)
         (async () => {
           try {
-            const statusUrl = `${APPLICATION_URL}/${loanId}`;
+            const statusUrl = `${BASE_URL}/loan-applications/${loanId}`;
             const maxAttempts = 15; // e.g., ~30s at 2s interval
             const intervalMs = 2000;
             let attempts = 0;
