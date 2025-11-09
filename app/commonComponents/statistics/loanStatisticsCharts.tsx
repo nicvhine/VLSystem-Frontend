@@ -15,7 +15,7 @@ import translations from "../translation";
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-const STAT_URL = process.env.NEXT_PUBLIC_STAT_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 type LoanTypeStat = { loanType: string; count: number };
 type ApplicationStatusStat = { applied: number; approved: number; denied: number };
@@ -40,8 +40,8 @@ export default function LoanStatisticsCharts() {
     const fetchCharts = async () => {
       try {
         const [loanTypeRes, appStatusRes] = await Promise.all([
-          fetch(`${STAT_URL}/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${STAT_URL}/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE_URL}/stat/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         const loanTypeData = await loanTypeRes.json();

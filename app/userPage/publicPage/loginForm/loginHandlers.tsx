@@ -8,8 +8,7 @@ interface LoginParams {
   setShowSMSModal?: (show: boolean) => void;
 }
 
-const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export async function loginHandler({
   username,
@@ -30,7 +29,7 @@ export async function loginHandler({
 
     // --- Try borrower login ---
     try {
-      const borrowerRes = await fetch(`${BORROWER_URL}/login`, {
+      const borrowerRes = await fetch(`${BASE_URL}/borrowers/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -60,7 +59,7 @@ export async function loginHandler({
 
     if (!loggedIn) {
       // --- Try staff login ---
-      const staffRes = await fetch(`${USER_URL}/login`, {
+      const staffRes = await fetch(`${BASE_URL}/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

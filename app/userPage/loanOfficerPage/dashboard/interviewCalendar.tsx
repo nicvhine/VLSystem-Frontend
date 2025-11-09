@@ -16,7 +16,7 @@ import { Application, InterviewEvent } from "@/app/commonComponents/utils/Types/
 import { InterviewCalendarProps } from "@/app/commonComponents/utils/Types/components";
 import emailjs from "emailjs-com";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Calendar localization setup
 const locales = { "en-US": enUS };
@@ -101,7 +101,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
     async function fetchApplications() {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch(`${APPLICATION_URL}`, {
+        const res = await fetch(`${BASE_URL}/loan-applications`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -143,7 +143,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${APPLICATION_URL}/${selectedApp.applicationId}/schedule-interview`, {
+      const res = await fetch(`${BASE_URL}/loan-applications/${selectedApp.applicationId}/schedule-interview`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import emailjs from 'emailjs-com';
 import useAccountSettings from './accountSettings';
 
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-const SMS_URL = process.env.NEXT_PUBLIC_SMS_URL;
 
 export function useProfileDropdownLogic(
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>,
@@ -99,7 +97,7 @@ export function useProfileDropdownLogic(
     }
   
     try {
-      const res = await fetch(`${USER_URL}/check-email`, {
+      const res = await fetch(`${BASE_URL}/users/check-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: editingEmail }),
@@ -183,7 +181,7 @@ export function useProfileDropdownLogic(
     }
   
     try {
-      const emailRes = await fetch(`${USER_URL}/${userId}/update-email`, {
+      const emailRes = await fetch(`${BASE_URL}/users/${userId}/update-email`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -225,7 +223,7 @@ export function useProfileDropdownLogic(
   
     try {
       // Check if phone number is already in use
-      const checkRes = await fetch(`${USER_URL}/check-phone`, {
+      const checkRes = await fetch(`${BASE_URL}/users/check-phone`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber: editingPhone }), // use phone, not email
@@ -246,7 +244,7 @@ export function useProfileDropdownLogic(
       setSmsVerified(false);
   
       // Send OTP via SMS
-      const sendRes = await fetch(`${SMS_URL}/otpCode`, {
+      const sendRes = await fetch(`${BASE_URL}/sms/otpCode`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ phoneNumber: editingPhone, code }),
@@ -295,7 +293,7 @@ export function useProfileDropdownLogic(
      }
   
     try {
-      const res = await fetch(`${USER_URL}/${userId}/update-phoneNumber`, {
+      const res = await fetch(`${BASE_URL}/users/${userId}/update-phoneNumber`, {
         method: "PUT",
         headers: { 
           "Content-Type": "application/json",
@@ -365,7 +363,7 @@ export function useProfileDropdownLogic(
           return;
         }
 
-        const emailRes = await fetch(`${USER_URL}/${userId}/update-email`, {
+        const emailRes = await fetch(`${BASE_URL}/users/${userId}/update-email`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -393,7 +391,7 @@ export function useProfileDropdownLogic(
       // PHONE UPDATE
       if (isEditingPhoneField) {
         const phoneRes = await fetch(
-          `${USER_URL}/${userId}/update-phoneNumber`,
+          `${BASE_URL}/users/${userId}/update-phoneNumber`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

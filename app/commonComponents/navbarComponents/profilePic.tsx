@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL
 const BASE_URL = process.env.NEXT_PUBLIC_URL; 
 
 // Manage profile picture preview and upload lifecycle
@@ -35,7 +34,7 @@ export default function useProfilePic() {
   
     const userId = localStorage.getItem('userId');
     try {
-      const res = await fetch(`${USER_URL}/${userId}/upload-profile`, {
+      const res = await fetch(`${BASE_URL}/users/${userId}/upload-profile`, {
         method: 'POST',
         body: formData,
       });

@@ -15,7 +15,7 @@ import Head from "@/app/userPage/headPage/layout";
 import Manager from "@/app/userPage/managerPage/layout";
 import LoanOfficer from "@/app/userPage/loanOfficerPage/layout";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function ArchivePageClient() {
   const { role, language } = useLoanApplicationPage();
@@ -35,7 +35,7 @@ export default function ArchivePageClient() {
   useEffect(() => {
     const fetchArchivedApplications = async () => {
       try {
-        const response = await authFetch(`${APPLICATION_URL}/archive`);
+        const response = await authFetch(`${BASE_URL}/loan-applications/archive`);
         const data = await response.json();
         setApplications(data);
       } catch (error) {

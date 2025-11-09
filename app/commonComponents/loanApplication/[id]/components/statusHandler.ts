@@ -1,4 +1,4 @@
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 // Unified function to update loan status
 async function handleApiUpdate(
@@ -14,7 +14,7 @@ async function handleApiUpdate(
     const id = application?.applicationId;
     if (!id) throw new Error("Missing application id");
 
-    const res = await authFetch(`${APPLICATION_URL}/${id}`, {
+    const res = await authFetch(`${BASE_URL}/loan-applications/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),

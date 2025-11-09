@@ -12,9 +12,7 @@ import StepMethod from './stepMethod';
 import StepOtp from './stepOtp';
 import StepReset from './stepReset';
 
-const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
-const SMS_URL = process.env.NEXT_PUBLIC_SMS_URL;
-const OTP_URL = process.env.NEXT_PUBLIC_OTP_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 type Props = {
   forgotRole: string | null;
@@ -52,7 +50,7 @@ const sendOtpViaEmail = async (toEmail: string, otp: string) => {
 
 const sendOtpViaSMS = async (phoneNumber: string, otp: string) => {
   try {
-    const response = await fetch(`${SMS_URL}/sendOtp`, {
+    const response = await fetch(`${BASE_URL}/sms/sendOtp`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ phoneNumber, otp }),
@@ -104,7 +102,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
   const handleSearchAccount = async () => {
     setError('');
     try {
-      const res = await fetch(`${BORROWER_URL}/find-account`, {
+      const res = await fetch(`${BASE_URL}/borrowers/find-account`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: usernameOrEmail }),
@@ -122,11 +120,10 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
     }
   };
 
-  // Send OTP (✅ fixed call)
   const handleSendOtp = async (method: 'email' | 'mobile') => {
     setSelectedMethod(method);
     try {
-      const res = await fetch(`${OTP_URL}/generate-otp`, {
+      const res = await fetch(`${BASE_URL}/otp/generate-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: borrower.email }),
@@ -156,7 +153,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
   const handleVerifyOtp = async () => {
     setError('');
     try {
-      const res = await fetch(`${OTP_URL}/verify-otp`, {
+      const res = await fetch(`${BASE_URL}/otp/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: borrower.email, otp }),
@@ -182,7 +179,7 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
       return;
     }
     try {
-      const res = await fetch(`${BORROWER_URL}/reset-password/${borrowerId}`, {
+      const res = await fetch(`${BASE_URL}/borrowers/reset-password/${borrowerId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ newPassword }),

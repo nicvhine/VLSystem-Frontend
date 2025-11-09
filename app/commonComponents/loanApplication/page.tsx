@@ -18,7 +18,7 @@ import useIsMobile from "../utils/useIsMobile";
 import Filter from "../utils/sortAndSearch";
 import { translateLoanType } from "../utils/formatters";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 export default function ApplicationsPage() {
   const { role, language, activeFilter, setActiveFilter } = useLoanApplicationPage();
@@ -39,7 +39,7 @@ export default function ApplicationsPage() {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const response = await authFetch(`${APPLICATION_URL}/active`);
+        const response = await authFetch(`${BASE_URL}/loan-applications/active`);
         const data = await response.json();
         setApplications(data);
       } catch (error) {

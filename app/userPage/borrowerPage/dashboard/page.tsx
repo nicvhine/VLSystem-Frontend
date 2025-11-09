@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import Borrower from '../page';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import TermsGateModal from '@/app/commonComponents/modals/termsPrivacy/TermsGateModal';
 import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';

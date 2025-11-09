@@ -10,8 +10,7 @@ import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
 import { useTranslation } from "../translationHook";
 
-
-const USER_URL = process.env.NEXT_PUBLIC_USER_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface User {
   userId: string;
@@ -34,7 +33,12 @@ export default function UserManagementPage() {
 
   // Reset password state
   const [resettingUserId, setResettingUserId] = useState<string | null>(null);
-  const [confirmUser, setConfirmUser] = useState<User | null>(null);
+
+  // Delete user state
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+
+  // Confirm modal state
+  const [confirmResetUser, setConfirmResetUser] = useState<User | null>(null);
 
   // Error modal state
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -59,7 +63,7 @@ export default function UserManagementPage() {
 
     const fetchUsers = async () => {
       try {
-        const res = await authFetch(`${USER_URL}`);
+        const res = await authFetch(`${BASE_URL}/users`);
         const data = await res.json();
         setActiveStaff(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -71,10 +75,9 @@ export default function UserManagementPage() {
     };
 
     fetchUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
-  // Create new user function for CreateUserModal
+  // Create new user
   const handleCreateUser = async (user: {
     name: string;
     email: string;
@@ -86,7 +89,6 @@ export default function UserManagementPage() {
     fieldErrors?: { name?: string; email?: string; phoneNumber?: string };
     message?: string;
   }> => {
-    // Validation
     const errors: { name?: string; email?: string; phoneNumber?: string } = {};
     if (!user.name) errors.name = "Name is required";
     if (!user.email) errors.email = "Email is required";
@@ -97,7 +99,7 @@ export default function UserManagementPage() {
     }
 
     try {
-      const res = await authFetch(`${USER_URL}`, {
+      const res = await authFetch(`${BASE_URL}/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user),
@@ -118,107 +120,152 @@ export default function UserManagementPage() {
   };
 
   // Reset password handlers
-  const initiateResetPassword = (user: User) => setConfirmUser(user);
-  const cancelResetPassword = () => setConfirmUser(null);
+  const initiateResetPassword = (user: User) => setConfirmResetUser(user);
+  const cancelResetPassword = () => setConfirmResetUser(null);
 
   const handleResetPasswordConfirmed = async () => {
-    if (!confirmUser) return;
+    if (!confirmResetUser) return;
 
     try {
-      setResettingUserId(confirmUser.userId);
-      const res = await authFetch(`${USER_URL}/reset-password/${confirmUser.userId}`, { method: "POST" });
+      setResettingUserId(confirmResetUser.userId);
+      const res = await authFetch(`${BASE_URL}/users/reset-password/${confirmResetUser.userId}`, { method: "POST" });
       if (!res.ok) throw new Error(s.t67);
 
       const { defaultPassword } = await res.json();
 
-      // Send reset email
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_RESET_TEMPLATE_ID!,
-        { to_name: confirmUser.name, to_email: confirmUser.email, temp_password: defaultPassword },
+        { to_name: confirmResetUser.name, to_email: confirmResetUser.email, temp_password: defaultPassword },
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
 
-      openSuccessModal(`${s.t34} ${confirmUser.name}. ${s.t51}.`);
+      openSuccessModal(`${s.t34} ${confirmResetUser.name}. ${s.t51}.`);
     } catch (err) {
       console.error("Reset password/email error:", err);
       openErrorModal(s.t67);
     } finally {
       setResettingUserId(null);
-      setConfirmUser(null);
+      setConfirmResetUser(null);
     }
   };
+
+  // Delete user handlers
+  const initiateDeleteUser = (user: User) => setDeletingUser(user);
+  const cancelDeleteUser = () => setDeletingUser(null);
+
+  const handleDeleteUserConfirmed = async () => {
+    if (!deletingUser) return;
+
+    try {
+      const res = await authFetch(`${BASE_URL}/users/${deletingUser.userId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error(s.t67);
+
+      setActiveStaff(prev => prev.filter(u => u.userId !== deletingUser.userId));
+      openSuccessModal(`Successfully deleted ${deletingUser.name}`); 
+    } catch (err) {
+      console.error("Delete user error:", err);
+      openErrorModal(s.t67);
+    } finally {
+      setDeletingUser(null);
+    }
+  };{activeStaff.map((user, index) => (
+    <tr key={user.userId || index} className="hover:bg-gray-50 transition">
+      ...
+    </tr>
+  ))}
   
+
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t3.toLowerCase()}...</p>;
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-6">
-        {errorMessage && <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />}
-        {successMessage && <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={closeSuccessModal} />}
+      {errorMessage && <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />}
+      {successMessage && <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={closeSuccessModal} />}
 
-        {confirmUser && (
-          <ConfirmModal
-            isOpen={!!confirmUser}
-            title={s.t34}
-            message={`${s.t73} ${confirmUser.name}?`}
-            onConfirm={handleResetPasswordConfirmed}
-            onCancel={cancelResetPassword}
-          />
-        )}
+      {confirmResetUser && (
+        <ConfirmModal
+          isOpen={!!confirmResetUser}
+          title={s.t34}
+          message={`${s.t73} ${confirmResetUser.name}?`}
+          onConfirm={handleResetPasswordConfirmed}
+          onCancel={cancelResetPassword}
+        />
+      )}
 
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-lg font-bold text-gray-800">{s.t3}</h1>
-          <button
-            onClick={() => setShowAddUserModal(true)}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            {s.t31}
-          </button>
-        </div>
+      {deletingUser && (
+        <ConfirmModal
+          isOpen={!!deletingUser}
+          title={s.t76}
+          message={`${s.t74} ${deletingUser.name}?`}
+          onConfirm={handleDeleteUserConfirmed}
+          onCancel={cancelDeleteUser}
+        />
+      )}
 
-        {/* Active Staff Table */}
-        <div className="bg-white rounded-2xl shadow-sm">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t39}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t38}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t43}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {activeStaff.map(user => (
-                <tr key={user.userId} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-sm text-gray-800">{user.name}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 capitalize">{user.role}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{user.username}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 flex gap-2">
-                    <button
-                      onClick={() => initiateResetPassword(user)}
-                      disabled={resettingUserId === user.userId}
-                      className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
-                    >
-                      {resettingUserId === user.userId ? `${s.t34}...` : s.t34}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Add User Modal */}
-        {showAddUserModal && (
-          <CreateUserModal
-            isOpen={showAddUserModal}
-            onClose={() => setShowAddUserModal(false)}
-            onCreate={handleCreateUser}
-          />
-        )}
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-lg font-bold text-gray-800">{s.t3}</h1>
+        <button
+          onClick={() => setShowAddUserModal(true)}
+          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          {s.t31}
+        </button>
       </div>
+
+      {/* Active Staff Table */}
+      <div className="bg-white rounded-2xl shadow-sm">
+        <table className="min-w-full divide-y divide-gray-100">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t39}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t38}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t43}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {activeStaff.map((user, index) => (
+              <tr key={user.userId || index} className="hover:bg-gray-50 transition">
+                <td className="px-6 py-4 text-sm text-gray-800">{user.name}</td>
+                <td className="px-6 py-4 text-sm text-gray-600 capitalize">{user.role}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                <td className="px-6 py-4 text-sm text-gray-600">{user.username}</td>
+                <td className="px-6 py-4 text-sm text-gray-600 flex gap-2">
+                  {/* Reset Password Button */}
+                  <button
+                    onClick={() => initiateResetPassword(user)}
+                    disabled={resettingUserId === user.userId}
+                    className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                  >
+                    {resettingUserId === user.userId ? `${s.t34}...` : s.t34}
+                  </button>
+
+                  {/* Delete User Button */}
+                  <button
+                  onClick={() => initiateDeleteUser(user)}
+                  disabled={deletingUser?.userId === user.userId}
+                  className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs"
+                >
+                  {deletingUser?.userId === user.userId ? `Deleting...` : `Delete User`}
+                </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <CreateUserModal
+          isOpen={showAddUserModal}
+          onClose={() => setShowAddUserModal(false)}
+          onCreate={handleCreateUser}
+        />
+      )}
+    </div>
   );
 }

@@ -7,7 +7,7 @@ import Filter from '../utils/sortAndSearch';
 import translations from '../translation';
 import Link from 'next/link';
 
-const BORROWER_URL = process.env.NEXT_PUBLIC_BORROWER_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function BorrowerPageClient() {
   const { borrowers, loading, error, role, language } = useBorrowersList();
@@ -27,7 +27,7 @@ export default function BorrowerPageClient() {
     const fetchOverview = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${BORROWER_URL}/overview`, {
+        const res = await fetch(`${BASE_URL}/borrowers/overview`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

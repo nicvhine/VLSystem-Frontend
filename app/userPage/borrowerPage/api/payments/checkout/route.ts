@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+
 export async function POST(req: Request) {
   // Extract payment amount from request body
   const { amount } = await req.json();
@@ -22,8 +24,8 @@ export async function POST(req: Request) {
             description: "Sample Payment",
             redirect: {
               // Note: server should include the reference or we derive it server-side; adjust as needed.
-              success: "http://localhost:3000/userPage/borrowerPage/payMongoTools/payment-success/{referenceNumber}",
-              failed: "http://localhost:3000/userPage/borrowerPage/payMongoTools/cancel",
+              success: `${FRONTEND_URL}/userPage/borrowerPage/payMongoTools/payment-success/{referenceNumber}`,
+              failed: `${FRONTEND_URL}/userPage/borrowerPage/payMongoTools/cancel`,
             },
           },
         },

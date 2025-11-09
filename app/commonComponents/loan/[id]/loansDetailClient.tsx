@@ -11,7 +11,7 @@ import EndorseLetterModal from "./components/EndorseLetterModal";
 import ErrorModal from "../../modals/errorModal";
 import { formatDateTime } from "../../utils/formatters";
 
-const COLLECTION_URL = process.env.NEXT_PUBLIC_COLLECTION_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 interface LoansDetailClientProps {
   loanId: string;
@@ -180,7 +180,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
     if (!loan) return;
     const token = localStorage.getItem("token");
 
-    fetch(`${COLLECTION_URL}/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${BASE_URL}/collections/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => setCollections(data.collections || []))
       .catch(err => console.error(err));

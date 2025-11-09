@@ -14,9 +14,7 @@ import Pagination from "../../utils/pagination";
 import { formatDate } from "../../utils/formatters";
 import translations from "../../translation";
 
-// Environment variables
-const CLOSURE_URL = process.env.NEXT_PUBLIC_CLOSURE_URL as string;
-const LOAN_URL = process.env.NEXT_PUBLIC_LOAN_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 // Dynamically import Manager layout to avoid server/client conflict
 const Manager = dynamic(() => import('@/app/userPage/managerPage/layout'), { ssr: false });
@@ -67,7 +65,7 @@ export default function ClosureEndorsement() {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch(CLOSURE_URL, {
+      const res = await fetch(`${BASE_URL}/closure`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -97,7 +95,7 @@ export default function ClosureEndorsement() {
         const balances: Record<string, number> = {};
         await Promise.all(
           endorsements.map(async (e) => {
-            const res = await fetch(`${LOAN_URL}/${e.loanId}`, {
+            const res = await fetch(`${BASE_URL}/loans/${e.loanId}`, {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) return;
@@ -124,7 +122,7 @@ export default function ClosureEndorsement() {
       setShowSuccess(false);
       setSuccessMsg("");
 
-      const res = await fetch(`${CLOSURE_URL}/${endorsementId}`, {
+      const res = await fetch(`${BASE_URL}/closure/${endorsementId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
