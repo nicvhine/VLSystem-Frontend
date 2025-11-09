@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import ConfirmModal from "../../../modals/confirmModal";
+import DenialReasonModal from "../../../modals/denialReasonModal";
 import { 
   handleClearedLoan, 
   handleDisburse, 
@@ -34,6 +35,11 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   const [showConfirm, setShowConfirm] = useState<{ type: 'approve' | 'deny' | 'disburse' | 'clear' | 'dismissPending' | null }>({ type: null });
   const [pendingAction, setPendingAction] = useState<() => Promise<void> | void>(() => () => {});
   const [isActing, setIsActing] = useState(false);
+  
+  // Denial modal state
+  const [showDenialModal, setShowDenialModal] = useState(false);
+  const [denialType, setDenialType] = useState<'direct' | 'fromCleared' | null>(null);
+  const [isDenying, setIsDenying] = useState(false);
 
   if (!application) return null;
 
@@ -55,6 +61,23 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       .replace("{id}", application.applicationId)
       .replace("{status}", status);
 
+  const handleDenialConfirm = async (reason: string) => {
+    setIsDenying(true);
+    try {
+      if (denialType === 'direct') {
+        await handleDenyApplication(application, setApplications, authFetch, showSuccess, showError, reason);
+      } else if (denialType === 'fromCleared') {
+        await handleDenyFromCleared(application, setApplications, authFetch, showSuccess, showError, reason);
+      }
+      setShowDenialModal(false);
+      setDenialType(null);
+    } catch (error) {
+      console.error('Denial error:', error);
+    } finally {
+      setIsDenying(false);
+    }
+  };
+
   return (
     <>
       {application.status === "Applied" && role === "loan officer" && (
@@ -66,7 +89,10 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
             {a.b1}
           </button>
           <button
-            onClick={() => handleDenyApplication(application, setApplications, authFetch, showSuccess, showError)}
+            onClick={() => {
+              setDenialType('direct');
+              setShowDenialModal(true);
+            }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
             {a.b2}
@@ -96,8 +122,8 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           </button>
           <button
             onClick={() => {
-              setShowConfirm({ type: 'dismissPending' });
-              setPendingAction(() => () => handleDenyFromCleared(application, setApplications, authFetch, showSuccess, showError));
+              setDenialType('fromCleared');
+              setShowDenialModal(true);
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
@@ -106,24 +132,6 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           <ConfirmModal
             show={showConfirm.type === 'clear'}
             message={statusMessage("Cleared")}
-            title={a.cm1}
-            confirmLabel={a.cm6}
-            cancelLabel={a.cm7}
-            processingLabel={a.cm5}
-            onConfirm={async () => {
-              setShowConfirm({ type: null });
-              try {
-                setIsActing(true);
-                await Promise.resolve(pendingAction());
-              } finally {
-                setIsActing(false);
-              }
-            }}
-            onCancel={() => setShowConfirm({ type: null })}
-          />
-          <ConfirmModal
-            show={showConfirm.type === 'dismissPending'}
-            message={a.cm3}
             title={a.cm1}
             confirmLabel={a.cm6}
             cancelLabel={a.cm7}
@@ -155,8 +163,8 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
           </button>
           <button
             onClick={() => {
-              setShowConfirm({ type: 'deny' });
-              setPendingAction(() => () => handleDenyApplication(application, setApplications, authFetch, showSuccess, showError));
+              setDenialType('direct');
+              setShowDenialModal(true);
             }}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
           >
@@ -165,24 +173,6 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       <ConfirmModal
         show={showConfirm.type === 'approve'}
         message={statusMessage("Approved")}
-        title={a.cm1}
-        confirmLabel={a.cm6}
-        cancelLabel={a.cm7}
-        processingLabel={a.cm5}
-        onConfirm={async () => {
-          setShowConfirm({ type: null });
-          try {
-            setIsActing(true);
-            await Promise.resolve(pendingAction());
-          } finally {
-            setIsActing(false);
-          }
-        }}
-        onCancel={() => setShowConfirm({ type: null })}
-      />
-      <ConfirmModal
-        show={showConfirm.type === 'deny'}
-        message={a.cm4}
         title={a.cm1}
         confirmLabel={a.cm6}
         cancelLabel={a.cm7}
@@ -271,6 +261,22 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
       )}
 
       <SubmitOverlayToast open={isActing} message={a.to1} />
+      
+      {/* Denial Reason Modal */}
+      <DenialReasonModal
+        isOpen={showDenialModal}
+        onClose={() => {
+          setShowDenialModal(false);
+          setDenialType(null);
+        }}
+        onConfirm={handleDenialConfirm}
+        applicationId={application?.applicationId}
+        loading={isDenying}
+        title="Denial Reason"
+        confirmLabel="Submit"
+        cancelLabel="Cancel"
+        processingLabel="Submitting..."
+      />
     </>
   );
 };

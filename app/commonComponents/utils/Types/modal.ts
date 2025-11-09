@@ -102,3 +102,15 @@ export interface DecisionModalProps {
   danger?: boolean; 
   error?: string; 
 }
+
+export interface DenialReasonModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (reason: string) => void;
+  applicationId?: string;
+  loading?: boolean;
+  title?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  processingLabel?: string;
+}
