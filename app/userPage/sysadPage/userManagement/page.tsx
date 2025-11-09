@@ -9,23 +9,17 @@ import SuccessModal from "@/app/commonComponents/modals/successModal";
 import ConfirmModal from "./confirmModal";
 import CreateUserModal from "../../headPage/userPage/createUserModal";
 import { useTranslation } from "../translationHook";
+import { User } from "@/app/commonComponents/utils/Types/userPage";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-interface User {
-  userId: string;
-  name: string;
-  role: string;
-  email: string;
-  username: string;
-  phoneNumber: string;
-  status?: "Active" | "Inactive";
-}
 
 export default function UserManagementPage() {
   const [activeStaff, setActiveStaff] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentUserRole, setCurrentUserRole] = useState<string>('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
 
   // Add user modal
@@ -77,47 +71,101 @@ export default function UserManagementPage() {
     fetchUsers();
   }, [router]);
 
-  // Create new user
-  const handleCreateUser = async (user: {
-    name: string;
-    email: string;
-    phoneNumber: string;
-    role: "head" | "manager" | "loan officer" | "collector";
-    status?: "Active" | "Inactive";
-  }): Promise<{
-    success: boolean;
-    fieldErrors?: { name?: string; email?: string; phoneNumber?: string };
-    message?: string;
-  }> => {
-    const errors: { name?: string; email?: string; phoneNumber?: string } = {};
-    if (!user.name) errors.name = "Name is required";
-    if (!user.email) errors.email = "Email is required";
-    if (!user.phoneNumber) errors.phoneNumber = "Phone number is required";
-
-    if (Object.keys(errors).length > 0) {
-      return { success: false, fieldErrors: errors, message: s.t67 };
-    }
-
+  const sendEmail = async ({
+    to_name,
+    email,
+    user_username,
+    user_password,
+    onError,
+  }: {
+    to_name: string;
+    email?: string | null;
+    user_username: string;
+    user_password: string;
+    onError: (msg: string) => void;
+  }) => {
+    if (!email) return;
     try {
-      const res = await authFetch(`${BASE_URL}/users`, {
+      const result = await emailjs.send(
+        "service_gsrml74",
+        "template_ry9tq57",
+        { to_name, email, user_username, user_password },
+        "6VII8ATdscjZi3UYW"
+      );
+      console.log("Email sent:", result?.text || result);
+    } catch (error: any) {
+      console.error("EmailJS error:", error);
+      onError("Email failed: " + (error?.text || error.message || "Unknown error"));
+    }
+  };
+
+  const handleCreateUser = async (
+    input: Omit<User, "userId" | "lastActive" | "status">
+  ): Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> => {
+    try {
+      const payload = { ...input };
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}/users`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(user),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        return { success: false, message: data?.error || s.t67 };
+        // Try to parse server error
+        let msg = "Failed to create user";
+        try {
+          const data = await res.json();
+          msg = data?.error || data?.message || msg;
+        } catch {
+          try { msg = await res.text(); } catch {}
+        }
+
+        // Map known uniqueness errors to field-level errors
+        const fieldErrors: { email?: string; phoneNumber?: string; name?: string } = {};
+        if (/email\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.email = "Email already in use.";
+        if (/phone\s*number\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.phoneNumber = "Phone number already in use.";
+        if (/name\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.name = "Name already in use.";
+
+        if (fieldErrors.email || fieldErrors.phoneNumber || fieldErrors.name) {
+          // Let caller show inline errors
+          return { success: false, fieldErrors };
+        }
+
+        setErrorMessage(msg);
+        setErrorModalOpen(true);
+        return { success: false, message: msg };
       }
 
-      const createdUser = await res.json();
-      setActiveStaff(prev => [...prev, createdUser]);
+      const { user: createdUser, credentials } = await res.json();
+      setUsers((prev) => [...prev, createdUser]);
+      setSuccessMessage("User created successfully.");
+
+      console.log("Email to send:", createdUser.email);
+
+      await sendEmail({
+        to_name: createdUser.name,
+        email: createdUser.email,
+        user_username: credentials.username,
+        user_password: credentials.tempPassword,
+        onError: (msg: string) => {
+          console.error("Email error callback:", msg);
+          setErrorMessage(msg);
+          setErrorModalOpen(true);
+          setTimeout(() => setErrorModalOpen(false), 5000);
+        },
+      });
+
       return { success: true };
-    } catch (err) {
-      console.error(err);
-      return { success: false, message: s.t67 };
+
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to create user");
+      setErrorModalOpen(true);
+      return { success: false, message: err.message };
     }
   };
+
+
 
   // Reset password handlers
   const initiateResetPassword = (user: User) => setConfirmResetUser(user);
@@ -207,8 +255,8 @@ export default function UserManagementPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-lg font-bold text-gray-800">{s.t3}</h1>
         <button
-          onClick={() => setShowAddUserModal(true)}
-          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              onClick={() => setIsModalOpen(true)}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
           {s.t31}
         </button>
@@ -232,7 +280,6 @@ export default function UserManagementPage() {
                 <td className="px-6 py-4 text-sm text-gray-800">{user.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-600 capitalize">{user.role}</td>
                 <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{user.username}</td>
                 <td className="px-6 py-4 text-sm text-gray-600 flex gap-2">
                   {/* Reset Password Button */}
                   <button
@@ -259,13 +306,7 @@ export default function UserManagementPage() {
       </div>
 
       {/* Add User Modal */}
-      {showAddUserModal && (
-        <CreateUserModal
-          isOpen={showAddUserModal}
-          onClose={() => setShowAddUserModal(false)}
-          onCreate={handleCreateUser}
-        />
-      )}
+      <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
     </div>
   );
 }
