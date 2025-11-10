@@ -19,17 +19,6 @@ function SignatureLine({ label }: { label: string }) {
   );
 }
 
-/**
- * Release form modal component for loan disbursement documentation
- * Displays printable release form with borrower and loan details
- * @param isOpen - Boolean to control modal visibility
- * @param onClose - Callback function to close the modal
- * @param borrowerName - Name of the borrower
- * @param loanAmount - Amount of the loan
- * @param releaseDate - Date of loan release
- * @returns JSX element containing the release form modal
- */
-
 export default function ReleaseFormModal({
   isOpen,
   onClose,

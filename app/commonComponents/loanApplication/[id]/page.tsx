@@ -31,7 +31,7 @@ import IncomeCharactedCard from "./cards/incomeCharacterCard";
 //Translation 
 import { translateLoanType } from "../../utils/formatters";
 
-const APPLICATION_URL = process.env.NEXT_PUBLIC_APPLICATION_URL; 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL; 
 
 export default function ApplicationDetailsPage() {
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function ApplicationDetailsPage() {
     l,
     a,
     modalContainer,
-  } = useApplicationData(`${APPLICATION_URL}`);
+  } = useApplicationData(`${BASE_URL}/loan-applications`);
 
   const uiRole: 'head' | 'manager' | 'loanOfficer' | 'collector' | 'borrower' = (() => {
     const r = (role || '').toLowerCase();
@@ -146,25 +146,41 @@ export default function ApplicationDetailsPage() {
                 </svg>
               </button>
 
-              {/*HEADER*/}
-                <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  {l.t34} | <span className="text-sm font-normal text-gray-500">{application?.applicationId}</span>
-                </h1>
-                  <div className="flex items-center space-x-4 mt-1">
-                    <span className={`px-2 py-1 rounded text-xs font-medium uppercase ${
-                      application?.status === 'Applied' ? 'bg-red-100 text-red-800' :
-                      application?.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                      application?.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                      application?.status === 'Denied' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {application?.status || 'Unknown'}
-                    </span>
-                    <span className="text-sm text-gray-500">{translateLoanType(application?.loanType, language)}</span>
-                  </div>
-                </div>
+             {/* HEADER */}
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {l.t34} |{" "}
+                <span className="text-sm font-normal text-gray-500">
+                  {application?.applicationId}
+                </span>
+              </h1>
+
+              <div className="flex items-center space-x-4 mt-1">
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium uppercase ${
+                    application?.status === "Applied"
+                      ? "bg-red-100 text-red-800"
+                      : application?.status === "Pending"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : application?.status === "Approved"
+                      ? "bg-green-100 text-green-800"
+                      : application?.status === "Denied"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {application?.status || "Unknown"}
+                </span>
+
+                <span className="text-sm text-gray-500">
+                  {translateLoanType(application?.loanType, language)}
+                </span>
               </div>
+              {(application?.status === "Denied" || application?.status === "Denied by LO") && (
+                <span className="text-sm text-red-600 mt-5">Loan denied due to: {application?.denialReason}</span>
+              )}
+            </div>
+            </div>
 
               {/*BUTTONS*/}
               <div className="flex space-x-3">
@@ -173,7 +189,7 @@ export default function ApplicationDetailsPage() {
                   role={role}
                   setApplications={setApplications}
                   authFetch={authFetch}
-                  API_URL={`${APPLICATION_URL}`}
+                  API_URL={`${BASE_URL}`}
                   setIsModalOpen={setIsModalOpen}
                   setIsAgreementOpen={setIsAgreementOpen}
                   modalRef={modalRef}

@@ -19,7 +19,6 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
   role,
   setApplications,
   authFetch,
-  API_URL,
   setIsModalOpen,
   modalRef,
   setIsAgreementOpen,
