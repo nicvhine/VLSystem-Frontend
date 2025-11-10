@@ -13,6 +13,7 @@ import PenaltyEndorseModal from "../modals/endorsementPenaltyModal";
 import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
+import ReceiptModal from "@/app/commonComponents/modals/receiptModal";
 
 import { formatCurrency } from "../utils/formatters";
 import { Collection } from "../utils/Types/collection";
@@ -49,7 +50,9 @@ export default function CollectionsPage() {
     totalCollected, totalTarget, targetAchieved,
     totalPayments, completedPayments, collectionRate,
     overallTotalCollected, overallTotalTarget, overallTargetAchieved,
-    overallTotalPayments, overallCompletedPayments, overallCollectionRate
+    overallTotalPayments, overallCompletedPayments, overallCollectionRate,
+    showReceiptModal, setShowReceiptModal,
+    receiptData, setReceiptData
   } = useCollectionPage();
 
   const [paymentLoading, setPaymentLoading] = React.useState(false);
@@ -295,7 +298,9 @@ export default function CollectionsPage() {
                 setIsPaymentModalVisible,
                 setSelectedCollection,
                 setPaymentAmount
-              )
+              ),
+              setShowReceiptModal,
+              setReceiptData
             )}
           />
 
@@ -346,6 +351,19 @@ export default function CollectionsPage() {
           />
 
           {showErrorModal && <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />}
+          
+          {/* Receipt Modal */}
+          {showReceiptModal && receiptData && (
+            <ReceiptModal
+              payment={receiptData}
+              borrowerName={receiptData.borrowerName}
+              showPrint={true}
+              onClose={() => {
+                setShowReceiptModal(false);
+                setReceiptData(null);
+              }}
+            />
+          )}
         </div>
       </div>
     </Wrapper>

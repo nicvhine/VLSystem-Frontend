@@ -229,7 +229,9 @@ export const handleConfirmPayment = async (
   setShowPaymentConfirm: (v: boolean) => void,
   setErrorMsg: (msg: string) => void,
   setShowErrorModal: (v: boolean) => void,
-  handleClose: () => void
+  handleClose: () => void,
+  setShowReceiptModal?: (v: boolean) => void,
+  setReceiptData?: (data: any) => void
 ) => {
   if (!selectedCollection) return;
   setPaymentLoading(true);
@@ -237,6 +239,8 @@ export const handleConfirmPayment = async (
   try {
     const token = localStorage.getItem("token"); 
     if (!token) throw new Error("No token found"); 
+
+    const collectorName = localStorage.getItem("collectorName") || "Collector";
 
     const response = await fetch(
       `${BASE_URL}/payments/${selectedCollection.referenceNumber}/cash`,
@@ -252,8 +256,10 @@ export const handleConfirmPayment = async (
 
     if (!response.ok) throw new Error("Failed to post payment");
 
-    const updatedCollection: Collection = await response.json();
-
+    const result = await response.json();
+    
+    // Update collections list
+    const updatedCollection: Collection = result;
     setCollections((prev) =>
       prev.map((col) =>
         col.referenceNumber === updatedCollection.referenceNumber
@@ -261,6 +267,23 @@ export const handleConfirmPayment = async (
           : col
       )
     );
+
+    // Show receipt modal with payment data
+    if (setShowReceiptModal && setReceiptData && result.paymentLogs && result.paymentLogs.length > 0) {
+      const paymentLog = result.paymentLogs[0];
+      setReceiptData({
+        referenceNumber: paymentLog.referenceNumber,
+        amount: paymentLog.amount,
+        datePaid: paymentLog.datePaid,
+        loanId: paymentLog.loanId,
+        borrowersId: paymentLog.borrowersId,
+        collector: collectorName,
+        mode: paymentLog.mode || 'Cash',
+        paidToCollection: paymentLog.paidToCollection,
+        borrowerName: selectedCollection.name,
+      });
+      setShowReceiptModal(true);
+    }
   } catch (err) {
     console.error("Payment failed:", err);
     setErrorMsg("Payment failed.");

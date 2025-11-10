@@ -33,6 +33,8 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
   const [isNoteModalAnimating, setIsNoteModalAnimating] = useState(false);
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptData, setReceiptData] = useState<any>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [role, setRole] = useState<'manager' | 'head' | 'loan officer' | 'collector'>('manager');
@@ -238,6 +240,10 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
     setShowPaymentConfirm,
     paymentLoading,
     setPaymentLoading,
+    showReceiptModal,
+    setShowReceiptModal,
+    receiptData,
+    setReceiptData,
     totalPayments,
     completedPayments,
     collectionRate,
