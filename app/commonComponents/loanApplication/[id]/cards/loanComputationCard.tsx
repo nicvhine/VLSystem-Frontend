@@ -101,18 +101,27 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
           <span className="text-gray-900">{loanApp?.appInterestRate ?? "—"}%</span>
         </div>
 
+        {loanApp?.loanType !== "Open-Term Loan" && (
+          <div className="flex justify-between">
+            <span className="text-sm font-medium text-gray-500">{l.t29}</span>
+            <span className="text-gray-900">
+              {loanApp?.appLoanTerms ?? "—"} {l.t33}
+            </span>
+          </div>
+        )}
+
         <div className="flex justify-between">
-          <span className="text-sm font-medium text-gray-500">{l.t29}</span>
-          <span className="text-gray-900">
-            {loanApp?.appLoanTerms ?? "—"} {l.t33}
-          </span>
+          <span className="text-sm font-medium text-gray-500">Service Fee</span>
+          <span className="text-gray-900">{formatCurrency(loanApp?.appServiceFee ?? "—")}</span>
         </div>
 
+        <div className="flex justify-between">
+          <span className="text-sm font-medium text-gray-500">Net Released</span>
+          <span className="text-gray-900">{formatCurrency(loanApp?.appNetReleased ?? "—")}</span>
+        </div>
+
+      {loanApp?.loanType !== "Open-Term Loan" && (
         <div className="pt-4 border-t border-gray-200 space-y-3">
-          <div className="flex justify-between">
-            <span className="text-sm font-medium text-gray-500">{l.t30}</span>
-            <span className="text-gray-900">{formatCurrency(Number(loanApp?.appTotalInterestAmount))}</span>
-          </div>
           <div className="flex justify-between">
             <span className="text-sm font-medium text-gray-500">{l.t31}</span>
             <span className="text-gray-900 font-semibold text-lg">{formatCurrency(Number(loanApp?.appTotalPayable))}</span>
@@ -122,6 +131,7 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
             <span className="text-gray-900">{formatCurrency(Number(loanApp?.appMonthlyDue))}</span>
           </div>
         </div>
+      )}
       </div>
 
       {isEditOpen && loanApp?.applicationId && (

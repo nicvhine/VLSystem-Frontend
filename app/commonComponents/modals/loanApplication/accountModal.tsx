@@ -291,7 +291,7 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
 
         // Generate new loan
         const loanResponse = await authFetch(
-          `${BASE_URL}/loans_generate-loan/${selectedApp.applicationId}`,
+          `${BASE_URL}/loans/generate-loan/${selectedApp.applicationId}`,
           { method: "POST" }
         );
         if (!loanResponse.ok) {

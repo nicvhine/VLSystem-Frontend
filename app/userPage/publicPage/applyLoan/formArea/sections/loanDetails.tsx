@@ -124,7 +124,7 @@ export default function LoanDetails({
         {language === "en" ? "Loan Details" : "Detalye sa Pahulam"}
       </h4>
 
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Loan Purpose */}
         <div>
           <label className="block font-medium mb-2 text-gray-700">
@@ -217,6 +217,17 @@ export default function LoanDetails({
           )}
         </div>
 
+         <div>
+              <label className="block font-medium mb-2 text-gray-700">
+                {language === "en" ? "Monthly Interest Rate (%):" : "Bulan nga Interest Rate (%):"}
+              </label>
+              <input
+                className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
+                value={selectedLoan?.interest || ""}
+                readOnly
+              />
+            </div>
+
         {/* Loan Terms & Interest (if applicable) */}
         {loanType !== "open-term" && (
           <>
@@ -230,70 +241,75 @@ export default function LoanDetails({
                 readOnly
               />
             </div>
-            <div>
-              <label className="block font-medium mb-2 text-gray-700">
-                {language === "en" ? "Monthly Interest Rate (%):" : "Bulan nga Interest Rate (%):"}
-              </label>
-              <input
-                className="w-full border border-gray-200 p-3 rounded-lg bg-gray-50"
-                value={selectedLoan?.interest || ""}
-                readOnly
-              />
-            </div>
           </>
         )}
       </div>
 
-      {/* Sample Calculation */}
+      {/* Sample Calculation OR Contact Message for Open-Term */}
       {customLoanAmount && selectedLoan && (
-        <div className="mt-6 border-t pt-4 text-gray-300">
-          <h5 className="text-md font-semibold mb-3 text-gray-700">
-            {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
-          </h5>
+        <>
+          {loanType === "open-term" ? (
+            <div className="mt-6 border-t pt-4 text-gray-700">
+              <p className="text-sm">
+                {language === "en"
+                  ? "For a thorough explanation about this loan or if you wish to apply for higher amount, please contact our office."
+                  : "Alang sa hingpit nga pagpasabot, palihug kontaka ang among opisina."}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-6 border-t pt-4 text-gray-300">
+              <h5 className="text-md font-semibold mb-3 text-gray-700">
+                {language === "en" ? "Sample Calculation" : "Halimbawang Kwenta"}
+              </h5>
 
-          {(() => {
-            const loanAmount = Number(customLoanAmount);
-            const interestRate = Number(selectedLoan.interest) / 100;
-            const months = selectedLoan.months || 12;
+              {(() => {
+                const loanAmount = Number(customLoanAmount);
+                const interestRate = Number(selectedLoan.interest) / 100;
+                const months = selectedLoan.months || 12;
 
-            let serviceCharge = 0;
-            if (loanAmount >= 6000 && loanAmount <= 20000) {
-              serviceCharge = loanAmount * 0.05; 
-            } else if (loanAmount >= 25000 && loanAmount <= 45000) {
-              serviceCharge = 1000; 
-            } else if (loanAmount >= 50000) {
-              serviceCharge = loanAmount * 0.03;
-            }
+                let serviceCharge = 0;
+                if (loanAmount >= 6000 && loanAmount <= 20000) {
+                  serviceCharge = loanAmount * 0.05; 
+                } else if (loanAmount >= 25000 && loanAmount <= 45000) {
+                  serviceCharge = 1000; 
+                } else if (loanAmount >= 50000) {
+                  serviceCharge = loanAmount * 0.03;
+                }
 
-            const monthlyInterest = loanAmount * interestRate;
-            const monthlyPayment = loanAmount / months + monthlyInterest;
-            const netProceeds = loanAmount - serviceCharge;
+                const interestAmount = loanAmount * interestRate;
+                const totalInterestAmount = interestAmount * months;
+                const totalPayable = loanAmount + totalInterestAmount;
+                const monthlyPayment = totalPayable / months;
 
-            return (
-              <div className="space-y-2 text-black">
-                <p>
-                  <span className="font-medium">{language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}</span>{" "}
-                  ₱{loanAmount.toLocaleString()}
-                </p>
-                <p>
-                  <span className="font-medium">{language === "en" ? "Service Charge:" : "Serbisyo nga Bayad:"}</span>{" "}
-                  {formatCurrency(serviceCharge)}
-                </p>
-                <p className="text-green-700 font-semibold">
-                  <span>{language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}</span>{" "}
-                  {formatCurrency(netProceeds)}
-                </p>
-                {loanType !== "open-term" && (
-                  <p>
-                    <span className="font-medium">{language === "en" ? "Monthly Payment:" : "Bulan nga Bayad:"}</span>{" "}
-                    {formatCurrency(monthlyPayment)}
-                  </p>
-                )}
-              </div>
-            );
-          })()}
-
-        </div>
+                return (
+                  <div className="space-y-2 text-gray-700 text-sm">
+                    <p>
+                      <span className="font-sm">{language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}</span>{" "}
+                      ₱{loanAmount.toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-sm">{language === "en" ? "Interest Amount:" : "Interest Amount:"}</span>{" "}
+                      ₱{interestAmount.toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-sm">{language === "en" ? "Total Interest Amount:" : "Total Interest Amount:"}</span>{" "}
+                      ₱{totalInterestAmount.toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-sm">{language === "en" ? "Total Payable:" : "Total Payable:"}</span>{" "}
+                      ₱{totalPayable.toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">{language === "en" ? "Monthly Payment:" : "Bulan nga Bayad:"}</span>{" "}
+                      {formatCurrency(monthlyPayment)}
+                    </p>
+                    <p className="mt-5 text-gray-500">Note: Loan amount will be deducted with service charge during disbursement.</p>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -49,6 +49,7 @@ export interface Application {
   dateDisbursed: string;
   appNetReleased: number;
   appServiceFee: number;
+  denialReason: string;
 }
 
 export interface ApplicationCardProps {
