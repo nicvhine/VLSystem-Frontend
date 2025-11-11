@@ -58,6 +58,10 @@ export default function ApplicationPage() {
     const savedLanguage = localStorage.getItem('language') as 'en' | 'ceb';
     if (savedLanguage) setLanguage(savedLanguage);
 
+    // Restore saved loan type
+    const savedLoanType = localStorage.getItem('selectedLoanType');
+    if (savedLoanType) setLoanType(savedLoanType);
+
     setLoanProcessSteps(getLoanProcessSteps(savedLanguage || language));
 
     const timer = setTimeout(() => setPageLoaded(true), 100);
@@ -74,6 +78,14 @@ export default function ApplicationPage() {
       label: translateLoanType(type, language),
     }));
   }, [language]);
+
+  // Save loan type to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (loanType) {
+      localStorage.setItem('selectedLoanType', loanType);
+    }
+  }, [loanType]);
 
   const trackerSections = useTrackerSections(loanType, language);
 

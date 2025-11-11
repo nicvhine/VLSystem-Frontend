@@ -24,6 +24,8 @@ import { useFormSubmit } from "./hooks/useFormSubmit";
 import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function/document";
 import { useSectionProgress } from "./hooks/useSectionProgress";
 import { usePrefillAndUploads } from "./hooks/usePrefill";
+import { useFormPersistence } from "./hooks/useFormPersistence";
+import { FormPersistenceNotification } from "./components/FormPersistenceNotification";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -136,6 +138,29 @@ const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
     const [previousBalance, setPreviousBalance] = useState<number>(0);
     const [showBalanceField, setShowBalanceField] = useState(false);
     const [balanceDecision, setBalanceDecision] = useState<'deduct' | 'addPrincipal'>('deduct');
+
+    // Form persistence - save form data to localStorage
+    const { clearSavedData } = useFormPersistence({
+      formData: {
+        appName, appDob, appContact, appEmail, appMarital, appChildren, appSpouseName, appSpouseOccupation, appAddress,
+        sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted, appBusinessLoc, appMonthlyIncome,
+        appOccupation, appEmploymentStatus, appCompanyName, appReferences, appAgent,
+        collateralType, collateralValue, collateralDescription, ownershipStatus,
+        selectedLoan, appLoanPurpose, loanType, balanceDecision
+      },
+      setters: {
+        setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
+        setAppSpouseName, setAppSpouseOccupation, setAppAddress, setSourceOfIncome,
+        setAppTypeBusiness, setAppBusinessName, setAppDateStarted, setAppBusinessLoc,
+        setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
+        setAppReferences, setAppAgent, setCollateralType, setCollateralValue,
+        setCollateralDescription, setOwnershipStatus, setSelectedLoan, setAppLoanPurpose,
+        setBalanceDecision
+      },
+      storageKey: 'reloanApplicationFormData',
+      enabled: true,
+      borrowersId,
+    });
 
     useEffect(() => {
       if (!borrowersId) {
@@ -253,6 +278,21 @@ const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
       )}
 
       <div className={`${isSubmitting ? "pointer-events-none opacity-60" : ""}`}>
+        {/* Persistence Notification */}
+        <FormPersistenceNotification 
+          language={language}
+          onClearData={() => {
+            clearSavedData();
+            // Also clear loan type for this borrower
+            if (typeof window !== 'undefined' && borrowersId) {
+              localStorage.removeItem(`selectedLoanType_reloan_${borrowersId}`);
+            }
+            // Reload to reset form
+            window.location.reload();
+          }}
+          storageKey={borrowersId ? `reloanApplicationFormData_${borrowersId}` : 'reloanApplicationFormData'}
+        />
+
         {/* Form Sections */}
         <div id="basicInfo">
           <BasicInformation
@@ -377,6 +417,8 @@ const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
               if (result.ok && result.data.application?.applicationId) {
                 setLoanId(result.data.application.applicationId);
                 setShowSuccessModal(true);
+                // Clear saved form data after successful submission
+                clearSavedData();
               } else {
                 setErrorMessage(result.error?.message || "Submission failed");
                 setShowErrorModal(true);

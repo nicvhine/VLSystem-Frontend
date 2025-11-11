@@ -52,9 +52,16 @@ export default function ApplicationPage() {
     const savedLanguage = localStorage.getItem('language') as 'en' | 'ceb';
     if (savedLanguage) setLanguage(savedLanguage);
 
+    // Restore saved loan type for this borrower
+    const borrowerId = params.borrowersId;
+    if (borrowerId) {
+      const savedLoanType = localStorage.getItem(`selectedLoanType_reloan_${borrowerId}`);
+      if (savedLoanType) setLoanType(savedLoanType);
+    }
+
     const timer = setTimeout(() => setPageLoaded(true), 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [params.borrowersId]);
 
   // Update localStorage when language changes
   useEffect(() => {
@@ -80,7 +87,14 @@ export default function ApplicationPage() {
     }));
   }, [language]);
 
-  
+  // Save loan type to localStorage whenever it changes (per borrower)
+  useEffect(() => {
+    const borrowerId = params.borrowersId;
+    if (borrowerId && loanType) {
+      localStorage.setItem(`selectedLoanType_reloan_${borrowerId}`, loanType);
+    }
+  }, [loanType, params.borrowersId]);
+
   const trackerSections = useTrackerSections(loanType, language);
 
 
