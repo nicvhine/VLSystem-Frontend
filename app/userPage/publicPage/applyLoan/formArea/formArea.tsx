@@ -19,6 +19,8 @@ import { useUpdateMissingFields } from "./hooks/updateMissingFields";
 import { useFormSubmit } from "./hooks/useFormSubmit";
 import { handleFileChange, handleProfileChange, removeDocument, removeProfile } from "./function";
 import { useSectionProgress } from "./hooks/useSectionProgress";
+import { useFormPersistence } from "./hooks/useFormPersistence";
+import { FormPersistenceNotification } from "./components/FormPersistenceNotification";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
@@ -115,6 +117,27 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
+  // Form persistence - save form data to localStorage
+  const { clearSavedData } = useFormPersistence({
+    formData: {
+      appName, appDob, appContact, appEmail, appMarital, appChildren, appSpouseName, appSpouseOccupation, appAddress,
+      sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted, appBusinessLoc, appMonthlyIncome,
+      appOccupation, appEmploymentStatus, appCompanyName, appReferences, appAgent,
+      collateralType, collateralValue, collateralDescription, ownershipStatus,
+      selectedLoan, appLoanPurpose, loanType
+    },
+    setters: {
+      setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
+      setAppSpouseName, setAppSpouseOccupation, setAppAddress, setSourceOfIncome,
+      setAppTypeBusiness, setAppBusinessName, setAppDateStarted, setAppBusinessLoc,
+      setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
+      setAppReferences, setAppAgent, setCollateralType, setCollateralValue,
+      setCollateralDescription, setOwnershipStatus, setSelectedLoan, setAppLoanPurpose
+    },
+    storageKey: 'loanApplicationFormData',
+    enabled: true,
+  });
+
   // Compute section progress
   useSectionProgress({
     missingFields,
@@ -154,6 +177,8 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
         if (result.ok && result.data.application?.applicationId) {
           setLoanId(result.data.application.applicationId);
           setShowSuccessModal(true);
+          // Clear saved form data after successful submission
+          clearSavedData();
         } else {
           setErrorMessage(result.error?.message || "Submission failed");
           setShowErrorModal(true);
@@ -199,6 +224,21 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
       )}
 
       <div className={`${isSubmitting ? "pointer-events-none opacity-60" : ""}`}>
+        {/* Persistence Notification */}
+        <FormPersistenceNotification 
+          language={language}
+          onClearData={() => {
+            clearSavedData();
+            // Also clear loan type
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('selectedLoanType');
+            }
+            // Reload to reset form
+            window.location.reload();
+          }}
+          storageKey="loanApplicationFormData"
+        />
+
         {/* Form Sections */}
         <div id="basicInfo">
           <BasicInformation
