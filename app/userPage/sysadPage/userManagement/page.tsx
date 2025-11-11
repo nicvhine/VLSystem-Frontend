@@ -263,44 +263,54 @@ export default function UserManagementPage() {
       </div>
 
       {/* Active Staff Table */}
-      <div className="bg-white rounded-2xl shadow-sm">
-        <table className="min-w-full divide-y divide-gray-100">
-          <thead className="bg-gray-50">
+      <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
+        <table className="min-w-full table-fixed">
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t39}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t38}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t43}</th>
+              <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t37}</th>
+              <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t41}</th>
+              <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t39}</th>
+              <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t38}</th>
+              <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t43}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-200 bg-white">
             {activeStaff.map((user, index) => (
-              <tr key={user.userId || index} className="hover:bg-gray-50 transition">
-                <td className="px-6 py-4 text-sm text-gray-800">{user.name}</td>
-                <td className="px-6 py-4 text-sm text-gray-600 capitalize">{user.role}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
-                <td className="px-6 py-4 text-sm text-gray-600 flex gap-2">
-                  {/* Reset Password Button */}
-                  <button
-                    onClick={() => initiateResetPassword(user)}
-                    disabled={resettingUserId === user.userId}
-                    className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
-                  >
-                    {resettingUserId === user.userId ? `${s.t34}...` : s.t34}
-                  </button>
+              <tr key={user.userId || index} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize">{user.role}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber || 'N/A'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <div className="flex gap-2">
+                    {/* Reset Password Button */}
+                    <button
+                      onClick={() => initiateResetPassword(user)}
+                      disabled={resettingUserId === user.userId}
+                      className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {resettingUserId === user.userId ? `${s.t34}...` : s.t34}
+                    </button>
 
-                  {/* Delete User Button */}
-                  <button
-                  onClick={() => initiateDeleteUser(user)}
-                  disabled={deletingUser?.userId === user.userId}
-                  className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs"
-                >
-                  {deletingUser?.userId === user.userId ? `Deleting...` : `Delete User`}
-                </button>
+                    {/* Delete User Button */}
+                    <button
+                      onClick={() => initiateDeleteUser(user)}
+                      disabled={deletingUser?.userId === user.userId}
+                      className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {deletingUser?.userId === user.userId ? `Deleting...` : `Delete User`}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
+            {activeStaff.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-gray-500 font-semibold">
+                  No users found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
