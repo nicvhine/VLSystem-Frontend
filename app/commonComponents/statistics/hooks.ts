@@ -9,7 +9,7 @@ import translations from "../translation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
-export function useLoanStats(userType: "manager" | "loanOfficer") {
+export function useLoanStats(userType: "manager" | "loanOfficer" | "head") {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string | null>(null);
   const [language, setLanguage] = useState<"en" | "ceb">("en");
@@ -67,7 +67,7 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
 
     const fetchMainStats = async () => {
       try {
-        if (userType === "manager") {
+        if (userType === "manager" || userType === "head") {
           // Fetch main stats
           const [typeRes, loanRes, collectionRes, appRes] = await Promise.all([
             fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -117,25 +117,26 @@ export function useLoanStats(userType: "manager" | "loanOfficer") {
 
     const fetchTopLists = async () => {
       try {
-        if (userType === "manager") {
+        if (userType === "manager" || userType === "head") {
           const [borrowerRes, collectorRes, agentRes] = await Promise.all([
             fetch(`${BASE_URL}/stat/top-borrowers`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${BASE_URL}/stat/top-collectors`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${BASE_URL}/stat/top-agents`, { headers: { Authorization: `Bearer ${token}` } }),
           ]);
-
+    
           const borrowerData = await borrowerRes.json();
           const collectorData = await collectorRes.json();
           const agentData = await agentRes.json();
-
+    
           setTopBorrowers(borrowerData.topBorrowers || []);
-          setTopCollectors(collectorData || []);
+          setTopCollectors(collectorData || []); 
           setTopAgents(agentData || []);
         }
       } catch (err) {
         console.error("Failed to fetch top lists:", err);
       }
     };
+    
 
     const fetchAll = async () => {
       setLoading(true);

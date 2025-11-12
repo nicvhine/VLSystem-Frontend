@@ -16,7 +16,7 @@ interface ReceiptModalProps {
     paidToCollection?: number;
   };
   borrowerName?: string;
-  showPrint?: boolean; // Optional: defaults to true for collectors, false for borrowers
+  showPrint?: boolean; 
   onClose: () => void;
 }
 
@@ -170,18 +170,10 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ payment, borrowerName, show
               <div className="text-xs space-y-1 mb-2">
                 {borrowerName && (
                   <div className="flex justify-between">
-                    <span>Customer:</span>
+                    <span>Borrower:</span>
                     <span className="font-semibold">{borrowerName}</span>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span>Borrower ID:</span>
-                  <span>{payment.borrowersId}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Loan ID:</span>
-                  <span>{payment.loanId}</span>
-                </div>
                 {payment.paidToCollection && (
                   <div className="flex justify-between">
                     <span>Collection #:</span>

@@ -35,7 +35,7 @@ export const fetchAgents = async (
       return;
     }
 
-    const res = await fetch(`${BASE_URL}/agents}`, {
+    const res = await fetch(`${BASE_URL}/agents`, {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     });
 
