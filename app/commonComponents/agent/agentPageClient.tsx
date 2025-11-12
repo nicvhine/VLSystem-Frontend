@@ -6,6 +6,7 @@ import Pagination from '../utils/pagination';
 import Filter from '../utils/sortAndSearch';
 import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
 import dynamic from 'next/dynamic';
+import translations from '@/app/commonComponents/translation';
 
 // Dynamic imports for layouts
 const Head = dynamic(() => import('@/app/userPage/headPage/layout'), { ssr: false });
@@ -14,6 +15,7 @@ const LoanOfficer = dynamic(() => import('@/app/userPage/loanOfficerPage/layout'
 
 export default function AgentPageClient() {
   const { role, paginatedAgents, sortedAgents, totalPages, totalCount, loading, error, successMessage, setSuccessMessage, searchQuery, setSearchQuery, sortBy, setSortBy, pageSize, setPageSize, currentPage, setCurrentPage, language, showModal, setShowModal, newAgentName, setNewAgentName, newAgentPhone, setNewAgentPhone, handleAddAgent, t } = useAgentPage();
+  const m = translations.managementTranslation[language];
 
   if (!role) return <div className="text-center py-8"><LoadingSpinner /></div>;
   const Wrapper = role === 'loan officer' ? LoanOfficer : role === 'head' ? Head : Manager;
@@ -61,7 +63,7 @@ export default function AgentPageClient() {
                 {loading ? (
                   <tr><td colSpan={6} className="text-center py-8 text-gray-500 text-lg"><LoadingSpinner /></td></tr>
                 ) : sortedAgents.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-8 text-gray-500 text-lg">No agents found.</td></tr>
+                  <tr><td colSpan={6} className="text-center py-8 text-gray-500 text-lg">{m.g1}</td></tr>
                 ) : (
                   paginatedAgents.map(agent => (
                     <tr key={agent.agentId} className="hover:bg-gray-50 transition-colors">
@@ -87,6 +89,7 @@ export default function AgentPageClient() {
             setNewAgentName={setNewAgentName}
             newAgentPhone={newAgentPhone}
             setNewAgentPhone={setNewAgentPhone}
+            language={language}
           />
 
           <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={() => setSuccessMessage('')} />

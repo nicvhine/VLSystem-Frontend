@@ -10,8 +10,9 @@ import Link from 'next/link';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function BorrowerPageClient() {
-  const { borrowers, loading, error, role, language } = useBorrowersList();
+  const { borrowers, loading, error, role } = useBorrowersList();
   const [overview, setOverview] = useState<any>(null);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'status'>('name');
@@ -19,6 +20,40 @@ export default function BorrowerPageClient() {
 
   const t = translations.borrowerTranslation[language];
   const loanT = translations.loanTermsTranslator[language];
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+    };
+    const langKey = storedRole ? keyMap[storedRole] : null;
+    const storedLang = langKey ? localStorage.getItem(langKey) as "en" | "ceb" | null : null;
+    const universalLang = localStorage.getItem("language") as "en" | "ceb" | null;
+    if (storedLang) {
+      setLanguage(storedLang);
+    } else if (universalLang) {
+      setLanguage(universalLang);
+    }
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail?.language) {
+        const targetUserType = event.detail?.userType;
+        if (
+          !targetUserType ||
+          (role === "head" && targetUserType === "head") ||
+          (role === "loan officer" && targetUserType === "loanOfficer") ||
+          (role === "manager" && targetUserType === "manager")
+        ) {
+          setLanguage(event.detail.language as "en" | "ceb");
+        }
+      }
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
 
   // Map role to navbar role format
   const navbarRole = role === 'loan officer' ? 'loanOfficer' : role === 'head' ? 'head' : 'manager';
@@ -79,7 +114,7 @@ export default function BorrowerPageClient() {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  {['ID', 'Name', 'Email', 'Phone', 'Total Borrowed', 'Action'].map(
+                  {[t.t1, t.t2, t.t3, t.t4, t.t5, t.t6].map(
                     (heading) => (
                       <th
                         key={heading}
@@ -117,7 +152,7 @@ export default function BorrowerPageClient() {
                             href={`/commonComponents/borrower/${b.borrowersId}`}
                             className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block whitespace-nowrap"
                           >
-                            {t.m3}
+                            {loanT.view}
                           </Link>
                         </td>
                       </tr>

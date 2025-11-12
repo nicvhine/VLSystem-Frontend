@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { FiDownload } from 'react-icons/fi';
 import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
 import LoanStatisticsTops from "@/app/commonComponents/statistics/loanStatisticsTops";
 import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsCharts";
+import translations from "@/app/commonComponents/translation";
 
 export default function ManagerDashboard() {
 

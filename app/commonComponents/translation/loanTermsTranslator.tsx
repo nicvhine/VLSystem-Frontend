@@ -65,6 +65,15 @@ const loanTermsTranslator = {
       l44: "Note",
       l45: "Total Loans",
       l46: "Credit Score",
+      l47: "View Archive",
+      l48: "Month",
+      l49: "Payment Date",
+      l50: "Amount",
+      l51: "Mode",
+      l52: "No payment history available.",
+      l53: "Date",
+      l54: "Loan Amount",
+      l55: "No loans found.",
 
     },
     ceb: {
@@ -132,6 +141,15 @@ const loanTermsTranslator = {
       l44: "Mensahe",
       l45: "Kinatibuk-ang Pahulam",
       l46: "Grado sa Kredito",
+      l47: "Tan-awa ang Archive",
+      l48: "Bulan",
+      l49: "Petsa sa Bayad",
+      l50: "Kantidad",
+      l51: "Paagi",
+      l52: "Walay kasaysayan sa bayad.",
+      l53: "Petsa",
+      l54: "Kantidad sa Pahulam",
+      l55: "Walay nakit-an nga mga pahulam.",
     }
   };
   

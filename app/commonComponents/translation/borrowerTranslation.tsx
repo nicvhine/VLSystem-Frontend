@@ -19,6 +19,7 @@ const borrowerTranslation = {
     m1: "Loading borrowers...",
     m2: "No borrowers found.",
     m3: "View",
+    m4: "No borrowers assigned to you.",
   },
   ceb: {
     // Page title
@@ -40,6 +41,7 @@ const borrowerTranslation = {
     m1: "Nag-load sa mga nanghulam...",
     m2: "Walay nakit-an nga mga nanghulam.",
     m3: "Tan-awa",
+    m4: "Walay mga nanghulam nga gi-assign kanimo.",
   },
 };
 
