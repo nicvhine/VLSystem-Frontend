@@ -11,7 +11,7 @@ export default function PersonalInfo({ client }: Props) {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       {/* General Info */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.h4}</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.t8}</h3>
         <div className="space-y-2">
           <DetailRow label={a.t6} value={client.address || "-"} />
           <DetailRow label={a.t5} value={client.appDob || "-"} />
@@ -28,7 +28,7 @@ export default function PersonalInfo({ client }: Props) {
 
       {/* Contact Info */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.h5}</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.t9}</h3>
         <div className="space-y-2">
           <DetailRow label={a.t22} value={client.contactNumber || "-"} />
           <DetailRow label="Email Address" value={client.emailAddress || "-"} />
@@ -37,7 +37,7 @@ export default function PersonalInfo({ client }: Props) {
 
       {/* Income Info */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">Income Information</h3>
+        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.t10}</h3>
         <div className="space-y-2">
           <DetailRow label={a.t11} value={capitalizeWords(client.sourceOfIncome)} />
           {client.sourceOfIncome?.toLowerCase() === "business" && (

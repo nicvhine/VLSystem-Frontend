@@ -14,6 +14,13 @@ const buttonTranslation = {
         b10: "Collector",
         b11: "Print Collection Sheet",
         b12: "Close",
+        b13: "Export PDF",
+        
+        // Role Display Names
+        b14: "Head",
+        b15: "Manager",
+        b16: "Loan Officer",
+        b17: "Collector",
     },
     ceb: {
         b1: "Pagdugang Tiggamit",
@@ -29,7 +36,14 @@ const buttonTranslation = {
         b9: "Loan Officer",
         b10: "Collector",
         b11: "I-print ang Collection Sheet",
-        b12: "Sirad-a", 
+        b12: "Sirad-a",
+        b13: "I-export ang PDF",
+        
+        // Role Display Names
+        b14: "Head",
+        b15: "Manager",
+        b16: "Loan Officer",
+        b17: "Collector",
     }
 }
 

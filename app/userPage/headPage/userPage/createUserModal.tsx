@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 
 import ConfirmModal from "@/app/commonComponents/modals/confirmModal";
+import translations from "@/app/commonComponents/translation";
 
 // Props interface for CreateUserModal component
 interface CreateUserModalProps {
@@ -17,6 +18,7 @@ interface CreateUserModalProps {
       status?: "Active" | "Inactive";
     }
   ) => Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> | void;
+  language?: "en" | "ceb";
 }
 
 
@@ -24,6 +26,7 @@ export default function CreateUserModal({
   isOpen,
   onClose,
   onCreate,
+  language: languageOverride,
 }: CreateUserModalProps) {
   // Form state for new user data
   const [newUser, setNewUser] = useState({
@@ -33,7 +36,7 @@ export default function CreateUserModal({
     role: "head" as const,
     status: "Active" as const,
   });
-  
+
   // Form validation errors
   const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
   const [checking, setChecking] = useState<{ name?: boolean; email?: boolean; phoneNumber?: boolean }>({});
@@ -42,6 +45,54 @@ export default function CreateUserModal({
   const [showConfirm, setShowConfirm] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  const [language, setLanguage] = useState<"en" | "ceb">(languageOverride ?? "en");
+
+  useEffect(() => {
+    if (languageOverride) {
+      setLanguage(languageOverride);
+    }
+  }, [languageOverride]);
+
+  useEffect(() => {
+    if (languageOverride) return;
+    if (typeof window === "undefined") return;
+
+    const storedRole = localStorage.getItem("role") || "";
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+    };
+
+    const primaryKey = keyMap[storedRole] || "language";
+    const storedLanguage =
+      (localStorage.getItem(primaryKey) as "en" | "ceb") ||
+      (localStorage.getItem("language") as "en" | "ceb") ||
+      "en";
+    setLanguage(storedLanguage);
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      const lang = event.detail?.language;
+      if (lang !== "en" && lang !== "ceb") return;
+      const target = event.detail?.userType;
+      if (!target) {
+        setLanguage(lang);
+        return;
+      }
+      const matchesRole =
+        (storedRole === "head" && target === "head") ||
+        (storedRole === "loan officer" && target === "loanOfficer") ||
+        (storedRole === "manager" && target === "manager");
+      if (matchesRole) setLanguage(lang);
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [languageOverride]);
+
+  const m = translations.managementTranslation[language];
+  const b = translations.buttonTranslation[language];
 
   useEffect(() => {
     if (isOpen) {
@@ -174,14 +225,14 @@ export default function CreateUserModal({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Create New User</h2>
-        <p className="text-sm text-gray-500 mb-4">Fill out the details below to add a new team member.</p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">{m.u1}</h2>
+        <p className="text-sm text-gray-500 mb-4">{m.u2}</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
             <input
               type="text"
               name="name"
-              placeholder="Enter Name"
+              placeholder={m.u3}
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.name}
               onChange={handleChange}
@@ -198,7 +249,7 @@ export default function CreateUserModal({
             <input
               type="email"
               name="email"
-              placeholder="Enter Email"
+              placeholder={m.u4}
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.email}
               onChange={handleChange}
@@ -212,7 +263,7 @@ export default function CreateUserModal({
             <input
               type="tel"
               name="phoneNumber"
-              placeholder="Enter Phone Number"
+              placeholder={m.u5}
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.phoneNumber}
               onChange={handleChange}
@@ -225,24 +276,27 @@ export default function CreateUserModal({
             />
             {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
           </div>
-          <select
-            name="role"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
-            value={newUser.role}
-            onChange={handleChange}
-          >
-            <option value="head">Head</option>
-            <option value="manager">Manager</option>
-            <option value="loan officer">Loan Officer</option>
-            <option value="collector">Collector</option>
-          </select>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">{m.u6}</label>
+            <select
+              name="role"
+              className="w-full rounded-md border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500"
+              value={newUser.role}
+              onChange={handleChange}
+            >
+              <option value="head">{b.b14}</option>
+              <option value="manager">{b.b15}</option>
+              <option value="loan officer">{b.b16}</option>
+              <option value="collector">{b.b17}</option>
+            </select>
+          </div>
           <div className="flex justify-end gap-4 pt-2">
             <button
               type="button"
               onClick={handleModalClose}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
             >
-              Cancel
+              {b.b5}
             </button>
             <button
               type="submit"
@@ -253,12 +307,12 @@ export default function CreateUserModal({
                 checking.name || checking.email || checking.phoneNumber
               }
             >
-              Create User
+              {m.u7}
             </button>
           </div>
           <ConfirmModal
             show={showConfirm}
-            message="Are you sure you want to create this user?"
+            message={m.u8}
             onConfirm={handleConfirmCreate}
             onCancel={() => setShowConfirm(false)}
           />

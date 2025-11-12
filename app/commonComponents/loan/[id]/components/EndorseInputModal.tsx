@@ -1,17 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
+import translations from "@/app/commonComponents/translation";
 
 interface Props {
   onClose: () => void;
   onGenerate: (reason: string) => void;
+  language: "en" | "ceb";
 }
 
-export default function EndorseInputModal({ onClose, onGenerate }: Props) {
+export default function EndorseInputModal({ onClose, onGenerate, language }: Props) {
   const [reason, setReason] = useState("");
   const [animateIn, setAnimateIn] = useState(false);
 
   const isValid = reason.trim().length > 0;
+
+  const e = translations.endorsementTranslation[language];
+  const b = translations.buttonTranslation[language];
 
   useEffect(() => {
     // fade in animation
@@ -45,16 +50,16 @@ export default function EndorseInputModal({ onClose, onGenerate }: Props) {
       >
         {/* Header */}
         <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Endorse for Closure
+          {e.f1}
         </h2>
         <p className="text-sm text-gray-500 mb-4">
-          Please provide a reason for endorsing this account for closure.
+          {e.f2}
         </p>
 
         {/* Textarea */}
         <textarea
           className="w-full border border-gray-300 rounded-lg p-3 h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-          placeholder="Enter reason for closure..."
+          placeholder={e.f3}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -71,7 +76,7 @@ export default function EndorseInputModal({ onClose, onGenerate }: Props) {
             onClick={onClose}
             className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
           >
-            Cancel
+            {b.b5}
           </button>
           <button
             onClick={handleSubmit}
@@ -82,7 +87,7 @@ export default function EndorseInputModal({ onClose, onGenerate }: Props) {
                 : "bg-gray-400 cursor-not-allowed"
             }`}
           >
-            Generate
+            {e.b4}
           </button>
         </div>
       </div>
