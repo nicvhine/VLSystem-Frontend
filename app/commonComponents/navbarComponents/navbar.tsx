@@ -229,6 +229,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 ? '/userPage/sysadPage/dashboard'
                 : role === 'collector'
                 ? '/commonComponents/collection'
+                : role === 'head'
+                ? '/userPage/headPage/dashboard'
                 : '/'
             }
             className="flex items-center space-x-2"
@@ -310,6 +312,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
               </span>
             </label>
 
+            {role !== 'sysad' && (
             <div className="relative">
               <button
                 className="relative p-2 rounded-full hover:bg-gray-100"
@@ -444,6 +447,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 </div>
               </div>
             </div>
+            )}
 
             <div className="relative">
               <div
