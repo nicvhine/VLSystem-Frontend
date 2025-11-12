@@ -14,7 +14,8 @@ import {
   getLoanOfficerNavItems,
   getHeadNavItems,
   getBorrowerNavItems,
-  getSysadNavItems
+  getSysadNavItems,
+  getCollectorNavItems
 } from './navItems';
 import { NavbarProps } from '../utils/Types/navbar';
 import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../utils/notification';
@@ -145,6 +146,9 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
       case 'sysad':
         setNavItems(getSysadNavItems(language));
         break;
+      case 'collector':
+        setNavItems(getCollectorNavItems(language));
+        break;
       default:
         setNavItems([]);
     }
@@ -223,6 +227,8 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                 ? '/userPage/borrowerPage/dashboard'
                 : role === 'sysad'
                 ? '/userPage/sysadPage/dashboard'
+                : role === 'collector'
+                ? '/commonComponents/collection'
                 : '/'
             }
             className="flex items-center space-x-2"

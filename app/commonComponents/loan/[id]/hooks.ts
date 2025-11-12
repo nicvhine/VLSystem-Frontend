@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { LoanDetails } from "../../utils/Types/loan";
 import translations from "../../translation";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASEURL 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL 
 
 export const useLoanDetails = (id: string) => {
   const [loan, setLoan] = useState<LoanDetails | null>(null);
