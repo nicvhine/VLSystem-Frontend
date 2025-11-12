@@ -305,19 +305,27 @@ export default function LoanDetails({
             let netProceeds = adjustedLoan - serviceCharge;
             if (previousBalance > 0 && balanceDecision === "deduct") netProceeds -= previousBalance;
 
+            const interestAmount = adjustedLoan * interestRate;
+            const totalInterestAmount = interestAmount * months;
+            const totalPayable = adjustedLoan + totalInterestAmount;
+
             return (
-              <div className="space-y-2 text-black">
-                <p>
-                  <span className="font-medium">{language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}</span>{" "}
+              <div className="space-y-2 text-gray-700 text-sm">
+              <p>
+                <span className="font-sm">{language === "en" ? "Loan Amount:" : "Kantidad sa Pahulam:"}</span>{" "}
                   ₱{adjustedLoan.toLocaleString()}
                 </p>
                 <p>
-                  <span className="font-medium">{language === "en" ? "Service Charge:" : "Serbisyo nga Bayad:"}</span>{" "}
-                  {formatCurrency(serviceCharge)}
+                  <span className="font-sm">{language === "en" ? "Interest Amount:" : "Interest Amount:"}</span>{" "}
+                  ₱{interestAmount.toLocaleString()}
                 </p>
-                <p className="text-green-700 font-semibold">
-                  <span>{language === "en" ? "Net Proceeds:" : "Netong Makadawat:"}</span>{" "}
-                  {formatCurrency(netProceeds)}
+                <p>
+                  <span className="font-sm">{language === "en" ? "Total Interest Amount:" : "Total Interest Amount:"}</span>{" "}
+                  ₱{totalInterestAmount.toLocaleString()}
+                </p>
+                <p>
+                  <span className="font-sm">{language === "en" ? "Total Payable:" : "Total Payable:"}</span>{" "}
+                  ₱{totalPayable.toLocaleString()}
                 </p>
                 {loanType !== "open-term" && (
                   <p>
