@@ -48,7 +48,11 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ payment, borrowerName, show
   };
 
   const handlePrint = () => {
-    setTimeout(() => window.print(), 100);
+    // For thermal printers, the @page rule should work automatically
+    // For regular printers, users need to select custom paper size
+    setTimeout(() => {
+      window.print();
+    }, 150);
   };
 
   const formattedDate = new Date(payment.datePaid).toLocaleDateString('en-PH', {
@@ -67,32 +71,48 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ payment, borrowerName, show
   const modalContent = (
     <>
       {/* Print Styles - 57mm thermal receipt */}
-      <style jsx global>{`
+      <style>{`
+        @page {
+          size: 57mm auto;
+          margin: 0;
+        }
+        
         @media print {
-          body * {
-            visibility: hidden !important;
+          html, body {
+            margin: 0;
+            padding: 0;
+            width: 57mm;
+            height: auto;
           }
+          
+          body * {
+            visibility: hidden;
+          }
+          
           #receiptPrintSection,
           #receiptPrintSection * {
-            visibility: visible !important;
+            visibility: visible;
           }
+          
           #receiptPrintSection {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 57mm !important;
-            margin: 0 !important;
-            padding: 3mm !important;
-            box-shadow: none !important;
-            border: none !important;
-            background: white !important;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 57mm;
+            margin: 0;
+            padding: 0;
+            background: white;
+            font-family: 'Courier New', monospace;
+            color: #000;
+            transform: translateY(0);
           }
+          
+          #receiptPrintSection > div {
+            padding: 3mm;
+          }
+          
           .no-print {
             display: none !important;
-          }
-          @page {
-            size: 57mm auto;
-            margin: 0;
           }
         }
       `}</style>
@@ -129,15 +149,26 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ payment, borrowerName, show
           </div>
 
           {/* Receipt Content - 57mm width */}
-          <div className="p-6 flex justify-center no-print">
+          <div className="p-6 flex justify-center">
             <div
               id="receiptPrintSection"
-              className="bg-white border border-gray-300 shadow-sm"
-              style={{ width: '57mm', padding: '3mm', fontSize: '9pt', fontFamily: 'monospace' }}
+              style={{ 
+                width: '57mm',
+                maxWidth: '57mm',
+                backgroundColor: 'white',
+                border: '1px solid #d1d5db',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              }}
             >
-              {/* Header */}
-              <div className="text-center mb-2 border-b border-dashed border-gray-400 pb-2">
-                <h3 className="font-bold text-sm">VISTULA LENDING CORP.</h3>
+              <div style={{ 
+                padding: '3mm',
+                fontSize: '9pt',
+                fontFamily: '"Courier New", monospace',
+                lineHeight: '1.4'
+              }}>
+                {/* Header */}
+                <div className="text-center mb-2 border-b border-dashed border-gray-400 pb-2">
+                  <h3 className="font-bold text-sm" style={{ margin: 0, padding: 0 }}>VISTULA LENDING CORP.</h3>
                 <p className="text-xs">BG Business Center</p>
                 <p className="text-xs">Cantecson, Gairan</p>
                 <p className="text-xs">Bogo City, Cebu</p>
@@ -217,6 +248,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ payment, borrowerName, show
               <div className="text-center text-xs mt-2">
                 <p>For inquiries, please contact us.</p>
                 <p>vistulaLending@gmail.com</p>
+              </div>
               </div>
             </div>
           </div>
