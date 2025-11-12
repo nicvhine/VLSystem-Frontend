@@ -53,8 +53,8 @@ export function getSysadNavItems(language: 'en' | 'ceb') {
 export function getCollectorNavItems(language: 'en' | 'ceb') {
   const t = navbarTranslation[language];
   return [
-    { name: "Loans", href: '/userPage/collectorPage/loans'},
-    { name: "PayMongo Payments", href: '/userPage/collectorPage/paymongoPayments'},
+    { name: t.tab1, href: '/userPage/collectorPage/loans'},
+    { name: t.tab15, href: '/userPage/collectorPage/paymongoPayments'},
   ];
 }
 

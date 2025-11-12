@@ -94,6 +94,8 @@ const sysadTranslation = {
     t77: "Users",
     t78: "Borrowers",
     t79: "View All",
+    t80: "Active Users",
+    t81: "Staffs",
 
     // Log Actions
     action_CREATE_USER: "Create User",
@@ -130,7 +132,7 @@ const sysadTranslation = {
   },
   ceb: {
     // Sections
-    t1: "System Administrator",
+    t1: "Administrador sa Sistema",
     t2: "Mga Log",
     t3: "Pagdumala sa Tiggamit",
     t4: "Settings sa Account",
@@ -223,6 +225,8 @@ const sysadTranslation = {
     t77: "Mga Tiggamit",
     t78: "Mga Nanghulam",
     t79: "Tan-awa ang Tanan",
+    t80: "Aktibong mga Tiggamit",
+    t81: "Mga Staff",
 
     // Log Actions
     action_CREATE_USER: "Paghimo og Tiggamit",

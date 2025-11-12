@@ -31,6 +31,7 @@ const endorsementTranslation = {
     b1: "View",
     b2: "Approve",
     b3: "Reject",
+    b4: "Generate",
 
     // Messages
     m1: "No endorsements found.",
@@ -38,6 +39,12 @@ const endorsementTranslation = {
     m3: "Failed to fetch penalty endorsements",
     m4: "Failed to fetch closure endorsements",
     m5: "Something went wrong while fetching endorsements.",
+    m6: "A closure endorsement for this loan is currently pending.",
+
+    // Closure modal
+    f1: "Endorse for Closure",
+    f2: "Please provide a reason for endorsing this account for closure.",
+    f3: "Enter reason for closure...",
   },
   ceb: {
     // Page titles
@@ -71,6 +78,7 @@ const endorsementTranslation = {
     b1: "Tan-awa",
     b2: "Aprubahan",
     b3: "Salikway",
+    b4: "Paghimo",
 
     // Messages
     m1: "Walay nakit-an nga mga endorsement.",
@@ -78,6 +86,12 @@ const endorsementTranslation = {
     m3: "Napakyas sa pagkuha sa mga endorsement sa penalty",
     m4: "Napakyas sa pagkuha sa mga endorsement sa closure",
     m5: "Adunay sayop samtang nagkuha sa mga endorsement.",
+    m6: "Adunay nagpadayong endorsement sa pagsira alang niining pahulama.",
+
+    // Closure modal
+    f1: "I-endorso para sa Pagsira",
+    f2: "Palihug ihatag ang hinungdan sa pag-endorso sa pagsira niini nga account.",
+    f3: "Isulod ang hinungdan sa pagsira...",
   },
 };
 

@@ -69,7 +69,7 @@ export default function UserManagementPage() {
   const closeSuccessModal = () => setSuccessMessage(null);
 
   // Translation hook
-  const { s } = useTranslation();
+  const { s, language } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -688,7 +688,12 @@ export default function UserManagementPage() {
         </div>
 
         {/* Add User Modal */}
-        <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
+        <CreateUserModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onCreate={handleCreateUser}
+          language={language}
+        />
       </div>
     </div>
   );

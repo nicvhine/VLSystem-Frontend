@@ -137,11 +137,14 @@ export default function Page() {
     }
   };
 
-  function capitalizeWords(str: string) {
-    return str
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ");
+  function getRoleTranslation(role: string): string {
+    const roleMap: Record<string, string> = {
+      "head": b.b14,
+      "manager": b.b15,
+      "loan officer": b.b16,
+      "collector": b.b17,
+    };
+    return roleMap[role.toLowerCase()] || role;
   }
   
   return (
@@ -302,7 +305,7 @@ export default function Page() {
                                   : "bg-gray-100 text-gray-800"}
                               `}
                             >
-                              {capitalizeWords(user.role)}
+                              {getRoleTranslation(user.role)}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
@@ -428,7 +431,12 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <CreateUserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onCreate={handleCreateUser} />
+          <CreateUserModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            onCreate={handleCreateUser}
+            language={language}
+          />
           {successMessage && (
             <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={() => setSuccessMessage("")} />
           )}

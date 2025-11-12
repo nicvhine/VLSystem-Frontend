@@ -119,6 +119,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   }, [role]);
 
   const t = translations.navbarTranslation[language];
+  const b = translations.buttonTranslation[language];
 
   // Local email state to reflect immediate changes without full refresh
   const [displayEmail, setDisplayEmail] = useState<string>(email);
@@ -268,13 +269,13 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
             {role === 'borrower'
               ? 'Borrower'
               : role === 'head'
-              ? 'Head'
+              ? b.b14
               : role === 'manager'
-              ? 'Manager'
+              ? b.b15
               : role === 'loan officer'
-              ? 'Loan Officer'
+              ? b.b16
               : role === 'collector'
-              ? 'Collector'
+              ? b.b17
               : role}
           </div>
 

@@ -36,6 +36,7 @@ export interface AddAgentModalProps {
     setNewAgentPhone: (phone: string) => void;
     onAddAgent: () => Promise<AddAgentResult>;
     loading?: boolean; 
+    language?: "en" | "ceb";
 }
 
 export interface AgentDropdownProps {

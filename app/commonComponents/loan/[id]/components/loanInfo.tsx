@@ -18,7 +18,7 @@ export default function LoanInfo({ client }: Props) {
     <div className="space-y-6">
       {/* Loan Summary */}
       <section className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.h1}</h2>
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">{t.t5}</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded-md border border-gray-200 p-4">
             <span className="text-xs uppercase text-gray-500">{s.l45}</span>
@@ -61,13 +61,13 @@ export default function LoanInfo({ client }: Props) {
           <section className="rounded-lg border border-gray-200 bg-white p-6">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">
-                {t.h2}
+                {t.t6}
               </h3>
               <button
                 onClick={() => setShowLedger(true)}
                 className="text-sm font-medium text-red-600 transition-colors hover:text-red-700"
               >
-                {t.b1}
+                {t.t11}
               </button>
             </div>
             <div className="grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3">
@@ -86,7 +86,7 @@ export default function LoanInfo({ client }: Props) {
             </div>
           </section>
         ) : (
-          <section className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-500">{t.m1}</section>
+          <section className="rounded-lg border border-gray-200 bg-white p-6 text-center text-gray-500">{t.t13}</section>
         )
       )}
 
@@ -94,7 +94,7 @@ export default function LoanInfo({ client }: Props) {
       {loanSubTab === "past" && (
         <section className="rounded-lg border border-gray-200 bg-white p-6">
           <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-700">
-            {t.h3}
+            {t.t7}
           </h2>
           {client.previousLoans?.length ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -110,7 +110,7 @@ export default function LoanInfo({ client }: Props) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-gray-400">{t.m2}</p>
+            <p className="text-sm text-gray-400">{t.t14}</p>
           )}
         </section>
       )}

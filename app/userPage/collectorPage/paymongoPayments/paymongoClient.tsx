@@ -9,7 +9,8 @@ import { Fragment } from 'react';
 
 
 export default function PaymongoClient() {
-  const { payments, loading, error, role, language } = useLoanList();
+  const { payments, loading, error, role } = useLoanList();
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'status'>('name');
@@ -17,6 +18,43 @@ export default function PaymongoClient() {
 
   const t = translations.borrowerTranslation[language];
   const loanT = translations.loanTermsTranslator[language];
+  const nav = translations.navbarTranslation[language];
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+      collector: "language",
+    };
+    const langKey = storedRole ? keyMap[storedRole] : null;
+    const storedLang = langKey ? localStorage.getItem(langKey) as "en" | "ceb" | null : null;
+    const universalLang = localStorage.getItem("language") as "en" | "ceb" | null;
+    if (storedLang) {
+      setLanguage(storedLang);
+    } else if (universalLang) {
+      setLanguage(universalLang);
+    }
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail?.language) {
+        const targetUserType = event.detail?.userType;
+        if (
+          !targetUserType ||
+          (role === "head" && targetUserType === "head") ||
+          (role === "loan officer" && targetUserType === "loanOfficer") ||
+          (role === "manager" && targetUserType === "manager") ||
+          (role === "collector")
+        ) {
+          setLanguage(event.detail.language as "en" | "ceb");
+        }
+      }
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
 
   const filteredLoans = payments
     .filter((payment) => payment.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -35,7 +73,7 @@ export default function PaymongoClient() {
     <div className="min-h-screen bg-white">
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-6">PayMongo Payments</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 mb-6">{nav.tab15}</h1>
 
           <Filter
             searchQuery={searchQuery}
@@ -58,7 +96,7 @@ export default function PaymongoClient() {
               <table className="min-w-full">
                 <thead>
                   <tr>
-                    {['Date', 'ID', 'Reference Number', 'Name', 'Paid Amount'].map((heading) => (
+                    {[loanT.l53, loanT.l11, loanT.l43, loanT.l12, loanT.l42].map((heading) => (
                       <th
                         key={heading}
                         className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"

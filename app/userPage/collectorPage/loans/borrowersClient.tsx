@@ -10,9 +10,10 @@ import { Fragment } from 'react';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function BorrowerClient() {
-  const { loans, loading, error, role, language } = useLoanList();
+  const { loans, loading, error, role } = useLoanList();
   const [expandedLoanId, setExpandedLoanId] = useState<string | null>(null);
   const [paymentHistory, setPaymentHistory] = useState<Record<string, any[]>>({});
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'status'>('name');
@@ -20,6 +21,42 @@ export default function BorrowerClient() {
 
   const t = translations.borrowerTranslation[language];
   const loanT = translations.loanTermsTranslator[language];
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("role");
+    const keyMap: Record<string, string> = {
+      head: "headLanguage",
+      "loan officer": "loanOfficerLanguage",
+      manager: "managerLanguage",
+      collector: "language",
+    };
+    const langKey = storedRole ? keyMap[storedRole] : null;
+    const storedLang = langKey ? localStorage.getItem(langKey) as "en" | "ceb" | null : null;
+    const universalLang = localStorage.getItem("language") as "en" | "ceb" | null;
+    if (storedLang) {
+      setLanguage(storedLang);
+    } else if (universalLang) {
+      setLanguage(universalLang);
+    }
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail?.language) {
+        const targetUserType = event.detail?.userType;
+        if (
+          !targetUserType ||
+          (role === "head" && targetUserType === "head") ||
+          (role === "loan officer" && targetUserType === "loanOfficer") ||
+          (role === "manager" && targetUserType === "manager") ||
+          (role === "collector")
+        ) {
+          setLanguage(event.detail.language as "en" | "ceb");
+        }
+      }
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, [role]);
 
   const filteredLoans = loans
     .filter((loan) => loan.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -64,7 +101,7 @@ export default function BorrowerClient() {
     <div className="min-h-screen bg-white">
       <div className="min-h-screen bg-gray-50">
         <div className="mx-auto px-4 sm:px-6 py-8">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-6">Loans</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 mb-6">{loanT.Loans}</h1>
 
           <Filter
             searchQuery={searchQuery}
@@ -87,7 +124,7 @@ export default function BorrowerClient() {
               <table className="min-w-full">
                 <thead>
                   <tr>
-                    {['ID', 'Name', 'Loan Amount', 'Balance'].map((heading) => (
+                  {[loanT.l11, loanT.l12, loanT.l54, loanT.l14].map((heading) => (
                       <th
                         key={heading}
                         className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -119,7 +156,7 @@ export default function BorrowerClient() {
                                   <table className="min-w-full">
                                     <thead>
                                       <tr>
-                                        {['Payment Date', 'Amount', 'Mode'].map((heading) => (
+                                        {[loanT.l49, loanT.l50, loanT.l51].map((heading) => (
                                           <th
                                             key={heading}
                                             className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -144,7 +181,7 @@ export default function BorrowerClient() {
                                     </tbody>
                                   </table>
                                 ) : (
-                                  <p className="text-sm text-gray-500">No payment history available.</p>
+                                  <p className="text-sm text-gray-500">{loanT.l52}</p>
                                 )}
                               </div>
                             </td>
@@ -155,7 +192,7 @@ export default function BorrowerClient() {
                   ) : (
                     <tr>
                       <td colSpan={6} className="text-center text-gray-500 py-6 text-sm">
-                        {t.m2}
+                        {role === 'collector' ? t.m4 : t.m2}
                       </td>
                     </tr>
                   )}

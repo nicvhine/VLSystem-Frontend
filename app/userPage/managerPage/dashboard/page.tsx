@@ -1,11 +1,33 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { FiDownload } from 'react-icons/fi';
 import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
 import LoanStatisticsTops from "@/app/commonComponents/statistics/loanStatisticsTops";
 import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsCharts";
+import translations from "@/app/commonComponents/translation";
 
 export default function ManagerDashboard() {
+  const [language, setLanguage] = useState<"en" | "ceb">("en");
+
+  useEffect(() => {
+    const storedLanguage = localStorage.getItem("managerLanguage") as "en" | "ceb";
+    if (storedLanguage) {
+      setLanguage(storedLanguage);
+    }
+
+    const handleLanguageChange = (event: CustomEvent) => {
+      if (event.detail?.userType === "manager") {
+        setLanguage(event.detail.language);
+      }
+    };
+
+    window.addEventListener("languageChange", handleLanguageChange as EventListener);
+    return () =>
+      window.removeEventListener("languageChange", handleLanguageChange as EventListener);
+  }, []);
+
+  const b = translations.buttonTranslation[language];
   const handleExportPDF = () => {
     // Small delay to ensure charts are fully rendered
     requestAnimationFrame(() => {
@@ -65,7 +87,7 @@ export default function ManagerDashboard() {
             title="Export Dashboard as PDF"
           >
             <FiDownload size={18} />
-            Export PDF
+            {b.b13}
           </button>
         </div>
 

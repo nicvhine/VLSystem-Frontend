@@ -10,6 +10,7 @@ import EndorseInputModal from "./components/EndorseInputModal";
 import EndorseLetterModal from "./components/EndorseLetterModal";
 import ErrorModal from "../../modals/errorModal";
 import { formatDateTime } from "../../utils/formatters";
+import translations from "@/app/commonComponents/translation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -90,13 +91,13 @@ const ProgressCircle = ({ value, label, subLabel, displayValue, centerSubLabel }
 };
 
 // ------------------- Payment Progress Card -------------------
-const PaymentProgressCard = ({ paidAmount, balance }: { paidAmount: number; balance: number }) => {
+const PaymentProgressCard = ({ paidAmount, balance, t1 }: { paidAmount: number; balance: number; t1: any }) => {
   const total = paidAmount + balance;
   const percentage = total > 0 ? (paidAmount / total) * 100 : 0;
   return (
     <ProgressCircle
       value={Number(percentage.toFixed(2))}
-      label="Payment Progress"
+      label={t1.t15}
       displayValue={`${Number(percentage.toFixed(0))}%`}
       centerSubLabel="out of 100"
       subLabel={`₱${paidAmount.toLocaleString()} / ₱${total.toLocaleString()}`}
@@ -151,9 +152,9 @@ const PaymentTrackerCard = ({ collection }: { collection: any }) => {
   );
 };
 
-const PaymentTrackerCards = ({ collections }: { collections: any[] }) => {
+const PaymentTrackerCards = ({ collections, t1 }: { collections: any[]; t1: any }) => {
   if (!collections || collections.length === 0)
-    return <p className="text-center py-6 text-gray-500 text-sm">No collections found.</p>;
+    return <p className="text-center py-6 text-gray-500 text-sm">{t1.t18}</p>;
 
   return (
     <div className="flex flex-col">
@@ -166,7 +167,8 @@ const PaymentTrackerCards = ({ collections }: { collections: any[] }) => {
 
 // ------------------- Loans Detail Client -------------------
 export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
-  const { loan, loading, role } = useLoanDetails(loanId);
+  const { loan, loading, role, language, t: t1 } = useLoanDetails(loanId);
+  const e = translations.endorsementTranslation[language];
 
   const [collections, setCollections] = useState<any[]>([]);
   const [inputModalOpen, setInputModalOpen] = useState(false);
@@ -191,8 +193,8 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
       .catch(err => console.error(err));
   }, [loan]);
 
-  if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">Loading loan details...</div>;
-  if (!loan) return <div className="p-10 text-center text-red-500">Loan not found.</div>;
+  if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">{t1.t19}</div>;
+  if (!loan) return <div className="p-10 text-center text-red-500">{t1.t20}</div>;
 
   const Wrapper: React.ComponentType<{ children: React.ReactNode }> =
     role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
@@ -242,13 +244,13 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
                   onClick={() => setInputModalOpen(true)}
                   className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 shadow transition"
                 >
-                  Endorse for closure
+                  {e.f1}
                 </button>
               )}
 
               {closureStatus === "Pending" && (
                 <p className="text-sm text-gray-500 italic">
-                  A closure endorsement for this loan is currently pending.
+                  {e.m6}
                 </p>
               )}
             </div>
@@ -256,7 +258,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
         </div>
 
         {/* Modals */}
-        {inputModalOpen && <EndorseInputModal onClose={() => setInputModalOpen(false)} onGenerate={handleGenerate} />}
+        {inputModalOpen && <EndorseInputModal onClose={() => setInputModalOpen(false)} onGenerate={handleGenerate} language={language} />}
         {endorsementData && (
           <EndorseLetterModal
             isOpen={letterModalOpen}
@@ -277,6 +279,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
             <PaymentProgressCard
               paidAmount={loan.currentLoan?.paidAmount ?? 0}
               balance={loan.currentLoan?.remainingBalance ?? 0}
+              t1={t1}
             />
           </div>
 
@@ -284,22 +287,22 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Loan Details */}
             <div className="md:col-span-2 bg-white rounded-3xl shadow-lg p-5 border border-gray-200 hover:shadow-2xl transition">
-              <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2">Loan Details</h2>
+              <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2">{t1.t16}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                <Info label="Loan ID" value={loan.loanId} />
-                <Info label="Amount" value={`₱${Number(loan.appLoanAmount).toLocaleString()}`} />
-                <Info label="Loan Type" value={loan.loanType} />
-                <Info label="Terms" value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
-                <Info label="Interest Rate" value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
-                <Info label="Date Disbursed" value={formatDateTime(loan.dateDisbursed)} />
+                <Info label={t1.t21} value={loan.loanId} />
+                <Info label={t1.t22} value={`₱${Number(loan.appLoanAmount).toLocaleString()}`} />
+                <Info label={t1.t23} value={loan.loanType} />
+                <Info label={t1.t24} value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
+                <Info label={t1.t25} value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
+                <Info label={t1.t26} value={formatDateTime(loan.dateDisbursed)} />
               </div>
             </div>
 
             {/* Payment Tracker */}
             <div className="md:col-span-2">
               <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-5 h-[55vh] overflow-y-auto">
-                <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2 sticky top-0 bg-white z-10">Payment Tracker</h2>
-                <PaymentTrackerCards collections={collections} />
+                <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2 sticky top-0 bg-white z-10">{t1.t17}</h2>
+                <PaymentTrackerCards collections={collections} t1={t1} />
               </div>
             </div>
           </div>

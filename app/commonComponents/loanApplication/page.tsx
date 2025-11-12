@@ -172,7 +172,7 @@ export default function ApplicationsPage() {
               href="/commonComponents/archive"
               className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-2 transition-colors"
             >
-              View Archive
+              {t.l47}
             </Link>
           </div>
 

@@ -52,7 +52,7 @@ export default function SysAdDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white rounded-2xl shadow-sm p-6 flex items-center gap-4">
             <div>
-              <h2 className="text-gray-600 text-sm">Staffs</h2>
+              <h2 className="text-gray-600 text-sm">{s.t81}</h2>
               <p className="text-2xl font-semibold">{totalActiveStaff}</p>
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function SysAdDashboard() {
         {/* Active Staff Table */}
         <div className="bg-white rounded-2xl shadow-sm mb-8">
           <div className="p-6 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-800">Active Users</h2>
+            <h2 className="text-lg font-semibold text-gray-800">{s.t80}</h2>
             <a
               href="/userPage/sysadPage/userManagement"
               className="text-blue-600 text-sm font-medium hover:underline"
