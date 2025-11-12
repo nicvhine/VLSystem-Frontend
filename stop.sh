@@ -1,12 +1,18 @@
 #!/bin/bash
 
-# Default port is 8094 if not provided
+# Default port is 3000 if not provided
 PORT=${1:-3000}
 echo "🔍 Checking for process on port: $PORT"
 
-# Find the PID using lsof
+# Try lsof first
 PID=$(lsof -t -i tcp:$PORT)
 
+# If lsof fails, fallback to netstat
+if [[ -z "$PID" ]]; then
+  PID=$(sudo netstat -tulnp 2>/dev/null | grep ":$PORT" | awk '{print $7}' | cut -d'/' -f1)
+fi
+
+# Final check
 if [[ -z "$PID" ]]; then
   echo "✅ No process found on port $PORT. Nothing to kill."
   exit 0
@@ -15,7 +21,7 @@ fi
 # Validate PID is numeric
 if [[ "$PID" =~ ^[0-9]+$ ]]; then
   echo "⚠️ Found process with PID: $PID. Attempting to terminate..."
-  kill -9 "$PID"
+  sudo kill -9 "$PID"
 
   if [[ $? -eq 0 ]]; then
     echo "✅ Successfully killed process $PID on port $PORT."
