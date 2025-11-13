@@ -31,6 +31,10 @@ export default function useBorrowerDashboard(borrowersId: string | null) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentModalAnimateIn, setPaymentModalAnimateIn] = useState(false);
 
+  // Receipt Modal for PayMongo payments
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [receiptData, setReceiptData] = useState<any>(null);
+
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -207,6 +211,23 @@ useEffect(() => {
     }
   }, [isPaymentModalOpen]);
 
+  /** CHECK FOR PENDING PAYMONGO RECEIPT **/
+  useEffect(() => {
+    const pendingReceipt = localStorage.getItem('pendingPaymentReceipt');
+    if (pendingReceipt) {
+      try {
+        const receiptPaymentData = JSON.parse(pendingReceipt);
+        setReceiptData(receiptPaymentData);
+        setShowReceiptModal(true);
+        // Clear the pending receipt from localStorage
+        localStorage.removeItem('pendingPaymentReceipt');
+      } catch (err) {
+        console.error('Error parsing pending receipt:', err);
+        localStorage.removeItem('pendingPaymentReceipt');
+      }
+    }
+  }, []); // Run once on component mount
+
   return {
     allLoans,
     activeLoan,
@@ -230,6 +251,9 @@ useEffect(() => {
     isPaymentModalOpen,
     setIsPaymentModalOpen,
     paymentModalAnimateIn,
+    showReceiptModal,
+    setShowReceiptModal,
+    receiptData,
     showErrorModal,
     setShowErrorModal,
     errorMsg,

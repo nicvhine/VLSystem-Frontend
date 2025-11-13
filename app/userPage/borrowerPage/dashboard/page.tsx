@@ -6,6 +6,7 @@ import TermsGateModal from '@/app/commonComponents/modals/termsPrivacy/TermsGate
 import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
 import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';
 import PaymentHistoryModal from '@/app/commonComponents/modals/paymentHistoryModal/modal';
+import ReceiptModal from '@/app/commonComponents/modals/receiptModal';
 import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
 
 import useBorrowerDashboard from './hooks';
@@ -48,6 +49,9 @@ export default function BorrowerDashboard() {
     isPaymentModalOpen,
     setIsPaymentModalOpen,
     paymentModalAnimateIn,
+    showReceiptModal,
+    setShowReceiptModal,
+    receiptData,
     language,
     t,
   } = dashboard;
@@ -212,6 +216,15 @@ export default function BorrowerDashboard() {
               language={language}
               onClose={() => setShowPrivacyContent(false)}
               onReadComplete={() => setPrivacyRead(true)}
+            />
+          )}
+
+          {/* Receipt Modal for PayMongo Payments */}
+          {showReceiptModal && receiptData && (
+            <ReceiptModal
+              payment={receiptData}
+              showPrint={false}
+              onClose={() => setShowReceiptModal(false)}
             />
           )}
         </div>

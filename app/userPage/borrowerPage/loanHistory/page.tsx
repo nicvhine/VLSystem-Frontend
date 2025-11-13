@@ -227,12 +227,6 @@ export default function LoanHistoryPage() {
                           >
                             {loan.status}
                           </span>
-
-                          <div className="text-right">
-                            <p className="text-sm text-gray-600">
-                              {formatCurrency(loan.appLoanAmount)}
-                            </p>
-                          </div>
                         </div>
                       </div>
 
@@ -254,7 +248,7 @@ export default function LoanHistoryPage() {
                               ) : (
                                 <div className="space-y-4">
                                   {/* Summary */}
-                                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                  <div className={`grid gap-4 ${(det.loanType || loan.loanType)?.toLowerCase().includes('open') ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-4'}`}>
                                     <div>
                                       <p className="text-xs text-gray-500">{t.t5}</p>
                                       <p className="font-medium text-gray-800">
@@ -270,12 +264,20 @@ export default function LoanHistoryPage() {
                                       </p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-gray-500">{t.t7}</p>
+                                      <p className="text-xs text-gray-500">Interest</p>
                                       <p className="font-medium text-gray-800">
-                                        {det.appInterestRate ?? loan.appInterestRate ?? 0}% •{' '}
-                                        {det.appLoanTerms ?? (loan as any).appLoanTerms ?? '-'} months
+                                        {det.appInterestRate ?? loan.appInterestRate ?? 0}%
                                       </p>
                                     </div>
+                                    {/* COMPLETELY HIDE Terms if Open-Term */}
+                                    {!(det.loanType || loan.loanType)?.toLowerCase().includes('open') && (
+                                      <div>
+                                        <p className="text-xs text-gray-500">Terms</p>
+                                        <p className="font-medium text-gray-800">
+                                          {det.appLoanTerms ?? (loan as any).appLoanTerms ?? '-'} months
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
 
                                   {/* Payment Table */}
