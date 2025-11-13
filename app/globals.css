@@ -110,9 +110,25 @@ textarea::placeholder {
 }
 
 @media print {
-  body * { visibility: hidden; }
-  .print-sheet, .print-sheet * { visibility: visible; }
-  .print-sheet { position: absolute; left: 0; top: 0; width: 100vw; background: #fff; z-index: 9999; }
+  /* Hide elements with no-print class */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Special handling for print-sheet class (if used elsewhere) */
+  body.print-mode * { visibility: hidden; }
+  body.print-mode .print-sheet, body.print-mode .print-sheet * { visibility: visible; }
+  body.print-mode .print-sheet { position: absolute; left: 0; top: 0; width: 100vw; background: #fff; z-index: 9999; }
+  
+  /* Ensure dashboard content is visible when printing */
+  body {
+    background: white !important;
+  }
+  
+  /* Optimize print layout */
+  @page {
+    margin: 0.5cm;
+  }
 }
 
 :root {
