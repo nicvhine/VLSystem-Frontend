@@ -202,8 +202,16 @@ export default function BasicInformation({
             type="number"
             className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder={language === "en" ? "Enter number of children" : "Isulod ang ihap sa anak"}
-            value={appChildren}
-            onChange={(e) => setAppChildren(parseInt(e.target.value))}
+            value={appChildren || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "") {
+                setAppChildren(0);
+              } else {
+                const numValue = parseInt(value);
+                setAppChildren(isNaN(numValue) ? 0 : numValue);
+              }
+            }}
             min={0}
           />
         </div>

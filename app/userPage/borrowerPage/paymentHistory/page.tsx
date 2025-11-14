@@ -5,7 +5,7 @@ import Borrower from "../page";
 import useBorrowerDashboard from "../dashboard/hooks";
 import { Payment, Collection } from "@/app/commonComponents/utils/Types/collection";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
-import ReceiptModal from "../modals/receipt";
+import ReceiptModal from "@/app/commonComponents/modals/receiptModal";
 import Pagination from "@/app/commonComponents/utils/pagination";
 import translations from '@/app/commonComponents/translation';
 import BorrowerClient from "../borrowerClient";
@@ -130,16 +130,12 @@ export default function PaymentHistoryPage() {
                         <td className="px-6 py-4 text-green-700">₱{(payment.amount ?? 0).toLocaleString()}</td>
                         <td className="px-6 py-4 text-sm text-gray-800 font-medium">{payment.mode}</td>
                         <td className="px-6 py-4">
-                          {payment.receipt ? (
-                            <button
-                              onClick={() => setModalPayment(payment)}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition"
-                            >
-                              {t.t33}
-                            </button>
-                          ) : (
-                            <span className="text-sm text-gray-400">N/A</span>
-                          )}
+                          <button
+                            onClick={() => setModalPayment(payment)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition"
+                          >
+                            {t.t33}
+                          </button>
                         </td>
                       </tr>
                     );
@@ -165,8 +161,17 @@ export default function PaymentHistoryPage() {
           {/* Receipt Modal */}
           {modalPayment && (
             <ReceiptModal
-              isOpen={true}
-              payment={modalPayment}
+              payment={{
+                referenceNumber: modalPayment.referenceNumber,
+                amount: modalPayment.amount,
+                datePaid: modalPayment.datePaid,
+                loanId: modalPayment.loanId,
+                borrowersId: modalPayment.borrowersId,
+                collector: modalPayment.collector,
+                mode: modalPayment.mode,
+                paidToCollection: modalPayment.paidToCollection,
+              }}
+              showPrint={false}
               onClose={() => setModalPayment(null)}
             />
           )}

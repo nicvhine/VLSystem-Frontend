@@ -249,8 +249,16 @@ export default function SourceOfIncome({
             </label>
             <input
               type="number"
-              value={appMonthlyIncome}
-              onChange={(e) => setAppMonthlyIncome(Number(e.target.value))}
+              value={appMonthlyIncome || ""}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "") {
+                  setAppMonthlyIncome(0);
+                } else {
+                  const numValue = Number(value);
+                  setAppMonthlyIncome(isNaN(numValue) ? 0 : numValue);
+                }
+              }}
               className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes("Monthly Income")) ? "border-red-500" : "border-gray-200"}`}
               placeholder={
                 language === "en"

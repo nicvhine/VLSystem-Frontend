@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 interface FormData {
   // Basic Info
@@ -91,6 +91,7 @@ export function useFormPersistence({
 }: UseFormPersistenceProps) {
   // Create unique storage key per borrower
   const actualStorageKey = borrowersId ? `${storageKey}_${borrowersId}` : storageKey;
+  const isInitialLoad = useRef(true);
 
   // Load saved form data on mount
   useEffect(() => {
@@ -107,7 +108,7 @@ export function useFormPersistence({
         if (parsed.appContact) setters.setAppContact(parsed.appContact);
         if (parsed.appEmail) setters.setAppEmail(parsed.appEmail);
         if (parsed.appMarital) setters.setAppMarital(parsed.appMarital);
-        if (parsed.appChildren !== undefined) setters.setAppChildren(parsed.appChildren);
+        if (parsed.appChildren !== undefined && parsed.appChildren !== null) setters.setAppChildren(Number(parsed.appChildren));
         if (parsed.appSpouseName) setters.setAppSpouseName(parsed.appSpouseName);
         if (parsed.appSpouseOccupation) setters.setAppSpouseOccupation(parsed.appSpouseOccupation);
         if (parsed.appAddress) setters.setAppAddress(parsed.appAddress);
@@ -117,22 +118,24 @@ export function useFormPersistence({
         if (parsed.appBusinessName) setters.setAppBusinessName(parsed.appBusinessName);
         if (parsed.appDateStarted) setters.setAppDateStarted(parsed.appDateStarted);
         if (parsed.appBusinessLoc) setters.setAppBusinessLoc(parsed.appBusinessLoc);
-        if (parsed.appMonthlyIncome !== undefined) setters.setAppMonthlyIncome(parsed.appMonthlyIncome);
+        if (parsed.appMonthlyIncome !== undefined && parsed.appMonthlyIncome !== null) setters.setAppMonthlyIncome(Number(parsed.appMonthlyIncome));
         if (parsed.appOccupation) setters.setAppOccupation(parsed.appOccupation);
         if (parsed.appEmploymentStatus) setters.setAppEmploymentStatus(parsed.appEmploymentStatus);
         if (parsed.appCompanyName) setters.setAppCompanyName(parsed.appCompanyName);
         
-        if (parsed.appReferences && Array.isArray(parsed.appReferences)) {
+        // Always restore references array, even if empty
+        if (parsed.appReferences && Array.isArray(parsed.appReferences) && parsed.appReferences.length > 0) {
           setters.setAppReferences(parsed.appReferences);
         }
         
         if (parsed.appAgent) setters.setAppAgent(parsed.appAgent);
         
         if (parsed.collateralType) setters.setCollateralType(parsed.collateralType);
-        if (parsed.collateralValue !== undefined) setters.setCollateralValue(parsed.collateralValue);
+        if (parsed.collateralValue !== undefined && parsed.collateralValue !== null) setters.setCollateralValue(Number(parsed.collateralValue));
         if (parsed.collateralDescription) setters.setCollateralDescription(parsed.collateralDescription);
         if (parsed.ownershipStatus) setters.setOwnershipStatus(parsed.ownershipStatus);
         
+        // Always restore selectedLoan, even if it's an object
         if (parsed.selectedLoan) setters.setSelectedLoan(parsed.selectedLoan);
         if (parsed.appLoanPurpose) setters.setAppLoanPurpose(parsed.appLoanPurpose);
         
@@ -142,12 +145,18 @@ export function useFormPersistence({
       }
     } catch (error) {
       console.error('Error loading form data from localStorage:', error);
+    } finally {
+      // Mark that initial load is complete
+      isInitialLoad.current = false;
     }
   }, [enabled, actualStorageKey]);
 
-  // Save form data to localStorage whenever it changes
+  // Save form data to localStorage whenever it changes (but skip the first render)
   useEffect(() => {
     if (!enabled || typeof window === 'undefined') return;
+    
+    // Skip saving during initial load to prevent overwriting loaded data
+    if (isInitialLoad.current) return;
 
     try {
       const dataToSave = JSON.stringify(formData);

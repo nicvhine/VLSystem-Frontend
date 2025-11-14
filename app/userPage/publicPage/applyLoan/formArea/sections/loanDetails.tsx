@@ -16,6 +16,9 @@ interface LoanDetailsProps {
   onLoanSelect: (loan: { amount: number; months?: number; interest: number } | null) => void;
   missingFields?: string[];
   showFieldErrors?: boolean;
+  customLoanAmount?: number | "";
+  setCustomLoanAmount?: (val: number | "") => void;
+  selectedLoan?: LoanOption | null;
 }
 
 export default function LoanDetails({
@@ -26,10 +29,20 @@ export default function LoanDetails({
   onLoanSelect,
   missingFields = [],
   showFieldErrors = false,
+  customLoanAmount: externalCustomLoanAmount,
+  setCustomLoanAmount: externalSetCustomLoanAmount,
+  selectedLoan: externalSelectedLoan,
 }: LoanDetailsProps) {
-  const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
-  const [selectedLoan, setSelectedLoan] = useState<LoanOption | null>(null);
+  // Use local state if not controlled from parent
+  const [internalCustomLoanAmount, setInternalCustomLoanAmount] = useState<number | "">("");
+  const [internalSelectedLoan, setInternalSelectedLoan] = useState<LoanOption | null>(null);
   const [loanAmountError, setLoanAmountError] = useState<string>("");
+
+  // Determine if using controlled or uncontrolled mode
+  const customLoanAmount = externalCustomLoanAmount !== undefined ? externalCustomLoanAmount : internalCustomLoanAmount;
+  const setCustomLoanAmount = externalSetCustomLoanAmount || setInternalCustomLoanAmount;
+  const selectedLoan = externalSelectedLoan !== undefined ? externalSelectedLoan : internalSelectedLoan;
+  const setSelectedLoan = externalSelectedLoan !== undefined ? onLoanSelect : setInternalSelectedLoan;
 
   // Loan options
   const withCollateralOptions: LoanOption[] = [

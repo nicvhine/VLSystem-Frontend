@@ -112,6 +112,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
   // Loan
   const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
+  const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
 
   // Uploads 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -124,7 +125,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
       sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted, appBusinessLoc, appMonthlyIncome,
       appOccupation, appEmploymentStatus, appCompanyName, appReferences, appAgent,
       collateralType, collateralValue, collateralDescription, ownershipStatus,
-      selectedLoan, appLoanPurpose, loanType
+      selectedLoan, appLoanPurpose, customLoanAmount, loanType
     },
     setters: {
       setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
@@ -132,7 +133,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
       setAppTypeBusiness, setAppBusinessName, setAppDateStarted, setAppBusinessLoc,
       setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
       setAppReferences, setAppAgent, setCollateralType, setCollateralValue,
-      setCollateralDescription, setOwnershipStatus, setSelectedLoan, setAppLoanPurpose
+      setCollateralDescription, setOwnershipStatus, setSelectedLoan, setAppLoanPurpose, setCustomLoanAmount
     },
     storageKey: 'loanApplicationFormData',
     enabled: true,
@@ -289,6 +290,8 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
           <LoanDetails
             language={language} loanType={loanTypeParam} appLoanPurpose={appLoanPurpose} setAppLoanPurpose={setAppLoanPurpose}
             onLoanSelect={(loan) => setSelectedLoan(loan)} missingFields={missingFields}
+            customLoanAmount={customLoanAmount} setCustomLoanAmount={setCustomLoanAmount}
+            selectedLoan={selectedLoan}
           />
         </div>
 

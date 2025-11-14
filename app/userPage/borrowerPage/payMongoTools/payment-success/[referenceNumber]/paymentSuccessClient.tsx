@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
-import ReceiptModal from "@/app/commonComponents/modals/receiptModal";
 
 interface Props {
   referenceNumber: string;
@@ -16,8 +15,6 @@ export default function PaymentSuccessClient({ referenceNumber }: Props) {
   const [phase, setPhase] = useState<"processing" | "success" | "error">("processing");
   const [msg, setMsg] = useState("Finalizing your payment... Please wait.");
   const [redirectIn, setRedirectIn] = useState(3);
-  const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [paymentData, setPaymentData] = useState<any>(null);
 
   const finalize = useCallback(async () => {
     setPhase("processing");
@@ -41,10 +38,10 @@ export default function PaymentSuccessClient({ referenceNumber }: Props) {
       setPhase("success");
       setMsg("Payment successful. Redirecting you back to your dashboard...");
 
-      // Extract payment data for receipt modal
+      // Extract payment data and store in localStorage to show receipt on dashboard
       if (result && result.paymentLogs && result.paymentLogs.length > 0) {
         const paymentLog = result.paymentLogs[0];
-        setPaymentData({
+        const paymentReceiptData = {
           referenceNumber: paymentLog.referenceNumber,
           amount: paymentLog.amount,
           datePaid: paymentLog.datePaid,
@@ -53,9 +50,9 @@ export default function PaymentSuccessClient({ referenceNumber }: Props) {
           collector: paymentLog.collector,
           mode: paymentLog.mode || 'GCash',
           paidToCollection: paymentLog.paidToCollection,
-        });
-        // Show receipt modal after a brief delay
-        setTimeout(() => setShowReceiptModal(true), 500);
+        };
+        // Store payment data to show receipt modal on dashboard
+        localStorage.setItem('pendingPaymentReceipt', JSON.stringify(paymentReceiptData));
       }
     } catch (err) {
       console.error(err);
@@ -86,9 +83,8 @@ export default function PaymentSuccessClient({ referenceNumber }: Props) {
   }, [phase, router]);
 
   return (
-    <>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-        <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl p-8 text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl p-8 text-center">
         {phase === "processing" && (
           <div className="flex flex-col items-center">
             <LoadingSpinner size={7} />
@@ -156,17 +152,7 @@ export default function PaymentSuccessClient({ referenceNumber }: Props) {
             </div>
           </div>
         )}
-        </div>
       </div>
-
-      {/* Receipt Modal - No Print Button for Borrowers */}
-      {showReceiptModal && paymentData && (
-        <ReceiptModal
-          payment={paymentData}
-          showPrint={false}
-          onClose={() => setShowReceiptModal(false)}
-        />
-      )}
-    </>
+    </div>
   );
 }
