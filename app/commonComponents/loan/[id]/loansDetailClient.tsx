@@ -204,7 +204,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
       .then(data => setCollections(data.collections || []))
       .catch(err => console.error(err));
 
-    fetch(`${process.env.NEXT_PUBLIC_CLOSURE_URL}/by-loan/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${BASE_URL}/closure/by-loan/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => setClosureStatus(data.hasClosure ? data.status : null))
       .catch(err => console.error(err));
