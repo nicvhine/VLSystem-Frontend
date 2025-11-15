@@ -16,7 +16,7 @@ export default function PaidCollectionCard({ collection }: PaidCollectionCardPro
         </p>
       </div>
       <div className="flex flex-col items-end">
-        <span className="font-semibold text-gray-800">₱{collection.periodAmount.toLocaleString()}</span>
+        <span className="font-semibold text-gray-800">₱{collection.paidAmount.toLocaleString()}</span>
         <span className="text-sm font-medium text-green-700 px-2 py-1 rounded-full mt-1">Paid</span>
       </div>
     </div>
