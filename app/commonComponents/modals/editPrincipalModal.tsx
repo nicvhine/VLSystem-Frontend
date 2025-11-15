@@ -114,7 +114,7 @@ export default function EditPrincipalModal({
         if (!res.ok) throw new Error("Failed to fetch application");
         const data: LoanApplication = await res.json();
         setLoanApp(data);
-        setAmount(data.appLoanAmount);
+        setAmount(Number(data.appLoanAmount));
       } catch (err) {
         console.error(err);
         alert("Error fetching loan application");
@@ -140,17 +140,20 @@ export default function EditPrincipalModal({
     const months = 'months' in selectedOption ? selectedOption.months : 12; 
     const interestRate = selectedOption.interest;
 
+    // Ensure principal is a number
+    const principalNum = Number(principal);
+    
     const serviceFee =
-      principal <= 20000 ? principal * 0.05 : principal <= 45000 ? 1000 : principal * 0.03;
+      principalNum <= 20000 ? principalNum * 0.05 : principalNum <= 45000 ? 1000 : principalNum * 0.03;
 
-    const interestAmount = principal * (interestRate / 100);
+    const interestAmount = principalNum * (interestRate / 100);
     const totalInterestAmount = interestAmount * months;
-    const totalPayable = principal + totalInterestAmount + serviceFee;
+    const totalPayable = principalNum + totalInterestAmount;
     const monthlyDue = totalPayable / months;
-    const netReleased = principal - serviceFee;
+    const netReleased = principalNum - serviceFee;
 
     return {
-      principal,
+      principal: principalNum,
       months,
       interestRate,
       interestAmount,
