@@ -259,7 +259,7 @@ export default function LoanHistoryPage() {
                                       <p className="text-xs text-gray-500">{t.t6}</p>
                                       <p className="font-medium text-gray-800">
                                         {formatCurrency(
-                                          det.appTotalPayable ?? loan.appTotalPayable ?? 0
+                                          det.appTotalPayable ?? loan.appTotalPayable ?? loan.appLoanAmount ?? 0
                                         )}
                                       </p>
                                     </div>

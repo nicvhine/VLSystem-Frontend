@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { User } from "lucide-react";
 import translations from "../../translation";
+import ChangeCollectorModal from "../../modals/changeCollectorModal";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -23,6 +24,14 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
 
   const [role, setRole] = useState<"manager" | "head" | "loan officer">("manager");
   const [language, setLanguage] = useState<"en" | "ceb">("en");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [assignedCollector, setAssignedCollector] = useState(borrower?.assignedCollector || "");
+  const [assignedCollectorId, setAssignedCollectorId] = useState(borrower?.assignedCollectorId || "");
+
+  useEffect(() => {
+    if (borrower?.assignedCollector) setAssignedCollector(borrower.assignedCollector);
+  }, [borrower]);
 
   // Load role and language from localStorage
   useEffect(() => {
@@ -132,6 +141,21 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                 <LabeledField label={t.p3} value={mergedData.appAddress} span />
                 <LabeledField label={t.p4} value={mergedData.appDob} />
                 <LabeledField label={t.p5} value={mergedData.appMarital} />
+
+                {/* NEW FIELD */}
+
+                <div
+                className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm cursor-pointer transition"
+                onClick={() => setIsModalOpen(true)}
+              >
+                <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
+                  Assigned Collector
+                </p>
+                <p className="text-gray-800 text-sm font-medium">
+                  {assignedCollector|| "—"}
+                </p>
+              </div>
+
                 {mergedData.appChildren && mergedData.appChildren !== "0" && (
                   <LabeledField label={t.p6} value={mergedData.appChildren} />
                 )}
@@ -143,6 +167,7 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                 )}
               </div>
             </Card>
+
 
             {/* INCOME */}
             <Card title={t.t2}>
@@ -192,6 +217,19 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
               </Link>
             </div>
           </Card>
+
+          <ChangeCollectorModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            borrowerId={borrowersId}
+            currentCollector={assignedCollectorId} // userId
+            onUpdated={(newCollectorId, newCollectorName) => {
+              setAssignedCollectorId(newCollectorId);
+              setAssignedCollector(newCollectorName); // display name
+            }}
+          />
+
+
         </div>
       </div>
     </Wrapper>

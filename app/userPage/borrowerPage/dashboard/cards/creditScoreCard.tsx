@@ -30,7 +30,7 @@ export default function CreditScoreCard({ creditScore, showTip = true, className
   return (
     <div className={`w-full bg-white p-6 rounded-2xl shadow-lg flex flex-col items-center relative hover:shadow-xl transition-all duration-300 ${className}`}>
       {/* Header */}
-      <h2 className="text-lg font-semibold text-red-700 mb-6">Credit Score</h2>
+      <h2 className="text-m font-semibold text-gray-900 mb-6">Credit Score</h2>
 
       {/* Circular Gauge */}
       <div className="relative w-44 h-44 md:w-52 md:h-52">
@@ -50,7 +50,7 @@ export default function CreditScoreCard({ creditScore, showTip = true, className
             cx="50%"
             cy="50%"
             r={radius}
-            stroke={getColor()}
+            stroke="url(#progressGradient)"
             strokeWidth="14"
             fill="none"
             strokeDasharray={circumference}
@@ -63,7 +63,7 @@ export default function CreditScoreCard({ creditScore, showTip = true, className
         {/* Center Value */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            className={`text-4xl md:text-5xl font-bold ${
+            className={`text-3xl font-bold text-gray-700 ${
               creditScore >= 8
                 ? 'text-emerald-600'
                 : creditScore >= 5
@@ -73,7 +73,6 @@ export default function CreditScoreCard({ creditScore, showTip = true, className
           >
             {creditScore.toFixed(1)}
           </span>
-          <span className="text-sm text-gray-500 mt-1">out of 10</span>
         </div>
       </div>
 

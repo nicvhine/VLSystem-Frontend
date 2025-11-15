@@ -109,17 +109,7 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
             </span>
           </div>
         )}
-
-        <div className="flex justify-between">
-          <span className="text-sm font-medium text-gray-500">Service Fee</span>
-          <span className="text-gray-900">{formatCurrency(loanApp?.appServiceFee ?? "—")}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span className="text-sm font-medium text-gray-500">Net Released</span>
-          <span className="text-gray-900">{formatCurrency(loanApp?.appNetReleased ?? "—")}</span>
-        </div>
-
+        
       {loanApp?.loanType !== "Open-Term Loan" && (
         <div className="pt-4 border-t border-gray-200 space-y-3">
           <div className="flex justify-between">
