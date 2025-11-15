@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 
 // Components
-import Navbar from "../../navbarComponents/navbar";
 import SuccessModal from "../../modals/successModal";
 import ErrorModal from "../../modals/errorModal";
 import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/modal";
@@ -100,13 +99,14 @@ export default function ApplicationDetailsPage() {
   const Wrapper =
     role === "head" ? Head : role === "manager" ? Manager : LoanOfficer;
 
-  const application = applications.find((app) => app.applicationId === id);
+  const application = Array.isArray(applications) 
+    ? applications.find((app) => app.applicationId === id)
+    : undefined;
 
   if (!application && !loading) {
     return (
       <Wrapper>
         <div className="min-h-screen bg-gray-50">
-          <Navbar role={uiRole} />
           <div className="p-10 text-center text-gray-600 text-lg">
             {notFoundText}
           </div>

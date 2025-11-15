@@ -161,7 +161,7 @@ export default function ClosureEndorsement() {
   );
 
   const sorted = filtered.sort((a, b) => {
-    if (sortBy === "date") return new Date(b.date).getTime() - new Date(a.date).getTime();
+    if (sortBy === "date") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     if (sortBy === "client") return a.clientName.localeCompare(b.clientName);
     return 0;
   });
