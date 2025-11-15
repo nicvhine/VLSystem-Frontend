@@ -126,11 +126,14 @@ const Info = ({ label, value }: { label: string; value: any }) => (
 );
 
 // ------------------- Payment Tracker -------------------
-const PaymentTrackerCard = ({ collection }: { collection: any }) => {
+const PaymentTrackerCard = ({ collection, isOpenTerm }: { collection: any; isOpenTerm: boolean }) => {
   const paidPercentage =
     collection.periodAmount > 0 ? (collection.paidAmount / collection.periodAmount) * 100 : 0;
+
   const progressColor =
-    paidPercentage === 100 ? "bg-green-500" : paidPercentage >= 50 ? "bg-yellow-400" : "bg-red-500";
+    paidPercentage === 100 ? "bg-green-500"
+    : paidPercentage >= 50 ? "bg-yellow-400"
+    : "bg-red-500";
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-lg p-4 border border-gray-200 hover:shadow-2xl transition mb-4">
@@ -143,27 +146,40 @@ const PaymentTrackerCard = ({ collection }: { collection: any }) => {
         </div>
         <StatusBadge status={collection.status} />
       </div>
-      <p className="text-sm font-bold text-gray-800 mb-2">₱{collection.periodAmount.toLocaleString()}</p>
+
+      {/* FIXED: CONDITIONAL VALUE FOR OPEN-TERM */}
+      <p className="text-sm font-bold text-gray-800 mb-2">
+        ₱{
+          isOpenTerm
+            ? collection.periodInterestAmount?.toLocaleString()
+            : collection.periodAmount?.toLocaleString()
+        }
+      </p>
+
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden mb-2">
         <div className={`h-3 ${progressColor}`} style={{ width: `${paidPercentage}%` }}></div>
       </div>
-      {collection.note && <p className="text-xs text-gray-500 italic mt-1">{collection.note}</p>}
+
+      {collection.note && (
+        <p className="text-xs text-gray-500 italic mt-1">{collection.note}</p>
+      )}
     </div>
   );
 };
 
-const PaymentTrackerCards = ({ collections, t1 }: { collections: any[]; t1: any }) => {
+const PaymentTrackerCards = ({ collections, t1, isOpenTerm }: { collections: any[]; t1: any; isOpenTerm: boolean }) => {
   if (!collections || collections.length === 0)
     return <p className="text-center py-6 text-gray-500 text-sm">{t1.t18}</p>;
 
   return (
     <div className="flex flex-col">
       {collections.map((c) => (
-        <PaymentTrackerCard key={c.referenceNumber} collection={c} />
+        <PaymentTrackerCard key={c.referenceNumber} collection={c} isOpenTerm={isOpenTerm} />
       ))}
     </div>
   );
 };
+
 
 // ------------------- Loans Detail Client -------------------
 export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
@@ -177,6 +193,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
   const [showWarning, setShowWarning] = useState(false);
   const [warningMsg, setWarningMsg] = useState("");
   const [closureStatus, setClosureStatus] = useState<string | null>(null);
+  const [loanType, setLoanType] = useState<string | null>(null); // Store loan type
 
   useEffect(() => {
     if (!loan) return;
@@ -192,6 +209,31 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
       .then(data => setClosureStatus(data.hasClosure ? data.status : null))
       .catch(err => console.error(err));
   }, [loan]);
+
+   // Fetch loan type using the first payment's loanId
+   useEffect(() => {
+    const fetchLoanType = async () => {
+      if (!collections.length) return;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+      try {
+        const loanId = collections[0].loanId;
+        const res = await fetch(`${BASE_URL}/loans/${loanId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data && data.currentLoan) {
+          setLoanType(data.currentLoan.type); // e.g., "Open-Term Loan"
+        }
+      } catch (err) {
+        console.error("Failed to fetch loan type:", err);
+      }
+    };
+
+    fetchLoanType();
+  }, [collections]);
+
+  const isOpenTerm = loanType?.toLowerCase() === "open-term loan";
 
   if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">{t1.t19}</div>;
   if (!loan) return <div className="p-10 text-center text-red-500">{t1.t20}</div>;
@@ -302,7 +344,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
             <div className="md:col-span-2">
               <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-5 h-[55vh] overflow-y-auto">
                 <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2 sticky top-0 bg-white z-10">{t1.t17}</h2>
-                <PaymentTrackerCards collections={collections} t1={t1} />
+                <PaymentTrackerCards collections={collections} t1={t1} isOpenTerm={isOpenTerm} />
               </div>
             </div>
           </div>

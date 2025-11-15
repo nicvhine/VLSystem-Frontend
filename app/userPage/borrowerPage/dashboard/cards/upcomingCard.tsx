@@ -68,11 +68,11 @@ export default function UpcomingCollectionCard({
           <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-sm text-gray-700">
               <span className="font-medium text-gray-900">Minimum Payment:</span>{' '}
-              <span className="font-semibold text-green-700">₱{dueInterest.toLocaleString()}</span>
+              <span className="font-semibold text-gray-900">₱{dueInterest.toLocaleString()}</span>
             </p>
             <p className="text-sm text-gray-700 mt-1">
               <span className="font-medium text-gray-900">Balance:</span>{' '}
-              <span className="font-semibold text-blue-700">₱{runningBalance.toLocaleString()}</span>
+              <span className="font-semibold text-gray-900">₱{runningBalance.toLocaleString()}</span>
             </p>
             <p className="text-xs text-gray-500 mt-1">
               *Excess payment will be deducted from your loan balance.
