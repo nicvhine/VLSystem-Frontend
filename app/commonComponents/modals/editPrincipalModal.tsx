@@ -68,6 +68,7 @@ export default function EditPrincipalModal({
   const [preview, setPreview] = useState<LoanPreview | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [amountError, setAmountError] = useState<string>("");
 
   // Animation lifecycle
   useEffect(() => {
@@ -168,6 +169,12 @@ export default function EditPrincipalModal({
       return;
     }
 
+    // Check for validation errors
+    if (amountError) {
+      alert(amountError);
+      return;
+    }
+
     // Enforce limits
     const { min, max } = getLoanLimits(loanApp.loanType);
     if (amount < min || amount > max) {
@@ -233,11 +240,39 @@ export default function EditPrincipalModal({
           <input
             type="number"
             value={amount}
-            onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-            className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            onChange={(e) => {
+              const newAmount = parseFloat(e.target.value) || 0;
+              setAmount(newAmount);
+              
+              // Validate against limits
+              if (loanApp && newAmount > 0) {
+                const { min, max } = getLoanLimits(loanApp.loanType);
+                if (newAmount < min) {
+                  setAmountError(`Amount must be at least ₱${min.toLocaleString()}`);
+                } else if (newAmount > max) {
+                  setAmountError(`Amount cannot exceed ₱${max.toLocaleString()}`);
+                } else {
+                  setAmountError("");
+                }
+              }
+            }}
+            className={`w-full p-3 border rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+              amountError ? "border-red-500" : "border-gray-300"
+            }`}
             step={0.01}
             disabled={loading}
           />
+          {amountError && (
+            <p className="text-sm text-red-500 mt-1">{amountError}</p>
+          )}
+          {loanApp && (() => {
+            const { min, max } = getLoanLimits(loanApp.loanType);
+            return (
+              <p className="text-xs text-gray-500 mt-1">
+                Allowed range: ₱{min.toLocaleString()} - ₱{max.toLocaleString()}
+              </p>
+            );
+          })()}
         </div>
 
         {preview && (

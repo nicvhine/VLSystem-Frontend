@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { User } from "lucide-react";
+import { FiEdit2 } from "react-icons/fi";
 import translations from "../../translation";
 import ChangeCollectorModal from "../../modals/changeCollectorModal";
 
@@ -144,16 +145,22 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
 
                 {/* NEW FIELD */}
 
-                <div
-                className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm cursor-pointer transition"
-                onClick={() => setIsModalOpen(true)}
-              >
+                <div className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
                 <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
                   Assigned Collector
                 </p>
-                <p className="text-gray-800 text-sm font-medium">
-                  {assignedCollector|| "—"}
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-800 text-sm font-medium">
+                    {assignedCollector || "—"}
+                  </p>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                    title="Edit Collector"
+                  >
+                    <FiEdit2 size={16} />
+                  </button>
+                </div>
               </div>
 
                 {mergedData.appChildren && mergedData.appChildren !== "0" && (
