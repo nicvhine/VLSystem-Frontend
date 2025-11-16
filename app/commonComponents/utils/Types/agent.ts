@@ -7,6 +7,7 @@ export interface Agent {
   handledLoans: number;
   totalLoanAmount: number;
   totalCommission: number;
+  status: "Active" | "Inactive"; 
 }
 
 export interface AddAgentParams {

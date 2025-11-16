@@ -69,23 +69,6 @@ export default function ApplicationsPage() {
 
   const isMobile = useIsMobile();
   const Wrapper = role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Applied":
-        return "text-blue-600";
-      case "Pending":
-        return "text-amber-600";
-      case "Cleared":
-        return "text-purple-600";
-      case "Approved":
-        return "text-green-600";
-      case "Disbursed":
-        return "text-teal-600";
-      default:
-        return "text-gray-600";
-    }
-  };  
   
   return (
     <Wrapper>
@@ -210,51 +193,49 @@ export default function ApplicationsPage() {
                   >
                     {/* ID */}
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         {application.applicationId}
                       </div>
                     </td>
 
                     {/* Name */}
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         {application.appName}
                       </div>
                     </td>
 
                     {/* Loan Type */}
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                      <div className="text-sm font-medium">
                         {translateLoanType(application.loanType, language)}
                       </div>
                     </td>
 
                     {/* Application Date */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm">
                       {formatDate(application.dateApplied)}
                     </td>
 
                     {/* Principal */}
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <td className="px-6 py-4 text-sm font-medium">
                       {formatCurrency(application.appLoanAmount)}
                     </td>
 
                     {/* Interest */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm">
                       {application.appInterestRate}%
                     </td>
 
                     {/* Collectable */}
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm">
                       {formatCurrency(application.appTotalPayable)}
                     </td>
 
                     {/* Status */}
                     <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 text-sm font-semibold rounded-full 
-                          ${getStatusColor(application.status)}`}
-                      >
+                        className="px-3 py-1 text-sm rounded-full">
                         {application.status}
                       </span>
                     </td>

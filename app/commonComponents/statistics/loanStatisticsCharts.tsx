@@ -8,9 +8,8 @@ import {
   Tooltip,
   Legend,
   ChartOptions,
-  ScriptableContext,
 } from 'chart.js';
-import ChartDataLabels, { Context as DatalabelsContext } from 'chartjs-plugin-datalabels';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import translations from "../translation";
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
@@ -18,21 +17,23 @@ ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 type LoanTypeStat = { loanType: string; count: number };
+type ApplicationStatusRaw = { status: string; count: number };
 type ApplicationStatusStat = { applied: number; approved: number; denied: number };
 
 export default function LoanStatisticsCharts() {
   const [loanTypeStats, setLoanTypeStats] = useState<LoanTypeStat[]>([]);
   const [applicationStatusStats, setApplicationStatusStats] = useState<ApplicationStatusStat>({ applied: 0, approved: 0, denied: 0 });
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
-    if (typeof window !== 'undefined') {
-      if (!localStorage.getItem('language')) localStorage.setItem('language', 'en');
-      return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
-    }
-    return 'en';
-  });
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const t = translations.statisticTranslation[language];
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedLang = localStorage.getItem('language') as 'en' | 'ceb';
+      setLanguage(storedLang || 'en');
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -41,14 +42,35 @@ export default function LoanStatisticsCharts() {
       try {
         const [loanTypeRes, appStatusRes] = await Promise.all([
           fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${BASE_URL}/stat/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE_URL}/stat/application-statuses`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
-        const loanTypeData = await loanTypeRes.json();
-        const appStatusData = await appStatusRes.json();
+        const loanTypeData: LoanTypeStat[] = await loanTypeRes.json();
+        const appStatusRaw: ApplicationStatusRaw[] = await appStatusRes.json();
 
         setLoanTypeStats(loanTypeData || []);
-        setApplicationStatusStats(appStatusData || { applied: 0, approved: 0, denied: 0 });
+
+        // Transform statuses according to your mapping
+        const statusMap = {
+          applied: ['Applied', 'Cleared', 'Pending'],
+          approved: ['Approved', 'Disbursed', 'Active'],
+          denied: ['Denied by LO', 'Denied'],
+        };
+
+        const applied = appStatusRaw
+          .filter(a => statusMap.applied.includes(a.status))
+          .reduce((sum, a) => sum + a.count, 0);
+
+        const approved = appStatusRaw
+          .filter(a => statusMap.approved.includes(a.status))
+          .reduce((sum, a) => sum + a.count, 0);
+
+        const denied = appStatusRaw
+          .filter(a => statusMap.denied.includes(a.status))
+          .reduce((sum, a) => sum + a.count, 0);
+
+        setApplicationStatusStats({ applied, approved, denied });
+
       } catch (err) {
         console.error("Failed to fetch chart stats:", err);
       } finally {
@@ -60,13 +82,9 @@ export default function LoanStatisticsCharts() {
   }, []);
 
   useEffect(() => {
-    const handler = (e: any) => {
-      setLanguage(e.detail.language);
-    };
+    const handler = (e: any) => setLanguage(e.detail.language);
     if (typeof window !== "undefined") window.addEventListener("languageChange", handler);
-    return () => {
-      if (typeof window !== "undefined") window.removeEventListener("languageChange", handler);
-    };
+    return () => { if (typeof window !== "undefined") window.removeEventListener("languageChange", handler); };
   }, []);
 
   if (loading) return <p className="text-center py-8">{t.m4}</p>;
@@ -105,15 +123,7 @@ export default function LoanStatisticsCharts() {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: {
-          usePointStyle: true,
-          pointStyle: 'circle',
-          padding: 12,
-          font: {
-            size: 13,
-            weight: 500 
-          }
-        }
+        labels: { usePointStyle: true, pointStyle: 'circle', padding: 12, font: { size: 13, weight: 500 } }
       },
       tooltip: {
         callbacks: {
@@ -128,7 +138,7 @@ export default function LoanStatisticsCharts() {
       datalabels: {
         color: '#fff',
         font: { weight: 'bold', size: 12 },
-        formatter: (value: number, context: DatalabelsContext) => {
+        formatter: (value: number, context: any) => {
           const dataset = context.dataset.data as number[];
           const total = dataset.reduce((a, b) => a + Number(b), 0);
           return total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '';
