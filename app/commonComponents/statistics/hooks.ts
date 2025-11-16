@@ -91,7 +91,7 @@ export function useLoanStats(userType: "manager" | "loanOfficer" | "head") {
             fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${BASE_URL}/stat/loan-stats`, { headers: { Authorization: `Bearer ${token}` } }),
             fetch(`${BASE_URL}/stat/collection-stats`, { headers: { Authorization: `Bearer ${token}` } }),
-            fetch(`${BASE_URL}/stat/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+            fetch(`${BASE_URL}/stat/application-statuses`, { headers: { Authorization: `Bearer ${token}` } }),
           ]);
 
           const typeDataRes: any = await typeRes.json();

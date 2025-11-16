@@ -188,7 +188,7 @@ export default function AgreementModal({
                   {""} agrees to borrow the sum of {formatCurrency(application.appLoanAmount)}.
                 </li>
                 <li>
-                  <strong>Interest Rate.</strong> The loan shall accrue interest at a rate of {application.appInterest}% per
+                  <strong>Interest Rate.</strong> The loan shall accrue interest at a rate of {application.appInterestRate}% per
                   month, calculated based on the principal amount.
                 </li>
                 <li>
@@ -197,8 +197,8 @@ export default function AgreementModal({
                   <ul className="list-disc list-inside ml-6 space-y-1">
                   <li>
                     <strong>Repayment Schedule:</strong> Loan shall be paid in {application.appLoanTerms} equal monthly installments in
-                    the uniform amount of {application.totalPayable && application.appLoanTerms
-                        ? formatCurrency(application.totalPayable / application.appLoanTerms)
+                    the uniform amount of {application.appTotalPayable && application.appLoanTerms
+                        ? formatCurrency(application.appTotalPayable / application.appLoanTerms)
                         : "₱0.00"}. The first payment of interest with principal shall be on {(() => {
 
                             if (application?.dateDisbursed) {
