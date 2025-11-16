@@ -1,34 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MapComponent from "../../MapComponent"; 
 import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
 
-/**
- * Basic information form section component
- * Handles personal details including name, contact, marital status, and address with map integration
- * @param language - Current language setting (English or Cebuano)
- * @param appName - Applicant's name
- * @param setAppName - Function to set applicant's name
- * @param appDob - Applicant's date of birth
- * @param setAppDob - Function to set date of birth
- * @param appContact - Applicant's contact number
- * @param setAppContact - Function to set contact number
- * @param appEmail - Applicant's email address
- * @param setAppEmail - Function to set email address
- * @param appMarital - Applicant's marital status
- * @param setAppMarital - Function to set marital status
- * @param appChildren - Number of children
- * @param setAppChildren - Function to set number of children
- * @param appSpouseName - Spouse's name
- * @param setAppSpouseName - Function to set spouse's name
- * @param appSpouseOccupation - Spouse's occupation
- * @param setAppSpouseOccupation - Function to set spouse's occupation
- * @param appAddress - Applicant's address
- * @param setAppAddress - Function to set address
- * @param missingFields - Array of missing field names for validation
- * @returns JSX element containing the basic information form section
- */
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function BasicInformation({
   language,
@@ -56,13 +32,93 @@ export default function BasicInformation({
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [nameError, setNameError] = useState("");
+  const [duplicateError, setDuplicateError] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAppAddress(e.target.value);
   };
 
+  useEffect(() => {
+    const checkDuplicate = async () => {
+      if (!appName || !appDob || !appEmail) return;
+  
+      console.log("Trigger check:", { appName, appDob, appEmail });
+  
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BASE_URL}/loan-applications/check-duplicate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ appName, appDob, appEmail }),
+        });
+  
+        const data = await res.json();
+  
+        console.log("Server response:", data);
+  
+        if (data.isDuplicate) {
+          if (["Pending", "Applied", "Cleared"].includes(data.status)) {
+            // Pending-type applications
+            setModalMessage(
+              language === "en"
+                ? "Oops! You have a pending application with us. If there’s a problem kindly contact the office."
+                : "Naay pending nga aplikasyon sa among opisina. Kung adunay problema, palihug kontaka ang opisina."
+            );
+            setDuplicateError(
+              language === "en"
+                ? `Duplicate found (Status: ${data.status})`
+                : `Duplicate naay status: ${data.status}`
+            );
+          } else if (["Approved", "Disbursed", "Active", "Closed"].includes(data.status)) {
+            // Existing accounts
+            setModalMessage(
+              language === "en"
+                ? "You already have an existing borrower account. You may go there if you wish to re-loan."
+                : "Aduna kay existing nga borrower account. Mahimo nimo adto kung gusto ka mag-reloan."
+            );
+            setDuplicateError(
+              language === "en"
+                ? `Duplicate found (Status: ${data.status})`
+                : `Duplicate naay status: ${data.status}`
+            );
+          }
+        } else {
+          setModalMessage("");
+          setDuplicateError("");
+        }
+        
+      } catch (err) {
+        console.error("Error checking duplicate application:", err);
+      }
+    };
+  
+    const timeout = setTimeout(checkDuplicate, 500);
+    return () => clearTimeout(timeout);
+  }, [appName, appDob, appEmail, language, BASE_URL]);
+  
+
   return (
   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+
+      {modalMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96 shadow-lg text-center">
+            <p className="text-gray-800">{modalMessage}</p>
+            <button
+              onClick={() => setModalMessage("")}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
         <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
         {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
@@ -155,27 +211,30 @@ export default function BasicInformation({
         </div>
 
         {/* Email */}
-        <div>
-          <label className="block font-medium mb-2 text-gray-700">
-            {language === "en" ? "Email Address:" : "Email Address:"}
-          </label>
-          <div className="flex">
-            <input
-              type="text"
-              value={appEmail.replace("@gmail.com", "")}
-              onChange={(e) => {
-                let value = e.target.value;
-                value = value.replace(/@.*/, "");
-                setAppEmail(value + "@gmail.com");
-              }}
-                className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Email Address')) ? 'border-red-500' : 'border-gray-200'}`}
-              placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
-            />
-            <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">
-              @gmail.com
-            </span>
-          </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === "en" ? "Email Address:" : "Email Address:"}
+        </label>
+        <div className="flex">
+          <input
+            type="text"
+            value={appEmail.replace("@gmail.com", "")}
+            onChange={(e) => {
+              let value = e.target.value;
+              value = value.replace(/@.*/, "");
+              setAppEmail(value + "@gmail.com");
+            }}
+            className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+              (showFieldErrors && missingFields.includes("Email Address")) ? "border-red-500" : "border-gray-200"
+            }`}
+            placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
+          />
+          <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">
+            @gmail.com
+          </span>
         </div>
+        {duplicateError && <p className="text-red-500 text-sm mt-1">{duplicateError}</p>}
+      </div>
       </div>
 
       {/* Marital Status + Children */}
