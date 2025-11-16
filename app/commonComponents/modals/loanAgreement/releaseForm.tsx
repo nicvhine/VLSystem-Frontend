@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 import { Application } from "../../utils/Types/application";
 import axios from "axios";
+import SuccessModal from "../successModal";
 
 interface ReleaseFormProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
   const [animateIn, setAnimateIn] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   // Calculate service fee based on loan amount
   const calculateServiceFee = (principal: number): number => {
@@ -111,7 +113,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
 
       setIsSaved(true);
       setLoading(false);
-      alert("Saved successfully! You can now print.");
+      setSuccessMessage("Saved successfully! You can now print.");
     } catch (err: any) {
       setLoading(false);
       console.error(err);
@@ -240,6 +242,13 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={!!successMessage}
+        message={successMessage}
+        onClose={() => setSuccessMessage("")}
+      />
     </div>
   );
 
