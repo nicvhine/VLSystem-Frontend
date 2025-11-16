@@ -28,7 +28,7 @@ export default function LoanStatisticsTops() {
       try {
         const [loanTypeRes, appStatusRes] = await Promise.all([
           fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${BASE_URL}/stat/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE_URL}/stat/application-statuses`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         const loanTypeData = await loanTypeRes.json();

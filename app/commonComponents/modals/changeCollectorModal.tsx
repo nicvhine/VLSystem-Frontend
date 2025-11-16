@@ -10,7 +10,7 @@ interface Collector {
 }
 
 interface Props {
-  currentCollector: string; // userId of current collector
+  currentCollector: string; 
   isOpen: boolean;
   onClose: () => void;
   borrowerId: string;
@@ -25,12 +25,12 @@ export default function ChangeCollectorModal({
   onUpdated,
 }: Props) {
   const [collectors, setCollectors] = useState<Collector[]>([]);
-  const [selectedCollectorId, setSelectedCollectorId] = useState(currentCollector);
+  const [selectedCollectorId, setSelectedCollectorId] = useState(currentCollector || "");
   const [loading, setLoading] = useState(false);
 
   // Sync selected collector when prop changes
   useEffect(() => {
-    setSelectedCollectorId(currentCollector);
+    setSelectedCollectorId(currentCollector || "");
   }, [currentCollector]);
 
   // Fetch collectors from API with token
@@ -38,6 +38,8 @@ export default function ChangeCollectorModal({
     const fetchCollectors = async () => {
       try {
         const token = localStorage.getItem("token");
+        console.log("Token:", token);
+
         if (!token) throw new Error("No token found");
 
         const res = await fetch(`${BASE_URL}/users/collectors`, {
@@ -47,7 +49,14 @@ export default function ChangeCollectorModal({
         if (!res.ok) throw new Error("Failed to fetch collectors");
 
         const data: Collector[] = await res.json();
+        console.log("Collectors:", data);
         setCollectors(data);
+
+        // If no collector is selected yet, default to first one
+        if (!selectedCollectorId && data.length > 0) {
+          setSelectedCollectorId(data[0].userId);
+          console.log("Default selectedCollectorId set to:", data[0].userId);
+        }
       } catch (err) {
         console.error("Error fetching collectors:", err);
       }
@@ -57,12 +66,18 @@ export default function ChangeCollectorModal({
   }, []);
 
   const handleSave = async () => {
+    console.log("handleSave called");
+    console.log("Selected Collector ID:", selectedCollectorId);
+
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
       if (!token) throw new Error("No token found");
 
+      // Match using userId
       const selectedCollector = collectors.find(c => c.userId === selectedCollectorId);
+      console.log("Selected Collector object:", selectedCollector);
+
       if (!selectedCollector) throw new Error("Selected collector not found");
 
       const res = await fetch(`${BASE_URL}/borrowers/${borrowerId}/assign-collector`, {
@@ -71,15 +86,19 @@ export default function ChangeCollectorModal({
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ assignedCollector: selectedCollector.userId }),
+        body: JSON.stringify({
+          assignedCollector: selectedCollector.userId,
+          assignedCollectorName: selectedCollector.name,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to update collector");
 
+      console.log("Collector updated successfully:", selectedCollector);
       onUpdated(selectedCollector.userId, selectedCollector.name);
       onClose();
     } catch (err) {
-      console.error(err);
+      console.error("Error in handleSave:", err);
       alert("Failed to update collector");
     } finally {
       setLoading(false);
