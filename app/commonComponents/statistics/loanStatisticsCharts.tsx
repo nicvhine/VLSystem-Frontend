@@ -22,7 +22,11 @@ type ApplicationStatusStat = { applied: number; approved: number; denied: number
 
 export default function LoanStatisticsCharts() {
   const [loanTypeStats, setLoanTypeStats] = useState<LoanTypeStat[]>([]);
-  const [applicationStatusStats, setApplicationStatusStats] = useState<ApplicationStatusStat>({ applied: 0, approved: 0, denied: 0 });
+  const [applicationStatusStats, setApplicationStatusStats] = useState<ApplicationStatusStat>({
+    applied: 0,
+    approved: 0,
+    denied: 0
+  });
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
@@ -31,7 +35,7 @@ export default function LoanStatisticsCharts() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedLang = localStorage.getItem('language') as 'en' | 'ceb';
-      setLanguage(storedLang || 'en');
+      if (storedLang) setLanguage(storedLang);
     }
   }, []);
 
@@ -41,36 +45,23 @@ export default function LoanStatisticsCharts() {
     const fetchCharts = async () => {
       try {
         const [loanTypeRes, appStatusRes] = await Promise.all([
-          fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${BASE_URL}/stat/application-statuses`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE_URL}/stat/loan-type-stats`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${BASE_URL}/stat/application-statuses`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
         ]);
 
         const loanTypeData: LoanTypeStat[] = await loanTypeRes.json();
-        const appStatusRaw: ApplicationStatusRaw[] = await appStatusRes.json();
-
+        const appStatus: ApplicationStatusStat = await appStatusRes.json();
+        setApplicationStatusStats({
+          applied: appStatus.applied || 0,
+          approved: appStatus.approved || 0,
+          denied: appStatus.denied || 0,
+        });
+        
         setLoanTypeStats(loanTypeData || []);
-
-        // Transform statuses according to your mapping
-        const statusMap = {
-          applied: ['Applied', 'Cleared', 'Pending'],
-          approved: ['Approved', 'Disbursed', 'Active'],
-          denied: ['Denied by LO', 'Denied'],
-        };
-
-        const applied = appStatusRaw
-          .filter(a => statusMap.applied.includes(a.status))
-          .reduce((sum, a) => sum + a.count, 0);
-
-        const approved = appStatusRaw
-          .filter(a => statusMap.approved.includes(a.status))
-          .reduce((sum, a) => sum + a.count, 0);
-
-        const denied = appStatusRaw
-          .filter(a => statusMap.denied.includes(a.status))
-          .reduce((sum, a) => sum + a.count, 0);
-
-        setApplicationStatusStats({ applied, approved, denied });
-
       } catch (err) {
         console.error("Failed to fetch chart stats:", err);
       } finally {
@@ -83,13 +74,16 @@ export default function LoanStatisticsCharts() {
 
   useEffect(() => {
     const handler = (e: any) => setLanguage(e.detail.language);
-    if (typeof window !== "undefined") window.addEventListener("languageChange", handler);
-    return () => { if (typeof window !== "undefined") window.removeEventListener("languageChange", handler); };
+    window.addEventListener("languageChange", handler);
+    return () => window.removeEventListener("languageChange", handler);
   }, []);
 
   if (loading) return <p className="text-center py-8">{t.m4}</p>;
 
-  const gradientColors = ['#22c55e','#16a34a','#4ade80','#86efac','#bbf7d0','#facc15','#f97316','#ef4444'];
+  const gradientColors = [
+    '#22c55e', '#16a34a', '#4ade80', '#86efac',
+    '#bbf7d0', '#facc15', '#f97316', '#ef4444'
+  ];
 
   const loanTypeChartData = {
     labels: loanTypeStats.map(l => l.loanType || 'Unknown'),
@@ -105,11 +99,15 @@ export default function LoanStatisticsCharts() {
   };
 
   const applicationStatusChartData = {
-    labels: ['Applied','Approved','Denied'],
+    labels: ['Applied', 'Approved', 'Denied'],
     datasets: [
       {
-        data: [applicationStatusStats.applied, applicationStatusStats.approved, applicationStatusStats.denied],
-        backgroundColor: ['#facc15','#22c55e','#ef4444'],
+        data: [
+          applicationStatusStats.applied,
+          applicationStatusStats.approved,
+          applicationStatusStats.denied
+        ],
+        backgroundColor: ['#facc15', '#22c55e', '#ef4444'],
         borderColor: '#fff',
         borderWidth: 2,
         hoverOffset: 12,
@@ -129,7 +127,7 @@ export default function LoanStatisticsCharts() {
         callbacks: {
           label: (context) => {
             const value = context.raw as number;
-            const total = context.dataset.data.reduce((a: number, b: any) => a + Number(b), 0);
+            const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0);
             const percent = total > 0 ? ((value / total) * 100).toFixed(1) : '0';
             return `${context.label}: ${value} (${percent}%)`;
           }
@@ -139,34 +137,28 @@ export default function LoanStatisticsCharts() {
         color: '#fff',
         font: { weight: 'bold', size: 12 },
         formatter: (value: number, context: any) => {
-          const dataset = context.dataset.data as number[];
-          const total = dataset.reduce((a, b) => a + Number(b), 0);
+          const total = (context.dataset.data as number[]).reduce((a, b) => a + b, 0);
           return total > 0 ? `${((value / total) * 100).toFixed(1)}%` : '';
         }
       }
     },
-    animation: { animateRotate: true, animateScale: true, duration: 1000 },
   };
 
   return (
     <div className="flex flex-col gap-6 w-full">
+      {/* Loan Type Chart */}
       <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-200">
         <h3 className="mb-2 text-m font-semibold text-red-600">{t.h4}</h3>
         <div className="relative w-full h-[220px]">
           <Pie data={loanTypeChartData} options={pieOptions} />
         </div>
-        <div className="text-gray-600 mt-2 font-medium">
-          {t.c15}: {loanTypeStats.reduce((a, b) => a + b.count, 0)}
-        </div>
       </div>
 
+      {/* Application Status Chart */}
       <div className="bg-white rounded-2xl p-4 shadow-lg border border-gray-200">
         <h3 className="mb-2 text-m font-semibold text-red-600">{t.h3}</h3>
         <div className="relative w-full h-[220px]">
           <Pie data={applicationStatusChartData} options={pieOptions} />
-        </div>
-        <div className="text-gray-600 mt-2 font-medium">
-          {t.c16}: {applicationStatusStats.applied + applicationStatusStats.approved + applicationStatusStats.denied}
         </div>
       </div>
     </div>
