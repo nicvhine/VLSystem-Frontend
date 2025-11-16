@@ -110,6 +110,7 @@ export interface BasicInformationProps {
   showFieldErrors?: boolean;
   // When true, the form was prefilled from an existing application. DOB should be non-editable in that case.
   isPrefilled?: boolean;
+  resetForm?: () => void;
 }
 
 export interface CollateralProps {

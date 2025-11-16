@@ -118,6 +118,59 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [photo2x2, setPhoto2x2] = useState<File[]>([]);
 
+  // Reset form function - clears all state to initial values
+  const resetForm = () => {
+    // Basic Info
+    setAppName("");
+    setAppDob("");
+    setAppContact("");
+    setAppEmail("");
+    setAppMarital("");
+    setAppChildren(0);
+    setAppSpouseName("");
+    setAppSpouseOccupation("");
+    setAppAddress("");
+    setBorrowersId("");
+
+    // Source of Income
+    setSourceOfIncome("");
+    setAppTypeBusiness("");
+    setAppBusinessName("");
+    setAppDateStarted("");
+    setAppBusinessLoc("");
+    setAppMonthlyIncome(0);
+    setAppOccupation("");
+    setAppEmploymentStatus("");
+    setAppCompanyName("");
+    setOccupationError("");
+
+    // References
+    setAppReferences([
+      { name: "", contact: "", relation: "" },
+      { name: "", contact: "", relation: "" },
+      { name: "", contact: "", relation: "" },
+    ]);
+
+    // Agent
+    setAppAgent("");
+    setAgentMissingError(false);
+
+    // Collateral
+    setCollateralType("");
+    setCollateralValue(0);
+    setCollateralDescription("");
+    setOwnershipStatus("");
+
+    // Loan
+    setSelectedLoan(null);
+    setAppLoanPurpose("");
+    setCustomLoanAmount("");
+
+    // Uploads
+    setUploadedFiles([]);
+    setPhoto2x2([]);
+  };
+
   // Form persistence - save form data to localStorage
   const { clearSavedData } = useFormPersistence({
     formData: {
@@ -248,7 +301,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
             appMarital={appMarital} setAppMarital={setAppMarital} appChildren={appChildren} setAppChildren={setAppChildren}
             appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
             setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
-            missingFields={missingFields} borrowersId={borrowersId}
+            missingFields={missingFields} borrowersId={borrowersId} resetForm={resetForm}
           />
         </div>
 
