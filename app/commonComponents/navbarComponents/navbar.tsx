@@ -114,10 +114,35 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
         .then((res) => res.json())
         .then((data) => {
           const notificationsArray = data.notifications || [];
-          const normalized = notificationsArray.map((n: any) => ({
-            ...n,
-            read: n.read ?? n.viewed ?? false,
-          }));
+          // Get locally cached read notifications
+          const readNotifs = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+          
+          // Clean up cache: remove IDs that are already marked as read in the server response
+          const stillPending: string[] = [];
+          readNotifs.forEach((cachedId: string) => {
+            const serverNotif = notificationsArray.find((n: any) => (n._id || n.id) === cachedId);
+            // Keep in cache only if server hasn't marked it as read yet
+            if (serverNotif && !serverNotif.read && !serverNotif.viewed) {
+              stillPending.push(cachedId);
+            }
+          });
+          
+          // Update cache with only pending IDs
+          if (stillPending.length > 0) {
+            localStorage.setItem('readNotifications', JSON.stringify(stillPending));
+          } else {
+            localStorage.removeItem('readNotifications');
+          }
+          
+          const normalized = notificationsArray.map((n: any) => {
+            const notifId = n._id || n.id;
+            // If this notification is in our local cache, mark it as read
+            const isReadLocally = stillPending.includes(notifId);
+            return {
+              ...n,
+              read: isReadLocally || n.read || n.viewed || false,
+            };
+          });
           setNotifications(normalized);        
         })
         .catch(console.error);
@@ -377,22 +402,58 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
                           onClick={async () => {
                           try {
                             const token = localStorage.getItem('token');
+                            console.log('📌 Full notification object:', notif);
                             const notifId = notif._id || notif.id;
-                            if (!notif.read) {
-                              const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
-                              await fetch(`${BASE_URL}/notifications/${apiRole}/${notifId}/read`, {
+                            console.log('📌 Using notification ID:', notifId);
+                            
+                            if (!notifId) {
+                              console.error('❌ No valid notification ID found!');
+                              return;
+                            }
+                            
+                            // Update local state immediately for instant feedback
+                            setNotifications((prev) =>
+                              prev.map((n) => ((n._id || n.id) === notifId ? { ...n, read: true } : n))
+                            );
+
+                            // Cache this notification as read in localStorage to prevent race conditions
+                            const readNotifs = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                            if (!readNotifs.includes(notifId)) {
+                              readNotifs.push(notifId);
+                              localStorage.setItem('readNotifications', JSON.stringify(readNotifs));
+                            }
+
+                            // Mark as read on server and wait for it to complete
+                            const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+                            const markAsReadUrl = `${BASE_URL}/notifications/${apiRole}/${notifId}/read`;
+                            console.log('📡 Calling API:', markAsReadUrl);
+                            try {
+                              const response = await fetch(markAsReadUrl, {
                                 method: 'PUT',
                                 headers: { Authorization: `Bearer ${token}` },
                               });
-                                setNotifications((prev) =>
-                                  prev.map((n) => ((n._id || n.id) === notifId ? { ...n, read: true } : n))
-                                );
+                              
+                              if (response.ok) {
+                                await response.json();
+                                // Longer delay to ensure DB write completes
+                                await new Promise(resolve => setTimeout(resolve, 500));
+                              } else {
+                                console.error('Failed to mark notification as read:', response.status, await response.text());
+                              }
+                            } catch (markError) {
+                              console.error('Error marking notification as read:', markError);
                             }
+
+                            // Navigate based on notification type
                             if (notif.applicationId) {
                               router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
+                            } else if (notif.type === 'penalty-endorsement' || notif.type === 'penalty-endorsement-approved' || notif.type === 'penalty-endorsement-rejected') {
+                              router.push('/commonComponents/endorsement/penalty');
+                            } else if (notif.type === 'closure-endorsement' || notif.type === 'closure-approved' || notif.type === 'closure-rejected') {
+                              router.push('/commonComponents/endorsement/closure');
                             }
                           } catch (err) {
-                            console.error('Failed to mark notification as read:', err);
+                            console.error('Failed to handle notification click:', err);
                           }
                           }}
                         >
