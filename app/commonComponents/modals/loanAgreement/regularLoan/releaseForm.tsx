@@ -3,9 +3,9 @@
 import { FiPrinter, FiX, FiSave } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-import { Application } from "../../utils/Types/application";
+import { Application } from "../../../utils/Types/application";
 import axios from "axios";
-import SuccessModal from "../successModal";
+import SuccessModal from "../../successModal";
 
 interface ReleaseFormProps {
   isOpen: boolean;

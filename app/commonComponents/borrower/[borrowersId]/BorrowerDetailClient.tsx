@@ -8,6 +8,7 @@ import { User } from "lucide-react";
 import { FiEdit2 } from "react-icons/fi";
 import translations from "../../translation";
 import ChangeCollectorModal from "../../modals/changeCollectorModal";
+import { formatCurrency } from "../../utils/formatters";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -180,7 +181,7 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
             <Card title={t.t2}>
               {sourceOfIncome?.includes("business") ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
-                  <LabeledField label={t.i1} value={`₱${mergedData.appMonthlyIncome}`} />
+                  <LabeledField label={t.i1} value={formatCurrency(mergedData.appMonthlyIncome)} />
                   <LabeledField label={t.i2} value={mergedData.appTypeBusiness} />
                   <LabeledField label={t.i3} value={mergedData.appBusinessName} />
                   <LabeledField label={t.i4} value={mergedData.appDateStarted} />

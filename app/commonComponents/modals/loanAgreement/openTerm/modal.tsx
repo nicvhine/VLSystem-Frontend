@@ -4,8 +4,8 @@ import { FiPrinter, FiX } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
 import { addMonthsSafe } from "./logic";
-import { formatCurrency, capitalizeWords } from "../../utils/formatters";
-import { AgreementModalProps } from "../../utils/Types/modal";
+import { formatCurrency, capitalizeWords } from "../../../utils/formatters";
+import { AgreementModalProps } from "../../../utils/Types/modal";
 
 /**
  * Signatory section component for loan agreement
@@ -188,19 +188,16 @@ export default function AgreementModal({
                   {""} agrees to borrow the sum of {formatCurrency(application.appLoanAmount)}.
                 </li>
                 <li>
-                  <strong>Interest Rate.</strong> The loan shall accrue interest at a rate of {application.appInterestRate}% per
-                  month, calculated based on the principal amount.
+                  <strong>Interest Rate.</strong> The loan shall accrue diminishing interest at a rate of {application.appInterestRate}% per
+                  month, recalculated based on remaining unpaid principal. Interest due is calculated until the principal amount is fully paid.
                 </li>
                 <li>
                   <strong>Repayment Terms.</strong> The Borrower shall repay the loan according to the
                   following terms:
                   <ul className="list-disc list-inside ml-6 space-y-1">
                   <li>
-                    <strong>Repayment Schedule:</strong> Loan shall be paid in {application.appLoanTerms} equal monthly installments in
-                    the uniform amount of {application.appTotalPayable && application.appLoanTerms
-                        ? formatCurrency(application.appTotalPayable / application.appLoanTerms)
-                        : "₱0.00"}. The first payment of interest with principal shall be on {(() => {
-
+                    <strong>Repayment Schedule:</strong> Loan shall be paid on 12 monthly installment. Monthly payment should not be less than monthly interest due. The periodic amount should be applied first to the 
+                    accumulated and unpaid interest before applied to the principal. The first payment of principal shall be on {(() => {
                             if (application?.dateDisbursed) {
                               const disburseDate = new Date(application.dateDisbursed);
                               const firstPaymentDate = new Date(disburseDate);
@@ -213,7 +210,7 @@ export default function AgreementModal({
                               });
                             }     
                             return "Not yet set";
-                          })()} and the remaining amount will be due every {(() => {
+                          })()} in the minimum amount of {formatCurrency(application.appLoanAmount * application.appInterestRate / 100)} and the remaining amount will be due every {(() => {
                             if (application?.dateDisbursed) {
                             const disburseDate = new Date(application.dateDisbursed);
                             const dueDay = disburseDate.getDate();
@@ -234,20 +231,21 @@ export default function AgreementModal({
                 <ul className="list-disc list-inside ml-6 space-y-1">
                 <li>
                 <strong>Final Payment Date:</strong> The loan should be paid in full on or before{" "}
-                {application?.dateDisbursed && application?.appLoanTerms
+                  {application?.dateDisbursed
                     ? (() => {
                         const disburseDate = new Date(application.dateDisbursed);
-                        const terms = Number(application.appLoanTerms); 
-                        const finalPaymentDate = addMonthsSafe(disburseDate, terms);
+                        // Add 12 months
+                        const finalPaymentDate = new Date(disburseDate);
+                        finalPaymentDate.setMonth(finalPaymentDate.getMonth() + 12);
 
                         return finalPaymentDate.toLocaleDateString("en-PH", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
                         });
-                    })()
+                      })()
                     : "Not yet set"}
-                .
+                  .
                 </li>
                 </ul>
                 <li>
