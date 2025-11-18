@@ -106,7 +106,7 @@ export default function Navbar({ role, isBlurred = false }: NavbarProps) {
       const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
       const borrowersId = localStorage.getItem('borrowersId');
       const url = apiRole === 'borrower' && borrowersId
-        ? `${BASE_URL}/notifications/scheduled/${borrowersId}`
+        ? `${BASE_URL}/notifications/${borrowersId}`
         : `${BASE_URL}/notifications/staff/${apiRole}`;
       fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
