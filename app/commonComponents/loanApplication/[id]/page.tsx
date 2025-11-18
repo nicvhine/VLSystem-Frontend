@@ -6,8 +6,9 @@ import { useRouter, useParams } from "next/navigation";
 // Components
 import SuccessModal from "../../modals/successModal";
 import ErrorModal from "../../modals/errorModal";
-import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/modal";
-import ReleaseForm from "../../modals/loanAgreement/releaseForm";
+import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/regularLoan/modal";
+import OpenLoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/openTerm/modal";
+import ReleaseForm from "../../modals/loanAgreement/regularLoan/releaseForm";
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
 import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal";
 import ApplicationButtons from "./components/applicationButtons";
@@ -247,13 +248,22 @@ export default function ApplicationDetailsPage() {
             onClose={() => setSuccessModalOpen(false)}
           />
 
-          {isAgreementOpen === "loan" && (
+        {/* AGREEMENT MODAL */}
+        {isAgreementOpen === "loan" && (
+          application?.loanType === "Open-Term Loan" ? (
+            <OpenLoanAgreementModal
+              isOpen={true}
+              onClose={() => setIsAgreementOpen(null)}
+              application={application ?? null}
+            />
+          ) : (
             <LoanAgreementModal
               isOpen={true}
               onClose={() => setIsAgreementOpen(null)}
-              application={(application as any) ?? null}
+              application={application ?? null}
             />
-          )}
+          )
+        )}
 
           {isAgreementOpen === "release" && (
             <ReleaseForm
