@@ -50,6 +50,14 @@ export function getSysadNavItems(language: 'en' | 'ceb') {
   ];
 }
 
+export function getCollectorNavItems(language: 'en' | 'ceb') {
+  const t = navbarTranslation[language];
+  return [
+    { name: t.tab1, href: '/userPage/collectorPage/loans'},
+    { name: t.tab15, href: '/userPage/collectorPage/paymongoPayments'},
+  ];
+}
+
 export const getLandingNavItems = (
   language: 'en' | 'ceb',
   smoothScrollTo: (id: string) => void,

@@ -19,7 +19,7 @@ interface Props {
   loanId: string;
 }
 
-const CLOSURE_URL = process.env.NEXT_PUBLIC_CLOSURE_URL as string;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL as string;
 
 export default function EndorseLetterModal({
   isOpen,
@@ -73,7 +73,7 @@ export default function EndorseLetterModal({
   setShowSuccess(false);
 
       const token = localStorage.getItem("token");
-      const response = await fetch(CLOSURE_URL, {
+      const response = await fetch(`${BASE_URL}/closure`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

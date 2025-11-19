@@ -1,34 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { FiX } from "react-icons/fi";
+import { useRouter } from "next/navigation";
 import MapComponent from "../../MapComponent"; 
 import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
 
-/**
- * Basic information form section component
- * Handles personal details including name, contact, marital status, and address with map integration
- * @param language - Current language setting (English or Cebuano)
- * @param appName - Applicant's name
- * @param setAppName - Function to set applicant's name
- * @param appDob - Applicant's date of birth
- * @param setAppDob - Function to set date of birth
- * @param appContact - Applicant's contact number
- * @param setAppContact - Function to set contact number
- * @param appEmail - Applicant's email address
- * @param setAppEmail - Function to set email address
- * @param appMarital - Applicant's marital status
- * @param setAppMarital - Function to set marital status
- * @param appChildren - Number of children
- * @param setAppChildren - Function to set number of children
- * @param appSpouseName - Spouse's name
- * @param setAppSpouseName - Function to set spouse's name
- * @param appSpouseOccupation - Spouse's occupation
- * @param setAppSpouseOccupation - Function to set spouse's occupation
- * @param appAddress - Applicant's address
- * @param setAppAddress - Function to set address
- * @param missingFields - Array of missing field names for validation
- * @returns JSX element containing the basic information form section
- */
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function BasicInformation({
   language,
@@ -52,21 +31,166 @@ export default function BasicInformation({
   setAppAddress,
   missingFields = [],
   showFieldErrors = false,
+  resetForm,
 }: BasicInformationProps) {
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [nameError, setNameError] = useState("");
+  const [duplicateError, setDuplicateError] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalAnimating, setIsModalAnimating] = useState(false);
+
+
+  const router = useRouter();
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAppAddress(e.target.value);
   };
 
+  useEffect(() => {
+    const checkDuplicate = async () => {
+      if (!appName || !appDob || !appEmail) return;
+  
+      console.log("Trigger check:", { appName, appDob, appEmail });
+  
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BASE_URL}/loan-applications/check-duplicate`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ appName, appDob, appEmail }),
+        });
+  
+        const data = await res.json();
+  
+        console.log("Server response:", data);
+  
+        if (data.isDuplicate) {
+          if (["Pending", "Applied", "Cleared"].includes(data.status)) {
+            // Pending-type applications
+            setModalMessage(
+              language === "en"
+                ? "Oops! It looks like you have a pending application with us. Please track your application status. If you think there's a mistake, kindly contact our office."
+                : "Naay pending nga aplikasyon sa among opisina. Palihug i-track ang imong aplikasyon. Kung naay sayop, palihug kontaka ang opisina."
+            );
+            setDuplicateError(
+              language === "en"
+                ? `Duplicate found (Status: ${data.status})`
+                : `Duplicate naay status: ${data.status}`
+            );
+          } else if (["Approved", "Disbursed", "Active", "Closed"].includes(data.status)) {
+            // Existing accounts
+            setModalMessage(
+              language === "en"
+                ? "Oops! It looks like you have an existing active account with us. If you're a borrower, you may apply for a re-loan through the borrower portal. If you think there's a mistake, kindly contact our office."
+                : "Aduna kay existing nga active account sa among sistema. Kung ikaw borrower, mahimo ka mag-reloan sa borrower portal. Kung naay sayop, palihug kontaka ang opisina."
+            );
+            setDuplicateError(
+              language === "en"
+                ? `Duplicate found (Status: ${data.status})`
+                : `Duplicate naay status: ${data.status}`
+            );
+          }
+          setIsModalVisible(true);
+          setTimeout(() => setIsModalAnimating(true), 10);
+        } else {
+          setModalMessage("");
+          setDuplicateError("");
+          setIsModalVisible(false);
+          setIsModalAnimating(false);
+        }
+        
+      } catch (err) {
+        console.error("Error checking duplicate application:", err);
+      }
+    };
+  
+    const timeout = setTimeout(checkDuplicate, 500);
+    return () => clearTimeout(timeout);
+  }, [appName, appDob, appEmail, language, BASE_URL]);
+  
+  const handleModalClose = () => {
+    setIsModalAnimating(false);
+    setTimeout(() => {
+      setIsModalVisible(false);
+      setModalMessage("");
+      // Clear form data from localStorage - use the correct storage key!
+      localStorage.removeItem('loanApplicationFormData');
+      localStorage.removeItem('selectedLoanType');
+      // Reset all form state
+      if (resetForm) {
+        resetForm();
+      }
+      // Navigate to landing page
+      router.push('/userPage/publicPage');
+    }, 150);
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) handleModalClose();
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalVisible) handleModalClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isModalVisible]);
+
+  const modalContent = isModalVisible && modalMessage && (
+    <div
+      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
+        isModalAnimating ? "opacity-100" : "opacity-0"
+      }`}
+      onClick={handleBackdropClick}
+    >
+      <div
+        className={`bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative text-black transform transition-all duration-150 ${
+          isModalAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={handleModalClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
+        >
+          <FiX size={20} />
+        </button>
+
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          {language === "en" ? "Application Notice" : "Pahibalo sa Aplikasyon"}
+        </h2>
+
+        <p className="text-gray-700 text-sm leading-relaxed mb-6">
+          {modalMessage}
+        </p>
+
+        <div className="flex justify-end">
+          <button
+            onClick={handleModalClose}
+            className="px-6 py-2 bg-red-600 text-white rounded-lg transition-colors font-medium hover:bg-red-700"
+          >
+            {language === "en" ? "OK" : "Sige"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-  <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
-      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-        <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
-        {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
-      </h4>
+    <>
+      {typeof window !== 'undefined' && modalContent && createPortal(modalContent, document.body)}
+      
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+        <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+          <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
+          {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
+        </h4>
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Name */}
@@ -155,27 +279,30 @@ export default function BasicInformation({
         </div>
 
         {/* Email */}
-        <div>
-          <label className="block font-medium mb-2 text-gray-700">
-            {language === "en" ? "Email Address:" : "Email Address:"}
-          </label>
-          <div className="flex">
-            <input
-              type="text"
-              value={appEmail.replace("@gmail.com", "")}
-              onChange={(e) => {
-                let value = e.target.value;
-                value = value.replace(/@.*/, "");
-                setAppEmail(value + "@gmail.com");
-              }}
-                className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Email Address')) ? 'border-red-500' : 'border-gray-200'}`}
-              placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
-            />
-            <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">
-              @gmail.com
-            </span>
-          </div>
+      <div>
+        <label className="block font-medium mb-2 text-gray-700">
+          {language === "en" ? "Email Address:" : "Email Address:"}
+        </label>
+        <div className="flex">
+          <input
+            type="text"
+            value={appEmail.replace("@gmail.com", "")}
+            onChange={(e) => {
+              let value = e.target.value;
+              value = value.replace(/@.*/, "");
+              setAppEmail(value + "@gmail.com");
+            }}
+            className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+              (showFieldErrors && missingFields.includes("Email Address")) ? "border-red-500" : "border-gray-200"
+            }`}
+            placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
+          />
+          <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">
+            @gmail.com
+          </span>
         </div>
+        {duplicateError && <p className="text-red-500 text-sm mt-1">{duplicateError}</p>}
+      </div>
       </div>
 
       {/* Marital Status + Children */}
@@ -202,8 +329,16 @@ export default function BasicInformation({
             type="number"
             className="w-full border border-gray-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
             placeholder={language === "en" ? "Enter number of children" : "Isulod ang ihap sa anak"}
-            value={appChildren}
-            onChange={(e) => setAppChildren(parseInt(e.target.value))}
+            value={appChildren || ""}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "") {
+                setAppChildren(0);
+              } else {
+                const numValue = parseInt(value);
+                setAppChildren(isNaN(numValue) ? 0 : numValue);
+              }
+            }}
             min={0}
           />
         </div>
@@ -264,6 +399,7 @@ export default function BasicInformation({
         />
       </div>
 
-    </div>
+      </div>
+    </>
   );
 }

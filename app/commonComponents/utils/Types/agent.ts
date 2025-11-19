@@ -7,6 +7,7 @@ export interface Agent {
   handledLoans: number;
   totalLoanAmount: number;
   totalCommission: number;
+  status: "Active" | "Inactive"; 
 }
 
 export interface AddAgentParams {
@@ -36,6 +37,7 @@ export interface AddAgentModalProps {
     setNewAgentPhone: (phone: string) => void;
     onAddAgent: () => Promise<AddAgentResult>;
     loading?: boolean; 
+    language?: "en" | "ceb";
 }
 
 export interface AgentDropdownProps {

@@ -3,8 +3,9 @@
 import { FiPrinter, FiX, FiSave } from "react-icons/fi";
 import { createPortal } from "react-dom";
 import { useState, useEffect } from "react";
-import { Application } from "../../utils/Types/application";
+import { Application } from "../../../utils/Types/application";
 import axios from "axios";
+import SuccessModal from "../../successModal";
 
 interface ReleaseFormProps {
   isOpen: boolean;
@@ -17,9 +18,32 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFormProps) {
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
-  const [serviceFee, setServiceFee] = useState<string>((application?.appServiceFee || 0).toString());
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Calculate service fee based on loan amount
+  const calculateServiceFee = (principal: number): number => {
+    if (principal >= 10000 && principal <= 20000) {
+      return principal * 0.05;
+    } else if (principal > 20000 && principal <= 45000) {
+      return 1000;
+    } else if (principal > 45000) {
+      return principal * 0.03;
+    }
+    return 0;
+  };
+
+  const getInitialServiceFee = (): string => {
+    const storedFee = Number(application?.appServiceFee);
+    if (storedFee > 0) return storedFee.toString();
+    
+    // Calculate service fee if not set
+    const principal = Number(application?.appLoanAmount || 0);
+    return calculateServiceFee(principal).toString();
+  };
+
+  const [serviceFee, setServiceFee] = useState<string>(getInitialServiceFee());
 
   useEffect(() => {
     if (isOpen) {
@@ -36,7 +60,16 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
   }, [isOpen]);
 
   useEffect(() => {
-    if (application) setServiceFee((application?.appServiceFee || 0).toString());
+    if (application) {
+      const storedFee = Number(application.appServiceFee);
+      if (storedFee > 0) {
+        setServiceFee(storedFee.toString());
+      } else {
+        // Calculate service fee if not set
+        const principal = Number(application.appLoanAmount || 0);
+        setServiceFee(calculateServiceFee(principal).toString());
+      }
+    }
   }, [application]);
 
   if (!showModal || !application) return null;
@@ -55,7 +88,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
     }).format(amount);
 
   const feeNumber = parseFloat(serviceFee) || 0;
-  const netReleased = (application.appLoanAmount || 0) - feeNumber;
+  const netReleased = Number(application.appLoanAmount || 0) - feeNumber;
 
   // Save service fee and net released to backend
   const handleSave = async () => {
@@ -80,7 +113,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
 
       setIsSaved(true);
       setLoading(false);
-      alert("Saved successfully! You can now print.");
+      setSuccessMessage("Saved successfully! You can now print.");
     } catch (err: any) {
       setLoading(false);
       console.error(err);
@@ -177,7 +210,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
             <div className="grid grid-cols-3 gap-8 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Approved Loan Amount</label>
-                <p className="mt-1 text-gray-900 font-semibold">{formatCurrency(application.appLoanAmount || 0)}</p>
+                <p className="mt-1 text-gray-900 font-semibold">{formatCurrency(Number(application.appLoanAmount) || 0)}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Processing / Service Fee</label>
@@ -209,6 +242,13 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal
+        isOpen={!!successMessage}
+        message={successMessage}
+        onClose={() => setSuccessMessage("")}
+      />
     </div>
   );
 

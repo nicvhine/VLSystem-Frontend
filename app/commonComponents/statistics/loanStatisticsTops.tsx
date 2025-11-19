@@ -8,7 +8,7 @@ import { formatCurrency } from "../utils/formatters";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 export default function LoanStatisticsTops() {
-  const [role, setRole] = useState<"loanOfficer" | "manager">("loanOfficer");
+  const [role, setRole] = useState<"loanOfficer" | "head" | "manager">("loanOfficer");
   const [loanTypeStats, setLoanTypeStats] = useState<{ loanType: string; count: number }[]>([]);
   const [applicationStatusStats, setApplicationStatusStats] = useState<{ applied: number; approved: number; denied: number }>({ applied: 0, approved: 0, denied: 0 });
 
@@ -28,7 +28,7 @@ export default function LoanStatisticsTops() {
       try {
         const [loanTypeRes, appStatusRes] = await Promise.all([
           fetch(`${BASE_URL}/stat/loan-type-stats`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${BASE_URL}/stat/applicationStatus-stats`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${BASE_URL}/stat/application-statuses`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         const loanTypeData = await loanTypeRes.json();

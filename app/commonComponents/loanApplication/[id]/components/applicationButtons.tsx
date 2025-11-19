@@ -81,12 +81,14 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
     <>
       {application.status === "Applied" && role === "loan officer" && (
         <>
+          {/* set schedule */}
           <button
             onClick={() => setIsModalOpen(true)}
             className="px-4 py-2 bg-blue-800 text-white rounded-lg hover:bg-blue-900 transition-colors font-medium"
           >
             {a.b1}
           </button>
+          {/* deny loan */}
           <button
             onClick={() => {
               setDenialType('direct');

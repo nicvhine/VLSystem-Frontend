@@ -1,11 +1,24 @@
 'use client';
 
+import { useState, useEffect } from "react";
 import { useLoanStats } from "@/app/commonComponents/statistics/hooks";
 import { LoadingSpinner } from "@/app/commonComponents/utils/loading";
 import { formatCurrency } from "../utils/formatters";
 
 export default function LoanStatisticsVertical() {
-  const { s, t, loading, typeStats, applicationStats, topAgents = [] } = useLoanStats("manager"); 
+  const [role, setRole] = useState<'loanOfficer' | 'manager' | 'head'>('loanOfficer');
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedRole = localStorage.getItem("role") as 'loanOfficer' | 'manager' | 'head';
+      setRole(storedRole || 'loanOfficer');
+    }
+  }, []);
+
+  // Head should see manager stats
+  const statsRole = role === 'head' ? 'manager' : role;
+
+  const { s, t, loading, typeStats, applicationStats, topAgents = [] } = useLoanStats(statsRole as 'manager' | 'loanOfficer');
 
   if (loading) {
     return (
@@ -15,17 +28,13 @@ export default function LoanStatisticsVertical() {
     );
   }
 
-  // Stat row for all sections
   const renderLabel = (text: string) => {
-    if (typeof text !== 'string') return text as any;
     const idx = text.indexOf('(');
     if (idx === -1) return text;
-    const before = text.slice(0, idx).trimEnd();
-    const paren = text.slice(idx).trim();
     return (
       <>
-        <span>{before}</span>{' '}
-        <span className="whitespace-nowrap">{paren}</span>
+        <span>{text.slice(0, idx).trimEnd()}</span>{' '}
+        <span className="whitespace-nowrap">{text.slice(idx).trim()}</span>
       </>
     );
   };
@@ -51,30 +60,29 @@ export default function LoanStatisticsVertical() {
       {/* Loan Types */}
       <section className="bg-white rounded-2xl shadow-lg border border-gray-200 hover:shadow-xl transition-all p-4">
         <h2 className="text-md font-semibold text-red-600 mb-4">{t.h4}</h2>
-        <StatRow label={s.l1} value={typeStats.withCollateral ?? 0} />
-        <StatRow label={s.l2} value={typeStats.withoutCollateral ?? 0} />
+        <StatRow label={s.l1} value={typeStats.withoutCollateral ?? 0} />
+        <StatRow label={s.l2} value={typeStats.withCollateral ?? 0} />
         <StatRow label={s.l3} value={typeStats.openTerm ?? 0} />
       </section>
 
-      {/* Top Agents */}
-      <section className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-        <div className="mb-4 flex items-center gap-2 text-m font-semibold text-red-600">
-          {t.c14 || "Top 5 Agents"}
-        </div>
-        {topAgents.length === 0 ? (
-          <p className="text-gray-500">{t.m2}</p>
-        ) : (
-          <ul className="list-decimal">
-            {topAgents.map((a: any) => (
-              <li key={a.agentId} className="flex justify-between">
-                <span className="text-gray-700 font-medium">{a.name}</span>
-                <span className="font-semibold">{formatCurrency(a.totalProcessedLoans)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
+      {/* Top Agents (only show for manager/head) */}
+        <section className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
+          <div className="mb-4 flex items-center gap-2 text-m font-semibold text-red-600">
+            {t.c14 || "Top 5 Agents"}
+          </div>
+          {topAgents.length === 0 ? (
+            <p className="text-gray-500">{t.m2}</p>
+          ) : (
+            <ul className="list-decimal">
+              {topAgents.map((a: any) => (
+                <li key={a.agentId} className="flex justify-between">
+                  <span className="text-gray-700 font-medium">{a.name}</span>
+                  <span className="font-semibold">{formatCurrency(a.totalProcessedLoans)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
     </div>
   );
 }

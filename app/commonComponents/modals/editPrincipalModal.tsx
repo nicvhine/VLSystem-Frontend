@@ -14,8 +14,6 @@ interface LoanPreview {
   totalInterestAmount: number;
   totalPayable: number;
   monthlyDue: number;
-  serviceFee: number;
-  netReleased: number;
 }
 
 interface LoanApplication {
@@ -70,15 +68,15 @@ export default function EditPrincipalModal({
   const [preview, setPreview] = useState<LoanPreview | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [amountError, setAmountError] = useState<string>("");
 
-  // Animation lifecycle management
+  // Animation lifecycle
   useEffect(() => {
     setIsVisible(true);
     const timer = setTimeout(() => setIsAnimating(true), 10);
     return () => clearTimeout(timer);
   }, []);
 
-  // Close modal with animation
   const handleModalClose = () => {
     if (loading) return;
     setIsAnimating(false);
@@ -88,19 +86,13 @@ export default function EditPrincipalModal({
     }, 150);
   };
 
-  // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      handleModalClose();
-    }
+    if (e.target === e.currentTarget) handleModalClose();
   };
 
-  // Handle escape key
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isVisible && !loading) {
-        handleModalClose();
-      }
+      if (e.key === 'Escape' && isVisible && !loading) handleModalClose();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -114,7 +106,7 @@ export default function EditPrincipalModal({
         if (!res.ok) throw new Error("Failed to fetch application");
         const data: LoanApplication = await res.json();
         setLoanApp(data);
-        setAmount(data.appLoanAmount);
+        setAmount(Number(data.appLoanAmount));
       } catch (err) {
         console.error(err);
         alert("Error fetching loan application");
@@ -123,7 +115,7 @@ export default function EditPrincipalModal({
     fetchApp();
   }, [applicationId]);
 
-  // Compute loan preview
+  // Compute preview
   const computePreview = (principal: number, loanType: string): LoanPreview => {
     const key: LoanOptionKey = loanType as LoanOptionKey;
     const options = loanOptions[key];
@@ -137,37 +129,38 @@ export default function EditPrincipalModal({
         .sort((a, b) => b.amount - a.amount)[0] || options[0];
     }
 
-    const months = 'months' in selectedOption ? selectedOption.months : 12; 
+    const months = 'months' in selectedOption ? selectedOption.months : 12;
     const interestRate = selectedOption.interest;
+    const principalNum = Number(principal);
 
-    const serviceFee =
-      principal <= 20000 ? principal * 0.05 : principal <= 45000 ? 1000 : principal * 0.03;
-
-    const interestAmount = principal * (interestRate / 100);
+    const interestAmount = principalNum * (interestRate / 100);
     const totalInterestAmount = interestAmount * months;
-    const totalPayable = principal + totalInterestAmount + serviceFee;
+    const totalPayable = principalNum + totalInterestAmount;
     const monthlyDue = totalPayable / months;
-    const netReleased = principal - serviceFee;
 
     return {
-      principal,
+      principal: principalNum,
       months,
       interestRate,
       interestAmount,
       totalInterestAmount,
       totalPayable,
       monthlyDue,
-      serviceFee,
-      netReleased,
     };
   };
 
-  // Update preview whenever amount or loanApp changes
   useEffect(() => {
-    if (loanApp) {
-      setPreview(computePreview(amount, loanApp.loanType));
-    }
+    if (loanApp) setPreview(computePreview(amount, loanApp.loanType));
   }, [amount, loanApp]);
+
+  // Get min/max for loan type
+  const getLoanLimits = (loanType: string) => {
+    const key: LoanOptionKey = loanType as LoanOptionKey;
+    const options = loanOptions[key];
+    const min = Math.min(...options.map(o => o.amount));
+    const max = Math.max(...options.map(o => o.amount));
+    return { min, max };
+  };
 
   const handleSave = async () => {
     if (!loanApp) return;
@@ -176,10 +169,27 @@ export default function EditPrincipalModal({
       return;
     }
 
+    // Check for validation errors
+    if (amountError) {
+      alert(amountError);
+      return;
+    }
+
+    // Enforce limits
+    const { min, max } = getLoanLimits(loanApp.loanType);
+    if (amount < min || amount > max) {
+      alert(`Amount must be between ₱${min.toLocaleString()} and ₱${max.toLocaleString()}`);
+      return;
+    }
+
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${BASE_URL}/loan-applications/${applicationId}/principal`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, 
+        },
         body: JSON.stringify({ newPrincipal: amount }),
       });
 
@@ -230,39 +240,83 @@ export default function EditPrincipalModal({
           <input
             type="number"
             value={amount}
-            onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-            className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-            min={0}
+            onChange={(e) => {
+              const newAmount = parseFloat(e.target.value) || 0;
+              setAmount(newAmount);
+              
+              // Validate against limits
+              if (loanApp && newAmount > 0) {
+                const { min, max } = getLoanLimits(loanApp.loanType);
+                if (newAmount < min) {
+                  setAmountError(`Amount must be at least ₱${min.toLocaleString()}`);
+                } else if (newAmount > max) {
+                  setAmountError(`Amount cannot exceed ₱${max.toLocaleString()}`);
+                } else {
+                  setAmountError("");
+                }
+              }
+            }}
+            className={`w-full p-3 border rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+              amountError ? "border-red-500" : "border-gray-300"
+            }`}
             step={0.01}
             disabled={loading}
           />
+          {amountError && (
+            <p className="text-sm text-red-500 mt-1">{amountError}</p>
+          )}
+          {loanApp && (() => {
+            const { min, max } = getLoanLimits(loanApp.loanType);
+            return (
+              <p className="text-xs text-gray-500 mt-1">
+                Allowed range: ₱{min.toLocaleString()} - ₱{max.toLocaleString()}
+              </p>
+            );
+          })()}
         </div>
 
         {preview && (
-          <div className="mb-4 bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
-            <h3 className="font-medium text-gray-700 mb-2">Loan Preview:</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-gray-600">Principal:</div>
-              <div className="text-right">₱ {preview.principal.toLocaleString()}</div>
-              <div className="text-gray-600">Months:</div>
-              <div className="text-right">{preview.months}</div>
-              <div className="text-gray-600">Interest Rate:</div>
-              <div className="text-right">{preview.interestRate}%</div>
-              <div className="text-gray-600">Interest Amount:</div>
-              <div className="text-right">₱ {preview.interestAmount.toLocaleString()}</div>
-              <div className="text-gray-600">Total Interest:</div>
-              <div className="text-right">₱ {preview.totalInterestAmount.toLocaleString()}</div>
-              <div className="text-gray-600">Service Fee:</div>
-              <div className="text-right">₱ {preview.serviceFee.toLocaleString()}</div>
-              <div className="text-gray-600">Total Payable:</div>
-              <div className="text-right">₱ {preview.totalPayable.toLocaleString()}</div>
-              <div className="text-gray-600">Monthly Due:</div>
-              <div className="text-right">₱ {preview.monthlyDue.toLocaleString()}</div>
-              <div className="text-gray-600">Net Released:</div>
-              <div className="text-right">₱ {preview.netReleased.toLocaleString()}</div>
-            </div>
-          </div>
-        )}
+  <div className="mb-4 bg-gray-50 p-4 rounded-lg space-y-3">
+    <h3 className="font-semibold text-gray-700 text-lg border-b border-gray-200 pb-1 mb-3">
+      Loan Preview
+    </h3>
+
+    {/* Principal */}
+    <div className="flex justify-between">
+      <span className="text-gray-600">Principal</span>
+      <span className="font-semibold text-gray-900">₱ {preview.principal.toLocaleString()}</span>
+    </div>
+
+    {/* Loan Term & Interest */}
+    <div className="flex justify-between">
+      <span className="text-gray-600">Term</span>
+      <span className="text-gray-900">{preview.months} months</span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-gray-600">Interest Rate</span>
+      <span className="text-gray-900">{preview.interestRate}%</span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-gray-600">Total Interest</span>
+      <span className="font-semibold text-gray-900">₱ {preview.totalInterestAmount.toLocaleString()}</span>
+    </div>
+
+    {/* Total Payable & Monthly Due */}
+    <div className="flex justify-between pt-3 border-t border-gray-200">
+      <div>
+        <span className="text-gray-600">Total Payable</span>
+        <div className="text-gray-900 font-bold text-lg">₱ {preview.totalPayable.toLocaleString()}</div>
+      </div>
+      <div className="text-right">
+        <span className="text-gray-600">Monthly Due</span>
+        <div className="text-gray-900 font-bold text-lg">₱ {preview.monthlyDue.toLocaleString()}</div>
+      </div>
+    </div>
+  </div>
+)}
+
 
         <div className="flex justify-end gap-3 pt-2">
           <button

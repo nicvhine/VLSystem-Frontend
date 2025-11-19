@@ -4,11 +4,11 @@ import { useState, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 
 // Components
-import Navbar from "../../navbarComponents/navbar";
 import SuccessModal from "../../modals/successModal";
 import ErrorModal from "../../modals/errorModal";
-import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/modal";
-import ReleaseForm from "../../modals/loanAgreement/releaseForm";
+import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/regularLoan/modal";
+import OpenLoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/openTerm/modal";
+import ReleaseForm from "../../modals/loanAgreement/regularLoan/releaseForm";
 import SetScheduleModal from "@/app/commonComponents/modals/loanApplication/scheduleModal";
 import AccountModal from "@/app/commonComponents/modals/loanApplication/accountModal";
 import ApplicationButtons from "./components/applicationButtons";
@@ -100,13 +100,14 @@ export default function ApplicationDetailsPage() {
   const Wrapper =
     role === "head" ? Head : role === "manager" ? Manager : LoanOfficer;
 
-  const application = applications.find((app) => app.applicationId === id);
+  const application = Array.isArray(applications) 
+    ? applications.find((app) => app.applicationId === id)
+    : undefined;
 
   if (!application && !loading) {
     return (
       <Wrapper>
         <div className="min-h-screen bg-gray-50">
-          <Navbar role={uiRole} />
           <div className="p-10 text-center text-gray-600 text-lg">
             {notFoundText}
           </div>
@@ -247,13 +248,22 @@ export default function ApplicationDetailsPage() {
             onClose={() => setSuccessModalOpen(false)}
           />
 
-          {isAgreementOpen === "loan" && (
+        {/* AGREEMENT MODAL */}
+        {isAgreementOpen === "loan" && (
+          application?.loanType === "Open-Term Loan" ? (
+            <OpenLoanAgreementModal
+              isOpen={true}
+              onClose={() => setIsAgreementOpen(null)}
+              application={application ?? null}
+            />
+          ) : (
             <LoanAgreementModal
               isOpen={true}
               onClose={() => setIsAgreementOpen(null)}
-              application={(application as any) ?? null}
+              application={application ?? null}
             />
-          )}
+          )
+        )}
 
           {isAgreementOpen === "release" && (
             <ReleaseForm

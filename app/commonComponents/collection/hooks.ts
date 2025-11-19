@@ -150,11 +150,12 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
     return sameDate && matchesCollector && matchesSearch;
   });
   
+  const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
   const overallCollections =
-    role === "collector"
-      ? collections.filter((col) => col.collector === currentCollector)
-      : collections;
+  role === "collector"
+    ? collections.filter((col) => col.collectorId === userId)
+    : collections;
 
   const overallTotalPayments = overallCollections.length;
   const overallCompletedPayments = overallCollections.filter((col) => col.status === "Paid").length;

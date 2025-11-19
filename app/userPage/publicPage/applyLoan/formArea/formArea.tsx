@@ -112,10 +112,64 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
   // Loan
   const [selectedLoan, setSelectedLoan] = useState<any | null>(null);
   const [appLoanPurpose, setAppLoanPurpose] = useState("");
+  const [customLoanAmount, setCustomLoanAmount] = useState<number | "">("");
 
   // Uploads 
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [photo2x2, setPhoto2x2] = useState<File[]>([]);
+
+  // Reset form function - clears all state to initial values
+  const resetForm = () => {
+    // Basic Info
+    setAppName("");
+    setAppDob("");
+    setAppContact("");
+    setAppEmail("");
+    setAppMarital("");
+    setAppChildren(0);
+    setAppSpouseName("");
+    setAppSpouseOccupation("");
+    setAppAddress("");
+    setBorrowersId("");
+
+    // Source of Income
+    setSourceOfIncome("");
+    setAppTypeBusiness("");
+    setAppBusinessName("");
+    setAppDateStarted("");
+    setAppBusinessLoc("");
+    setAppMonthlyIncome(0);
+    setAppOccupation("");
+    setAppEmploymentStatus("");
+    setAppCompanyName("");
+    setOccupationError("");
+
+    // References
+    setAppReferences([
+      { name: "", contact: "", relation: "" },
+      { name: "", contact: "", relation: "" },
+      { name: "", contact: "", relation: "" },
+    ]);
+
+    // Agent
+    setAppAgent("");
+    setAgentMissingError(false);
+
+    // Collateral
+    setCollateralType("");
+    setCollateralValue(0);
+    setCollateralDescription("");
+    setOwnershipStatus("");
+
+    // Loan
+    setSelectedLoan(null);
+    setAppLoanPurpose("");
+    setCustomLoanAmount("");
+
+    // Uploads
+    setUploadedFiles([]);
+    setPhoto2x2([]);
+  };
 
   // Form persistence - save form data to localStorage
   const { clearSavedData } = useFormPersistence({
@@ -124,7 +178,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
       sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted, appBusinessLoc, appMonthlyIncome,
       appOccupation, appEmploymentStatus, appCompanyName, appReferences, appAgent,
       collateralType, collateralValue, collateralDescription, ownershipStatus,
-      selectedLoan, appLoanPurpose, loanType
+      selectedLoan, appLoanPurpose, customLoanAmount, loanType
     },
     setters: {
       setAppName, setAppDob, setAppContact, setAppEmail, setAppMarital, setAppChildren,
@@ -132,7 +186,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
       setAppTypeBusiness, setAppBusinessName, setAppDateStarted, setAppBusinessLoc,
       setAppMonthlyIncome, setAppOccupation, setAppEmploymentStatus, setAppCompanyName,
       setAppReferences, setAppAgent, setCollateralType, setCollateralValue,
-      setCollateralDescription, setOwnershipStatus, setSelectedLoan, setAppLoanPurpose
+      setCollateralDescription, setOwnershipStatus, setSelectedLoan, setAppLoanPurpose, setCustomLoanAmount
     },
     storageKey: 'loanApplicationFormData',
     enabled: true,
@@ -247,7 +301,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
             appMarital={appMarital} setAppMarital={setAppMarital} appChildren={appChildren} setAppChildren={setAppChildren}
             appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
             setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
-            missingFields={missingFields} borrowersId={borrowersId}
+            missingFields={missingFields} borrowersId={borrowersId} resetForm={resetForm}
           />
         </div>
 
@@ -289,6 +343,8 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
           <LoanDetails
             language={language} loanType={loanTypeParam} appLoanPurpose={appLoanPurpose} setAppLoanPurpose={setAppLoanPurpose}
             onLoanSelect={(loan) => setSelectedLoan(loan)} missingFields={missingFields}
+            customLoanAmount={customLoanAmount} setCustomLoanAmount={setCustomLoanAmount}
+            selectedLoan={selectedLoan}
           />
         </div>
 

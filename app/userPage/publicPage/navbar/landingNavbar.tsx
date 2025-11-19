@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { getLandingNavItems } from '@/app/commonComponents/navbarComponents/navItems';
@@ -64,10 +65,21 @@ export default function LandingNavbar({
           {/* Logo */}
           <Link
             href="/"
-            className="text-2xl font-bold text-transparent bg-gradient-to-r from-red-600 to-blue-800 bg-clip-text hover:from-red-700 hover:to-red-900 transition-all"
-          >
-            VLSystem
+            className="flex items-center space-x-2">
+            <Image
+              src="/logo/VistulaLogo.png"
+              alt="Vistula Logo"
+              width={30}
+              height={20}
+              priority
+              className="object-contain"
+            />
+            <span className="text-sm font-semibold text-gray-700 tracking-tight">
+              VLSystem
+            </span>
           </Link>
+
+          
 
           {/* ✅ Minimal navbar (userPage, publicPage, applyLoan) */}
           {isMinimalNavbar ? (

@@ -10,6 +10,7 @@ import EndorseInputModal from "./components/EndorseInputModal";
 import EndorseLetterModal from "./components/EndorseLetterModal";
 import ErrorModal from "../../modals/errorModal";
 import { formatDateTime } from "../../utils/formatters";
+import translations from "@/app/commonComponents/translation";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -90,13 +91,13 @@ const ProgressCircle = ({ value, label, subLabel, displayValue, centerSubLabel }
 };
 
 // ------------------- Payment Progress Card -------------------
-const PaymentProgressCard = ({ paidAmount, balance }: { paidAmount: number; balance: number }) => {
+const PaymentProgressCard = ({ paidAmount, balance, t1 }: { paidAmount: number; balance: number; t1: any }) => {
   const total = paidAmount + balance;
   const percentage = total > 0 ? (paidAmount / total) * 100 : 0;
   return (
     <ProgressCircle
       value={Number(percentage.toFixed(2))}
-      label="Payment Progress"
+      label={t1.t15}
       displayValue={`${Number(percentage.toFixed(0))}%`}
       centerSubLabel="out of 100"
       subLabel={`₱${paidAmount.toLocaleString()} / ₱${total.toLocaleString()}`}
@@ -125,11 +126,14 @@ const Info = ({ label, value }: { label: string; value: any }) => (
 );
 
 // ------------------- Payment Tracker -------------------
-const PaymentTrackerCard = ({ collection }: { collection: any }) => {
+const PaymentTrackerCard = ({ collection, isOpenTerm }: { collection: any; isOpenTerm: boolean }) => {
   const paidPercentage =
     collection.periodAmount > 0 ? (collection.paidAmount / collection.periodAmount) * 100 : 0;
+
   const progressColor =
-    paidPercentage === 100 ? "bg-green-500" : paidPercentage >= 50 ? "bg-yellow-400" : "bg-red-500";
+    paidPercentage === 100 ? "bg-green-500"
+    : paidPercentage >= 50 ? "bg-yellow-400"
+    : "bg-red-500";
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-lg p-4 border border-gray-200 hover:shadow-2xl transition mb-4">
@@ -142,31 +146,45 @@ const PaymentTrackerCard = ({ collection }: { collection: any }) => {
         </div>
         <StatusBadge status={collection.status} />
       </div>
-      <p className="text-sm font-bold text-gray-800 mb-2">₱{collection.periodAmount.toLocaleString()}</p>
+
+      {/* FIXED: CONDITIONAL VALUE FOR OPEN-TERM */}
+      <p className="text-sm font-bold text-gray-800 mb-2">
+        ₱{
+          isOpenTerm
+            ? collection.periodInterestAmount?.toLocaleString()
+            : collection.periodAmount?.toLocaleString()
+        }
+      </p>
+
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden mb-2">
         <div className={`h-3 ${progressColor}`} style={{ width: `${paidPercentage}%` }}></div>
       </div>
-      {collection.note && <p className="text-xs text-gray-500 italic mt-1">{collection.note}</p>}
+
+      {collection.note && (
+        <p className="text-xs text-gray-500 italic mt-1">{collection.note}</p>
+      )}
     </div>
   );
 };
 
-const PaymentTrackerCards = ({ collections }: { collections: any[] }) => {
+const PaymentTrackerCards = ({ collections, t1, isOpenTerm }: { collections: any[]; t1: any; isOpenTerm: boolean }) => {
   if (!collections || collections.length === 0)
-    return <p className="text-center py-6 text-gray-500 text-sm">No collections found.</p>;
+    return <p className="text-center py-6 text-gray-500 text-sm">{t1.t18}</p>;
 
   return (
     <div className="flex flex-col">
       {collections.map((c) => (
-        <PaymentTrackerCard key={c.referenceNumber} collection={c} />
+        <PaymentTrackerCard key={c.referenceNumber} collection={c} isOpenTerm={isOpenTerm} />
       ))}
     </div>
   );
 };
 
+
 // ------------------- Loans Detail Client -------------------
 export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
-  const { loan, loading, role } = useLoanDetails(loanId);
+  const { loan, loading, role, language, t: t1 } = useLoanDetails(loanId);
+  const e = translations.endorsementTranslation[language];
 
   const [collections, setCollections] = useState<any[]>([]);
   const [inputModalOpen, setInputModalOpen] = useState(false);
@@ -175,6 +193,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
   const [showWarning, setShowWarning] = useState(false);
   const [warningMsg, setWarningMsg] = useState("");
   const [closureStatus, setClosureStatus] = useState<string | null>(null);
+  const [loanType, setLoanType] = useState<string | null>(null); // Store loan type
 
   useEffect(() => {
     if (!loan) return;
@@ -185,14 +204,39 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
       .then(data => setCollections(data.collections || []))
       .catch(err => console.error(err));
 
-    fetch(`${process.env.NEXT_PUBLIC_CLOSURE_URL}/by-loan/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${BASE_URL}/closure/by-loan/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json())
       .then(data => setClosureStatus(data.hasClosure ? data.status : null))
       .catch(err => console.error(err));
   }, [loan]);
 
-  if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">Loading loan details...</div>;
-  if (!loan) return <div className="p-10 text-center text-red-500">Loan not found.</div>;
+   // Fetch loan type using the first payment's loanId
+   useEffect(() => {
+    const fetchLoanType = async () => {
+      if (!collections.length) return;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+      try {
+        const loanId = collections[0].loanId;
+        const res = await fetch(`${BASE_URL}/loans/${loanId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data && data.currentLoan) {
+          setLoanType(data.currentLoan.type); // e.g., "Open-Term Loan"
+        }
+      } catch (err) {
+        console.error("Failed to fetch loan type:", err);
+      }
+    };
+
+    fetchLoanType();
+  }, [collections]);
+
+  const isOpenTerm = loanType?.toLowerCase() === "open-term loan";
+
+  if (loading) return <div className="p-10 text-center text-gray-500 animate-pulse">{t1.t19}</div>;
+  if (!loan) return <div className="p-10 text-center text-red-500">{t1.t20}</div>;
 
   const Wrapper: React.ComponentType<{ children: React.ReactNode }> =
     role === "loan officer" ? LoanOfficer : role === "head" ? Head : Manager;
@@ -242,13 +286,13 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
                   onClick={() => setInputModalOpen(true)}
                   className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 shadow transition"
                 >
-                  Endorse for closure
+                  {e.f1}
                 </button>
               )}
 
               {closureStatus === "Pending" && (
                 <p className="text-sm text-gray-500 italic">
-                  A closure endorsement for this loan is currently pending.
+                  {e.m6}
                 </p>
               )}
             </div>
@@ -256,7 +300,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
         </div>
 
         {/* Modals */}
-        {inputModalOpen && <EndorseInputModal onClose={() => setInputModalOpen(false)} onGenerate={handleGenerate} />}
+        {inputModalOpen && <EndorseInputModal onClose={() => setInputModalOpen(false)} onGenerate={handleGenerate} language={language} />}
         {endorsementData && (
           <EndorseLetterModal
             isOpen={letterModalOpen}
@@ -277,6 +321,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
             <PaymentProgressCard
               paidAmount={loan.currentLoan?.paidAmount ?? 0}
               balance={loan.currentLoan?.remainingBalance ?? 0}
+              t1={t1}
             />
           </div>
 
@@ -284,22 +329,22 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Loan Details */}
             <div className="md:col-span-2 bg-white rounded-3xl shadow-lg p-5 border border-gray-200 hover:shadow-2xl transition">
-              <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2">Loan Details</h2>
+              <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2">{t1.t16}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-                <Info label="Loan ID" value={loan.loanId} />
-                <Info label="Amount" value={`₱${Number(loan.appLoanAmount).toLocaleString()}`} />
-                <Info label="Loan Type" value={loan.loanType} />
-                <Info label="Terms" value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
-                <Info label="Interest Rate" value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
-                <Info label="Date Disbursed" value={formatDateTime(loan.dateDisbursed)} />
+                <Info label={t1.t21} value={loan.loanId} />
+                <Info label={t1.t22} value={`₱${Number(loan.appLoanAmount).toLocaleString()}`} />
+                <Info label={t1.t23} value={loan.loanType} />
+                <Info label={t1.t24} value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
+                <Info label={t1.t25} value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
+                <Info label={t1.t26} value={formatDateTime(loan.dateDisbursed)} />
               </div>
             </div>
 
             {/* Payment Tracker */}
             <div className="md:col-span-2">
               <div className="bg-white rounded-3xl shadow-lg border border-gray-200 p-5 h-[55vh] overflow-y-auto">
-                <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2 sticky top-0 bg-white z-10">Payment Tracker</h2>
-                <PaymentTrackerCards collections={collections} />
+                <h2 className="text-lg font-bold text-red-700 mb-4 border-b border-red-100 pb-2 sticky top-0 bg-white z-10">{t1.t17}</h2>
+                <PaymentTrackerCards collections={collections} t1={t1} isOpenTerm={isOpenTerm} />
               </div>
             </div>
           </div>

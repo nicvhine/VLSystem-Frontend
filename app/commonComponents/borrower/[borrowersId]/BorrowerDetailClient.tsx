@@ -5,7 +5,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { User } from "lucide-react";
+import { FiEdit2 } from "react-icons/fi";
 import translations from "../../translation";
+import ChangeCollectorModal from "../../modals/changeCollectorModal";
+import { formatCurrency } from "../../utils/formatters";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -23,6 +26,14 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
 
   const [role, setRole] = useState<"manager" | "head" | "loan officer">("manager");
   const [language, setLanguage] = useState<"en" | "ceb">("en");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [assignedCollector, setAssignedCollector] = useState(borrower?.assignedCollector || "");
+  const [assignedCollectorId, setAssignedCollectorId] = useState(borrower?.assignedCollectorId || "");
+
+  useEffect(() => {
+    if (borrower?.assignedCollector) setAssignedCollector(borrower.assignedCollector);
+  }, [borrower]);
 
   // Load role and language from localStorage
   useEffect(() => {
@@ -132,6 +143,27 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                 <LabeledField label={t.p3} value={mergedData.appAddress} span />
                 <LabeledField label={t.p4} value={mergedData.appDob} />
                 <LabeledField label={t.p5} value={mergedData.appMarital} />
+
+                {/* NEW FIELD */}
+
+                <div className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
+                <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
+                  Assigned Collector
+                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-gray-800 text-sm font-medium">
+                    {assignedCollector || "—"}
+                  </p>
+                  <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                    title="Edit Collector"
+                  >
+                    <FiEdit2 size={16} />
+                  </button>
+                </div>
+              </div>
+
                 {mergedData.appChildren && mergedData.appChildren !== "0" && (
                   <LabeledField label={t.p6} value={mergedData.appChildren} />
                 )}
@@ -144,11 +176,12 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
               </div>
             </Card>
 
+
             {/* INCOME */}
             <Card title={t.t2}>
               {sourceOfIncome?.includes("business") ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
-                  <LabeledField label={t.i1} value={`₱${mergedData.appMonthlyIncome}`} />
+                  <LabeledField label={t.i1} value={formatCurrency(mergedData.appMonthlyIncome)} />
                   <LabeledField label={t.i2} value={mergedData.appTypeBusiness} />
                   <LabeledField label={t.i3} value={mergedData.appBusinessName} />
                   <LabeledField label={t.i4} value={mergedData.appDateStarted} />
@@ -192,6 +225,19 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
               </Link>
             </div>
           </Card>
+
+          <ChangeCollectorModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            borrowerId={borrowersId}
+            currentCollector={assignedCollectorId} // userId
+            onUpdated={(newCollectorId, newCollectorName) => {
+              setAssignedCollectorId(newCollectorId);
+              setAssignedCollector(newCollectorName); // display name
+            }}
+          />
+
+
         </div>
       </div>
     </Wrapper>
