@@ -9,10 +9,11 @@ import AreYouStillThereModal from "@/app/commonComponents/modals/inactivity/moda
 
 interface CollectorLayoutProps {
   children: React.ReactNode;
-  isNavbarBlurred?: boolean;
 }
 
-export default function CollectorLayout({ children, isNavbarBlurred = false }: CollectorLayoutProps) {
+export default function CollectorLayout({ children }: CollectorLayoutProps) {
+  // isNavbarBlurred removed from props
+  const isNavbarBlurred = false;
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const router = useRouter();

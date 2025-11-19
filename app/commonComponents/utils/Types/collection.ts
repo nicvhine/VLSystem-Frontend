@@ -18,6 +18,8 @@ export interface Collection {
   collectionNumber: number;
   mode?: string;
   totalPayable: number;
+  periodInterestAmount: number;
+  runningBalance: number;
 }
 
 export interface Payment {

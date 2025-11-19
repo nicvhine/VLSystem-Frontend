@@ -20,22 +20,22 @@ import {
 import { NavbarProps } from '../utils/Types/navbar';
 import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../utils/notification';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
-export default function Navbar({ role, isBlurred = false }: NavbarProps) {
-  const router = useRouter();
-  const pathname = usePathname();
+  export default function Navbar({ role, isBlurred = false }: NavbarProps) {
+    const router = useRouter();
+    const pathname = usePathname();
 
-  // Single language state synced with localStorage
-  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
-    if (typeof window !== 'undefined') {
-      if (!localStorage.getItem('language')) {
-        localStorage.setItem('language', 'en');
+    // Single language state synced with localStorage
+    const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+      if (typeof window !== 'undefined') {
+        if (!localStorage.getItem('language')) {
+          localStorage.setItem('language', 'en');
+        }
+        return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
       }
-      return (localStorage.getItem('language') as 'en' | 'ceb') || 'en';
-    }
-    return 'en';
-  });
+      return 'en';
+    });
 
   const [navItems, setNavItems] = useState(() => {
     switch (role) {
