@@ -11,7 +11,8 @@ const roleLabels: Record<string, string> = {
   head: 'Head',
   manager: 'Manager',
   'loan officer': 'Loan Officer',
-  loanOfficer: 'Loan Officer',
+  'loanofficer': 'Loan Officer',
+  'loan-officer': 'Loan Officer',
   collector: 'Collector',
   sysad: 'SysAd',
 };
@@ -27,7 +28,8 @@ export default function MobileMenu({
   const pathname = usePathname();
   const t = navbarTranslation[language];
   const initials = user?.name?.trim().charAt(0).toUpperCase() || 'U';
-  const roleLabel = roleLabels[user?.role || ''] || user?.role || '';
+  const roleKey = (user?.role || '').toLowerCase();
+  const roleLabel = roleLabels[roleKey] || user?.role || '';
 
   return (
     <div className="md:hidden mt-4 space-y-4">

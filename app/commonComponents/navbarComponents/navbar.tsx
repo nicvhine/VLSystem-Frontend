@@ -49,6 +49,8 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
         return getBorrowerNavItems(language);
       case 'sysad':
         return getSysadNavItems(language);
+      case 'collector':
+        return getCollectorNavItems(language);
       default:
         return [];
     }
