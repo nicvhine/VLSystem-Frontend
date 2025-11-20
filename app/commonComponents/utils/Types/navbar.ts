@@ -11,10 +11,20 @@ export interface LandingNavItem {
   onClick?: () => void;
 }
 
+export interface MobileMenuUser {
+  name: string;
+  email: string;
+  role: string;
+  profilePic?: string;
+}
+
 export interface MobileMenuProps {
   navItems: NavItem[];
   language: 'en' | 'ceb';
   setLanguage: Dispatch<SetStateAction<'en' | 'ceb'>>;
+  user?: MobileMenuUser;
+  onOpenProfileSettings?: () => void;
+  onLogout?: () => void;
 }
 
 export interface NavbarProps {
