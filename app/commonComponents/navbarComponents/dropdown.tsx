@@ -29,7 +29,17 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown(props: ProfileDropdownProps) {
-  const { name, email, phoneNumber, username, role, isEditing, setIsEditing, isDropdownOpen } = props;
+  const {
+    name,
+    email,
+    phoneNumber,
+    username,
+    role,
+    isEditing,
+    setIsEditing,
+    isDropdownOpen,
+    setIsDropdownOpen,
+  } = props;
 
   // Profile picture upload hook
   const { previewPic, isUploading, isWorking, handleFileChange, handleCancelUpload, handleSaveProfilePic, handleRemoveProfilePic } =
@@ -176,14 +186,37 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, []);
 
+  const closeDropdown = () => {
+    setIsDropdownOpen(false);
+    setIsEditing(false);
+    setShowPhotoActions(false);
+  };
+
   return (
     <div className="relative">
       <div
-        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 mt-3 p-0 mr-4 relative transition-all duration-300 ease-out transform
+        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:w-96 mt-3 p-0 mr-4 relative transition-all duration-300 ease-out transform
           ${isDropdownOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
-        style={{ position: 'fixed', top: '4rem', right: 0, zIndex: 9999, maxHeight: '80vh', overflowY: 'auto' }}
+        style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999, maxHeight: '80vh', overflowY: 'auto' }}
         aria-hidden={!isDropdownOpen}
       >
+        <button
+          type="button"
+          aria-label="Close profile settings"
+          className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 md:hidden"
+          onClick={closeDropdown}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.8}
+            stroke="currentColor"
+            className="h-5 w-5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
         {/* Profile Info */}
         <div className="flex flex-col items-center pt-7 pb-4 gap-1">
         <div className="relative group" ref={avatarBlockRef}>

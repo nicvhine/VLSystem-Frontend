@@ -49,6 +49,8 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
         return getBorrowerNavItems(language);
       case 'sysad':
         return getSysadNavItems(language);
+      case 'collector':
+        return getCollectorNavItems(language);
       default:
         return [];
     }
@@ -186,6 +188,17 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
   const handleLogout = () => {
     localStorage.clear();
     router.push('/');
+  };
+
+  const handleMobileProfileSettings = () => {
+    setIsDropdownOpen(true);
+    setIsEditingProfile(true);
+    setIsMobileMenuOpen(false);
+  };
+
+  const handleMobileLogout = () => {
+    setIsMobileMenuOpen(false);
+    handleLogout();
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen((p) => !p);
@@ -532,28 +545,41 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
                 )}
               </div>
 
-              {/* Always render ProfileDropdown to allow open/close animation like notifications */}
-              <ProfileDropdown
-                  name={name}
-                  email={email}
-                  phoneNumber={phoneNumber}
-                  username={username}
-                  role={roleState}
-                  isDropdownOpen={isDropdownOpen}
-                  setIsDropdownOpen={setIsDropdownOpen}
-                  profilePic={profilePic || ''}
-                  isEditing={isEditingProfile}
-                  setIsEditing={setIsEditingProfile}
-                  setShowOtpModal={setShowOtpModal} 
-                />
             </div>
           </div>
         </div>
 
         {isMobileMenuOpen && (
-          <MobileMenu navItems={navItems} language={language} setLanguage={setLanguage} />
+          <MobileMenu
+            navItems={navItems}
+            language={language}
+            setLanguage={setLanguage}
+            user={{
+              name,
+              email,
+              role: roleState || role || '',
+              profilePic: profilePic || '',
+            }}
+            onOpenProfileSettings={handleMobileProfileSettings}
+            onLogout={handleMobileLogout}
+          />
         )}
       </div>
+
+      {/* Profile dropdown rendered outside desktop-only container for mobile support */}
+      <ProfileDropdown
+        name={name}
+        email={email}
+        phoneNumber={phoneNumber}
+        username={username}
+        role={roleState}
+        isDropdownOpen={isDropdownOpen}
+        setIsDropdownOpen={setIsDropdownOpen}
+        profilePic={profilePic || ''}
+        isEditing={isEditingProfile}
+        setIsEditing={setIsEditingProfile}
+        setShowOtpModal={setShowOtpModal}
+      />
     </div>
   );
 }

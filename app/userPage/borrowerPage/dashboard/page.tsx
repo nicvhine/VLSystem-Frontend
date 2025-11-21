@@ -127,17 +127,24 @@ export default function BorrowerDashboard() {
         <div className="flex flex-col md:flex-row gap-4 md:gap-6 p-4">
           <div className="w-full md:w-1/2 flex flex-col gap-4">
             <LoanDetailsCard activeLoan={displayedLoan} language={language} />
-            <div className="flex gap-4">
-              <PaymentProgressCard
-                collections={collections}
-                paymentProgress={paymentProgress}
-                borrowerId={borrowerId}
-              />
-             <CreditScoreCard creditScore={displayedLoan.creditScore || 10} />
+            <div className="flex flex-col sm:flex-row flex-wrap gap-4">
+              <div className="w-full sm:flex-1">
+                <PaymentProgressCard
+                  collections={collections}
+                  paymentProgress={paymentProgress}
+                  borrowerId={borrowerId}
+                />
+              </div>
+              <div className="w-full sm:w-64 lg:flex-1">
+                <CreditScoreCard
+                  creditScore={displayedLoan.creditScore || 10}
+                  className="h-full"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col gap-4 overflow-y-auto max-h-screen">
+          <div className="flex-1 flex flex-col gap-4 md:overflow-y-auto md:max-h-screen">
             <h3 className="text-xl font-semibold">Upcoming Bills</h3>
             {upcoming.length > 0 ? (
               upcoming.map((collection, i) => {
@@ -157,7 +164,7 @@ export default function BorrowerDashboard() {
               <p>No upcoming bills.</p>
             )}
 
-            {paid.length > 0 && (
+          {paid.length > 0 && (
               <>
                 <h4 className="text-lg font-semibold mt-4">Paid Collections</h4>
                 {paid.map((c) => (
