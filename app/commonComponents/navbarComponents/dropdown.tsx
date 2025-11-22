@@ -195,11 +195,28 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   return (
     <div className="relative">
       <div
-        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:w-96 mt-3 p-0 mr-4 relative transition-all duration-300 ease-out transform
+        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:w-96 mt-3 p-0 relative transition-all duration-300 ease-out transform
           ${isDropdownOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
-        style={{ position: 'fixed', top: '4rem', right: '1rem', zIndex: 9999, maxHeight: '80vh', overflowY: 'auto' }}
+        style={{ 
+          position: 'fixed', 
+          top: '4rem', 
+          left: '50%', 
+          transform: 'translateX(-50%)', 
+          zIndex: 9999, 
+          maxHeight: '80vh', 
+          overflowY: 'auto' 
+        }}
         aria-hidden={!isDropdownOpen}
       >
+      <style jsx>{`
+        @media (min-width: 768px) {
+          div[style*="position: fixed"] {
+            left: auto !important;
+            right: 1rem !important;
+            transform: none !important;
+          }
+        }
+      `}</style>
         <button
           type="button"
           aria-label="Close profile settings"

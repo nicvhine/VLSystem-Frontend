@@ -52,7 +52,9 @@ export default function CollectionsPage() {
     overallTotalCollected, overallTotalTarget, overallTargetAchieved,
     overallTotalPayments, overallCompletedPayments, overallCollectionRate,
     showReceiptModal, setShowReceiptModal,
-    receiptData, setReceiptData
+    receiptData, setReceiptData,
+    showUrgentOnly, setShowUrgentOnly,
+    urgentCollectionsCount
   } = useCollectionPage();
 
   const [paymentLoading, setPaymentLoading] = React.useState(false);
@@ -157,7 +159,43 @@ export default function CollectionsPage() {
             isMobile={isMobile}
           />
 
-          <div className={isMobile ? "flex justify-end mb-2" : "flex justify-end mb-4"}>
+          <div className={isMobile ? "flex justify-end gap-2 mb-2" : "flex justify-end gap-3 mb-4"}>
+            {/* Urgent Collections Filter Button (only for collectors) */}
+            {role === "collector" && urgentCollectionsCount > 0 && (
+              <div className="relative group">
+                {/* Animated Tooltip - only show when not clicked */}
+                {!showUrgentOnly && (
+                  <div className="absolute -top-14 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
+                    <div className="relative animate-bounce">
+                      <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                        Please work on this immediately
+                      </div>
+                      {/* Arrow pointing down */}
+                      <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1">
+                        <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-100"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Filter Button */}
+                <button
+                  onClick={() => setShowUrgentOnly(!showUrgentOnly)}
+                  className={`relative px-4 py-2 rounded transition text-sm sm:text-base font-medium ${
+                    showUrgentOnly 
+                      ? "bg-gray-700 text-white hover:bg-gray-800" 
+                      : "bg-gray-500 text-white hover:bg-gray-600"
+                  }`}
+                >
+                  <span>Urgent Collections</span>
+                  {/* Badge showing count */}
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow">
+                    {urgentCollectionsCount}
+                  </span>
+                </button>
+              </div>
+            )}
+            
             <button
               onClick={() => handlePrint(setPrintMode)}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"

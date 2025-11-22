@@ -76,46 +76,7 @@ export default function MobileMenu({
         </div>
       </div>
 
-      <div className="px-4 py-4 bg-gray-50 rounded-2xl space-y-3 border border-gray-100">
-        <div className="flex items-center gap-3">
-          {user?.profilePic ? (
-            <Image
-              src={user.profilePic}
-              alt="Profile photo"
-              width={48}
-              height={48}
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-red-200"
-            />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-lg">
-              {initials}
-            </div>
-          )}
-          <div>
-            <p className="text-sm font-semibold text-gray-900">{user?.name || 'User'}</p>
-            {user?.email && <p className="text-xs text-gray-500">{user.email}</p>}
-            {roleLabel && (
-              <p className="text-[11px] uppercase tracking-wide text-red-600 font-semibold mt-0.5">
-                {roleLabel}
-              </p>
-            )}
-          </div>
-        </div>
 
-        <button
-          onClick={() => onOpenProfileSettings?.()}
-          className="w-full px-4 py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-red-700 transition"
-        >
-          {t.t4}
-        </button>
-
-        <button
-          onClick={() => onLogout?.()}
-          className="w-full px-4 py-2.5 border border-red-100 text-red-600 text-sm font-semibold rounded-xl hover:bg-red-50 transition"
-        >
-          {t.t6}
-        </button>
-      </div>
     </div>
   );
 }

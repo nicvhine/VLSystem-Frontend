@@ -201,18 +201,22 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
     handleLogout();
   };
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen((p) => !p);
-  const handleToggleNotifs = () => {
-    setShowNotifs((prev) => {
-      if (!prev) setIsDropdownOpen(false);
-      return !prev;
-    });
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((p) => !p);
+    setShowNotifs(false);
+    setIsDropdownOpen(false);
   };
+  
+  const handleToggleNotifs = () => {
+    setShowNotifs((prev) => !prev);
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+  
   const handleToggleDropdown = () => {
-    setIsDropdownOpen((prev) => {
-      if (!prev) setShowNotifs(false);
-      return !prev;
-    });
+    setIsDropdownOpen((prev) => !prev);
+    setShowNotifs(false);
+    setIsMobileMenuOpen(false);
   };
 
   // Listen for profile pic updates dispatched by upload/remove hooks
@@ -287,26 +291,64 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
           </Link>
 
 
-          {/* Mobile Toggle */}
-          <button
-            className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="h-6 w-6 text-gray-700"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {/* Mobile Icons and Toggle */}
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Mobile Notifications */}
+            {role !== 'sysad' && (
+              <button
+                className="relative p-2 rounded-full hover:bg-gray-100"
+                onClick={handleToggleNotifs}
+              >
+                <Bell className="h-5 w-5 text-gray-700" />
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
+                    {notifications.filter((n) => !n.read).length}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Mobile Profile Icon */}
+            <div
+              className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
+              onClick={handleToggleDropdown}
             >
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              {previewPic || profilePic ? (
+                <Image
+                  src={profilePic || '/idPic.jpg'}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full rounded-full"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <span className="text-gray-700 font-semibold text-sm">
+                  {name ? name.charAt(0).toUpperCase() : 'U'}
+                </span>
               )}
-            </svg>
-          </button>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
+            >
+              <svg
+                className="h-6 w-6 text-gray-700"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">

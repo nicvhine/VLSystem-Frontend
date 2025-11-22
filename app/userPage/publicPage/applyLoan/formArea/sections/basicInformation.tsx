@@ -118,15 +118,27 @@ export default function BasicInformation({
     setTimeout(() => {
       setIsModalVisible(false);
       setModalMessage("");
-      // Clear form data from localStorage - use the correct storage key!
+      setDuplicateError("");
+      // Navigate to landing page
+      router.push('/userPage/publicPage');
+    }, 150);
+  };
+
+  const handleClearForm = () => {
+    setIsModalAnimating(false);
+    setTimeout(() => {
+      setIsModalVisible(false);
+      setModalMessage("");
+      setDuplicateError("");
+      // Clear form data from localStorage
       localStorage.removeItem('loanApplicationFormData');
       localStorage.removeItem('selectedLoanType');
       // Reset all form state
       if (resetForm) {
         resetForm();
       }
-      // Navigate to landing page
-      router.push('/userPage/publicPage');
+      // Reload the page to reset everything
+      window.location.reload();
     }, 150);
   };
 
@@ -170,7 +182,13 @@ export default function BasicInformation({
           {modalMessage}
         </p>
 
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={handleClearForm}
+            className="px-6 py-2 bg-gray-500 text-white rounded-lg transition-colors font-medium hover:bg-gray-600"
+          >
+            {language === "en" ? "Clear Form" : "I-clear ang Form"}
+          </button>
           <button
             onClick={handleModalClose}
             className="px-6 py-2 bg-red-600 text-white rounded-lg transition-colors font-medium hover:bg-red-700"
