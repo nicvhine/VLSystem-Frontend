@@ -252,12 +252,12 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
       <div className="min-h-screen bg-gray-50 py-10">
         {/* Page Header */}
         <div className="mx-auto max-w-7xl px-4 mb-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             {/* Left: Back + Title */}
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 min-w-0 flex-1">
               <button
                 onClick={() => (typeof window !== 'undefined' ? window.history.back() : null)}
-                className="mt-1 p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                className="mt-1 p-2 rounded-full hover:bg-gray-100 text-gray-500 flex-shrink-0"
                 aria-label="Go back"
               >
                 {/* Left chevron icon */}
@@ -265,13 +265,13 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
                   <path fillRule="evenodd" d="M15.78 4.22a.75.75 0 010 1.06L9.06 12l6.72 6.72a.75.75 0 11-1.06 1.06l-7.25-7.25a.75.75 0 010-1.06l7.25-7.25a.75.75 0 011.06 0z" clipRule="evenodd" />
                 </svg>
               </button>
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900 flex items-center gap-2">
-                  {loan.name}
-                  <span className="text-red-700">|</span>
-                  <span className="text-red-700">{loan.loanId}</span>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <span className="break-words">{loan.name}</span>
+                  <span className="text-red-700 hidden sm:inline">|</span>
+                  <span className="text-red-700 text-lg sm:text-2xl">{loan.loanId}</span>
                 </h1>
-                <div className="mt-2 flex items-center gap-3">
+                <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3">
                   <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium uppercase ${loan.status === 'Active' ? 'bg-green-100 text-green-700' : loan.status === 'Closed' ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700'}`}>
                     {loan.status}
                   </span>
@@ -280,11 +280,11 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
               </div>
             </div>
             {/* Right: Action */}
-            <div className="flex items-center">
+            <div className="flex items-center justify-start sm:justify-end flex-shrink-0">
               {role === "loan officer" && loan.status === "Active" && closureStatus !== "Pending" && (
                 <button
                   onClick={() => setInputModalOpen(true)}
-                  className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 shadow transition"
+                  className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 shadow transition whitespace-nowrap"
                 >
                   {e.f1}
                 </button>

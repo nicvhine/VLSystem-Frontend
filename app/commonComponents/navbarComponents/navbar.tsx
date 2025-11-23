@@ -201,18 +201,22 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
     handleLogout();
   };
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen((p) => !p);
-  const handleToggleNotifs = () => {
-    setShowNotifs((prev) => {
-      if (!prev) setIsDropdownOpen(false);
-      return !prev;
-    });
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen((p) => !p);
+    setShowNotifs(false);
+    setIsDropdownOpen(false);
   };
+  
+  const handleToggleNotifs = () => {
+    setShowNotifs((prev) => !prev);
+    setIsDropdownOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+  
   const handleToggleDropdown = () => {
-    setIsDropdownOpen((prev) => {
-      if (!prev) setShowNotifs(false);
-      return !prev;
-    });
+    setIsDropdownOpen((prev) => !prev);
+    setShowNotifs(false);
+    setIsMobileMenuOpen(false);
   };
 
   // Listen for profile pic updates dispatched by upload/remove hooks
@@ -287,26 +291,224 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
           </Link>
 
 
-          {/* Mobile Toggle */}
-          <button
-            className="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
-            onClick={toggleMobileMenu}
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="h-6 w-6 text-gray-700"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {/* Mobile Icons and Toggle */}
+          <div className="md:hidden flex items-center space-x-2">
+            {/* Mobile Notifications */}
+            {role !== 'sysad' && (
+              <button
+                className="relative p-2 rounded-full hover:bg-gray-100"
+                onClick={handleToggleNotifs}
+              >
+                <Bell className="h-5 w-5 text-gray-700" />
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full px-1.5">
+                    {notifications.filter((n) => !n.read).length}
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* Mobile Profile Icon */}
+            <div
+              className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center ring-2 ring-red-900 ring-offset-2 cursor-pointer hover:ring-4 transition-all"
+              onClick={handleToggleDropdown}
             >
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              {previewPic || profilePic ? (
+                <Image
+                  src={profilePic || '/idPic.jpg'}
+                  alt="Profile"
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full rounded-full"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <span className="text-gray-700 font-semibold text-sm">
+                  {name ? name.charAt(0).toUpperCase() : 'U'}
+                </span>
               )}
-            </svg>
-          </button>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button
+              className="p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-600"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle menu"
+            >
+              <svg
+                className="h-6 w-6 text-gray-700"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Notifications Dropdown */}
+          {role !== 'sysad' && (
+            <div
+              className={`md:hidden bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-xl w-[calc(100%-2rem)] mx-4 mt-3 p-0 transition-all duration-300 ease-out transform
+                ${showNotifs ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
+              style={{ position: 'fixed', top: '4rem', left: 0, right: 0, zIndex: 9999, maxHeight: '70vh', overflowY: 'auto' }}
+              aria-hidden={!showNotifs}
+            >
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 bg-gray-50 sticky top-0">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  {language === 'ceb' ? 'Mga Notipikasyon' : 'Notifications'}
+                </h3>
+                {notifications.some((n) => !n.read) && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const token = localStorage.getItem('token');
+                        const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+                        await fetch(`${BASE_URL}/notifications/${apiRole}/read-all`, {
+                          method: 'PUT',
+                          headers: { Authorization: `Bearer ${token}` },
+                        });
+                        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+                      } catch (err) {
+                        console.error('Failed to mark all as read:', err);
+                      }
+                    }}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {language === 'ceb' ? 'Markahi tanan nga nabasa' : 'Mark all as read'}
+                  </button>
+                )}
+              </div>
+
+              <div className="max-h-[52vh] overflow-y-auto">
+                {notifications.length > 0 ? (
+                  notifications.map((notif, idx) => {
+                    const displayName =
+                      notif.actorName || notif.actor?.name || notif.userName || notif.sender || 'System';
+                    const roleText = (notif.actorRole || notif.actor?.role || notif.role || '').toString();
+                    const initial = (displayName || 'S').toString().trim().charAt(0).toUpperCase();
+                    const dateValue = pickNotifDate(notif);
+                    const rel = formatRelative(dateValue);
+                    const full = formatFull(dateValue);
+                    return (
+                      <div
+                        key={idx}
+                        className={`px-4 py-2 border-b border-gray-100 last:border-none cursor-pointer transition-colors duration-150 ${
+                          !notif.read ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                        onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('token');
+                          console.log('📌 Full notification object:', notif);
+                          const notifId = notif._id || notif.id;
+                          console.log('📌 Using notification ID:', notifId);
+                          
+                          if (!notifId) {
+                            console.error('❌ No valid notification ID found!');
+                            return;
+                          }
+                          
+                          // Update local state immediately for instant feedback
+                          setNotifications((prev) =>
+                            prev.map((n) => ((n._id || n.id) === notifId ? { ...n, read: true } : n))
+                          );
+
+                          // Cache this notification as read in localStorage to prevent race conditions
+                          const readNotifs = JSON.parse(localStorage.getItem('readNotifications') || '[]');
+                          if (!readNotifs.includes(notifId)) {
+                            readNotifs.push(notifId);
+                            localStorage.setItem('readNotifications', JSON.stringify(readNotifs));
+                          }
+
+                          // Mark as read on server and wait for it to complete
+                          const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+                          const markAsReadUrl = `${BASE_URL}/notifications/${apiRole}/${notifId}/read`;
+                          console.log('📡 Calling API:', markAsReadUrl);
+                          try {
+                            const response = await fetch(markAsReadUrl, {
+                              method: 'PUT',
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            
+                            if (response.ok) {
+                              await response.json();
+                              // Longer delay to ensure DB write completes
+                              await new Promise(resolve => setTimeout(resolve, 500));
+                            } else {
+                              console.error('Failed to mark notification as read:', response.status, await response.text());
+                            }
+                          } catch (markError) {
+                            console.error('Error marking notification as read:', markError);
+                          }
+
+                          // Navigate based on notification type
+                          if (notif.applicationId) {
+                            router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
+                          } else if (notif.type === 'penalty-endorsement' || notif.type === 'penalty-endorsement-approved' || notif.type === 'penalty-endorsement-rejected') {
+                            router.push('/commonComponents/endorsement/penalty');
+                          } else if (notif.type === 'closure-endorsement' || notif.type === 'closure-approved' || notif.type === 'closure-rejected') {
+                            router.push('/commonComponents/endorsement/closure');
+                          }
+                        } catch (err) {
+                          console.error('Failed to handle notification click:', err);
+                        }
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          {(notif.actorProfilePic || notif.actorprofilepic || notif.actor?.profilePic || notif.avatar) ? (
+                            <Image
+                              src={(notif.actorProfilePic || notif.actorprofilepic || notif.actor?.profilePic || notif.avatar) as string}
+                              alt="Avatar"
+                              width={32}
+                              height={32}
+                              className="w-8 h-8 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center font-semibold text-sm">
+                              {initial}
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900 leading-tight">{displayName}</p>
+                                {roleText && <p className="text-[11px] text-gray-500 capitalize -mt-0.5">{roleText}</p>}
+                              </div>
+                              <div className="ml-2 shrink-0">{getStatusIcon(notif.message)}</div>
+                            </div>
+                            <p
+                              className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words"
+                              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                              title={notif.message}
+                            >
+                              {notif.message}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-500" title={full}>
+                              <span>{full || '-'}</span>
+                              {rel && (
+                                <>
+                                  <span className="text-[10px] text-gray-400">•</span>
+                                  <span>{rel}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-5">
+                    {language === 'ceb' ? 'Walay notipikasyon' : 'No notifications'}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center space-x-8">

@@ -18,6 +18,7 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showUrgentOnly, setShowUrgentOnly] = useState(false);
   const [currentCollector, setCurrentCollector] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
@@ -136,19 +137,37 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
 
 
   const filteredCollections = collections.filter((col) => {
+    const userId = localStorage.getItem("userId");
+    const matchesCollector = role === "collector" ? col.collectorId === userId : true;
+    const matchesSearch = (col.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter for urgent collections (Overdue and Past Due)
+    if (showUrgentOnly) {
+      const matchesUrgent = col.status === "Overdue" || col.status === "Past Due";
+      return matchesCollector && matchesSearch && matchesUrgent;
+    }
+    
+    // Normal date-based filtering when urgent filter is not active
     const due = new Date(col.dueDate);
     const selected = selectedDate;
-    
     const sameDate =
       !selectedDate ||
       due.toDateString() === selected.toDateString();
   
-    const userId = localStorage.getItem("userId");
-    const matchesCollector = role === "collector" ? col.collectorId === userId : true;
-    const matchesSearch = (col.name || "").toLowerCase().includes(searchQuery.toLowerCase());
-  
     return sameDate && matchesCollector && matchesSearch;
   });
+  
+  // Count urgent collections for the badge
+  const urgentCollectionsCount = useMemo(() => {
+    const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+    const collectorCollections = role === "collector" 
+      ? collections.filter((col) => col.collectorId === userId)
+      : collections;
+    
+    return collectorCollections.filter(
+      (col) => col.status === "Overdue" || col.status === "Past Due"
+    ).length;
+  }, [collections, role]);
   
   const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
@@ -205,6 +224,9 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
     setCollections,
     filteredCollections,
     loading,
+    showUrgentOnly,
+    setShowUrgentOnly,
+    urgentCollectionsCount,
     currentCollector,
     showModal,
     setShowModal,

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
@@ -52,7 +52,9 @@ export default function CollectionsPage() {
     overallTotalCollected, overallTotalTarget, overallTargetAchieved,
     overallTotalPayments, overallCompletedPayments, overallCollectionRate,
     showReceiptModal, setShowReceiptModal,
-    receiptData, setReceiptData
+    receiptData, setReceiptData,
+    showUrgentOnly, setShowUrgentOnly,
+    urgentCollectionsCount
   } = useCollectionPage();
 
   const [paymentLoading, setPaymentLoading] = React.useState(false);
@@ -61,6 +63,23 @@ export default function CollectionsPage() {
 
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [selectedPenaltyCollection, setSelectedPenaltyCollection] = useState<Collection | null>(null);
+  
+  // Track if user has ever clicked urgent button
+  const [hasClickedUrgent, setHasClickedUrgent] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hasClickedUrgentCollections') === 'true';
+    }
+    return false;
+  });
+
+  // Handle urgent button click
+  const handleUrgentClick = () => {
+    setShowUrgentOnly(!showUrgentOnly);
+    if (!hasClickedUrgent) {
+      setHasClickedUrgent(true);
+      localStorage.setItem('hasClickedUrgentCollections', 'true');
+    }
+  };
   
   return (
     <Wrapper>
@@ -97,47 +116,43 @@ export default function CollectionsPage() {
 
             {/* Stats Cards */}
             <div className={isMobile ? "flex flex-col gap-4" : "col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6"}>
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-blue-100 p-4 rounded-full shadow-sm">
-                  <FiCheckCircle className="text-blue-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h5}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{collectionRate}%</h3>
-                  <p className="text-sm text-gray-400">{completedPayments} of {totalPayments} payments</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h5}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-4xl sm:text-5xl font-bold text-gray-800">{collectionRate}%</h3>
+                  <p className="text-sm text-gray-400 mt-1">{completedPayments} of {totalPayments} payments</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-green-100 p-4 rounded-full shadow-sm">
-                  <FiDollarSign className="text-green-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h6}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
-                  <p className="text-sm text-gray-400">of {formatCurrency(totalTarget)} ({targetAchieved}%)</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h6}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-3xl sm:text-4xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
+                  <p className="text-sm text-gray-400 mt-1">of {formatCurrency(totalTarget)} ({targetAchieved}%)</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-purple-100 p-4 rounded-full shadow-sm">
-                  <FiCheckCircle className="text-purple-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h7}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{overallCollectionRate}%</h3>
-                  <p className="text-sm text-gray-400">{overallCompletedPayments} of {overallTotalPayments} payments</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h7}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-4xl sm:text-5xl font-bold text-gray-800">{overallCollectionRate}%</h3>
+                  <p className="text-sm text-gray-400 mt-1">{overallCompletedPayments} of {overallTotalPayments} payments</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-indigo-100 p-4 rounded-full shadow-sm">
-                  <FiDollarSign className="text-indigo-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h8}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
-                  <p className="text-sm text-gray-400">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h8}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-3xl sm:text-4xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
+                  <p className="text-sm text-gray-400 mt-1">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
                 </div>
               </div>
             </div>
@@ -157,7 +172,43 @@ export default function CollectionsPage() {
             isMobile={isMobile}
           />
 
-          <div className={isMobile ? "flex justify-end mb-2" : "flex justify-end mb-4"}>
+          <div className={isMobile ? "flex justify-end gap-2 mb-2" : "flex justify-end gap-3 mb-4"}>
+            {/* Urgent Collections Filter Button (only for collectors) */}
+            {role === "collector" && urgentCollectionsCount > 0 && (
+              <div className="relative group">
+                {/* Animated Tooltip - only show when never clicked before */}
+                {!hasClickedUrgent && (
+                  <div className="absolute -top-11 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
+                    <div className="relative animate-bounce">
+                      <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                        Please work on this immediately
+                      </div>
+                      {/* Arrow pointing down */}
+                      <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1">
+                        <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-100"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Filter Button */}
+                <button
+                  onClick={handleUrgentClick}
+                  className={`relative px-4 py-2 rounded transition text-sm sm:text-base font-medium ${
+                    showUrgentOnly 
+                      ? "bg-gray-700 text-white hover:bg-gray-800" 
+                      : "bg-gray-500 text-white hover:bg-gray-600"
+                  }`}
+                >
+                  <span>Urgent Collections</span>
+                  {/* Badge showing count */}
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow">
+                    {urgentCollectionsCount}
+                  </span>
+                </button>
+              </div>
+            )}
+            
             <button
               onClick={() => handlePrint(setPrintMode)}
               className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm sm:text-base"

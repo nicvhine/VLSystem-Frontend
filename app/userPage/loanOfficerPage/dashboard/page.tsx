@@ -9,14 +9,20 @@ export default function LoanOfficerDashboard() {
 
   return (
       <div className="min-h-screen bg-white relative z-10">
-        <div className="bg-white px-6">
+        <div className="bg-white px-4 sm:px-6">
         </div>
 
-        <div className="p-4">
-          <div className="flex gap-4 h-[calc(100vh-100px)]">
-            <div className="flex flex-col gap-4 w-72 flex-shrink-0 h-[calc(100vh-120px)] overflow-auto mt-5">
-              <LoanStatistics />
+        {/* Responsive layout: Stack on mobile, side-by-side on desktop */}
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+            {/* Statistics sidebar - full width on mobile, fixed width on desktop */}
+            <div className="w-full lg:w-72 lg:flex-shrink-0">
+              <div className="flex flex-col gap-4">
+                <LoanStatistics />
+              </div>
             </div>
+            
+            {/* Calendar - scrollable on mobile, flex on desktop */}
             <div className="flex-1 min-w-0">
               <InterviewCalendar onModalToggle={setIsNavbarBlurred} />
             </div>

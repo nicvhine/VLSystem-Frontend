@@ -52,13 +52,13 @@ export default function LoansPage() {
   return (
     <Wrapper>
       <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-4 sm:px-6 py-8">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+        <div className="mx-auto px-4 sm:px-6 py-4 sm:py-8">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 sm:mb-6">
             {t.Loans}
           </h1>
 
           {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm mb-6">
+          <div className="flex flex-wrap gap-2 bg-white p-2 sm:p-3 rounded-lg shadow-sm mb-4 sm:mb-6">
             {filterTabs.map(({ key, label }) => (
               <button
                 key={key}
@@ -91,71 +91,73 @@ export default function LoansPage() {
           />
 
           {/* Loans Table */}
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
-            <table className="min-w-full">
-              <thead>
-                <tr>
-                  {[t.l11, t.l12, t.l13, t.l4, t.l14, t.l15, t.l16].map(
-                    (heading, i) => (
-                      <th
-                        key={i}
-                        className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {heading}
-                      </th>
-                    )
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {paginatedLoans.length > 0 ? (
-                  paginatedLoans.map((loan) => (
-                    <tr
-                      key={loan.loanId}
-                      className="hover:bg-blue-50/60 transition-colors"
-                    >
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {loan.loanId}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {loan.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {formatDate(loan.dateDisbursed)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        {formatCurrency(loan.appLoanAmount)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                        {formatCurrency(loan.balance)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
-                          {loan.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-blue-600">
-                        <Link
-                          href={`/commonComponents/loan/${loan.loanId}`}
-                          className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block whitespace-nowrap"
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    {[t.l11, t.l12, t.l13, t.l4, t.l14, t.l15, t.l16].map(
+                      (heading, i) => (
+                        <th
+                          key={i}
+                          className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
                         >
-                          {t.view}
-                        </Link>
+                          {heading}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {paginatedLoans.length > 0 ? (
+                    paginatedLoans.map((loan) => (
+                      <tr
+                        key={loan.loanId}
+                        className="hover:bg-blue-50/60 transition-colors"
+                      >
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
+                          {loan.loanId}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 whitespace-nowrap">
+                          {loan.name}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">
+                          {formatDate(loan.dateDisbursed)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 font-medium whitespace-nowrap">
+                          {formatCurrency(loan.appLoanAmount)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-gray-900 font-medium whitespace-nowrap">
+                          {formatCurrency(loan.balance)}
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-black">
+                            {loan.status}
+                          </span>
+                        </td>
+                        <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm text-blue-600 whitespace-nowrap">
+                          <Link
+                            href={`/commonComponents/loan/${loan.loanId}`}
+                            className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
+                          >
+                            {t.view}
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="text-center text-gray-500 py-6 text-xs sm:text-sm"
+                      >
+                        {t.l55}
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={7}
-                      className="text-center text-gray-500 py-6 text-sm"
-                    >
-                      {t.l55}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <Pagination
