@@ -116,47 +116,43 @@ export default function CollectionsPage() {
 
             {/* Stats Cards */}
             <div className={isMobile ? "flex flex-col gap-4" : "col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6"}>
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-blue-100 p-4 rounded-full shadow-sm">
-                  <FiCheckCircle className="text-blue-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h5}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{collectionRate}%</h3>
-                  <p className="text-sm text-gray-400">{completedPayments} of {totalPayments} payments</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h5}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-4xl sm:text-5xl font-bold text-gray-800">{collectionRate}%</h3>
+                  <p className="text-sm text-gray-400 mt-1">{completedPayments} of {totalPayments} payments</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-green-100 p-4 rounded-full shadow-sm">
-                  <FiDollarSign className="text-green-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h6}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
-                  <p className="text-sm text-gray-400">of {formatCurrency(totalTarget)} ({targetAchieved}%)</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h6}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-3xl sm:text-4xl font-bold text-gray-800">{formatCurrency(totalCollected)}</h3>
+                  <p className="text-sm text-gray-400 mt-1">of {formatCurrency(totalTarget)} ({targetAchieved}%)</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-purple-100 p-4 rounded-full shadow-sm">
-                  <FiCheckCircle className="text-purple-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h7}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{overallCollectionRate}%</h3>
-                  <p className="text-sm text-gray-400">{overallCompletedPayments} of {overallTotalPayments} payments</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h7}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-4xl sm:text-5xl font-bold text-gray-800">{overallCollectionRate}%</h3>
+                  <p className="text-sm text-gray-400 mt-1">{overallCompletedPayments} of {overallTotalPayments} payments</p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center gap-4 hover:shadow-xl transition">
-                <div className="bg-indigo-100 p-4 rounded-full shadow-sm">
-                  <FiDollarSign className="text-indigo-600 w-6 h-6" />
-                </div>
+              <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg flex items-center justify-between hover:shadow-xl transition">
                 <div>
-                  <p className="text-gray-500 text-sm">{s.h8}</p>
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
-                  <p className="text-sm text-gray-400">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
+                  <p className="text-gray-600 text-base font-semibold mb-1">{s.h8}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="text-3xl sm:text-4xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
+                  <p className="text-sm text-gray-400 mt-1">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
                 </div>
               </div>
             </div>
@@ -182,9 +178,9 @@ export default function CollectionsPage() {
               <div className="relative group">
                 {/* Animated Tooltip - only show when never clicked before */}
                 {!hasClickedUrgent && (
-                  <div className="absolute -top-14 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
+                  <div className="absolute -top-11 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
                     <div className="relative animate-bounce">
-                      <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                      <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
                         Please work on this immediately
                       </div>
                       {/* Arrow pointing down */}
