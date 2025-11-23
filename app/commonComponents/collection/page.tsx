@@ -176,20 +176,18 @@ export default function CollectionsPage() {
             {/* Urgent Collections Filter Button (only for collectors) */}
             {role === "collector" && urgentCollectionsCount > 0 && (
               <div className="relative group">
-                {/* Animated Tooltip - only show when never clicked before */}
-                {!hasClickedUrgent && (
-                  <div className="absolute -top-11 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
-                    <div className="relative animate-bounce">
-                      <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
-                        Please work on this immediately
-                      </div>
-                      {/* Arrow pointing down */}
-                      <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1">
-                        <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-100"></div>
-                      </div>
+                {/* Animated Tooltip - always displayed */}
+                <div className="absolute -top-11 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
+                  <div className="relative animate-bounce">
+                    <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
+                      Please work on this immediately
+                    </div>
+                    {/* Arrow pointing down */}
+                    <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-1">
+                      <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-100"></div>
                     </div>
                   </div>
-                )}
+                </div>
                 
                 {/* Filter Button */}
                 <button
