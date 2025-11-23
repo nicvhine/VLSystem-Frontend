@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { ButtonContentLoading } from "@/app/commonComponents/utils/loading";
 import ErrorModal from "./errorModal";
 import ConfirmModal from "./confirmModal";
@@ -167,18 +168,19 @@ export default function InterviewModal({
 
   if (!isVisible) return null;
 
-  return (
+  const modalContent = (
     <>
       <div
-        className={`fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-150 ${
+        className={`fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-[9999] px-4 transition-all duration-300 ${
           isAnimating ? "opacity-100" : "opacity-0"
         }`}
+        onMouseDown={(e) => { if (!isSaving) handleModalClose(); }}
       >
         <div
-          className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-150 ${
+          className={`bg-white p-6 text-black rounded-lg shadow-lg w-full max-w-md transition-all duration-300 ${
             isAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
           }`}
-          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <div className="mb-4 relative">
             <h2 className="text-xl font-semibold text-gray-900">
@@ -219,7 +221,7 @@ export default function InterviewModal({
           )}
 
           {/* Buttons */}
-          <div className="flex justify-end space-x-2 pt-6">
+          <div className="flex flex-col sm:flex-row justify-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-6">
             {isDone ? (
               <button
                 type="button"
@@ -270,4 +272,6 @@ export default function InterviewModal({
       />
     </>
   );
+
+  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
 }

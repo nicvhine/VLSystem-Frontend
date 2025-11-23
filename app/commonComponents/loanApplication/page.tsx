@@ -79,16 +79,16 @@ export default function ApplicationsPage() {
         <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
       )}
       <div className="min-h-screen bg-gray-50">
-        <div className="mx-auto px-4 sm:px-6 py-8">
+        <div className="mx-auto px-4 sm:px-6 py-4 sm:py-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-800">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6">
+            <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
               {t.Application}
             </h1>
           </div>
 
           {/* Filters */}
-          <div className="mb-6">
+          <div className="mb-4 sm:mb-6">
             {/* Mobile Dropdown */}
             <div className="block sm:hidden relative">
             <select
@@ -160,101 +160,100 @@ export default function ApplicationsPage() {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto bg-white rounded-lg shadow-sm">
-            <table className="min-w-full">
-              <thead>
-                <tr>
-                  {[
-                    t.l11,
-                    t.l12,
-                    t.l10,
-                    t.l17,
-                    t.l4,
-                    t.l5,
-                    t.l7,
-                    t.l15,
-                    t.l16,
-                  ].map((heading) => (
-                    <th
-                      key={heading}
-                      className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr>
+                    {[
+                      t.l11,
+                      t.l12,
+                      t.l10,
+                      t.l17,
+                      t.l4,
+                      t.l5,
+                      t.l7,
+                      t.l15,
+                      t.l16,
+                    ].map((heading) => (
+                      <th
+                        key={heading}
+                        className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap"
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-gray-200 bg-white">
+                  {paginatedApplications.map((application) => (
+                    <tr
+                      key={application.applicationId}
+                      className="hover:bg-gray-50 transition-colors cursor-pointer"
                     >
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
+                      {/* ID */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium">
+                          {application.applicationId}
+                        </div>
+                      </td>
 
-              <tbody className="divide-y divide-gray-200 bg-white">
-                {paginatedApplications.map((application) => (
-                  <tr
-                    key={application.applicationId}
-                    className="hover:bg-gray-50 transition-colors cursor-pointer"
-                  >
-                    {/* ID */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium">
-                        {application.applicationId}
-                      </div>
-                    </td>
+                      {/* Name */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium">
+                          {application.appName}
+                        </div>
+                      </td>
 
-                    {/* Name */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium">
-                        {application.appName}
-                      </div>
-                    </td>
+                      {/* Loan Type */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium">
+                          {translateLoanType(application.loanType, language)}
+                        </div>
+                      </td>
 
-                    {/* Loan Type */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium">
-                        {translateLoanType(application.loanType, language)}
-                      </div>
-                    </td>
+                      {/* Application Date */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                        {formatDate(application.dateApplied)}
+                      </td>
 
-                    {/* Application Date */}
-                    <td className="px-6 py-4 text-sm">
-                      {formatDate(application.dateApplied)}
-                    </td>
+                      {/* Principal */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium whitespace-nowrap">
+                        {formatCurrency(application.appLoanAmount)}
+                      </td>
 
-                    {/* Principal */}
-                    <td className="px-6 py-4 text-sm font-medium">
-                      {formatCurrency(application.appLoanAmount)}
-                    </td>
+                      {/* Interest */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                        {application.appInterestRate}%
+                      </td>
 
-                    {/* Interest */}
-                    <td className="px-6 py-4 text-sm">
-                      {application.appInterestRate}%
-                    </td>
+                      {/* Collectable */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
+                        {formatCurrency(application.appTotalPayable)}
+                      </td>
 
-                    {/* Collectable */}
-                    <td className="px-6 py-4 text-sm">
-                      {formatCurrency(application.appTotalPayable)}
-                    </td>
+                      {/* Status */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                        <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full">
+                          {application.status}
+                        </span>
+                      </td>
 
-                    {/* Status */}
-                    <td className="px-6 py-4">
-                      <span
-                        className="px-3 py-1 text-sm rounded-full">
-                        {application.status}
-                      </span>
-                    </td>
-
-                    {/* Action */}
-                    <td className="px-6 py-4 space-x-2">
-                      {/* View */}
+                      {/* Action */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                         <Link
                           href={`/commonComponents/loanApplication/${application.applicationId}`}
-                          className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block whitespace-nowrap"
+                          className="bg-gray-600 text-white px-3 py-1 rounded-md text-xs hover:bg-gray-700 inline-block"
                         >
                           {t.view}
                         </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
           
           <Pagination

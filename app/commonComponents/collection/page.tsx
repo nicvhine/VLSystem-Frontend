@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FiCalendar, FiDollarSign, FiCheckCircle } from "react-icons/fi";
@@ -63,6 +63,23 @@ export default function CollectionsPage() {
 
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [selectedPenaltyCollection, setSelectedPenaltyCollection] = useState<Collection | null>(null);
+  
+  // Track if user has ever clicked urgent button
+  const [hasClickedUrgent, setHasClickedUrgent] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hasClickedUrgentCollections') === 'true';
+    }
+    return false;
+  });
+
+  // Handle urgent button click
+  const handleUrgentClick = () => {
+    setShowUrgentOnly(!showUrgentOnly);
+    if (!hasClickedUrgent) {
+      setHasClickedUrgent(true);
+      localStorage.setItem('hasClickedUrgentCollections', 'true');
+    }
+  };
   
   return (
     <Wrapper>
@@ -163,8 +180,8 @@ export default function CollectionsPage() {
             {/* Urgent Collections Filter Button (only for collectors) */}
             {role === "collector" && urgentCollectionsCount > 0 && (
               <div className="relative group">
-                {/* Animated Tooltip - only show when not clicked */}
-                {!showUrgentOnly && (
+                {/* Animated Tooltip - only show when never clicked before */}
+                {!hasClickedUrgent && (
                   <div className="absolute -top-14 left-1/2 transform -translate-x-1/2 pointer-events-none z-10">
                     <div className="relative animate-bounce">
                       <div className="bg-gray-100 border border-gray-300 text-gray-800 text-xs font-semibold px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
@@ -180,7 +197,7 @@ export default function CollectionsPage() {
                 
                 {/* Filter Button */}
                 <button
-                  onClick={() => setShowUrgentOnly(!showUrgentOnly)}
+                  onClick={handleUrgentClick}
                   className={`relative px-4 py-2 rounded transition text-sm sm:text-base font-medium ${
                     showUrgentOnly 
                       ? "bg-gray-700 text-white hover:bg-gray-800" 

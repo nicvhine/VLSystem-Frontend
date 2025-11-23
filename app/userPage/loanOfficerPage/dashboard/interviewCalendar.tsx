@@ -225,7 +225,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
   };
 
   return (
-    <div className="p-4">
+    <div className="p-2 sm:p-4">
       {isLoading ? (
         <div className="py-10 flex justify-center">
           <LoadingSpinner size={6} />
@@ -239,8 +239,8 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
             <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
           )}
 
-          <div className="bg-white p-4 rounded shadow text-black">
-            <h2 className="text-xl font-semibold mb-4 text-black">{t.c1}</h2>
+          <div className="bg-white p-3 sm:p-4 rounded shadow text-black">
+            <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-black">{t.c1}</h2>
             {/* @ts-ignore: react-big-calendar type issue */}
             <RBC
               localizer={localizer}
@@ -258,7 +258,7 @@ export default function InterviewCalendar({ onModalToggle }: InterviewCalendarPr
               date={date}
               onNavigate={(newDate: Date) => setDate(newDate)}
               popup
-              style={{ height: "75vh" }}
+              style={{ height: "70vh", minHeight: "500px" }}
               onSelectEvent={handleSelectEvent}
               messages={{
                 today: t.c2,
