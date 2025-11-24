@@ -143,6 +143,11 @@ const PaymentTrackerCard = ({ collection, isOpenTerm }: { collection: any; isOpe
           <p className="text-xs text-gray-400">
             Due: {new Date(collection.dueDate).toLocaleDateString()}
           </p>
+          {collection.status === "Paid" && (
+          <p className="text-xs text-gray-400">
+            Mode: {collection.mode}
+          </p>
+          )}
         </div>
         <StatusBadge status={collection.status} />
       </div>
