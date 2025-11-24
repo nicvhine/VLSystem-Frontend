@@ -67,17 +67,17 @@ export default function LoanStatisticsVertical() {
 
       {/* Top Agents (only show for manager/head) */}
         <section className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200">
-          <div className="mb-4 flex items-center gap-2 text-m font-semibold text-red-600">
+          <div className="mb-4 flex items-center gap-2 text-md font-semibold text-red-600">
             {t.c14 || "Top 5 Agents"}
           </div>
           {topAgents.length === 0 ? (
             <p className="text-gray-500">{t.m2}</p>
           ) : (
-            <ul className="list-decimal">
+            <ul className="list-decimal ">
               {topAgents.map((a: any) => (
-                <li key={a.agentId} className="flex justify-between">
-                  <span className="text-gray-700 font-medium">{a.name}</span>
-                  <span className="font-semibold">{formatCurrency(a.totalProcessedLoans)}</span>
+                <li key={a.agentId} className="flex justify-between gap-x-3 py-1">
+                  <span className="text-gray-00 text-sm">{a.name}</span>
+                  <span className="font-semibold text-sm">{formatCurrency(a.totalProcessedLoans)}</span>
                 </li>
               ))}
             </ul>
