@@ -228,9 +228,47 @@ export default function ApplicationsPage() {
                         {application.appInterestRate}%
                       </td>
 
-                      {/* Collectable */}
-                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
-                        {formatCurrency(application.appTotalPayable)}
+                      {/* Collectable (Total Payable) */}
+                      <td className="px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm whitespace-nowrap relative">
+
+                      {application.loanType === "Open-Term Loan" ? (
+                        <div className="relative inline-block">
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-500 italic">N/A</span>
+
+                            {/* Tooltip Trigger */}
+                            <span className="bg-gray-300 text-gray-800 rounded-full px-2 py-0.5 text-xs cursor-pointer group">
+                              !
+                              {/* Tooltip Bubble */}
+                              <div className="
+                                absolute 
+                                -bottom-2
+                                left-1/2 
+                                -translate-x-1/2 
+                                -translate-y-full
+                                w-48 
+                                p-2 
+                                rounded-lg 
+                                shadow-lg 
+                                border 
+                                text-xs 
+                                bg-gray-100
+                                text-gray-800
+                                opacity-0 
+                                group-hover:opacity-100
+                                transition-opacity
+                                pointer-events-none
+                                whitespace-normal
+                              ">
+                                <p>Open-term loans do not have a fixed total payable.<br />Amount fluctuates over time.</p>
+                              </div>
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        formatCurrency(application.appTotalPayable)
+                      )}
+
                       </td>
 
                       {/* Status */}

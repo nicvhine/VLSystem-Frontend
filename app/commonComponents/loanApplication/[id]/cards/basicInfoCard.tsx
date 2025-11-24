@@ -1,7 +1,21 @@
 "use client";
 import { BasicInfoCardProps } from "@/app/commonComponents/utils/Types/components";
 
-export default function BasicInfoCard({ application, l }: BasicInfoCardProps) {
+export default function BasicInfoCard({
+  application,
+  l,
+  isEditing,
+  basicInfoData,
+  setBasicInfoData,
+}: BasicInfoCardProps & {
+  isEditing: boolean;
+  basicInfoData: any;
+  setBasicInfoData: any;
+}) {
+  const handleChange = (field: string, value: string) => {
+    setBasicInfoData({ ...basicInfoData, [field]: value });
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex-grow">
       <div className="px-6 py-4 border-b border-gray-200">
@@ -10,35 +24,92 @@ export default function BasicInfoCard({ application, l }: BasicInfoCardProps) {
       <div className="p-6 space-y-4">
         <div>
           <p className="text-sm font-medium text-gray-500">{l.t5}</p>
-          <p className="text-gray-900">{application?.appDob || "—"}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">{l.t6}</p>
-          <p className="text-gray-900">{application?.appAddress || "—"}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-gray-500">{l.t7}</p>
-          <p className="text-gray-900">{application?.appMarital || "—"}</p>
+          {isEditing ? (
+            <input
+              type="date"
+              className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
+              value={basicInfoData.appDob}
+              onChange={(e) => handleChange("appDob", e.target.value)}
+            />
+          ) : (
+            <p className="text-gray-900">{application?.appDob || "—"}</p>
+          )}
         </div>
 
-        {application?.appMarital === "Married" && (
+        <div>
+          <p className="text-sm font-medium text-gray-500">{l.t6}</p>
+          {isEditing ? (
+            <input
+              type="text"
+              className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
+              value={basicInfoData.appAddress}
+              onChange={(e) => handleChange("appAddress", e.target.value)}
+            />
+          ) : (
+            <p className="text-gray-900">{application?.appAddress || "—"}</p>
+          )}
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-gray-500">{l.t7}</p>
+          {isEditing ? (
+            <select
+              className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
+              value={basicInfoData.appMarital}
+              onChange={(e) => handleChange("appMarital", e.target.value)}
+            >
+              <option value="">Select</option>
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+            </select>
+          ) : (
+            <p className="text-gray-900">{application?.appMarital || "—"}</p>
+          )}
+        </div>
+
+        {basicInfoData.appMarital === "Married" && (
           <>
             <div>
               <p className="text-sm font-medium text-gray-500">{l.t8}</p>
-              <p className="text-gray-900">{application?.appSpouseName || "—"}</p>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
+                  value={basicInfoData.appSpouseName}
+                  onChange={(e) => handleChange("appSpouseName", e.target.value)}
+                />
+              ) : (
+                <p className="text-gray-900">{application?.appSpouseName || "—"}</p>
+              )}
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">{l.t9}</p>
-              <p className="text-gray-900">
-                {application?.appSpouseOccupation || "—"}
-              </p>
+              {isEditing ? (
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
+                  value={basicInfoData.appSpouseOccupation}
+                  onChange={(e) => handleChange("appSpouseOccupation", e.target.value)}
+                />
+              ) : (
+                <p className="text-gray-900">{application?.appSpouseOccupation || "—"}</p>
+              )}
             </div>
           </>
         )}
 
         <div>
           <p className="text-sm font-medium text-gray-500">{l.t10}</p>
-          <p className="text-gray-900">{application?.appChildren || "—"}</p>
+          {isEditing ? (
+            <input
+              type="number"
+              className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
+              value={basicInfoData.appChildren}
+              onChange={(e) => handleChange("appChildren", e.target.value)}
+            />
+          ) : (
+            <p className="text-gray-900">{application?.appChildren || "—"}</p>
+          )}
         </div>
       </div>
     </div>
