@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 // Components
 import SuccessModal from "../../modals/successModal";
 import ErrorModal from "../../modals/errorModal";
+import ConfirmModal from "../../modals/confirmModal";
 import LoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/regularLoan/modal";
 import OpenLoanAgreementModal from "@/app/commonComponents/modals/loanAgreement/openTerm/modal";
 import ReleaseForm from "../../modals/loanAgreement/regularLoan/releaseForm";
@@ -51,6 +52,9 @@ export default function ApplicationDetailsPage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [basicInfoData, setBasicInfoData] = useState<any>({});
+  const [profileData, setProfileData] = useState<any>({});
+  const [incomeData, setIncomeData] = useState<any>({});
+  const [referencesData, setReferencesData] = useState<any>([]);
 
   const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,6 +64,8 @@ export default function ApplicationDetailsPage() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const notFoundText = language === 'ceb' ? 'Wala nakit-an ang aplikasyon' : 'Application not found';
 
@@ -83,8 +89,58 @@ export default function ApplicationDetailsPage() {
     ? applications.find((app) => app.applicationId === id)
     : undefined;
 
-  // Sync local basic info with application
+  // Listen for application updates (file uploads/deletes)
   useEffect(() => {
+    const handleApplicationUpdate = (event: any) => {
+      const updatedApp = event.detail;
+      setApplications((prev: any) =>
+        prev.map((app: any) =>
+          app.applicationId === updatedApp.applicationId ? updatedApp : app
+        )
+      );
+    };
+
+    window.addEventListener('applicationUpdated', handleApplicationUpdate);
+    return () => window.removeEventListener('applicationUpdated', handleApplicationUpdate);
+  }, [setApplications]);
+
+  // Sync local data with application (but NOT when editing to prevent overwriting user changes)
+  useEffect(() => {
+    if (!application) return;
+    
+    // Only sync if not currently editing
+    if (isEditing) return;
+
+    setBasicInfoData({
+      appDob: application.appDob || "",
+      appAddress: application.appAddress || "",
+      appMarital: application.appMarital || "",
+      appSpouseName: application.appSpouseName || "",
+      appSpouseOccupation: application.appSpouseOccupation || "",
+      appChildren: application.appChildren || "",
+    });
+    setProfileData({
+      appName: application.appName || "",
+      appEmail: application.appEmail || "",
+      appContact: application.appContact || "",
+    });
+    setIncomeData({
+      sourceOfIncome: application.sourceOfIncome || "",
+      appOccupation: application.appOccupation || "",
+      appCompanyName: application.appCompanyName || "",
+      appEmploymentStatus: application.appEmploymentStatus || "",
+      appTypeBusiness: application.appTypeBusiness || "",
+      appBusinessName: application.appBusinessName || "",
+      appDateStarted: application.appDateStarted || "",
+      appBusinessLoc: application.appBusinessLoc || "",
+      appMonthlyIncome: application.appMonthlyIncome || "",
+    });
+    setReferencesData(application.appReferences || []);
+  }, [application, isEditing]);
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    // Reset all form data to original application values
     if (application) {
       setBasicInfoData({
         appDob: application.appDob || "",
@@ -94,18 +150,89 @@ export default function ApplicationDetailsPage() {
         appSpouseOccupation: application.appSpouseOccupation || "",
         appChildren: application.appChildren || "",
       });
+      setProfileData({
+        appName: application.appName || "",
+        appEmail: application.appEmail || "",
+        appContact: application.appContact || "",
+      });
+      setIncomeData({
+        sourceOfIncome: application.sourceOfIncome || "",
+        appOccupation: application.appOccupation || "",
+        appCompanyName: application.appCompanyName || "",
+        appEmploymentStatus: application.appEmploymentStatus || "",
+        appTypeBusiness: application.appTypeBusiness || "",
+        appBusinessName: application.appBusinessName || "",
+        appDateStarted: application.appDateStarted || "",
+        appBusinessLoc: application.appBusinessLoc || "",
+        appMonthlyIncome: application.appMonthlyIncome || "",
+      });
+      setReferencesData(application.appReferences || []);
     }
-  }, [application]);
+  };
 
   const handleSaveBasicInfo = async () => {
+    setIsSaving(true);
     try {
+      // Validation checks
+      const errors: string[] = [];
+
+      // Validate name (at least 2 words)
+      if (profileData.appName) {
+        const words = profileData.appName.trim().split(/\s+/).filter(Boolean);
+        if (words.length < 2) {
+          errors.push("Name must include at least first and last name");
+        }
+      }
+
+      // Validate contact number
+      if (profileData.appContact && !/^09\d{9}$/.test(profileData.appContact)) {
+        errors.push("Contact number must start with 09 and be exactly 11 digits");
+      }
+
+      // Validate email (Gmail only)
+      if (profileData.appEmail && !profileData.appEmail.toLowerCase().endsWith("@gmail.com")) {
+        errors.push("Only Gmail addresses are accepted");
+      }
+
+      // Validate spouse name if married
+      if (basicInfoData.appMarital === "Married" && basicInfoData.appSpouseName) {
+        const spouseWords = basicInfoData.appSpouseName.trim().split(/\s+/).filter(Boolean);
+        if (spouseWords.length < 2) {
+          errors.push("Spouse name must include at least first and last name");
+        }
+      }
+
+      // Validate reference contact numbers
+      if (referencesData && referencesData.length > 0) {
+        referencesData.forEach((ref: any, index: number) => {
+          if (ref.contact && !/^09\d{9}$/.test(ref.contact)) {
+            errors.push(`Reference ${index + 1} contact number must start with 09 and be exactly 11 digits`);
+          }
+        });
+      }
+
+      // If there are validation errors, show them and don't save
+      if (errors.length > 0) {
+        showError(errors.join(". "));
+        setShowSaveConfirm(false);
+        setIsSaving(false);
+        return;
+      }
+
+      const updateData = {
+        ...basicInfoData,
+        ...profileData,
+        ...incomeData,
+        appReferences: referencesData,
+      };
+
       const res = await authFetch(`${BASE_URL}/loan-applications/${application?.applicationId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(basicInfoData),
+        body: JSON.stringify(updateData),
       });
 
-      if (!res.ok) throw new Error("Failed to update basic info");
+      if (!res.ok) throw new Error("Failed to update application");
 
       const updatedApp = await res.json();
 
@@ -116,10 +243,14 @@ export default function ApplicationDetailsPage() {
       );
 
       setIsEditing(false);
-      showSuccess("Basic information updated successfully!");
+      setShowSaveConfirm(false);
+      showSuccess("Application updated successfully!");
     } catch (err: any) {
       console.error(err);
       showError(err.message || "Failed to update application");
+      setShowSaveConfirm(false);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -190,15 +321,29 @@ export default function ApplicationDetailsPage() {
 
               {/* Buttons */}
               <div className="flex justify-center sm:justify-end space-x-3">
-                <button
-                  onClick={() => {
-                    if (isEditing) handleSaveBasicInfo();
-                    else setIsEditing(true);
-                  }}
-                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition"
-                >
-                  {isEditing ? "Save" : "Edit Details"}
-                </button>
+                {isEditing ? (
+                  <>
+                    <button
+                      onClick={() => setShowSaveConfirm(true)}
+                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Edit Details
+                  </button>
+                )}
 
                 <ApplicationButtons
                   application={application!}
@@ -222,7 +367,12 @@ export default function ApplicationDetailsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 flex flex-col h-full">
-              <ProfileCard application={application} />
+              <ProfileCard 
+                application={application} 
+                isEditing={isEditing}
+                profileData={profileData}
+                setProfileData={setProfileData}
+              />
               <BasicInfoCard
                 application={application}
                 l={l}
@@ -233,7 +383,18 @@ export default function ApplicationDetailsPage() {
             </div>
 
             <div className="lg:col-span-1 flex flex-col h-full">
-              <IncomeCharactedCard application={application} l={l} t={t} />
+              <IncomeCharactedCard 
+                application={application} 
+                l={l} 
+                t={t}
+                isEditing={isEditing}
+                incomeData={incomeData}
+                setIncomeData={setIncomeData}
+                referencesData={referencesData}
+                setReferencesData={setReferencesData}
+                showSuccess={showSuccess}
+                showError={showError}
+              />
             </div>
 
             <div className="lg:col-span-1 flex flex-col h-full">
@@ -289,6 +450,19 @@ export default function ApplicationDetailsPage() {
         )}
 
         <AccountModal ref={modalRef} a={a} />
+
+        {/* Save Confirmation Modal */}
+        <ConfirmModal
+          show={showSaveConfirm}
+          title="Confirm Save"
+          message="Are you sure you want to save these changes to the loan application?"
+          confirmLabel="Save Changes"
+          cancelLabel="Cancel"
+          processingLabel="Saving..."
+          onConfirm={handleSaveBasicInfo}
+          onCancel={() => setShowSaveConfirm(false)}
+          loading={isSaving}
+        />
       </div>
     </Wrapper>
   );

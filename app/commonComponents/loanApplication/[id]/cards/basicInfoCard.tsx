@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { BasicInfoCardProps } from "@/app/commonComponents/utils/Types/components";
 
 export default function BasicInfoCard({
@@ -12,8 +13,22 @@ export default function BasicInfoCard({
   basicInfoData: any;
   setBasicInfoData: any;
 }) {
+  const [spouseNameError, setSpouseNameError] = useState("");
+
   const handleChange = (field: string, value: string) => {
     setBasicInfoData({ ...basicInfoData, [field]: value });
+  };
+
+  const handleSpouseNameChange = (value: string) => {
+    if (/^[A-Za-zñÑ.\-\s]*$/.test(value)) {
+      handleChange("appSpouseName", value);
+      const words = value.trim().split(/\s+/).filter(Boolean);
+      if (value && words.length < 2) {
+        setSpouseNameError("Please enter at least first and last name.");
+      } else {
+        setSpouseNameError("");
+      }
+    }
   };
 
   return (
@@ -55,7 +70,7 @@ export default function BasicInfoCard({
           {isEditing ? (
             <select
               className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
-              value={basicInfoData.appMarital}
+              value={basicInfoData.appMarital || ""}
               onChange={(e) => handleChange("appMarital", e.target.value)}
             >
               <option value="">Select</option>
@@ -67,17 +82,22 @@ export default function BasicInfoCard({
           )}
         </div>
 
-        {basicInfoData.appMarital === "Married" && (
+        {(isEditing ? basicInfoData.appMarital : application?.appMarital) === "Married" && (
           <>
             <div>
               <p className="text-sm font-medium text-gray-500">{l.t8}</p>
               {isEditing ? (
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-gray-900"
-                  value={basicInfoData.appSpouseName}
-                  onChange={(e) => handleChange("appSpouseName", e.target.value)}
-                />
+                <div>
+                  <input
+                    type="text"
+                    className={`w-full border rounded px-2 py-1 text-gray-900 ${
+                      spouseNameError ? "border-red-500" : "border-gray-300"
+                    }`}
+                    value={basicInfoData.appSpouseName}
+                    onChange={(e) => handleSpouseNameChange(e.target.value)}
+                  />
+                  {spouseNameError && <p className="text-red-500 text-xs mt-1">{spouseNameError}</p>}
+                </div>
               ) : (
                 <p className="text-gray-900">{application?.appSpouseName || "—"}</p>
               )}
