@@ -1,12 +1,13 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import translationData from '@/app/commonComponents/translation';
-import { translateLoanType } from '@/app/commonComponents/utils/formatters';
+import React, { useState, useEffect } from "react";
+import translationData from "@/app/commonComponents/translation";
+import { translateLoanType } from "@/app/commonComponents/utils/formatters";
+import { formatCurrency } from "@/app/commonComponents/utils/formatters";
 
 interface SimulatorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  language?: 'en' | 'ceb';
+  language?: "en" | "ceb";
 }
 
 interface LoanOptionWithCollateral {
@@ -26,12 +27,32 @@ interface OpenTermLoanOption {
   interest: number;
 }
 
-type LoanOption = LoanOptionWithCollateral | LoanOptionWithoutCollateral | OpenTermLoanOption;
+type LoanOption =
+  | LoanOptionWithCollateral
+  | LoanOptionWithoutCollateral
+  | OpenTermLoanOption;
 
-export default function SimulatorModal({ isOpen, onClose, language = 'en' }: SimulatorModalProps) {
-  const [loanType, setLoanType] = useState('');
+interface OpenTermSampleCollection {
+  collectionNumber: number;
+  principal: number;
+  interestRate: number;
+  interestAmount: number;
+  totalPayable: number;
+  minimumPayment: number;
+  paidAmount: number;
+  remainingPrincipal: number;
+}
+
+export default function SimulatorModal({
+  isOpen,
+  onClose,
+  language = "en",
+}: SimulatorModalProps) {
+  const [loanType, setLoanType] = useState("");
   const [loanOptions, setLoanOptions] = useState<number[]>([]);
-  const [selectedLoanAmount, setSelectedLoanAmount] = useState('');
+  const [selectedLoanAmount, setSelectedLoanAmount] = useState("");
+  const [amountError, setAmountError] = useState("");
+
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [showResult, setShowResult] = useState(false);
@@ -40,19 +61,12 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
   const s = translationData.simulatorTranslator[language];
   const pub = translationData.publicTranslation[language];
 
-  const [result, setResult] = useState<{
-    paymentPeriod: string;
-    principalAmount: string;
-    interestRate: string;
-    interest: string;
-    totalPayment: string;
-    loanTerm: string;
-    paymentPerPeriod: string;
-  } | null>(null);
+  const [result, setResult] = useState<any>(null);
+  const [collections, setCollections] = useState<OpenTermSampleCollection[]>([]);
 
-  const paymentPeriod = 'monthly';
+  const paymentPeriod = "monthly";
 
-  // Modal open/close animations
+  // Animation
   useEffect(() => {
     if (isOpen) {
       setShowModal(true);
@@ -65,6 +79,7 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
     }
   }, [isOpen]);
 
+  // Loan tables
   const withCollateralTable: LoanOptionWithCollateral[] = [
     { amount: 20000, months: 8, interest: 7 },
     { amount: 50000, months: 10, interest: 5 },
@@ -88,69 +103,174 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
     { amount: 500000, interest: 3 },
   ];
 
+  // Update loan options when type changes
   useEffect(() => {
-    if (loanType === 'regularWith') setLoanOptions(withCollateralTable.map(opt => opt.amount));
-    else if (loanType === 'regularWithout') setLoanOptions(withoutCollateralTable.map(opt => opt.amount));
-    else if (loanType === 'openTerm') setLoanOptions(openTermTable.map(opt => opt.amount));
+    if (loanType === "regularWith")
+      setLoanOptions(withCollateralTable.map((opt) => opt.amount));
+    else if (loanType === "regularWithout")
+      setLoanOptions(withoutCollateralTable.map((opt) => opt.amount));
+    else if (loanType === "openTerm")
+      setLoanOptions(openTermTable.map((opt) => opt.amount));
     else setLoanOptions([]);
 
-    setSelectedLoanAmount('');
+    setSelectedLoanAmount("");
+    setAmountError("");
     setResult(null);
     setShowResult(false);
+    setCollections([]);
   }, [loanType]);
 
+  // Validate loan amount input
+  useEffect(() => {
+    if (!selectedLoanAmount) {
+      setAmountError("");
+      return;
+    }
+    const amt = Number(selectedLoanAmount);
+    const minAmt = Math.min(...loanOptions);
+    const maxAmt = Math.max(...loanOptions);
+
+    if (amt < minAmt) setAmountError(`Minimum amount is ₱${minAmt.toLocaleString()}.`);
+    else if (amt > maxAmt) setAmountError(`Maximum amount is ₱${maxAmt.toLocaleString()}.`);
+    else setAmountError("");
+  }, [selectedLoanAmount, loanOptions]);
+
+  // Open-term: update paid amount
+  const updateCollectionPayment = (idx: number, paidAmount: number) => {
+    setCollections((prev) => {
+      const newCols = [...prev];
+      const principal = idx === 0 ? Number(selectedLoanAmount) : newCols[idx - 1].remainingPrincipal;
+      const rate = newCols[idx].interestRate;
+
+      const interestAmount = principal * (rate / 100);
+      const totalPayable = principal + interestAmount;
+      const minimumPayment = interestAmount;
+      const excess = paidAmount - minimumPayment > 0 ? paidAmount - minimumPayment : 0;
+      const remainingPrincipal = principal - excess;
+
+      newCols[idx] = {
+        ...newCols[idx],
+        principal,
+        interestAmount,
+        totalPayable,
+        minimumPayment,
+        paidAmount,
+        remainingPrincipal,
+      };
+
+      // Update next collection
+      if (idx + 1 < newCols.length) {
+        const nextPrincipal = remainingPrincipal;
+        const nextRate = rate;
+        const nextInterest = nextPrincipal * (nextRate / 100);
+        const nextTotal = nextPrincipal + nextInterest;
+        const nextMinPay = nextInterest;
+        newCols[idx + 1] = {
+          ...newCols[idx + 1],
+          principal: nextPrincipal,
+          interestRate: nextRate,
+          interestAmount: nextInterest,
+          totalPayable: nextTotal,
+          minimumPayment: nextMinPay,
+          paidAmount: 0,
+          remainingPrincipal: nextPrincipal + nextInterest,
+        };
+      }
+
+      return newCols;
+    });
+  };
+
+  // Calculate loan
   const calculateLoan = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loanType || !selectedLoanAmount) return;
-
-    setShowResult(false);
+    if (!loanType || !selectedLoanAmount || amountError) return;
 
     const amt = Number(selectedLoanAmount);
     let loanOption: LoanOption | undefined;
 
-    if (loanType === 'regularWithout') loanOption = withoutCollateralTable.find(opt => opt.amount === amt);
-    else if (loanType === 'regularWith') loanOption = withCollateralTable.find(opt => opt.amount === amt);
-    else if (loanType === 'openTerm') loanOption = openTermTable.find(opt => opt.amount === amt);
+    // Match closest table value for interest
+    if (loanType === "regularWith")
+      loanOption = withCollateralTable.find((opt) => amt <= opt.amount) || withCollateralTable[withCollateralTable.length - 1];
+    else if (loanType === "regularWithout")
+      loanOption = withoutCollateralTable.find((opt) => amt <= opt.amount) || withoutCollateralTable[withoutCollateralTable.length - 1];
+    else if (loanType === "openTerm")
+      loanOption = openTermTable.find((opt) => amt <= opt.amount) || openTermTable[openTermTable.length - 1];
 
     if (!loanOption) return;
 
     const rate = loanOption.interest;
-    const months = 'months' in loanOption ? loanOption.months : 12;
+    const months = "months" in loanOption ? loanOption.months : 12;
 
-    const totalInterest = (amt * rate) / 100;
-    const totalRepayment = amt + totalInterest;
-    const paymentPerPeriod = totalRepayment / months;
+    if (loanType === "openTerm") {
+      // Initialize first 2 collections
+      const first: OpenTermSampleCollection = {
+        collectionNumber: 1,
+        principal: amt,
+        interestRate: rate,
+        interestAmount: amt * (rate / 100),
+        totalPayable: amt + amt * (rate / 100),
+        minimumPayment: amt * (rate / 100),
+        paidAmount: 0,
+        remainingPrincipal: amt,
+      };
+      const second: OpenTermSampleCollection = {
+        collectionNumber: 2,
+        principal: 0,
+        interestRate: rate,
+        interestAmount: 0,
+        totalPayable: 0,
+        minimumPayment: 0,
+        paidAmount: 0,
+        remainingPrincipal: 0,
+      };
+      setCollections([first, second]);
+      setResult(null);
+    } else {
+      const totalInterest = (amt * rate) / 100;
+      const totalRepayment = amt + totalInterest;
+      const paymentPerPeriod = totalRepayment / months;
 
-    setResult({
-      paymentPeriod: paymentPeriod === 'monthly' ? 'Monthly (12 months per year)' : '15th of the Month',
-      principalAmount: `₱${amt.toLocaleString()}`,
-      interestRate: `${rate}%`,
-      interest: `₱${totalInterest.toLocaleString()}`,
-      totalPayment: `₱${totalRepayment.toLocaleString()}`,
-      loanTerm: `${months} ${pub.months}`,
-      paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-    });
+      setResult({
+        paymentPeriod:
+          paymentPeriod === "monthly"
+            ? "Monthly (12 months per year)"
+            : "15th of the Month",
+        principalAmount: `₱${amt.toLocaleString()}`,
+        interestRate: `${rate}%`,
+        interest: `₱${totalInterest.toLocaleString()}`,
+        totalPayment: `₱${totalRepayment.toLocaleString()}`,
+        loanTerm: `${months} ${pub.months}`,
+        paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`,
+      });
+      setCollections([]);
+    }
 
     setTimeout(() => setShowResult(true), 10);
   };
 
   if (!showModal) return null;
 
-  const resultLabels = {
-    principalAmount: t.l4 + ':',
-    interestRate: t.l5 + ':',
-    interest: t.l6 + ':',
-    totalPayment: t.l7 + ':',
-    loanTerm: t.l8 + ':',
-    paymentPerPeriod: t.l9 + ':',
-    summary: s.s2,
-    explanation: s.s3,
-  };
-
   return (
-    <div className={`fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
-      <div className={`bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6 transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors">
+    <div
+      className={`fixed inset-0 text-black z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4 transition-opacity duration-300 ${
+        animateIn ? "opacity-100" : "opacity-0"
+      }`}
+    >
+      <div
+        className={`bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative p-6 transform transition-all duration-300 ease-out ${
+          animateIn
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 translate-y-4"
+        }`}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -169,7 +289,9 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
               >
                 <option value="">{pub.selectLoanType}</option>
                 {["regularWithout", "regularWith", "openTerm"].map((type) => (
-                  <option key={type} value={type}>{translateLoanType(type, language)}</option>
+                  <option key={type} value={type}>
+                    {translateLoanType(type, language)}
+                  </option>
                 ))}
               </select>
             </div>
@@ -177,40 +299,99 @@ export default function SimulatorModal({ isOpen, onClose, language = 'en' }: Sim
             {loanType && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">{pub.loanAmount}</label>
-                <select
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500"
+                <input
+                  type="number"
+                  className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500 ${amountError ? "border-red-500" : "border-gray-300"}`}
                   value={selectedLoanAmount}
                   onChange={(e) => setSelectedLoanAmount(e.target.value)}
-                >
-                  <option value="">{pub.selectAmount}</option>
-                  {loanOptions.map((amt) => (
-                    <option key={amt} value={amt}>₱{amt.toLocaleString()}</option>
-                  ))}
-                </select>
+                  placeholder="Enter amount"
+                />
+                {amountError && <p className="text-sm mt-1 text-red-600">{amountError}</p>}
               </div>
             )}
           </div>
 
-          <button type="submit" className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition">{pub.calculate}</button>
+          <button
+            type="submit"
+            disabled={!selectedLoanAmount || amountError !== ""}
+            className="w-full py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition disabled:bg-red-600"
+          >
+            {pub.calculate}
+          </button>
         </form>
 
+        {/* Regular loan result */}
         {result && (
-          <div className={`mt-8 bg-gray-50 rounded-lg p-6 transform transition-all duration-500 ease-out ${showResult ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}>
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">{resultLabels.summary}</h3>
+          <div className="mt-8 bg-gray-50 rounded-lg p-6 transform transition-all duration-500 ease-out">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800">{s.s2}</h3>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2">
               <div>
-                <div className="mb-4"><div className="font-semibold">{resultLabels.principalAmount}</div><div>{result.principalAmount}</div></div>
-                <div className="mb-4"><div className="font-semibold">{resultLabels.interestRate}</div><div>{result.interestRate}</div></div>
-                <div className="mb-4"><div className="font-semibold">{resultLabels.interest}</div><div>{result.interest}</div></div>
-                <div className="mb-4"><div className="font-semibold">{resultLabels.totalPayment}</div><div>{result.totalPayment}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l4}:</div><div>{result.principalAmount}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l5}:</div><div>{result.interestRate}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l6}:</div><div>{result.interest}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l7}:</div><div>{result.totalPayment}</div></div>
               </div>
-
               <div>
-                <div className="mb-4"><div className="font-semibold">{resultLabels.loanTerm}</div><div>{result.loanTerm}</div></div>
-                <div className="mb-4"><div className="font-semibold">{resultLabels.paymentPerPeriod}</div><div>{result.paymentPerPeriod}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l8}:</div><div>{result.loanTerm}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l9}:</div><div>{result.paymentPerPeriod}</div></div>
               </div>
             </div>
-            <div className="mt-4 text-sm text-gray-600 italic">{resultLabels.explanation}</div>
+            <div className="mt-4 text-sm text-gray-600 italic">{s.s3}</div>
+          </div>
+        )}
+
+        {/* Open-term collections */}
+        {collections.length > 0 && (
+          <div className="mt-8 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Open-Term Sample Collections</h3>
+            {collections.map((col, idx) => (
+              <div
+                key={idx}
+                className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 space-y-2"
+              >
+                <h4 className="font-semibold text-gray-800 text-lg mb-2">COLLECTION {col.collectionNumber}</h4>
+                
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-700">Principal:</span>
+                  <span>{formatCurrency(col.principal)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-700">Interest Rate:</span>
+                  <span>{col.interestRate}%</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-700">Interest Amount:</span>
+                  <span>{formatCurrency(col.interestAmount)}</span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-700">Total Payable:</span>
+                  <span>{formatCurrency(col.totalPayable)}</span>
+                </div>
+
+                <div className="flex justify-between text-red-600 font-semibold">
+                  <span>Minimum Payment:</span>
+                  <span>{formatCurrency(col.minimumPayment)}</span>
+                </div>
+
+                <div className="flex flex-col">
+                  <label className="font-medium text-gray-700 mb-1">Paid Amount:</label>
+                  <input
+                    type="number"
+                    value={col.paidAmount}
+                    onChange={(e) => updateCollectionPayment(idx, Number(e.target.value))}
+                    className="w-full border border-gray-300 rounded px-2 py-1 text-right focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                  />
+                </div>
+
+                <div className="flex justify-between text-green-600 font-semibold">
+                  <span>Remaining Principal:</span>
+                  <span>{formatCurrency(col.remainingPrincipal)}</span>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
