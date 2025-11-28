@@ -236,11 +236,7 @@ export default function AgentPageClient() {
                           ₱{agent.totalLoanAmount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                            agent.status === 'Active' 
-                              ? 'text-green-600' 
-                              : 'text-gray-600'
-                          }`}>
+                          <span className="px-3 py-1 rounded-full text-sm font-semibold">
                             {agent.status}
                           </span>
                         </td>
