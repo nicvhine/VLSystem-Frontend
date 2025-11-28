@@ -4,18 +4,6 @@ import { FC, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ConfirmModalProps } from "../utils/Types/modal";
 
-/**
- * Reusable confirmation modal component for sensitive actions
- * Features fade animations, loading states, and portal rendering
- * @param show - Boolean to control modal visibility
- * @param message - Optional confirmation message to display
- * @param onConfirm - Callback function for confirm action
- * @param onCancel - Callback function for cancel action
- * @param loading - Boolean to show loading state
- * @param applicationId - Optional application ID for context
- * @param status - Optional status for context
- * @returns JSX element containing the confirmation modal
- */
 const ConfirmModal: FC<ConfirmModalProps> = ({
   show,
   message,

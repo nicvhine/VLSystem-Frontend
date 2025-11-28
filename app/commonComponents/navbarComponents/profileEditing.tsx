@@ -2,31 +2,52 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
 import translations from '../translation';
 import { ProfileEditingProps } from '../utils/Types/profileEditing';
 import OTPModal from './otpModal';
 import SuccessModal from '@/app/commonComponents/modals/successModal';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import SubmitOverlayToast from '@/app/commonComponents/utils/submitOverlayToast';
+import ConfirmModal from '../modals/confirmModal';
+
+function PasswordInput({
+  label,
+  value,
+  onChange
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <input
+        type={show ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={label}
+        className="bg-gray-100 border text-sm border-gray-300 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-red-600 outline-none transition w-full"
+      />
+      <button
+        type="button"
+        onClick={() => setShow(!show)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm"
+      >
+        {show ? 'Hide' : 'Show'}
+      </button>
+    </div>
+  );
+}
 
 export default function ProfileSettingsPanel({
   username,
   email,
   phoneNumber,
-
   editingEmail,
   setEditingEmail,
   editingPhone,
   setEditingPhone,
-
-  isEditingEmailField,
-  setIsEditingEmailField,
-  isEditingPhoneField,
-  setIsEditingPhoneField,
-
-  isEditingPasswordField,
-  setIsEditingPasswordField,
   currentPassword,
   setCurrentPassword,
   newPassword,
@@ -34,28 +55,26 @@ export default function ProfileSettingsPanel({
   confirmPassword,
   setConfirmPassword,
   passwordError,
-
+  setPasswordError,
   emailError,
   setEmailError,
   phoneError,
   setPhoneError,
-
   setSettingsSuccess,
-
   handleAccountSettingsUpdate,
-
   emailVerificationSent,
+  setEmailVerificationSent,
   smsVerificationSent,
-
-  userEnteredCode,
-  setUserEnteredCode,
-  
+  enteredEmailCode,
+  setEnteredEmailCode,
+  enteredSmsCode,
+  setEnteredSmsCode,
   sendEmailCode,
   verifyEmailCode,
   sendSmsCode,
   verifySmsCode,
-
   emailVerified,
+  setIsEditingPasswordField,
 }: ProfileEditingProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -71,13 +90,11 @@ export default function ProfileSettingsPanel({
   const [sendingCode, setSendingCode] = useState(false);
   const [otpType, setOtpType] = useState<'email' | 'sms' | null>(null);
 
-
-  // Initialize language from localStorage
+  // Initialize language
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedRole = localStorage.getItem('role');
       setRole(storedRole);
-      
       const keyMap: Record<string, string> = {
         head: "headLanguage",
         "loan officer": "loanOfficerLanguage",
@@ -91,7 +108,6 @@ export default function ProfileSettingsPanel({
     }
   }, []);
 
-  // Listen for language changes dynamically
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
       const validRoles = ["borrower", "head", "loan officer", "manager", "sysad"];
@@ -111,22 +127,20 @@ export default function ProfileSettingsPanel({
     };
   }, [role]);
 
-  // Only show OTP modal if verification is required
+  // OTP modal handling
   useEffect(() => {
     if ((emailVerificationSent && !emailVerified) || smsVerificationSent) {
       setShowOtpModal(true);
     }
   }, [emailVerificationSent, emailVerified, smsVerificationSent]);
-  
 
-  // Handle OTP modal mount/unmount animations
   useEffect(() => {
     if (showOtpModal) {
       setOtpVisible(true);
       const t = setTimeout(() => setOtpAnimateIn(true), 10);
       return () => clearTimeout(t);
     }
-    if (otpVisible) {
+    if (otpVisible && !showOtpModal) {
       setOtpAnimateIn(false);
       const t = setTimeout(() => setOtpVisible(false), 300);
       return () => clearTimeout(t);
@@ -135,6 +149,29 @@ export default function ProfileSettingsPanel({
 
   const t = translations.navbarTranslation[language];
 
+  const handleVerifyOtpAndNotify = async () => {
+    if (enteredEmailCode.length !== 6) {
+      setEmailError("Please enter the verification code."); 
+      return;
+    }
+    try {
+      const ok = await verifyEmailCode();
+      if (ok) {
+        setShowOtpModal(false);
+        setModalMsg('Email verified and updated successfully.');
+        setShowSuccessModal(true);
+        setEnteredEmailCode('');
+        setEmailVerificationSent(false);
+      } else {
+        setModalMsg(emailError || 'Failed to verify the code.');
+        setShowErrorModal(true);
+      }
+    } catch {
+      setModalMsg('An error occurred while verifying OTP.');
+      setShowErrorModal(true);
+    }
+  };
+  
   const handleSaveWithConfirm = async () => {
     setShowConfirm(false);
     setLoading(true);
@@ -142,218 +179,118 @@ export default function ProfileSettingsPanel({
     setLoading(false);
   };
 
-  // Wrap OTP verify to show success/error modals and refresh on success
-  const handleVerifyOtpAndNotify = async (): Promise<void> => {
-    setEmailError('');
-  
-    const ok = await verifyEmailCode(); 
-    if (ok) {
-      setShowOtpModal(false);
-      setModalMsg('Email verified and updated successfully.');
-      setShowSuccessModal(true);
-    } else {
-      const msg = emailError || 'Failed to verify the code. Please try again.';
-      setModalMsg(msg);
-      setShowErrorModal(true);
-    }
-  };
-  
 
   return (
     <>
-      <div className="px-6 py-4 rounded-lg mx-4 mb-4 transition duration-300 max-h-[70vh] overflow-y-auto">
-        <div className="relative overflow-hidden">
-          <div className="transition-all duration-300 ease-in-out opacity-100 translate-x-0">
-            <div className="space-y-4">
-              {/* Username */}
-              <div>
-                <span className="text-sm text-gray-700">{t.t10}</span>
-                <div className="text-base text-gray-900">{username}</div>
-              </div>
+      <div className="max-w-2xl mx-auto p-2 space-y-2">
 
-              {/* Email Section */}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-700">{t.t11}</span>
-                  <button
-                    onClick={() => {
-                      setIsEditingEmailField(!isEditingEmailField);
-                      if (isEditingEmailField) {
-                        setEditingEmail(email);
-                        setUserEnteredCode('');
-                        setEmailError('');
-                        setSettingsSuccess('');
-                      }
-                    }}
-                    className="text-xs text-red-600 font-medium"
-                  >
-                    {isEditingEmailField ? t.t25 : t.t27}
-                  </button>
-                </div>
+        {/* USERNAME */}
+        <div className=" p-2 rounded-xl shadow-md">
+          <p className="text-xs text-gray-500">Username</p>
+          <p className="text-gray-900 text-sm">{username}</p>
+        </div>
 
-                {emailError && <p className="text-sm text-red-600 mt-1">{emailError}</p>}
-
-                {!isEditingEmailField ? (
-                  <span className="block text-base text-gray-900">{email}</span>
-                ) : (
-                  <>
-                    <input
-                      type="email"
-                      value={editingEmail}
-                      onChange={(e) => setEditingEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      placeholder={email}
-                    />
-                    <button
-                      disabled={sendingCode}
-                      onClick={async () => {
-                        setEmailError('');
-
-                        if (!editingEmail || !editingEmail.trim()) {
-                          setEmailError("Please enter a valid email address.");
-                          return;
-                        }
-
-                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                        if (!emailRegex.test(editingEmail)) {
-                          setEmailError("Invalid email format.");
-                          return;
-                        }
-
-                        setSendingCode(true);
-                        try {
-                          await sendEmailCode();
-                        } finally {
-                          setSendingCode(false);
-                        }
-                      }}
-                      className={`mt-2 px-3 py-1 text-sm rounded text-white ${sendingCode ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
-                    >
-                      {sendingCode ? 'Sending…' : t.t12}
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Phone Section */}
-              <div>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-700">{t.t14}</span>
-                  <button
-                    onClick={() => {
-                      setIsEditingPhoneField(!isEditingPhoneField);
-                      if (isEditingPhoneField) {
-                        setEditingPhone(phoneNumber);
-                        setUserEnteredCode('');
-                        setPhoneError('');
-                        setSettingsSuccess('');
-                      }
-                    }}
-                    className="text-xs text-red-600 font-medium"
-                  >
-                    {isEditingPhoneField ? t.t25 : t.t27}
-                  </button>
-                </div>
-
-                {phoneError && <p className="text-sm text-red-600 mt-1">{phoneError}</p>}
-
-                {!isEditingPhoneField ? (
-                  <span className="block text-base text-gray-900">{phoneNumber}</span>
-                ) : (
-                  <>
-                    <input
-                      type="tel"
-                      value={editingPhone}
-                      onChange={(e) => setEditingPhone(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                      placeholder={phoneNumber}
-                    />
-                    <button
-                      disabled={sendingCode}
-                      onClick={async () => {
-                        setPhoneError('');
-
-                        if (!editingPhone || !editingPhone.trim()) {
-                          setPhoneError('Please enter a valid phone number.');
-                          return;
-                        }
-
-                        setSendingCode(true);
-                        try {
-                          await sendSmsCode();
-                        } finally {
-                          setSendingCode(false);
-                        }
-                      }}
-                      className={`mt-2 px-3 py-1 text-sm rounded text-white ${sendingCode ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'}`}
-                    >
-                      {sendingCode ? 'Sending…' : t.t12}
-                    </button>
-                  </>
-                )}
-              </div>
-
-              {/* Password Section */}
-              <div>
-                <div className="flex justify-between mb-1">                  <span className="text-sm text-gray-700">{t.t34}</span>
-                  <button
-                    onClick={() => setIsEditingPasswordField(!isEditingPasswordField)}
-                    className="text-xs text-red-600 font-medium"
-                  >
-                    {isEditingPasswordField ? t.t25 : t.t27}
-                  </button>
-                </div>
-
-                {passwordError && (
-                  <p className="text-sm text-red-600 mb-2 text-right">{passwordError}</p>
-                )}
-
-                {isEditingPasswordField ? (
-                  <>
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder={t.t28}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
-                    />
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder={t.t29}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2"
-                    />
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder={t.t30}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    />
-                  </>
-                ) : (
-                  <span className="block text-base text-gray-900">••••••••••</span>
-                )}
-              </div>
-
-              {/* Save Button */}
-              <div className="flex justify-end mt-4">
-                <button
-                  disabled={loading}
-                  onClick={() => setShowConfirm(true)}
-                  className={`px-4 py-2 rounded-lg text-white font-medium transition ${
-                    loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
-                  }`}
-                >
-                  {loading ? t.t31 : t.t15}
-                </button>
-              </div>
-            </div>
+        {/* EMAIL */}
+        <div className=" p-2 rounded-xl shadow-md">
+          <p className="text-xs text-gray-500 mb-1">Email</p>
+          {emailError && <p className="text-xs text-red-500 mb-1">{emailError}</p>}
+          <div className="flex flex-col gap-2">
+            <input
+              type="email"
+              value={editingEmail}
+              onChange={(e) => setEditingEmail(e.target.value)}
+              placeholder={email}
+              className="bg-gray-100 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-red-600 outline-none transition text-sm"
+            />
+            {editingEmail.trim() !== '' && (
+              <button
+                disabled={sendingCode}
+                onClick={async () => {
+                  setOtpType('email');
+                  setEmailError('');
+                  setSendingCode(true);
+                  try { await sendEmailCode(); } finally { setSendingCode(false); }
+                }}
+                className={`text-red-600 rounded-lg p-2 text-xs transition   disabled:cursor-not-allowed`}
+              >
+                {sendingCode ? 'Sending…' : 'Send Verification Code'}
+              </button>
+            )}
           </div>
         </div>
 
-        <ConfirmModal
+         {/* PHONE */}
+        <div className=" p-2 rounded-xl shadow-md">
+          <p className="text-xs text-gray-500 mb-1">Phone</p>
+          {phoneError && <p className="text-xs text-red-500 mb-1">{phoneError}</p>}
+          <div className="flex flex-col gap-2">
+            <input
+              type="tel"
+              value={editingPhone}
+              onChange={(e) => setEditingPhone(e.target.value)}
+              placeholder={phoneNumber}
+              className="bg-gray-100 border border-gray-300 text-sm rounded-lg p-2 focus:ring-2 focus:ring-red-600 outline-none transition"
+            />
+            {editingPhone.trim() !== '' && (
+              <button
+                disabled={sendingCode}
+                onClick={async () => {
+                  setOtpType('sms');
+                  setPhoneError('');
+                  setSendingCode(true);
+                  try { await sendSmsCode(); } finally { setSendingCode(false); }
+                }}
+                className={`text-red-600 rounded-lg p-2 text-xs transition   disabled:cursor-not-allowed`}
+              >
+                {sendingCode ? 'Sending…' : 'Send Verification Code'}
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {/* PASSWORD */}
+        <div className="p-2 rounded-xl shadow-md">
+  <p className="text-xs text-gray-500 mb-1">Password</p>
+  {passwordError && <p className="text-xs text-red-500 mb-1">{passwordError}</p>}
+  <div className="flex flex-col gap-2 relative">
+    <PasswordInput
+    label="Current Password"
+    value={currentPassword}
+    onChange={(v) => {
+      setCurrentPassword(v);
+      setIsEditingPasswordField(true);
+    }}
+  />
+  <PasswordInput
+    label="New Password"
+    value={newPassword}
+    onChange={(v) => {
+      setNewPassword(v);
+      setIsEditingPasswordField(true);
+    }}
+  />
+  <PasswordInput
+    label="Confirm Password"
+    value={confirmPassword}
+    onChange={(v) => {
+      setConfirmPassword(v);
+      setIsEditingPasswordField(true);
+    }}
+  />
+          {/* Always render button, disable if not all fields filled */}
+          <div className="flex justify-end mt-3">
+          <button
+            disabled={loading || !currentPassword || !newPassword || !confirmPassword}
+            onClick={() => setShowConfirm(true)}
+            className="bg-red-600 text-white text-xs rounded-lg px-6 py-2 hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Saving…' : 'Save Changes'}
+          </button>
+          </div>
+        </div>
+      </div>
+
+      <ConfirmModal
           show={showConfirm}
           message={t.t33}
           onConfirm={() => { void handleSaveWithConfirm(); }}
@@ -361,55 +298,44 @@ export default function ProfileSettingsPanel({
         />
       </div>
 
+      {/* OTP Modal */}
       {otpVisible &&
-  typeof window !== 'undefined' &&
-  createPortal(
-    <div className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] transition-opacity duration-300 ${otpAnimateIn ? 'opacity-100' : 'opacity-0'}`}>
-      <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative transform transition-all duration-300 ease-out ${otpAnimateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}`}>
-        <button
-          onClick={() => setShowOtpModal(false)}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
-        >
-          ✕
-        </button>
-        <OTPModal
-          otp={userEnteredCode}
-          setOtp={(code) => {
-            setUserEnteredCode(code);
-            if (otpType === 'email') setEmailError('');
-            else setPhoneError('');
-          }}
-          error={otpType === 'email' ? emailError : phoneError}
-          handleVerifyOtp={
-            otpType === 'email'
-              ? handleVerifyOtpAndNotify
-              : async () => { await verifySmsCode(); } 
-          }
-          handleResendOtp={
-            otpType === 'email'
-              ? async () => await sendEmailCode()
-              : async () => await sendSmsCode()
-          }
-        />
-      </div>
-    </div>,
-    document.body
-)}
+        typeof window !== 'undefined' &&
+        createPortal(
+          <div className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] transition-opacity duration-300 ${otpAnimateIn ? 'opacity-100' : 'opacity-0'}`}>
+            <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative transform transition-all duration-300 ease-out ${otpAnimateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}`}>
+              <button
+                onClick={() => setShowOtpModal(false)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ✕
+              </button>
+              <OTPModal
+                otp={otpType === 'email' ? enteredEmailCode : enteredSmsCode}
+                setOtp={(code) => {
+                  if (otpType === 'email') setEnteredEmailCode(code);
+                  else setEnteredSmsCode(code);
+                  if (otpType === 'email') setEmailError('');
+                  else setPhoneError('');
+                }}
+                error={otpType === 'email' ? emailError : phoneError}
+                handleVerifyOtp={otpType === 'email' ? handleVerifyOtpAndNotify : async () => { await verifySmsCode(); }}
+                handleResendOtp={otpType === 'email' ? async () => await sendEmailCode() : async () => await sendSmsCode()}
+              />
+            </div>
+          </div>,
+          document.body
+        )}
 
-      {/* Loading toast via portal at bottom-right of the page (outside modal) */}
+      {/* Loading Toast */}
       {typeof window !== 'undefined' && createPortal(
         <SubmitOverlayToast open={sendingCode} message="Sending verification code..." variant="info" />,
         document.body
       )}
 
-      {/* Feedback toasts for OTP verify */}
-      {showSuccessModal && (
-        <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
-      )}
-      {showErrorModal && (
-        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
-      )}
-
+      {/* Success / Error Modals */}
+      {showSuccessModal && <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />}
+      {showErrorModal && <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />}
     </>
   );
 }

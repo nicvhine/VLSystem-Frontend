@@ -48,17 +48,18 @@ export default function OTPModal({
 
   const handleChange = (value: string, index: number) => {
     const sanitized = value.replace(/\D/g, '');
-    const otpArray = otp.split('');
+    const otpArray = otp.padEnd(6, '').split(''); 
     otpArray[index] = sanitized.slice(-1);
-    const newOtp = otpArray.join('').slice(0, 6);
+    const newOtp = otpArray.join('');
     setOtp(newOtp);
-
-    // Clear error when user types
+  
     if (setError && error) setError('');
-
+  
     if (sanitized && index < 5) inputRefs.current[index + 1]?.focus();
   };
-
+  
+  
+  
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();

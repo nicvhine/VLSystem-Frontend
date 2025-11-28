@@ -3,13 +3,12 @@ import { useState } from 'react';
 
 export default function useAccountSettings() {
   const [isEditing, setIsEditing] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [settingsSuccess, setSettingsSuccess] = useState('');
   const [editingEmail, setEditingEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [isEditingEmailField, setIsEditingEmailField] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');  const [isEditingEmailField, setIsEditingEmailField] = useState(false);
   const [isEditingPasswordField, setIsEditingPasswordField] = useState(false);
   const [isEditingPhoneField, setIsEditingPhoneField] = useState(false);
   const [editingPhone, setEditingPhone] = useState('');
