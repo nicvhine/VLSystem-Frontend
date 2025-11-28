@@ -177,7 +177,7 @@ export default function ManagerDashboard() {
                   {topBorrowersData.map((borrower, index) => (
                     <li key={index} className="py-2 flex justify-between items-center">
                       <span>{borrower.borrowerName}</span>
-                      <span className="text-gray-500">{borrower.percentagePaid.toFixed(2)}%</span>
+                      <span className="text-gray-500">{(borrower.percentagePaid ?? 0).toFixed(2)}%</span>
                     </li>
                   ))}
                 </ul>
