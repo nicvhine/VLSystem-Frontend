@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import { FiDownload } from 'react-icons/fi';
+import { exportDashboardToPDF } from '@/lib/pdfExport';
 import {
   LineChart,
   Line,
@@ -46,6 +48,7 @@ type TopAgent = {
 
 
 export default function ManagerDashboard() {
+  const [isGenerating, setIsGenerating] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [borrowersOverTime, setBorrowersOverTime] = useState([]);
   const [loanDisbursementOverTime, setLoanDisbursementOverTime] = useState([]);
@@ -101,9 +104,49 @@ export default function ManagerDashboard() {
   const formatCurrency = (value: number) =>
     `₱${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+  const handleExportPDF = async () => {
+    setIsGenerating(true);
+
+    try {
+      const timestamp = new Date().toISOString().split('T')[0];
+      await exportDashboardToPDF({
+        stats,
+        borrowersOverTime,
+        loanDisbursementOverTime,
+        topCollectorsData,
+        applicationsByType,
+        topBorrowersData,
+        topAgentsData,
+      }, {
+        title: 'Analytics Dashboard Report - Manager',
+        subtitle: `Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+        filename: `manager-dashboard-report-${timestamp}.pdf`,
+        orientation: 'portrait',
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-12">
+        
+        {/* Header with Export Button */}
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
+          <button
+            onClick={handleExportPDF}
+            disabled={isGenerating}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FiDownload className="w-4 h-4" />
+            {isGenerating ? 'Generating PDF...' : 'Export to PDF'}
+          </button>
+        </div>
 
         {/* Quick Stats */}
         <Section title="Quick Stats">
