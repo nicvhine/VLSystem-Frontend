@@ -20,6 +20,7 @@ export interface Collection {
   totalPayable: number;
   periodInterestAmount: number;
   runningBalance: number;
+  pendingPenalty: boolean;
 }
 
 export interface Payment {

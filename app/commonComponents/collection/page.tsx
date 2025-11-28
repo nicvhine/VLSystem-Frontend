@@ -296,8 +296,8 @@ export default function CollectionsPage() {
                               {col.note?.trim() ? "Edit Note" : "Add Note"}
                             </DropdownMenuItem>
 
-                            {(col.status === "Past Due" || col.status === "Overdue") && (
-                                <DropdownMenuItem
+                            {(col.status === "Past Due" || col.status === "Overdue") && !col.pendingPenalty && (
+                              <DropdownMenuItem
                                 onClick={() => {
                                   setSelectedPenaltyCollection(col);
                                   setShowPenaltyModal(true);
