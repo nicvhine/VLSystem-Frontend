@@ -321,28 +321,30 @@ export default function ApplicationDetailsPage() {
 
               {/* Buttons */}
               <div className="flex justify-center sm:justify-end space-x-3">
-                {isEditing ? (
-                  <>
+                {application?.status === "Pending" && (
+                  isEditing ? (
+                    <>
+                      <button
+                        onClick={() => setShowSaveConfirm(true)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
                     <button
-                      onClick={() => setShowSaveConfirm(true)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                      onClick={() => setIsEditing(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                     >
-                      Save
+                      Edit Details
                     </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Edit Details
-                  </button>
+                  )
                 )}
 
                 <ApplicationButtons
