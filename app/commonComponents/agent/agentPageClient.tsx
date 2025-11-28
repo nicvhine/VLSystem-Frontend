@@ -236,7 +236,7 @@ export default function AgentPageClient() {
                           ₱{agent.totalLoanAmount.toLocaleString()}
                         </td>
                         <td className="px-6 py-4 text-sm">
-                          <span className="px-3 py-1 rounded-full text-sm font-semibold">
+                          <span className="px-3 py-1 rounded-full text-sm">
                             {agent.status}
                           </span>
                         </td>

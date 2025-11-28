@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import BorrowerCreditScoreCard from "@/app/userPage/borrowerPage/dashboard/cards/creditScoreCard";
 import { useLoanDetails } from "./hooks";
 import Head from "@/app/userPage/headPage/layout";
 import Manager from "@/app/userPage/managerPage/layout";
@@ -9,8 +8,9 @@ import LoanOfficer from "@/app/userPage/loanOfficerPage/layout";
 import EndorseInputModal from "./components/EndorseInputModal";
 import EndorseLetterModal from "./components/EndorseLetterModal";
 import ErrorModal from "../../modals/errorModal";
-import { formatDateTime } from "../../utils/formatters";
+import { formatDateTime, formatCurrency} from "../../utils/formatters";
 import translations from "@/app/commonComponents/translation";
+import CreditScoreCard from "./cards/creditScoreCard";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -90,18 +90,43 @@ const ProgressCircle = ({ value, label, subLabel, displayValue, centerSubLabel }
   );
 };
 
+interface PaymentProgressCardProps {
+  paidAmount: number;
+  balance: number;
+  loanType: string; 
+  appTotalPayable?: number; 
+  appLoanAmount?: number; 
+  t1: any;
+}
+
 // ------------------- Payment Progress Card -------------------
-const PaymentProgressCard = ({ paidAmount, balance, t1 }: { paidAmount: number; balance: number; t1: any }) => {
-  const total = paidAmount + balance;
-  const percentage = total > 0 ? (paidAmount / total) * 100 : 0;
+
+const PaymentProgressCard = ({
+  paidAmount,
+  balance,
+  loanType,
+  appLoanAmount,
+  appTotalPayable,
+  t1
+}: PaymentProgressCardProps) => {
+  const isOpenTerm = loanType?.toLowerCase() === "open-term loan";
+  
+  // totalLoan is what we divide by
+  const totalLoan = isOpenTerm ? appLoanAmount || 0 : appTotalPayable || 0;
+
+  // amountPaid is either paidAmount for Regular loans, or (appLoanAmount - balance) for Open-Term
+  const amountPaid = isOpenTerm ? ((appLoanAmount || 0) - (balance || 0)) : paidAmount;
+
+  const percentage = totalLoan > 0 ? (amountPaid / totalLoan) * 100 : 0;
+
   return (
     <ProgressCircle
       value={Number(percentage.toFixed(2))}
       label={t1.t15}
       displayValue={`${Number(percentage.toFixed(0))}%`}
       centerSubLabel="out of 100"
-      subLabel={`₱${paidAmount.toLocaleString()} / ₱${total.toLocaleString()}`}
-    />
+      subLabel={`${formatCurrency(amountPaid)} / ${formatCurrency(totalLoan)}`}
+      />
   );
 };
 
@@ -132,8 +157,8 @@ const PaymentTrackerCard = ({ collection, isOpenTerm }: { collection: any; isOpe
 
   const progressColor =
     paidPercentage === 100 ? "bg-green-500"
-    : paidPercentage >= 50 ? "bg-yellow-400"
-    : "bg-red-500";
+    : paidPercentage >= 50 ? "bg-green-500"
+    : "bg-green-500";
 
   return (
     <div className="w-full bg-white rounded-2xl shadow-lg p-4 border border-gray-200 hover:shadow-2xl transition mb-4">
@@ -154,11 +179,7 @@ const PaymentTrackerCard = ({ collection, isOpenTerm }: { collection: any; isOpe
 
       {/* FIXED: CONDITIONAL VALUE FOR OPEN-TERM */}
       <p className="text-sm font-bold text-gray-800 mb-2">
-        ₱{
-          isOpenTerm
-            ? collection.periodInterestAmount?.toLocaleString()
-            : collection.periodAmount?.toLocaleString()
-        }
+        {formatCurrency(collection.paidAmount)}
       </p>
 
       <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden mb-2">
@@ -322,10 +343,13 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
   <div className="mx-auto max-w-7xl px-4 space-y-10">
           {/* Progress Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <BorrowerCreditScoreCard creditScore={loan.creditScore || 0} showTip={false} />
+            <CreditScoreCard creditScore={loan.creditScore || 0} showTip={false} />
             <PaymentProgressCard
               paidAmount={loan.currentLoan?.paidAmount ?? 0}
               balance={loan.currentLoan?.remainingBalance ?? 0}
+              loanType={loan.loanType}
+              appLoanAmount={loan.appLoanAmount ?? 0} // use appLoanAmount for Open-Term loans
+              appTotalPayable={loan.currentLoan?.totalPayable ?? 0} // for Regular loans
               t1={t1}
             />
           </div>

@@ -66,7 +66,7 @@ export default function PaymentProgressCard({
         100,
         Math.round(((principal - remainingBalance) / principal) * 100)
       )
-    : 0;
+    : 0;  
 
   // CHOOSE WHICH % TO USE
   const displayProgress =
