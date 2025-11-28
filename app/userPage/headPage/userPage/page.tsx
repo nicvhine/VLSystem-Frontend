@@ -302,7 +302,7 @@ export default function Page() {
                                   ? "text-black"
                                   : user.role === "head"
                                   ? "text-black"
-                                  : "bg-gray-100 text-gray-800"}
+                                  : "text-black"}
                               `}
                             >
                               {getRoleTranslation(user.role)}

@@ -39,8 +39,11 @@ export interface ProfileEditingProps {
     smsVerificationSent: boolean;
     setSmsVerificationSent: (v: boolean) => void; 
 
-    userEnteredCode: string;
-    setUserEnteredCode: (v: string) => void;
+    enteredEmailCode: string;
+    setEnteredEmailCode: (v: string) => void;
+
+    enteredSmsCode: string;
+    setEnteredSmsCode: (v: string) => void;
 
     sendEmailCode: () => Promise<void>;
     verifyEmailCode: () => Promise<boolean>;

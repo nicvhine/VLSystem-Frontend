@@ -1,7 +1,7 @@
 const sysadTranslation = {
   en: {
     // Sections
-    t1: "System Administrator",
+    t1: "Total Users",
     t2: "Logs",
     t3: "User Management",
     t4: "Account Settings",
@@ -132,7 +132,7 @@ const sysadTranslation = {
   },
   ceb: {
     // Sections
-    t1: "Administrador sa Sistema",
+    t1: "Kinatibuk-ang Tiggamit",
     t2: "Mga Log",
     t3: "Pagdumala sa Tiggamit",
     t4: "Settings sa Account",

@@ -3,8 +3,6 @@
 import { FiDownload } from 'react-icons/fi';
 import { useState, useEffect } from 'react';
 import LoanStatistics from "@/app/commonComponents/statistics/loanStatistics";
-import LoanStatisticsTops from "@/app/commonComponents/statistics/loanStatisticsTops";
-import LoanStatisticsCharts from "@/app/commonComponents/statistics/loanStatisticsCharts";
 import translations from "@/app/commonComponents/translation";
 import { exportDashboardToPDF } from '@/lib/pdfExport';
 
@@ -119,12 +117,10 @@ export default function HeadDashboard() {
           {/* Left Column: Stats + Tops */}
           <div className="flex flex-col gap-6 w-full lg:w-1/2">
             <LoanStatistics />
-            <LoanStatisticsTops />
           </div>
 
           {/* Right Column: Charts */}
           <div className="w-full lg:w-1/2 flex flex-col gap-6">
-            <LoanStatisticsCharts />
           </div>
 
         </div>

@@ -90,8 +90,10 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     handleNotificationToggle,
     handleAccountSettingsUpdate,
     handleLogout,
-    userEnteredCode,
-    setUserEnteredCode,
+    enteredEmailCode,
+    setEnteredEmailCode,
+    enteredSmsCode,
+    setEnteredSmsCode,
     sendEmailCode,
     smsVerificationSent,
     setSmsVerificationSent,
@@ -353,9 +355,9 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           >
             <div className="pt-3 pb-0 px-4">
               <div className="mb-2 flex justify-center items-center pt-2">
-                <p className="text-xs text-gray-500 m-0 text-center w-full">{t.t5}</p>
+                <p className="text-xs text-gray-500 m-0 w-full">{t.t5}</p>
               </div>
-              <div className="h-px w-full bg-gray-200 mb-1" />
+              <div className="h-px w-full bg-gray-100 mb-1" />
               <ProfileSettingsPanel
                 username={username}
                 email={displayEmail}
@@ -386,8 +388,10 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
                 setSettingsSuccess={setSettingsSuccess}
                 handleAccountSettingsUpdate={handleAccountSettingsUpdate}
                 emailVerificationSent={emailVerificationSent}
-                userEnteredCode={userEnteredCode}
-                setUserEnteredCode={setUserEnteredCode}
+                enteredEmailCode={enteredEmailCode}
+                setEnteredEmailCode={setEnteredEmailCode}
+                enteredSmsCode={enteredSmsCode}
+                setEnteredSmsCode={setEnteredSmsCode}
                 sendEmailCode={sendEmailCode}
                 verifyEmailCode={verifyEmailCode}
                 smsVerificationSent={smsVerificationSent}

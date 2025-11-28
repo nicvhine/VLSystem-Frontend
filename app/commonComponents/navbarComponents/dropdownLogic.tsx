@@ -19,7 +19,9 @@ export function useProfileDropdownLogic(
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [smsVerificationCode, setSmsVerificationCode] = useState('');
   const [smsVerified, setSmsVerified] = useState(false);
-
+  const [enteredEmailCode, setEnteredEmailCode] = useState('');
+  const [enteredSmsCode, setEnteredSmsCode] = useState('');
+  
   const {
     editingEmail,
     setEditingEmail,
@@ -117,6 +119,7 @@ export function useProfileDropdownLogic(
       }
   
       const code = Math.floor(100000 + Math.random() * 900000).toString();
+
       setEmailVerificationCode(code);
       setEmailVerified(false);
   
@@ -151,7 +154,7 @@ export function useProfileDropdownLogic(
   };
 
   const verifyEmailCode = async (otpInput?: string): Promise<boolean> => {
-    const codeToCheck = otpInput ?? userEnteredCode;
+    const codeToCheck = otpInput ?? enteredEmailCode;
   
     // Clear previous error before verifying
     setEmailError("");
@@ -216,6 +219,7 @@ export function useProfileDropdownLogic(
   //SMS CODE
   const sendSmsCode = async () => {
     setPhoneError("");
+
     if (!editingPhone) {
       setPhoneError("Please enter a phone number.");
       return;
@@ -265,7 +269,7 @@ export function useProfileDropdownLogic(
   };
 
   const verifySmsCode = async (otpInput?: string): Promise<boolean> => {
-    const codeToCheck = otpInput ?? userEnteredCode;
+    const codeToCheck = otpInput ?? enteredSmsCode;
 
     setPhoneError("");
   
@@ -413,7 +417,8 @@ export function useProfileDropdownLogic(
       }
 
       // PASSWORD UPDATE
-      if (isEditingPasswordField && newPassword) {
+      if (isEditingPasswordField) {
+
         if (newPassword !== confirmPassword) {
           setPasswordError('New Password and Confirm Password do not match.');
           return;
@@ -421,16 +426,21 @@ export function useProfileDropdownLogic(
 
         const borrowersId = localStorage.getItem('borrowersId') || '';
         const userId = localStorage.getItem('userId') || '';
-        const role = localStorage.getItem('role') || '';
+        const role = (localStorage.getItem('role') || '').toLowerCase();
         const token = localStorage.getItem('token') || '';
+
+        if (!token) {
+          setPasswordError('You must be logged in to update password.');
+          return;
+        }
 
         let endpoint = '';
         let targetId = '';
 
-        if (['loan officer', 'head', 'manager', 'collector'].includes(role.toLowerCase())) {
+        if (['loan officer', 'head', 'manager', 'collector'].includes(role)) {
           endpoint = 'users';
           targetId = userId;
-        } else if (role.toLowerCase() === 'borrower') {
+        } else if (role === 'borrower') {
           endpoint = 'borrowers';
           targetId = borrowersId;
         } else {
@@ -438,26 +448,39 @@ export function useProfileDropdownLogic(
           return;
         }
 
-        const passwordRes = await fetch(
-          `${BASE_URL}/${endpoint}/${targetId}/change-password`,
-          {
+        try {
+          const passwordRes = await fetch(`${BASE_URL}/${endpoint}/${targetId}/change-password`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify({ currentPassword, newPassword }),
+          });
+        
+          if (passwordRes.status === 401) {
+            setPasswordError('Current password is incorrect.');
+            return;
           }
-        );
-
-        if (!passwordRes.ok) {
-          const data = await passwordRes.json();
-          setPasswordError(data.message || 'Failed to update password.');
-          return;
+        
+          if (!passwordRes.ok) {
+            const data = await passwordRes.json().catch(() => ({}));
+            setPasswordError(data.message || 'Failed to update password.');
+            return;
+          }
+        
+          // SUCCESS
+          setSettingsSuccess('✔ Password updated successfully!');
+          setTimeout(() => setSettingsSuccess(''), 4000);
+          setCurrentPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+          setIsEditingPasswordField(false);
+        
+        } catch (err) {
+          console.error(err);
+          setPasswordError('Failed to update password due to network or server error.');
         }
-
-        setSettingsSuccess('✔ Password updated successfully!');
-        setTimeout(() => setSettingsSuccess(''), 4000);
       }
 
       setIsEditingEmailField(false);
@@ -515,8 +538,10 @@ export function useProfileDropdownLogic(
     verifySmsCode,
     emailVerificationMessage,
     emailVerificationSent,
-    userEnteredCode,
-    setUserEnteredCode,
+    enteredEmailCode,
+    setEnteredEmailCode,
+    enteredSmsCode,
+    setEnteredSmsCode,
     smsVerificationSent,
     showSuccessModal,
     setShowSuccessModal,
