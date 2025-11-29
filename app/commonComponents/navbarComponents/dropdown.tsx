@@ -195,47 +195,26 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   };
 
   return (
-    <div className="relative">
+    <>
+      {/* Mobile fullscreen backdrop */}
+      {isDropdownOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[9998] sm:hidden" onClick={closeDropdown}></div>
+      )}
+      
       <div
-        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-full max-w-[calc(100vw-2rem)] sm:w-96 mt-3 p-0 relative transition-all duration-300 ease-out transform
+        className={`bg-white text-gray-900 border border-gray-200 rounded-2xl shadow-2xl w-96 p-0 transition-all duration-300 ease-out transform
           ${isDropdownOpen ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'}`}
         style={{ 
-          position: 'fixed', 
-          top: '4rem', 
-          left: '50%', 
-          transform: 'translateX(-50%)', 
-          zIndex: 9999, 
-          maxHeight: '80vh', 
-          overflowY: 'auto' 
+          position: 'fixed',
+          top: '4rem',
+          right: '1rem',
+          left: 'auto',
+          zIndex: 9999,
+          maxHeight: '85vh',
+          overflowY: 'auto'
         }}
         aria-hidden={!isDropdownOpen}
       >
-      <style jsx>{`
-        @media (min-width: 768px) {
-          div[style*="position: fixed"] {
-            left: auto !important;
-            right: 1rem !important;
-            transform: none !important;
-          }
-        }
-      `}</style>
-        <button
-          type="button"
-          aria-label="Close profile settings"
-          className="absolute top-4 right-4 p-1.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-red-500 md:hidden"
-          onClick={closeDropdown}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.8}
-            stroke="currentColor"
-            className="h-5 w-5"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
         {/* Profile Info */}
         <div className="flex flex-col items-center pt-7 pb-4 gap-1">
         <div className="relative group" ref={avatarBlockRef}>
@@ -345,12 +324,11 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
 
           <div
             className={`transition-all duration-300 overflow-hidden bg-gray-50 rounded-lg ${
-              isEditing ? 'max-h-[1000px] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0 pointer-events-none'
+              isEditing ? 'max-h-[60vh] opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0 pointer-events-none'
             }`}
             style={{
               transitionProperty: 'max-height, opacity, margin-top',
-              maxHeight: isEditing ? '70vh' : undefined,
-              overflowY: isEditing ? 'auto' : undefined,
+              overflowY: isEditing ? 'auto' : 'hidden',
             }}
           >
             <div className="pt-3 pb-0 px-4">
@@ -423,7 +401,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
       </div>
 
       {/* Loading toast + Modals */}
-  <SubmitOverlayToast open={isWorking} message={t?.t21 || 'Updating profile photo...'} variant="info" />
+      <SubmitOverlayToast open={isWorking} message={t?.t21 || 'Updating profile photo...'} variant="info" />
       <ConfirmModal
         show={showRemoveConfirm}
         message={t?.t26 || 'Are you sure you want to remove your profile photo?'}
@@ -477,7 +455,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           onClose={() => setShowPrivacyContent(false)}
         />
       )}
-    </div>
+    </>
   );
 }
 

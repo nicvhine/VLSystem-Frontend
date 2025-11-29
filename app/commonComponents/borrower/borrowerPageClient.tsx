@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/app/commonComponents/navbarComponents/navbar';
 import { useBorrowersList } from './hooks';
 import Filter from '../utils/sortAndSearch';
+import Pagination from '../utils/pagination';
 import translations from '../translation';
 import Link from 'next/link';
 
@@ -17,6 +18,7 @@ export default function BorrowerPageClient() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'status'>('name');
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const t = translations.borrowerTranslation[language];
   const loanT = translations.loanTermsTranslator[language];
@@ -80,10 +82,11 @@ export default function BorrowerPageClient() {
       sortBy === 'name' ? a.name.localeCompare(b.name) : a.status.localeCompare(b.status)
     );
 
-  const itemsPerPage = 10;
+  const totalCount = filteredBorrowers.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const paginatedBorrowers = filteredBorrowers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   return (
@@ -169,6 +172,16 @@ export default function BorrowerPageClient() {
             </table>
           )}
         </div>
+        
+        <Pagination
+          totalCount={totalCount}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          setCurrentPage={setCurrentPage}
+          setPageSize={setPageSize}
+          language={language}
+        />
         </div>
       </div>
     </div>

@@ -27,12 +27,12 @@ function PasswordInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={label}
-        className="bg-gray-100 border text-sm border-gray-300 rounded-lg p-2 pr-10 focus:ring-2 focus:ring-red-600 outline-none transition w-full"
+        className="bg-white border text-sm border-gray-300 rounded-md p-2.5 pr-16 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full"
       />
       <button
         type="button"
         onClick={() => setShow(!show)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm"
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 text-xs font-medium"
       >
         {show ? 'Hide' : 'Show'}
       </button>
@@ -171,6 +171,29 @@ export default function ProfileSettingsPanel({
       setShowErrorModal(true);
     }
   };
+
+  const handleVerifySmsAndNotify = async () => {
+    if (enteredSmsCode.length !== 6) {
+      setPhoneError("Please enter the verification code."); 
+      return;
+    }
+    try {
+      const ok = await verifySmsCode();
+      if (ok) {
+        setShowOtpModal(false);
+        setModalMsg('Phone number verified and updated successfully.');
+        setShowSuccessModal(true);
+        setEnteredSmsCode('');
+        setSmsVerificationSent(false);
+      } else {
+        setModalMsg(phoneError || 'Failed to verify the code.');
+        setShowErrorModal(true);
+      }
+    } catch {
+      setModalMsg('An error occurred while verifying OTP.');
+      setShowErrorModal(true);
+    }
+  };
   
   const handleSaveWithConfirm = async () => {
     setShowConfirm(false);
@@ -182,91 +205,129 @@ export default function ProfileSettingsPanel({
 
   return (
     <>
-      <div className="max-w-2xl mx-auto p-2 space-y-2">
+      <div className="max-w-2xl mx-auto px-4 py-3 space-y-2">
 
         {/* USERNAME */}
-        <div className=" p-2 rounded-xl shadow-md">
-          <p className="text-xs text-gray-500">Username</p>
+        <div className="pb-2 border-b border-gray-200">
+          <p className="text-xs font-medium text-gray-500 mb-1">Username</p>
           <p className="text-gray-900 text-sm">{username}</p>
         </div>
 
         {/* EMAIL */}
-        <div className=" p-2 rounded-xl shadow-md">
-          <p className="text-xs text-gray-500 mb-1">Email</p>
-          {emailError && <p className="text-xs text-red-500 mb-1">{emailError}</p>}
-          <div className="flex flex-col gap-2">
+        <div className="pb-2 border-b border-gray-200">
+          <p className="text-xs font-medium text-gray-500 mb-1">Email</p>
+          <div className="min-h-[0.75rem]">
+            {emailError && <p className="text-xs text-red-500 mb-1">{emailError}</p>}
+          </div>
+          <div className="flex flex-col">
             <input
               type="email"
               value={editingEmail}
-              onChange={(e) => setEditingEmail(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setEditingEmail(value);
+                // Clear error when user starts typing
+                if (emailError) setEmailError('');
+                // Validate Gmail only
+                if (value && !value.toLowerCase().endsWith('@gmail.com')) {
+                  setEmailError('Only Gmail addresses are accepted.');
+                }
+              }}
               placeholder={email}
-              className="bg-gray-100 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-red-600 outline-none transition text-sm"
+              className="bg-white border border-gray-300 rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition text-sm"
             />
-            {editingEmail.trim() !== '' && (
-              <button
-                disabled={sendingCode}
-                onClick={async () => {
-                  setOtpType('email');
-                  setEmailError('');
-                  setSendingCode(true);
-                  try { await sendEmailCode(); } finally { setSendingCode(false); }
-                }}
-                className={`text-red-600 rounded-lg p-2 text-xs transition   disabled:cursor-not-allowed`}
-              >
-                {sendingCode ? 'Sending…' : 'Send Verification Code'}
-              </button>
-            )}
+            <div className="min-h-[1rem]">
+              {editingEmail.trim() !== '' && editingEmail.toLowerCase() !== email.toLowerCase() && !emailError && (
+                <button
+                  disabled={sendingCode}
+                  onClick={async () => {
+                    setOtpType('email');
+                    setEmailError('');
+                    setSendingCode(true);
+                    try { await sendEmailCode(); } finally { setSendingCode(false); }
+                  }}
+                  className={`text-red-600 text-xs font-medium hover:text-red-700 transition disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  {sendingCode ? 'Sending…' : 'Send Verification Code'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
          {/* PHONE */}
-        <div className=" p-2 rounded-xl shadow-md">
-          <p className="text-xs text-gray-500 mb-1">Phone</p>
-          {phoneError && <p className="text-xs text-red-500 mb-1">{phoneError}</p>}
-          <div className="flex flex-col gap-2">
+        <div className="pb-2 border-b border-gray-200">
+          <p className="text-xs font-medium text-gray-500 mb-1">Phone</p>
+          <div className="min-h-[0.75rem]">
+            {phoneError && <p className="text-xs text-red-500 mb-1">{phoneError}</p>}
+          </div>
+          <div className="flex flex-col">
             <input
               type="tel"
               value={editingPhone}
-              onChange={(e) => setEditingPhone(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow numbers
+                if (value && !/^\d*$/.test(value)) return;
+                setEditingPhone(value);
+                // Clear error when user starts typing
+                if (phoneError) setPhoneError('');
+                // Validate phone format
+                if (value && (!value.startsWith('09') || value.length !== 11)) {
+                  setPhoneError('Phone number must start with 09 and be exactly 11 digits.');
+                }
+              }}
               placeholder={phoneNumber}
-              className="bg-gray-100 border border-gray-300 text-sm rounded-lg p-2 focus:ring-2 focus:ring-red-600 outline-none transition"
+              maxLength={11}
+              className="bg-white border border-gray-300 text-sm rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition"
             />
-            {editingPhone.trim() !== '' && (
-              <button
-                disabled={sendingCode}
-                onClick={async () => {
-                  setOtpType('sms');
-                  setPhoneError('');
-                  setSendingCode(true);
-                  try { await sendSmsCode(); } finally { setSendingCode(false); }
-                }}
-                className={`text-red-600 rounded-lg p-2 text-xs transition   disabled:cursor-not-allowed`}
-              >
-                {sendingCode ? 'Sending…' : 'Send Verification Code'}
-              </button>
-            )}
+            <div className="min-h-[1rem]">
+              {editingPhone.trim() !== '' && editingPhone !== phoneNumber && !phoneError && (
+                <button
+                  disabled={sendingCode}
+                  onClick={async () => {
+                    setOtpType('sms');
+                    setPhoneError('');
+                    setSendingCode(true);
+                    try { await sendSmsCode(); } finally { setSendingCode(false); }
+                  }}
+                  className={`text-red-600 text-xs font-medium hover:text-red-700 transition disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  {sendingCode ? 'Sending…' : 'Send Verification Code'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
         
         {/* PASSWORD */}
-        <div className="p-2 rounded-xl shadow-md">
-  <p className="text-xs text-gray-500 mb-1">Password</p>
-  {passwordError && <p className="text-xs text-red-500 mb-1">{passwordError}</p>}
-  <div className="flex flex-col gap-2 relative">
+        <div className="pb-2">
+  <p className="text-xs font-medium text-gray-500 mb-1">Password</p>
+  <div className="min-h-[0.75rem]">
+    {passwordError && <p className="text-xs text-red-500 mb-1">{passwordError}</p>}
+  </div>
+  <div className="flex flex-col gap-2">
     <PasswordInput
     label="Current Password"
     value={currentPassword}
     onChange={(v) => {
       setCurrentPassword(v);
       setIsEditingPasswordField(true);
+      if (passwordError) setPasswordError('');
     }}
   />
-  <PasswordInput
+    <PasswordInput
     label="New Password"
     value={newPassword}
     onChange={(v) => {
       setNewPassword(v);
       setIsEditingPasswordField(true);
+      if (passwordError) setPasswordError('');
+      // Validate password strength
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (v && !passwordRegex.test(v)) {
+        setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      }
     }}
   />
   <PasswordInput
@@ -275,14 +336,19 @@ export default function ProfileSettingsPanel({
     onChange={(v) => {
       setConfirmPassword(v);
       setIsEditingPasswordField(true);
+      if (passwordError) setPasswordError('');
+      // Check if passwords match
+      if (v && newPassword && v !== newPassword) {
+        setPasswordError('Passwords do not match.');
+      }
     }}
   />
           {/* Always render button, disable if not all fields filled */}
-          <div className="flex justify-end mt-3">
+          <div className="flex justify-end mt-1.5">
           <button
             disabled={loading || !currentPassword || !newPassword || !confirmPassword}
             onClick={() => setShowConfirm(true)}
-            className="bg-red-600 text-white text-xs rounded-lg px-6 py-2 hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="bg-red-600 text-white text-xs font-medium rounded-md px-6 py-2.5 hover:bg-red-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             {loading ? 'Saving…' : 'Save Changes'}
           </button>
@@ -302,7 +368,7 @@ export default function ProfileSettingsPanel({
       {otpVisible &&
         typeof window !== 'undefined' &&
         createPortal(
-          <div className={`fixed inset-0 bg-black/60 flex items-center justify-center z-[9999] transition-opacity duration-300 ${otpAnimateIn ? 'opacity-100' : 'opacity-0'}`}>
+          <div className={`fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] transition-opacity duration-300 ${otpAnimateIn ? 'opacity-100' : 'opacity-0'}`}>
             <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 relative transform transition-all duration-300 ease-out ${otpAnimateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2'}`}>
               <button
                 onClick={() => setShowOtpModal(false)}
@@ -319,7 +385,7 @@ export default function ProfileSettingsPanel({
                   else setPhoneError('');
                 }}
                 error={otpType === 'email' ? emailError : phoneError}
-                handleVerifyOtp={otpType === 'email' ? handleVerifyOtpAndNotify : async () => { await verifySmsCode(); }}
+                handleVerifyOtp={otpType === 'email' ? handleVerifyOtpAndNotify : handleVerifySmsAndNotify}
                 handleResendOtp={otpType === 'email' ? async () => await sendEmailCode() : async () => await sendSmsCode()}
               />
             </div>
