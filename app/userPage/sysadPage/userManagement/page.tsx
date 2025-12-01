@@ -43,6 +43,7 @@ export default function UserManagementPage() {
 
   // Reset password state
   const [resettingUserId, setResettingUserId] = useState<string | null>(null);
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
 
   // Toggle status state
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
@@ -225,23 +226,26 @@ export default function UserManagementPage() {
 
     try {
       setResettingUserId(confirmResetUser.userId);
+      setResetPasswordLoading(true);
+      
       const res = await authFetch(`${BASE_URL}/users/reset-password/${confirmResetUser.userId}`, { method: "POST" });
       if (!res.ok) throw new Error(s.t67);
 
       const { defaultPassword } = await res.json();
-
+      
       await emailjs.send(
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
         process.env.NEXT_PUBLIC_EMAILJS_RESET_TEMPLATE_ID!,
         { to_name: confirmResetUser.name, to_email: confirmResetUser.email, temp_password: defaultPassword },
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
-
-      openSuccessModal(`${s.t34} ${confirmResetUser.name}. ${s.t51}.`);
+      
+      openSuccessModal(`Password successfully reset for ${confirmResetUser.name}. ${s.t51} has been sent via email.`);
     } catch (err) {
       console.error("Reset password/email error:", err);
       openErrorModal(s.t67);
     } finally {
+      setResetPasswordLoading(false);
       setResettingUserId(null);
       setConfirmResetUser(null);
     }
@@ -396,9 +400,10 @@ export default function UserManagementPage() {
           <ConfirmModal
             isOpen={!!confirmResetUser}
             title={s.t34}
-            message={`${s.t73} ${confirmResetUser.name}?`}
+            message={`Are you sure you want to reset the password for ${confirmResetUser.name}?`}
             onConfirm={handleResetPasswordConfirmed}
             onCancel={cancelResetPassword}
+            loading={resetPasswordLoading}
           />
         )}
 
