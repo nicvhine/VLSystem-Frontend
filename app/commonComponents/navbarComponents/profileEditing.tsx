@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import translations from '../translation';
 import { ProfileEditingProps } from '../utils/Types/profileEditing';
 import OTPModal from './otpModal';
@@ -13,11 +14,13 @@ import ConfirmModal from '../modals/confirmModal';
 function PasswordInput({
   label,
   value,
-  onChange
+  onChange,
+  showToggle = true
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  showToggle?: boolean;
 }) {
   const [show, setShow] = useState(false);
   return (
@@ -27,15 +30,21 @@ function PasswordInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={label}
-        className="bg-white border text-sm border-gray-300 rounded-md p-2.5 pr-16 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full"
+        autoComplete="new-password"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        className="bg-white border text-sm border-gray-300 rounded-md p-2.5 pr-10 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full"
       />
-      <button
-        type="button"
-        onClick={() => setShow(!show)}
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 text-xs font-medium"
-      >
-        {show ? 'Hide' : 'Show'}
-      </button>
+      {showToggle && (
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10 cursor-pointer"
+          aria-label={show ? 'Hide password' : 'Show password'}
+        >
+          {show ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+        </button>
+      )}
     </div>
   );
 }
@@ -65,6 +74,7 @@ export default function ProfileSettingsPanel({
   emailVerificationSent,
   setEmailVerificationSent,
   smsVerificationSent,
+  setSmsVerificationSent,
   enteredEmailCode,
   setEnteredEmailCode,
   enteredSmsCode,
@@ -162,6 +172,8 @@ export default function ProfileSettingsPanel({
         setShowSuccessModal(true);
         setEnteredEmailCode('');
         setEmailVerificationSent(false);
+        // Clear the input field so it shows the new email as placeholder
+        setEditingEmail('');
       } else {
         setModalMsg(emailError || 'Failed to verify the code.');
         setShowErrorModal(true);
@@ -185,6 +197,8 @@ export default function ProfileSettingsPanel({
         setShowSuccessModal(true);
         setEnteredSmsCode('');
         setSmsVerificationSent(false);
+        // Clear the input field so it shows the new phone number as placeholder
+        setEditingPhone('');
       } else {
         setModalMsg(phoneError || 'Failed to verify the code.');
         setShowErrorModal(true);
@@ -200,6 +214,12 @@ export default function ProfileSettingsPanel({
     setLoading(true);
     await handleAccountSettingsUpdate();
     setLoading(false);
+    // Show success modal and auto-close after 5 seconds
+    setModalMsg('Password updated successfully!');
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 5000);
   };
 
 
@@ -315,6 +335,7 @@ export default function ProfileSettingsPanel({
       setIsEditingPasswordField(true);
       if (passwordError) setPasswordError('');
     }}
+    showToggle={false}
   />
     <PasswordInput
     label="New Password"
@@ -323,12 +344,21 @@ export default function ProfileSettingsPanel({
       setNewPassword(v);
       setIsEditingPasswordField(true);
       if (passwordError) setPasswordError('');
-      // Validate password strength
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-      if (v && !passwordRegex.test(v)) {
-        setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      
+      if (v) {
+        // Check if new password is same as current password
+        if (v === currentPassword) {
+          setPasswordError('New password must be different from current password.');
+          return;
+        }
+        // Validate password strength
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(v)) {
+          setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+        }
       }
     }}
+    showToggle={true}
   />
   <PasswordInput
     label="Confirm Password"
@@ -342,6 +372,7 @@ export default function ProfileSettingsPanel({
         setPasswordError('Passwords do not match.');
       }
     }}
+    showToggle={true}
   />
           {/* Always render button, disable if not all fields filled */}
           <div className="flex justify-end mt-1.5">
@@ -387,6 +418,7 @@ export default function ProfileSettingsPanel({
                 error={otpType === 'email' ? emailError : phoneError}
                 handleVerifyOtp={otpType === 'email' ? handleVerifyOtpAndNotify : handleVerifySmsAndNotify}
                 handleResendOtp={otpType === 'email' ? async () => await sendEmailCode() : async () => await sendSmsCode()}
+                otpType={otpType || 'email'}
               />
             </div>
           </div>,
