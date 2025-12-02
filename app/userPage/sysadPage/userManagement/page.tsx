@@ -27,6 +27,7 @@ export default function UserManagementPage() {
   // Search and filter
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
+  const [sortBy, setSortBy] = useState<string>('');
 
   // Pagination
   const [pageSize, setPageSize] = useState(10);
@@ -292,7 +293,7 @@ export default function UserManagementPage() {
       email: user.email,
       phoneNumber: user.phoneNumber,
       role: user.role,
-      status: user.status,
+      // Don't include status - it should only be changed via Activate/Deactivate
     });
   };
 
@@ -309,16 +310,19 @@ export default function UserManagementPage() {
     if (!editingUserId) return;
 
     try {
+      // Explicitly exclude status from edit payload - status can only be changed via Activate/Deactivate
+      const { status, ...editPayload } = editFormData;
+      
       const res = await authFetch(`${BASE_URL}/users/${editingUserId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editFormData),
+        body: JSON.stringify(editPayload),
       });
 
       if (!res.ok) throw new Error(s.t96);
 
       setActiveStaff(prev => prev.map(u => 
-        u.userId === editingUserId ? { ...u, ...editFormData } as User : u
+        u.userId === editingUserId ? { ...u, ...editPayload } as User : u
       ));
 
       openSuccessModal(s.t94);
@@ -356,20 +360,36 @@ export default function UserManagementPage() {
     const matchesSearch = searchQuery === '' || 
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phoneNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+      user.phoneNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.userId?.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesRole = roleFilter === '' || user.role.toLowerCase() === roleFilter.toLowerCase();
     
     return matchesSearch && matchesRole;
   });
 
+  // Sort users
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.name.localeCompare(b.name);
+    }
+    if (sortBy === 'role') {
+      return a.role.localeCompare(b.role);
+    }
+    if (sortBy === 'date') {
+      // Sort by userId as a proxy for creation date (assuming sequential IDs)
+      return (a.userId || '').localeCompare(b.userId || '');
+    }
+    return 0;
+  });
+
   // Pagination calculations
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
-  const paginatedUsers = filteredUsers.slice(
+  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / pageSize));
+  const paginatedUsers = sortedUsers.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-  const totalCount = filteredUsers.length;
+  const totalCount = sortedUsers.length;
   const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
@@ -436,8 +456,26 @@ export default function UserManagementPage() {
 
         {/* Filter Buttons */}
         <div className="mb-6">
+          {/* Mobile Dropdown */}
+          <div className="block sm:hidden relative max-w-full">
+            <select
+              value={roleFilter || "All"}
+              onChange={(e) => { setRoleFilter(e.target.value === "All" ? "" : e.target.value); setCurrentPage(1); }}
+              className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
+            >
+              {["All", "head", "manager", "loan officer", "collector", "sysad"].map((roleOption) => (
+                <option key={roleOption} value={roleOption}>
+                  {roleOption === "All" ? s.t82 : roleOption === "sysad" ? s.t98 : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                </option>
+              ))}
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          {/* Desktop buttons */}
           <div className="hidden sm:flex flex-wrap gap-2 bg-white p-3 rounded-lg shadow-sm w-full max-w-full">
-            {["All", "head", "manager", "loan officer", "collector"].map((roleOption) => (
+            {["All", "head", "manager", "loan officer", "collector", "sysad"].map((roleOption) => (
               <button
                 key={roleOption}
                 onClick={() => { setRoleFilter(roleOption === "All" ? "" : roleOption); setCurrentPage(1); }}
@@ -448,13 +486,13 @@ export default function UserManagementPage() {
                 }`}
                 style={{ minWidth: 100 }}
               >
-                {roleOption === "All" ? s.t82 : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                {roleOption === "All" ? s.t82 : roleOption === "sysad" ? s.t98 : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Search and Create User */}
+        {/* Search, Sort and Create User */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 w-full max-w-full">
           <div className="relative w-full">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
@@ -465,6 +503,21 @@ export default function UserManagementPage() {
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             />
+          </div>
+          <div className="relative w-full sm:w-[200px]">
+            <select
+              value={sortBy}
+              onChange={(e) => { setSortBy(e.target.value); setCurrentPage(1); }}
+              className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
+            >
+              <option value="">{s.t99}</option>
+              <option value="name">{s.t37}</option>
+              <option value="role">{s.t41}</option>
+              <option value="date">{s.t100}</option>
+            </select>
+            <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
@@ -519,14 +572,11 @@ export default function UserManagementPage() {
                           <option value="manager">Manager</option>
                           <option value="loan officer">Loan Officer</option>
                           <option value="collector">Collector</option>
-                          <option value="sysad">Sysad</option>
+                          <option value="sysad">{s.t98}</option>
                         </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.status || 'Active'} onChange={(e) => handleEditChange("status", e.target.value)}>
-                          <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                        </select>
+                        {user.status || 'Active'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                         <div className="flex items-center justify-center gap-3">
@@ -550,7 +600,7 @@ export default function UserManagementPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize">{user.role}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize">{user.role === 'sysad' ? s.t98 : user.role}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status || 'Active'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                         <div className="relative inline-flex items-center justify-center">
@@ -567,33 +617,62 @@ export default function UserManagementPage() {
                           {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
                             const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
                             const menuWidth = 160;
-                            const menuHeight = 192; // approximate height for four options
-                            const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+                            const menuHeight = 144; // approximate height for three options
+                            const viewportHeight = window.innerHeight;
+                            const viewportWidth = window.innerWidth;
+                            
+                            // Get pagination position to avoid overlap
+                            const paginationRect = paginationRef.current?.getBoundingClientRect();
+                            const paginationTop = paginationRect ? paginationRect.top : viewportHeight;
+                            
+                            // Calculate position relative to viewport (getBoundingClientRect gives viewport coordinates)
                             let top: number;
-                            if (rect.bottom + menuHeight + 8 > paginationTop) {
-                              top = rect.top - menuHeight - 12;
-                            } else {
+                            const spaceBelow = paginationTop - rect.bottom; // Space until pagination
+                            const spaceAbove = rect.top;
+                            const wouldOverlapPagination = rect.bottom + menuHeight + 8 > paginationTop;
+                            
+                            // Check if positioning below would overlap with pagination
+                            if (wouldOverlapPagination && spaceAbove >= menuHeight + 8) {
+                              // Position above to avoid pagination
+                              top = rect.top - menuHeight - 8;
+                            } else if (spaceBelow >= menuHeight + 8 && !wouldOverlapPagination) {
+                              // Position below (enough space and won't overlap)
                               top = rect.bottom + 8;
+                            } else if (spaceAbove >= menuHeight + 8) {
+                              // Position above (preferred when space below is limited)
+                              top = rect.top - menuHeight - 8;
+                            } else {
+                              // Not enough space, position where there's more room
+                              if (spaceBelow > spaceAbove && !wouldOverlapPagination) {
+                                top = rect.bottom + 8;
+                              } else {
+                                top = rect.top - menuHeight - 8;
+                              }
                             }
-                            if (top < 8) {
-                              top = 8;
-                            }
+                            
+                            // Ensure menu stays within viewport
+                            top = Math.max(8, Math.min(top, viewportHeight - menuHeight - 8));
+                            
                             let left = rect.right - menuWidth;
-                            if (left + menuWidth > window.innerWidth - 8) {
-                              left = window.innerWidth - menuWidth - 8;
+                            // Ensure menu stays within viewport horizontally
+                            if (left < 8) {
+                              left = 8;
+                            } else if (left + menuWidth > viewportWidth - 8) {
+                              left = viewportWidth - menuWidth - 8;
                             }
+                            
                             const style: React.CSSProperties = {
                               position: "fixed",
-                              top,
-                              left,
-                              width: menuWidth,
+                              top: `${top}px`,
+                              left: `${left}px`,
+                              width: `${menuWidth}px`,
                               zIndex: 9999,
                             };
                             return (
                               <div
                                 ref={actionPopoverRef}
                                 style={style}
-                                className="rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+                                className="rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none fixed"
                                 role="menu"
                               >
                                 <button
@@ -636,7 +715,7 @@ export default function UserManagementPage() {
                   )}
                 </tr>
               ))}
-              {filteredUsers.length === 0 && (
+              {sortedUsers.length === 0 && (
                 <tr>
                   <td colSpan={7} className="text-center py-10 text-gray-500 font-semibold">
                     {s.t47}
