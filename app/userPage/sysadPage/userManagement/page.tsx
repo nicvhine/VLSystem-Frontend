@@ -163,7 +163,7 @@ export default function UserManagementPage() {
 
       if (!res.ok) {
         // Try to parse server error
-        let msg = "Failed to create user";
+        let msg = s.t95;
         try {
           const data = await res.json();
           msg = data?.error || data?.message || msg;
@@ -189,7 +189,7 @@ export default function UserManagementPage() {
 
       const { user: createdUser, credentials } = await res.json();
       setUsers((prev) => [...prev, createdUser]);
-      setSuccessMessage("User created successfully.");
+      setSuccessMessage(s.t93);
 
       console.log("Email to send:", createdUser.email);
 
@@ -209,7 +209,7 @@ export default function UserManagementPage() {
       return { success: true };
 
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to create user");
+      setErrorMessage(err.message || s.t95);
       setErrorModalOpen(true);
       return { success: false, message: err.message };
     }
@@ -240,7 +240,7 @@ export default function UserManagementPage() {
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
       
-      openSuccessModal(`Password successfully reset for ${confirmResetUser.name}. ${s.t51} has been sent via email.`);
+      openSuccessModal(`${s.t87} ${confirmResetUser.name}. ${s.t51} ${s.t88}`);
     } catch (err) {
       console.error("Reset password/email error:", err);
       openErrorModal(s.t67);
@@ -268,16 +268,16 @@ export default function UserManagementPage() {
         body: JSON.stringify({ status: newStatus }),
       });
       
-      if (!res.ok) throw new Error('Failed to update user status');
+      if (!res.ok) throw new Error(s.t97);
 
       setActiveStaff(prev => prev.map(u => 
         u.userId === confirmToggleUser.userId ? { ...u, status: newStatus } : u
       ));
       
-      openSuccessModal(`Successfully ${newStatus === 'Active' ? 'activated' : 'deactivated'} ${confirmToggleUser.name}`);
+      openSuccessModal(`${s.t89} ${newStatus === 'Active' ? s.t90 : s.t91} ${confirmToggleUser.name}`);
     } catch (err) {
       console.error("Toggle status error:", err);
-      openErrorModal("Failed to update user status");
+      openErrorModal(s.t97);
     } finally {
       setTogglingUserId(null);
       setConfirmToggleUser(null);
@@ -315,18 +315,18 @@ export default function UserManagementPage() {
         body: JSON.stringify(editFormData),
       });
 
-      if (!res.ok) throw new Error("Failed to update user");
+      if (!res.ok) throw new Error(s.t96);
 
       setActiveStaff(prev => prev.map(u => 
         u.userId === editingUserId ? { ...u, ...editFormData } as User : u
       ));
 
-      openSuccessModal("User updated successfully");
+      openSuccessModal(s.t94);
       setEditingUserId(null);
       setEditFormData({});
     } catch (err) {
       console.error("Edit user error:", err);
-      openErrorModal("Failed to update user");
+      openErrorModal(s.t96);
     }
   };
 
@@ -342,7 +342,7 @@ export default function UserManagementPage() {
       if (!res.ok) throw new Error(s.t67);
 
       setActiveStaff(prev => prev.filter(u => u.userId !== deletingUser.userId));
-      openSuccessModal(`Successfully deleted ${deletingUser.name}`); 
+      openSuccessModal(`${s.t89} ${s.t92} ${deletingUser.name}`); 
     } catch (err) {
       console.error("Delete user error:", err);
       openErrorModal(s.t67);
@@ -400,7 +400,7 @@ export default function UserManagementPage() {
           <ConfirmModal
             isOpen={!!confirmResetUser}
             title={s.t34}
-            message={`Are you sure you want to reset the password for ${confirmResetUser.name}?`}
+            message={`${s.t74.replace('proceed', `reset the password for ${confirmResetUser.name}`)}`}
             onConfirm={handleResetPasswordConfirmed}
             onCancel={cancelResetPassword}
             loading={resetPasswordLoading}
@@ -410,8 +410,8 @@ export default function UserManagementPage() {
         {confirmToggleUser && (
           <ConfirmModal
             isOpen={!!confirmToggleUser}
-            title={confirmToggleUser.status === 'Active' ? 'Deactivate User' : 'Activate User'}
-            message={`Are you sure you want to ${confirmToggleUser.status === 'Active' ? 'deactivate' : 'activate'} ${confirmToggleUser.name}?`}
+            title={confirmToggleUser.status === 'Active' ? s.t36 : s.t35}
+            message={confirmToggleUser.status === 'Active' ? `${s.t49.replace('this user', confirmToggleUser.name)}` : `${s.t50.replace('this user', confirmToggleUser.name)}`}
             onConfirm={handleToggleStatusConfirmed}
             onCancel={cancelToggleStatus}
           />
@@ -420,8 +420,8 @@ export default function UserManagementPage() {
         {deletingUser && (
           <ConfirmModal
             isOpen={!!deletingUser}
-            title={s.t76}
-            message={`${s.t74} ${deletingUser.name}?`}
+            title={s.t73}
+            message={`${s.t48.replace('this user', deletingUser.name)}`}
             onConfirm={handleDeleteUserConfirmed}
             onCancel={cancelDeleteUser}
           />
@@ -448,7 +448,7 @@ export default function UserManagementPage() {
                 }`}
                 style={{ minWidth: 100 }}
               >
-                {roleOption === "All" ? "All Roles" : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+                {roleOption === "All" ? s.t82 : roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
               </button>
             ))}
           </div>
@@ -460,7 +460,7 @@ export default function UserManagementPage() {
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder={s.t46}
               className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
@@ -493,8 +493,8 @@ export default function UserManagementPage() {
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t41}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t39}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t38}</th>
-                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">Role</th>
-                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">Status</th>
+                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t41}</th>
+                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t42}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-center whitespace-nowrap">{s.t43}</th>
               </tr>
             </thead>
@@ -534,13 +534,13 @@ export default function UserManagementPage() {
                             onClick={handleSaveEdit}
                             className="text-sm text-gray-700 hover:text-gray-900 hover:underline"
                           >
-                            Save
+                            {s.t5}
                           </button>
                           <button
                             onClick={handleCancelEdit}
                             className="text-sm text-red-600 hover:text-red-700 hover:underline"
                           >
-                            Cancel
+                            {s.t6}
                           </button>
                         </div>
                       </td>
@@ -601,7 +601,7 @@ export default function UserManagementPage() {
                                   className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                   role="menuitem"
                                 >
-                                  Edit
+                                  {s.t32}
                                 </button>
                                 {user.status === 'Active' ? (
                                   <button
@@ -609,7 +609,7 @@ export default function UserManagementPage() {
                                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-yellow-600 hover:bg-yellow-50"
                                     role="menuitem"
                                   >
-                                    Deactivate
+                                    {s.t36}
                                   </button>
                                 ) : (
                                   <button
@@ -617,7 +617,7 @@ export default function UserManagementPage() {
                                     className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50"
                                     role="menuitem"
                                   >
-                                    Activate
+                                    {s.t35}
                                   </button>
                                 )}
                                 <button
@@ -639,7 +639,7 @@ export default function UserManagementPage() {
               {filteredUsers.length === 0 && (
                 <tr>
                   <td colSpan={7} className="text-center py-10 text-gray-500 font-semibold">
-                    No users found.
+                    {s.t47}
                   </td>
                 </tr>
               )}
@@ -651,14 +651,14 @@ export default function UserManagementPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3 text-black" ref={paginationRef}>
           <div className="text-sm text-gray-700">
             {totalCount === 0 ? (
-              <>Showing 0 of 0</>
+              <>{s.t86} 0 {s.t71} 0</>
             ) : (
-              <>Showing <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> of <span className="font-medium">{totalCount}</span></>
+              <>{s.t86} <span className="font-medium">{showingStart}</span>–<span className="font-medium">{showingEnd}</span> {s.t71} <span className="font-medium">{totalCount}</span></>
             )}
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Rows per page:</span>
+              <span className="text-sm text-gray-600">{s.t85}:</span>
               <select
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
@@ -676,17 +676,17 @@ export default function UserManagementPage() {
                 disabled={currentPage === 1}
                 className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
               >
-                Previous
+                {s.t83}
               </button>
               <span className="px-1 py-1 text-gray-700">
-                Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{totalPages}</span>
+                {s.t70} <span className="font-medium">{currentPage}</span> {s.t71} <span className="font-medium">{totalPages}</span>
               </span>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 rounded-md bg-white border border-gray-300 hover:bg-gray-100 disabled:opacity-50 transition"
               >
-                Next
+                {s.t84}
               </button>
             </div>
           </div>
