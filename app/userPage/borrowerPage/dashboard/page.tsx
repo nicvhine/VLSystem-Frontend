@@ -10,6 +10,7 @@ import ReceiptModal from '@/app/commonComponents/modals/receiptModal';
 import { LoadingSpinner } from '@/app/commonComponents/utils/loading';
 
 import useBorrowerDashboard from './hooks';
+import translations from '@/app/commonComponents/translation';
 
 // Cards
 import LoanDetailsCard from './cards/loanDetailsCard';
@@ -55,6 +56,8 @@ export default function BorrowerDashboard() {
     language,
     t,
   } = dashboard;
+
+  const bp = translations.borrowerPageTranslation[language];
 
   // Reset terms reads each time modal opens
   React.useEffect(() => {
@@ -122,7 +125,7 @@ export default function BorrowerDashboard() {
       ) : error ? (
         <p className="text-red-600">{error}</p>
       ) : !displayedLoan ? (
-        <p>No loans found.</p>
+        <p>{bp.t38}</p>
       ) : (
         <div className="flex flex-col md:flex-row gap-4 md:gap-6 p-4">
           <div className="w-full md:w-1/2 flex flex-col gap-4">
@@ -145,7 +148,7 @@ export default function BorrowerDashboard() {
           </div>
 
           <div className="flex-1 flex flex-col gap-4 md:overflow-y-auto md:max-h-screen">
-            <h3 className="text-xl font-semibold">Upcoming Bills</h3>
+            <h3 className="text-xl font-semibold">{bp.t39}</h3>
             {upcoming.length > 0 ? (
               upcoming.map((collection, i) => {
                 const canPay = i === 0 || upcoming[i - 1].status === 'Paid';
@@ -161,12 +164,12 @@ export default function BorrowerDashboard() {
                 );
               })
             ) : (
-              <p>No upcoming bills.</p>
+              <p>{bp.t40}</p>
             )}
 
           {paid.length > 0 && (
               <>
-                <h4 className="text-lg font-semibold mt-4">Paid Collections</h4>
+                <h4 className="text-lg font-semibold mt-4">{bp.t41}</h4>
                 {paid.map((c) => (
                   <PaidCollectionCard key={c.collectionNumber} collection={c} />
                 ))}

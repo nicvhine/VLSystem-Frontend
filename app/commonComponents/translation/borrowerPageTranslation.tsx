@@ -40,7 +40,13 @@ const borrowerPageTranslation = {
     
     // Loan Status
     t36: "Active",
-    t37: "Inactive"
+    t37: "Inactive",
+
+    // Dashboard
+    t38: "No loans found.",
+    t39: "Upcoming Bills",
+    t40: "No upcoming bills.",
+    t41: "Paid Collections"
   },
   ceb: {
     t1: "Kasaysayan sa Pahulam",
@@ -83,7 +89,13 @@ const borrowerPageTranslation = {
     
     // Loan Status
     t36: "Aktibo",
-    t37: "Dili Aktibo"
+    t37: "Dili Aktibo",
+
+    // Dashboard
+    t38: "Walay nakit-an nga mga pahulam.",
+    t39: "Mga Upcoming nga Bills",
+    t40: "Walay upcoming nga mga bills.",
+    t41: "Mga Nakabayad nga Koleksyon"
   }
 };
 

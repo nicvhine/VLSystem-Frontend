@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { FiDownload } from 'react-icons/fi';
 import { exportDashboardToPDF } from '@/lib/pdfExport';
+import translations from '@/app/commonComponents/translation';
 import {
   LineChart,
   Line,
@@ -56,8 +57,35 @@ export default function HeadDashboard() {
   const [applicationsByType, setApplicationsByType] = useState([]);
   const [topBorrowersData, setTopBorrowersData] = useState<TopBorrower[]>([]);
   const [topAgentsData, setTopAgentsData] = useState<TopAgent[]>([]);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const pieColors = ["#374151", "#6b7280", "#1f2937", "#9ca3af"];
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('headLanguage') : null;
+    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+    const onLang = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        if (ev.detail?.userType === 'head') {
+          const lang = ev.detail?.language;
+          if (lang === 'en' || lang === 'ceb') setLanguage(lang);
+        }
+      } catch {}
+    };
+    const onStorage = () => {
+      const l = localStorage.getItem('headLanguage');
+      if (l === 'en' || l === 'ceb') setLanguage(l);
+    };
+    window.addEventListener('languageChange', onLang as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('languageChange', onLang as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  const t = translations.statisticTranslation[language];
 
   useEffect(() => {
     async function loadStats() {
@@ -137,41 +165,41 @@ export default function HeadDashboard() {
         
         {/* Header with Export Button */}
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t.d1}</h1>
           <button
             onClick={handleExportPDF}
             disabled={isGenerating}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiDownload className="w-4 h-4" />
-            {isGenerating ? 'Generating PDF...' : 'Export to PDF'}
+            {isGenerating ? t.d2 : t.d3}
           </button>
         </div>
 
         {/* Quick Stats */}
-        <Section title="Quick Stats">
+        <Section title={t.d4}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatCard title="Total Borrowers" value={stats?.totalBorrowers ?? 0} />
-            <StatCard title="Total Disbursed" value={formatCurrency(stats?.totalDisbursed ?? 0)} />
-            <StatCard title="Total Collected" value={formatCurrency(stats?.totalCollected ?? 0)} />
+            <StatCard title={t.d5} value={stats?.totalBorrowers ?? 0} />
+            <StatCard title={t.d6} value={formatCurrency(stats?.totalDisbursed ?? 0)} />
+            <StatCard title={t.d7} value={formatCurrency(stats?.totalCollected ?? 0)} />
           </div>
         </Section>
 
         {/* Borrowers Overview */}
-        <Section title="Borrowers Overview">
+        <Section title={t.d8}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Left: Total & Active Borrowers */}
             <div className="flex flex-col justify-start space-y-4">
-              <StatCard title="Total Borrowers" value={stats?.totalBorrowers ?? 0} />
-              <StatCard title="Active Borrowers" value={stats?.activeBorrowers ?? 0} />
+              <StatCard title={t.d5} value={stats?.totalBorrowers ?? 0} />
+              <StatCard title={t.d9} value={stats?.activeBorrowers ?? 0} />
             </div>
 
             {/* Center: Top Borrowers */}
             <div className="bg-white rounded-2xl shadow p-4 flex flex-col">
-              <h3 className="text-sm font-semibold mb-2 text-gray-600">Top Borrowers</h3>
+              <h3 className="text-sm font-semibold mb-2 text-gray-600">{t.d10}</h3>
               {topBorrowersData.length === 0 ? (
-                <p className="text-gray-500">No borrowers data</p>
+                <p className="text-gray-500">{t.d11}</p>
               ) : (
                 <ul className="divide-y divide-gray-200">
                   {topBorrowersData.map((borrower, index) => (
@@ -185,15 +213,15 @@ export default function HeadDashboard() {
             </div>
 
             {/* Right: Borrowers Over Time Chart */}
-            <ChartWrapper title="Borrowers Over Time" height={280}>
+            <ChartWrapper title={t.d12} height={280}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={borrowersOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="new" stroke="#374151" name="New Borrowers" />
-                  <Line type="monotone" dataKey="active" stroke="#6b7280" name="Active Borrowers" />
+                  <Line type="monotone" dataKey="new" stroke="#374151" name={t.d13} />
+                  <Line type="monotone" dataKey="active" stroke="#6b7280" name={t.d14} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartWrapper>
@@ -202,20 +230,20 @@ export default function HeadDashboard() {
         </Section>
 
        {/* Loan Overview */}
-<Section title="Loan Overview">
+<Section title={t.d15}>
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     {/* Left: Total & Closed Loans */}
     <div className="flex flex-col justify-start space-y-4">
-      <StatCard title="Total Loans" value={stats?.totalLoans ?? 0} />
-      <StatCard title="Closed Loans" value={stats?.closedLoans ?? 0} />
+      <StatCard title={t.d16} value={stats?.totalLoans ?? 0} />
+      <StatCard title={t.d17} value={stats?.closedLoans ?? 0} />
     </div>
 
     {/* Center: Top Agents */}
     <div className="bg-white rounded-2xl shadow p-6 flex flex-col">
-      <h3 className="text-sm font-semibold mb-2 text-gray-600">Top Agents</h3>
+      <h3 className="text-sm font-semibold mb-2 text-gray-600">{t.d18}</h3>
       {topAgentsData.length === 0 ? (
-        <p className="text-gray-500">No agents available</p>
+        <p className="text-gray-500">{t.d19}</p>
       ) : (
         <ul className="divide-y divide-gray-200">
           {topAgentsData.map((agent: any) => (
@@ -229,7 +257,7 @@ export default function HeadDashboard() {
     </div>
 
     {/* Right: Loan Disbursement Chart */}
-    <ChartWrapper title="Loan Disbursement Over Time" height={280}>
+    <ChartWrapper title={t.d20} height={280}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={loanDisbursementOverTime}>
           <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
@@ -246,21 +274,21 @@ export default function HeadDashboard() {
 
 
         {/* Collection Overview */}
-        <Section title="Collection Overview">
+        <Section title={t.d21}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <StatCard title="Total Collected" value={formatCurrency(stats?.totalCollected ?? 0)} />
-              <StatCard title="Collectables" value={formatCurrency(stats?.collectables ?? 0)} />
+              <StatCard title={t.d7} value={formatCurrency(stats?.totalCollected ?? 0)} />
+              <StatCard title={t.d22} value={formatCurrency(stats?.collectables ?? 0)} />
             </div>
 
             {/* Top Collectors */}
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                Top Collectors
+                {t.d23}
               </div>
               {topCollectorsData.length === 0 ? (
-                <p className="text-gray-500">No collectors available</p>
+                <p className="text-gray-500">{t.d24}</p>
               ) : (
                 <div className="space-y-4">
                   {topCollectorsData.map((c: any) => {
@@ -293,17 +321,17 @@ export default function HeadDashboard() {
         </Section>
 
         {/* Loan Applications Overview */}
-        <Section title="Loan Applications Overview">
+        <Section title={t.d25}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
             <div className="grid grid-cols-2 gap-4">
-              <StatCard title="Total Applications" value={stats?.totalApplications ?? 0} />
-              <StatCard title="Pending Applications" value={stats?.pendingApplications ?? 0} />
-              <StatCard title="Approved Applications" value={stats?.approvedApplications ?? 0} />
-              <StatCard title="Denied Applications" value={stats?.deniedApplications ?? 0} />
+              <StatCard title={t.d26} value={stats?.totalApplications ?? 0} />
+              <StatCard title={t.d27} value={stats?.pendingApplications ?? 0} />
+              <StatCard title={t.d28} value={stats?.approvedApplications ?? 0} />
+              <StatCard title={t.d29} value={stats?.deniedApplications ?? 0} />
             </div>
 
-            <ChartWrapper title="Applications by Type" height={280}>
+            <ChartWrapper title={t.d30} height={280}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                 <Pie
