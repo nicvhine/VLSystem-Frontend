@@ -17,6 +17,7 @@ interface Props {
   reason: string;
   date: string;
   loanId: string;
+  onSuccess?: () => void;
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL as string;
@@ -28,6 +29,7 @@ export default function EndorseLetterModal({
   reason,
   date,
   loanId,
+  onSuccess,
 }: Props) {
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
@@ -96,10 +98,16 @@ export default function EndorseLetterModal({
 
       setSuccessMsg("Endorsement successfully submitted!");
       setShowSuccess(true);
+      
+      // Call onSuccess callback immediately to update UI
+      if (onSuccess) {
+        onSuccess();
+      }
+      
       setTimeout(() => {
         setShowSuccess(false);
         onClose();
-      }, 2000);
+      }, 1500);
     } catch (error: any) {
       console.error("Error submitting endorsement:", error);
   setErrorMsg(error.message || "Failed to submit endorsement. Please try again.");

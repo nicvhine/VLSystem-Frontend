@@ -220,6 +220,8 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
   const [warningMsg, setWarningMsg] = useState("");
   const [closureStatus, setClosureStatus] = useState<string | null>(null);
   const [loanType, setLoanType] = useState<string | null>(null); // Store loan type
+  const [refreshClosureStatus, setRefreshClosureStatus] = useState(0); // Trigger to refresh closure status
+  const pendingSubmissionRef = React.useRef(false); // Use ref to persist across re-renders
 
   useEffect(() => {
     if (!loan) return;
@@ -230,11 +232,22 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
       .then(data => setCollections(data.collections || []))
       .catch(err => console.error(err));
 
+    // Completely skip closure status fetch if we have a pending submission
+    if (pendingSubmissionRef.current) {
+      console.log('🚫 Skipping closure status fetch - pending submission');
+      return;
+    }
+
+    console.log('📡 Fetching closure status for loan:', loan.loanId);
     fetch(`${BASE_URL}/closure/by-loan/${loan.loanId}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(res => res.json())
-      .then(data => setClosureStatus(data.hasClosure ? data.status : null))
+      .then(data => {
+        const newStatus = data.hasClosure ? data.status : null;
+        console.log('✅ Closure status from backend:', newStatus);
+        setClosureStatus(newStatus);
+      })
       .catch(err => console.error(err));
-  }, [loan]);
+  }, [loan, refreshClosureStatus]);
 
    // Fetch loan type using the first payment's loanId
    useEffect(() => {
@@ -271,6 +284,20 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
     setEndorsementData({ reason, date: new Date().toLocaleDateString() });
     setInputModalOpen(false);
     setLetterModalOpen(true);
+  };
+
+  const handleEndorsementSuccess = () => {
+    console.log('✅ Endorsement submitted successfully! Setting status to Pending');
+    // Immediately update closure status to Pending and block future fetches
+    setClosureStatus('Pending');
+    pendingSubmissionRef.current = true;
+    
+    // After 5 seconds, allow fetching again to verify from backend
+    setTimeout(() => {
+      console.log('⏰ Timeout complete - allowing status fetch');
+      pendingSubmissionRef.current = false;
+      setRefreshClosureStatus(prev => prev + 1);
+    }, 5000);
   };
 
   return (
@@ -335,6 +362,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
             reason={endorsementData.reason}
             date={endorsementData.date}
             loanId={loan.loanId}
+            onSuccess={handleEndorsementSuccess}
           />
         )}
         <ErrorModal isOpen={showWarning} message={warningMsg} onClose={() => setShowWarning(false)} />

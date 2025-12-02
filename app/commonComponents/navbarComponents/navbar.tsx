@@ -18,7 +18,7 @@ import {
   getCollectorNavItems
 } from './navItems';
 import { NavbarProps } from '../utils/Types/navbar';
-import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../utils/notification';
+import { pickNotifDate, formatRelative, formatFull} from '../utils/notification';
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
@@ -450,8 +450,16 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
                             router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
                           } else if (notif.type === 'penalty-endorsement' || notif.type === 'penalty-endorsement-approved' || notif.type === 'penalty-endorsement-rejected') {
                             router.push('/commonComponents/endorsement/penalty');
-                          } else if (notif.type === 'closure-endorsement' || notif.type === 'closure-approved' || notif.type === 'closure-rejected') {
+                          } else if (notif.type === 'closure-endorsement') {
+                            // Managers go to endorsement page to approve/reject
                             router.push('/commonComponents/endorsement/closure');
+                          } else if (notif.type === 'closure-approved' || notif.type === 'closure-rejected') {
+                            // Loan officers get redirected to the specific loan page
+                            if (notif.referenceNumber) {
+                              router.push(`/commonComponents/loan/${notif.referenceNumber}`);
+                            } else {
+                              router.push('/commonComponents/endorsement/closure');
+                            }
                           }
                         } catch (err) {
                           console.error('Failed to handle notification click:', err);
@@ -478,7 +486,6 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
                                 <p className="text-sm font-semibold text-gray-900 leading-tight">{displayName}</p>
                                 {roleText && <p className="text-[11px] text-gray-500 capitalize -mt-0.5">{roleText}</p>}
                               </div>
-                              <div className="ml-2 shrink-0">{getStatusIcon(notif.message)}</div>
                             </div>
                             <p
                               className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words"
@@ -664,8 +671,16 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
                               router.push(`/commonComponents/loanApplication/${notif.applicationId}`);
                             } else if (notif.type === 'penalty-endorsement' || notif.type === 'penalty-endorsement-approved' || notif.type === 'penalty-endorsement-rejected') {
                               router.push('/commonComponents/endorsement/penalty');
-                            } else if (notif.type === 'closure-endorsement' || notif.type === 'closure-approved' || notif.type === 'closure-rejected') {
+                            } else if (notif.type === 'closure-endorsement') {
+                              // Managers go to endorsement page to approve/reject
                               router.push('/commonComponents/endorsement/closure');
+                            } else if (notif.type === 'closure-approved' || notif.type === 'closure-rejected') {
+                              // Loan officers get redirected to the specific loan page
+                              if (notif.referenceNumber) {
+                                router.push(`/commonComponents/loan/${notif.referenceNumber}`);
+                              } else {
+                                router.push('/commonComponents/endorsement/closure');
+                              }
                             }
                           } catch (err) {
                             console.error('Failed to handle notification click:', err);
@@ -692,7 +707,6 @@ import { pickNotifDate, formatRelative, formatFull, getStatusIcon} from '../util
                                   <p className="text-sm font-semibold text-gray-900 leading-tight">{displayName}</p>
                                   {roleText && <p className="text-[11px] text-gray-500 capitalize -mt-0.5">{roleText}</p>}
                                 </div>
-                                <div className="ml-2 shrink-0">{getStatusIcon(notif.message)}</div>
                               </div>
                               <p
                                 className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words"

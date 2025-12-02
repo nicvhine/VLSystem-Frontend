@@ -285,7 +285,7 @@ export function useProfileDropdownLogic(
 
     setSmsVerified(true);
     setSmsVerificationSent(false);
-    setSettingsSuccess("Email verified successfully!");
+    setSettingsSuccess("Phone number verified successfully!");
     setUserEnteredCode('');
 
      // Update email in backend
@@ -320,7 +320,7 @@ export function useProfileDropdownLogic(
       } catch {}
       setShowOtpModal(false);
       setIsEditingPhoneField(false);
-      setSettingsSuccess('✔ Email changed successfully.');
+      setSettingsSuccess('✔ Phone number changed successfully.');
       return true;
     } catch (err) {
       console.error(err);
@@ -421,6 +421,13 @@ export function useProfileDropdownLogic(
 
         if (newPassword !== confirmPassword) {
           setPasswordError('New Password and Confirm Password do not match.');
+          return;
+        }
+
+        // Validate password strength
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
+          setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
           return;
         }
 
