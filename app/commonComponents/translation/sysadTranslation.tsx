@@ -99,6 +99,10 @@ const sysadTranslation = {
     t95: "Failed to create user",
     t96: "Failed to update user",
     t97: "Failed to update user status",
+    t98: "System Admin",
+    t99: "Sort by",
+    t100: "Date",
+    t101: "Search logs...",
 
     // Modal generics
     t73: "Confirmation",
@@ -246,6 +250,10 @@ const sysadTranslation = {
     t95: "Napakyas sa paghimo og tiggamit",
     t96: "Napakyas sa pag-update og tiggamit",
     t97: "Napakyas sa pag-update sa status sa tiggamit",
+    t98: "System Admin",
+    t99: "Pagsunodsunod pinaagi sa",
+    t100: "Petsa",
+    t101: "Pangita og mga log...",
 
     // Modal generics
     t73: "Kompirmasyon",

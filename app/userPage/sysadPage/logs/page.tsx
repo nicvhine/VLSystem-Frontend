@@ -6,6 +6,7 @@ import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { useTranslation } from "../translationHook";
 import { translateAction, translateDescription } from "../utils/logTranslation";
 import { formatDate } from "@/app/commonComponents/utils/formatters";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL 
 
@@ -23,6 +24,8 @@ export default function LogsPage() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<string>("");
   const { s, language } = useTranslation();
 
   const openErrorModal = (msg: string) => setErrorMessage(msg);
@@ -46,7 +49,31 @@ export default function LogsPage() {
   
     fetchLogs();
   }, []);
-  
+
+  // Filter and sort logs
+  const filteredLogs = logs.filter((log) => {
+    const matchesSearch = searchQuery === '' || 
+      log.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.action?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      log.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      translateAction(log.action, language).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      translateDescription(log.description, language).toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesSearch;
+  });
+
+  const sortedLogs = [...filteredLogs].sort((a, b) => {
+    if (sortBy === 'date') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortBy === 'name') {
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    if (sortBy === 'action') {
+      return translateAction(a.action, language).localeCompare(translateAction(b.action, language));
+    }
+    return 0;
+  });
 
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t2.toLowerCase()}...</p>;
 
@@ -57,6 +84,33 @@ export default function LogsPage() {
         {errorMessage && (
           <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />
         )}
+
+        {/* Search and Sort */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <div className="relative w-full">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={s.t101}
+              className="w-full pl-10 pr-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="relative w-full sm:w-[200px]">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-4 py-3 bg-white rounded-lg border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 appearance-none transition-all"
+            >
+              <option value="">{s.t99}</option>
+              <option value="date">{s.t24}</option>
+              <option value="name">{s.t37}</option>
+              <option value="action">{s.t20}</option>
+            </select>
+            <FiChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+          </div>
+        </div>
 
         <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-100">
@@ -70,15 +124,23 @@ export default function LogsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-            {logs.map((log) => (
-            <tr key={log.logId} className="hover:bg-gray-50 transition">
-                <td className="px-6 py-4 text-sm text-gray-600">{log.createdAt ? formatDate(log.createdAt, language) : "-"}</td>
-                <td className="px-6 py-4 text-sm text-gray-800">{typeof log.name === "string" ? log.name : JSON.stringify(log.name)}</td>
-                <td className="px-6 py-4 text-sm text-gray-600 capitalize">{typeof log.role === "string" ? log.role : JSON.stringify(log.role)}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{typeof log.action === "string" ? translateAction(log.action, language) : JSON.stringify(log.action)}</td>
-                <td className="px-6 py-4 text-sm text-gray-600">{typeof log.description === "string" ? translateDescription(log.description, language) : JSON.stringify(log.description)}</td>
-            </tr>
-            ))}
+            {sortedLogs.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="text-center py-10 text-gray-500 font-semibold">
+                  {s.t25}
+                </td>
+              </tr>
+            ) : (
+              sortedLogs.map((log) => (
+                <tr key={log.logId} className="hover:bg-gray-50 transition">
+                  <td className="px-6 py-4 text-sm text-gray-600">{log.createdAt ? formatDate(log.createdAt, language) : "-"}</td>
+                  <td className="px-6 py-4 text-sm text-gray-800">{typeof log.name === "string" ? log.name : JSON.stringify(log.name)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600 capitalize">{typeof log.role === "string" ? log.role : JSON.stringify(log.role)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{typeof log.action === "string" ? translateAction(log.action, language) : JSON.stringify(log.action)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{typeof log.description === "string" ? translateDescription(log.description, language) : JSON.stringify(log.description)}</td>
+                </tr>
+              ))
+            )}
             </tbody>
           </table>
         </div>
