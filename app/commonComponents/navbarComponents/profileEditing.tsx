@@ -14,12 +14,14 @@ function PasswordInput({
   label,
   value,
   onChange,
-  language = 'en'
+  language = 'en',
+  showToggle = true
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   language?: 'en' | 'ceb';
+  showToggle?: boolean;
 }) {
   const [show, setShow] = useState(false);
   const auth = translations.authTranslation[language];
@@ -30,15 +32,21 @@ function PasswordInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={label}
-        className="bg-white border text-sm border-gray-300 rounded-md p-2.5 pr-16 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full"
+        autoComplete="new-password"
+        data-lpignore="true"
+        data-1p-ignore="true"
+        className={`bg-white border text-sm border-gray-300 rounded-md p-2.5 ${showToggle ? 'pr-16' : 'pr-2.5'} focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full`}
       />
-      <button
-        type="button"
-        onClick={() => setShow(!show)}
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
-      >
-        {show ? auth.hide : auth.show}
-      </button>
+      {showToggle && (
+        <button
+          type="button"
+          onClick={() => setShow(!show)}
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs z-10 cursor-pointer"
+          aria-label={show ? 'Hide password' : 'Show password'}
+        >
+          {show ? auth.hide : auth.show}
+        </button>
+      )}
     </div>
   );
 }
@@ -319,6 +327,7 @@ export default function ProfileSettingsPanel({
       if (passwordError) setPasswordError('');
     }}
     language={language}
+    showToggle={false}
   />
     <PasswordInput
     label="New Password"
@@ -327,13 +336,22 @@ export default function ProfileSettingsPanel({
       setNewPassword(v);
       setIsEditingPasswordField(true);
       if (passwordError) setPasswordError('');
-      // Validate password strength
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
-      if (v && !passwordRegex.test(v)) {
-        setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      
+      if (v) {
+        // Check if new password is same as current password
+        if (v === currentPassword) {
+          setPasswordError('New password must be different from current password.');
+          return;
+        }
+        // Validate password strength
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+        if (!passwordRegex.test(v)) {
+          setPasswordError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+        }
       }
     }}
     language={language}
+    showToggle={true}
   />
   <PasswordInput
     label="Confirm Password"
@@ -348,6 +366,7 @@ export default function ProfileSettingsPanel({
       }
     }}
     language={language}
+    showToggle={true}
   />
           {/* Always render button, disable if not all fields filled */}
           <div className="flex justify-end mt-1.5">
