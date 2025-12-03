@@ -70,6 +70,7 @@ export default function AgentPageClient() {
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const actionPopoverRef = useRef<HTMLDivElement | null>(null);
   const actionButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const paginationRef = useRef<HTMLDivElement | null>(null);
 
   const onToggleConfirm = (agent: any) => {
     setAgentToToggle(agent);
@@ -257,24 +258,31 @@ export default function AgentPageClient() {
                                 const rect = actionButtonRefs.current[agent.agentId]!.getBoundingClientRect();
                                 const menuWidth = 128;
                                 const menuHeight = 96;
+                                const viewportHeight = window.innerHeight;
+                                const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? viewportHeight;
+                                const spaceBelow = Math.min(paginationTop, viewportHeight) - rect.bottom;
+                                const spaceAbove = rect.top;
+                                
                                 let top: number;
-                                if (rect.bottom + menuHeight + 8 > window.innerHeight) {
-                                  top = rect.top - menuHeight - 12;
+                                // Prefer below, only go above if not enough space below AND enough space above
+                                if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
+                                  top = rect.top - menuHeight + 6;
                                 } else {
                                   top = rect.bottom + 8;
                                 }
-                                if (top < 8) {
-                                  top = 8;
-                                }
+                                
                                 let left = rect.right - menuWidth;
-                                if (left + menuWidth > window.innerWidth - 8) {
+                                if (left < 8) {
+                                  left = 8;
+                                } else if (left + menuWidth > window.innerWidth - 8) {
                                   left = window.innerWidth - menuWidth - 8;
                                 }
+                                
                                 const style: React.CSSProperties = {
                                   position: "fixed",
-                                  top,
-                                  left,
-                                  width: menuWidth,
+                                  top: `${top}px`,
+                                  left: `${left}px`,
+                                  width: `${menuWidth}px`,
                                   zIndex: 9999,
                                 };
                                 return (
@@ -407,15 +415,17 @@ export default function AgentPageClient() {
             onClose={() => setSuccessMessage('')}
           />
 
-          <Pagination
-            totalCount={totalCount}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            pageSize={pageSize}
-            setCurrentPage={setCurrentPage}
-            setPageSize={setPageSize}
-            language={language}
-          />
+          <div ref={paginationRef}>
+            <Pagination
+              totalCount={totalCount}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              setCurrentPage={setCurrentPage}
+              setPageSize={setPageSize}
+              language={language}
+            />
+          </div>
 
         </div>
       </div>
