@@ -338,7 +338,7 @@ export default function ProfileSettingsPanel({
       if (passwordError) setPasswordError('');
     }}
     language={language}
-    showToggle={false}
+    showToggle={true}
   />
     <PasswordInput
     label="New Password"

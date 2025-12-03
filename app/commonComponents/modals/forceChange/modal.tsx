@@ -86,7 +86,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 type={showCurrent ? 'text' : 'password'}
                 placeholder="Enter current password"
                 className={`w-full border ${missingFields.includes('currentPassword') ? 'border-red-500' : 'border-gray-300'} 
-                            rounded-lg px-4 py-2.5 pr-12 focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                            rounded-lg px-4 py-2.5 pr-16 focus:ring-2 focus:ring-red-500 focus:border-red-500 
                             outline-none transition placeholder:text-gray-500 text-gray-900`}
                 value={currentPassword}
                 onChange={(e) => {
@@ -123,7 +123,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 type={showNew ? 'text' : 'password'}
                 placeholder="Enter new password"
                 className={`w-full border ${missingFields.includes('newPassword') ? 'border-red-500' : 'border-gray-300'} 
-                            rounded-lg px-4 py-2.5 pr-12 focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                            rounded-lg px-4 py-2.5 pr-16 focus:ring-2 focus:ring-red-500 focus:border-red-500 
                             outline-none transition placeholder:text-gray-500 text-gray-900`}
                 value={newPassword}
                 onChange={(e) => {
@@ -160,7 +160,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Confirm your password"
                 className={`w-full border ${missingFields.includes('confirmPassword') ? 'border-red-500' : 'border-gray-300'} 
-                            rounded-lg px-4 py-2.5 pr-12 focus:ring-2 focus:ring-red-500 focus:border-red-500 
+                            rounded-lg px-4 py-2.5 pr-16 focus:ring-2 focus:ring-red-500 focus:border-red-500 
                             outline-none transition placeholder:text-gray-700 text-gray-900`}
                 value={confirm}
                 onChange={(e) => {
