@@ -41,23 +41,10 @@ export default function SysadLayout({ children }: SysadLayoutProps) {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navbar role="sysad" isBlurred={false} />
-
-      {showChangePasswordModal && (
-        <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />
-      )}
-
-      <main className="p-6">
-        {children}
-      </main>
-
-      {showModal && (
-        <AreYouStillThereModal
-          countdownSeconds={20}
-          onStay={stayLoggedIn}
-          onLogout={logout}
-        />
-      )}
-    </div>
+    <Navbar role="sysad"/>
+    {showChangePasswordModal && <ChangePasswordModal onClose={() => setShowChangePasswordModal(false)} />}
+    {children}
+    {showModal && <AreYouStillThereModal countdownSeconds={20} onStay={stayLoggedIn} onLogout={logout} />}
+  </div>
   );
 }

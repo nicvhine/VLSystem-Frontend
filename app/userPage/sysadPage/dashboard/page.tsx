@@ -47,7 +47,8 @@ export default function SysAdDashboard() {
   if (loading) return <p className="p-6 text-gray-500">{s.t69} dashboard...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 sm:py-10 px-4 sm:px-6">
+    <div className="min-h-screen p-6 bg-gray-50">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Overview Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
           <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex items-center gap-4">
@@ -133,7 +134,7 @@ export default function SysAdDashboard() {
             )}
           </ul>
         </div>
-
+        </div>
       </div>
   );
 }

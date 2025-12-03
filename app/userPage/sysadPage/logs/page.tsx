@@ -5,7 +5,6 @@ import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import { useTranslation } from "../translationHook";
 import { translateAction, translateDescription } from "../utils/logTranslation";
-import { formatDate } from "@/app/commonComponents/utils/formatters";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL 
@@ -78,8 +77,9 @@ export default function LogsPage() {
   if (loading) return <p className="p-6 text-gray-500">{s.t69} {s.t2.toLowerCase()}...</p>;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-6">
-        <h1 className="text-lg font-bold mb-6">{s.t16}</h1>
+    <div className="min-h-screen bg-gray-50">
+      <div className="mx-auto px-4 sm:px-6 py-8">
+        <h1 className="text-2xl font-semibold text-gray-800 mb-6">{s.t16}</h1>
 
         {errorMessage && (
           <ErrorModal isOpen={!!errorMessage} message={errorMessage} onClose={closeErrorModal} />
@@ -112,37 +112,50 @@ export default function LogsPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-100">
-            <thead className="bg-gray-50">
+        <div className="w-full rounded-lg bg-white shadow-sm border border-gray-100 overflow-x-auto">
+        <table className="min-w-full">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t24}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t20}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{s.t22}</th>
+                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">{s.t24}</th>
+                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">{s.t37}</th>
+                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">{s.t41}</th>
+                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">{s.t20}</th>
+                <th className="bg-gray-50 px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase">{s.t22}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-200">
             {sortedLogs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-500 font-semibold">
+                <td colSpan={5} className="text-center py-8 text-gray-500">
                   {s.t25}
                 </td>
               </tr>
             ) : (
               sortedLogs.map((log) => (
-                <tr key={log.logId} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-4 text-sm text-gray-600">{log.createdAt ? formatDate(log.createdAt, language) : "-"}</td>
-                  <td className="px-6 py-4 text-sm text-gray-800">{typeof log.name === "string" ? log.name : JSON.stringify(log.name)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 capitalize">{typeof log.role === "string" ? log.role : JSON.stringify(log.role)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{typeof log.action === "string" ? translateAction(log.action, language) : JSON.stringify(log.action)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{typeof log.description === "string" ? translateDescription(log.description, language) : JSON.stringify(log.description)}</td>
+                <tr key={log.logId} className="hover:bg-gray-50 cursor-pointer">
+                  <td className="px-6 py-4 text-sm text-gray-900">
+                    {log.createdAt
+                      ? new Date(log.createdAt).toLocaleString("en-CA", {
+                          year: "numeric",
+                          month: "2-digit",
+                          day: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          second: "2-digit",
+                          hour12: false, 
+                        })
+                      : "-"}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{typeof log.name === "string" ? log.name : JSON.stringify(log.name)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900 capitalize">{typeof log.role === "string" ? log.role : JSON.stringify(log.role)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{typeof log.action === "string" ? translateAction(log.action, language) : JSON.stringify(log.action)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{typeof log.description === "string" ? translateDescription(log.description, language) : JSON.stringify(log.description)}</td>
                 </tr>
               ))
             )}
             </tbody>
           </table>
+        </div>
         </div>
       </div>
   );
