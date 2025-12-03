@@ -324,25 +324,31 @@ export default function Page() {
                               {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
                                 const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
                                 const menuWidth = 128;
-                                const menuHeight = 96; // approximate height for two options
-                                const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+                                const menuHeight = 96;
+                                const viewportHeight = window.innerHeight;
+                                const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? viewportHeight;
+                                const spaceBelow = Math.min(paginationTop, viewportHeight) - rect.bottom;
+                                const spaceAbove = rect.top;
+                                
                                 let top: number;
-                                if (rect.bottom + menuHeight + 8 > paginationTop) {
-                                  top = rect.top - menuHeight - 12;
+                                // Prefer below, only go above if not enough space below AND enough space above
+                                if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
+                                  top = rect.top - menuHeight + 6;
                                 } else {
                                   top = rect.bottom + 8;
                                 }
-                                if (top < 8) {
-                                  top = 8;
-                                }
+                                
                                 let left = rect.right - menuWidth;
-                                if (left + menuWidth > window.innerWidth - 8) {
+                                if (left < 8) {
+                                  left = 8;
+                                } else if (left + menuWidth > window.innerWidth - 8) {
                                   left = window.innerWidth - menuWidth - 8;
                                 }
+                                
                                 const style: React.CSSProperties = {
                                   position: "fixed",
-                                  top,
-                                  left,
+                                  top: `${top}px`,
+                                  left: `${left}px`,
                                   width: menuWidth,
                                   zIndex: 9999,
                                 };

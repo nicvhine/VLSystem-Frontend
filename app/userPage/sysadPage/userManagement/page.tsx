@@ -617,44 +617,22 @@ export default function UserManagementPage() {
                           {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
                             const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
                             const menuWidth = 160;
-                            const menuHeight = 144; // approximate height for three options
+                            const menuHeight = 144;
                             const viewportHeight = window.innerHeight;
                             const viewportWidth = window.innerWidth;
-                            
-                            // Get pagination position to avoid overlap
-                            const paginationRect = paginationRef.current?.getBoundingClientRect();
-                            const paginationTop = paginationRect ? paginationRect.top : viewportHeight;
-                            
-                            // Calculate position relative to viewport (getBoundingClientRect gives viewport coordinates)
-                            let top: number;
-                            const spaceBelow = paginationTop - rect.bottom; // Space until pagination
+                            const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? viewportHeight;
+                            const spaceBelow = Math.min(paginationTop, viewportHeight) - rect.bottom;
                             const spaceAbove = rect.top;
-                            const wouldOverlapPagination = rect.bottom + menuHeight + 8 > paginationTop;
                             
-                            // Check if positioning below would overlap with pagination
-                            if (wouldOverlapPagination && spaceAbove >= menuHeight + 8) {
-                              // Position above to avoid pagination
-                              top = rect.top - menuHeight - 8;
-                            } else if (spaceBelow >= menuHeight + 8 && !wouldOverlapPagination) {
-                              // Position below (enough space and won't overlap)
-                              top = rect.bottom + 8;
-                            } else if (spaceAbove >= menuHeight + 8) {
-                              // Position above (preferred when space below is limited)
-                              top = rect.top - menuHeight - 8;
+                            let top: number;
+                            // Prefer below, only go above if not enough space below AND enough space above
+                            if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
+                              top = rect.top - menuHeight + 6;
                             } else {
-                              // Not enough space, position where there's more room
-                              if (spaceBelow > spaceAbove && !wouldOverlapPagination) {
-                                top = rect.bottom + 8;
-                              } else {
-                                top = rect.top - menuHeight - 8;
-                              }
+                              top = rect.bottom + 8;
                             }
                             
-                            // Ensure menu stays within viewport
-                            top = Math.max(8, Math.min(top, viewportHeight - menuHeight - 8));
-                            
                             let left = rect.right - menuWidth;
-                            // Ensure menu stays within viewport horizontally
                             if (left < 8) {
                               left = 8;
                             } else if (left + menuWidth > viewportWidth - 8) {

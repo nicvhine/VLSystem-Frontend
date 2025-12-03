@@ -115,6 +115,12 @@ export const handlePrint = (setPrintMode: (v: boolean) => void) => {
               color: #991b1b;
             }
 
+            /* Hide Actions column when printing */
+            th:last-child,
+            td:last-child {
+              display: none;
+            }
+
             .summary-box {
               margin-top: 25px;
               padding: 15px;
