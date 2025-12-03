@@ -1,13 +1,20 @@
 'use client';
 
-import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useChangePassword } from './logic';
 import { useState } from 'react';
 import SubmitOverlayToast from "@/app/commonComponents/utils/submitOverlayToast";
 import { ChangePasswordModalProps } from "../../utils/Types/modal";
+import translations from "@/app/commonComponents/translation";
 
 export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswordModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("language") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+  const auth = translations.authTranslation[language];
   const role =
     typeof window !== "undefined"
       ? (localStorage.getItem("role") as "user" | "borrower") || "user"
@@ -95,10 +102,10 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
                 onClick={() => setShowCurrent(!showCurrent)}
               >
-                {showCurrent ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+                {showCurrent ? auth.hide : auth.show}
               </button>
             </div>
           </div>
@@ -130,10 +137,10 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
                 onClick={() => setShowNew(!showNew)}
               >
-                {showNew ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+                {showNew ? auth.hide : auth.show}
               </button>
             </div>
           </div>
@@ -165,10 +172,10 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
                 onClick={() => setShowConfirm(!showConfirm)}
               >
-                {showConfirm ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+                {showConfirm ? auth.hide : auth.show}
               </button>
             </div>
           </div>
