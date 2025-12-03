@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
-import { FiEye, FiEyeOff } from 'react-icons/fi';
 import translations from '../translation';
 import { ProfileEditingProps } from '../utils/Types/profileEditing';
 import OTPModal from './otpModal';
@@ -15,14 +14,17 @@ function PasswordInput({
   label,
   value,
   onChange,
+  language = 'en',
   showToggle = true
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
+  language?: 'en' | 'ceb';
   showToggle?: boolean;
 }) {
   const [show, setShow] = useState(false);
+  const auth = translations.authTranslation[language];
   return (
     <div className="relative">
       <input
@@ -33,16 +35,16 @@ function PasswordInput({
         autoComplete="new-password"
         data-lpignore="true"
         data-1p-ignore="true"
-        className="bg-white border text-sm border-gray-300 rounded-md p-2.5 pr-10 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full"
+        className={`bg-white border text-sm border-gray-300 rounded-md p-2.5 ${showToggle ? 'pr-16' : 'pr-2.5'} focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition w-full`}
       />
       {showToggle && (
         <button
           type="button"
           onClick={() => setShow(!show)}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 z-10 cursor-pointer"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs z-10 cursor-pointer"
           aria-label={show ? 'Hide password' : 'Show password'}
         >
-          {show ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+          {show ? auth.hide : auth.show}
         </button>
       )}
     </div>
@@ -335,6 +337,7 @@ export default function ProfileSettingsPanel({
       setIsEditingPasswordField(true);
       if (passwordError) setPasswordError('');
     }}
+    language={language}
     showToggle={false}
   />
     <PasswordInput
@@ -358,6 +361,7 @@ export default function ProfileSettingsPanel({
         }
       }
     }}
+    language={language}
     showToggle={true}
   />
   <PasswordInput
@@ -372,6 +376,7 @@ export default function ProfileSettingsPanel({
         setPasswordError('Passwords do not match.');
       }
     }}
+    language={language}
     showToggle={true}
   />
           {/* Always render button, disable if not all fields filled */}

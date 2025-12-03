@@ -1,8 +1,8 @@
 'use client';
 
 import ConfirmModal from '@/app/commonComponents/modals/confirmModal';
-import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useState } from 'react';
+import translations from '@/app/commonComponents/translation';
 
 type Props = {
   newPassword: string;
@@ -29,6 +29,13 @@ export default function StepReset({
 }: Props) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [language, setLanguage] = useState<'en' | 'ceb'>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("language") as 'en' | 'ceb') || 'en';
+    }
+    return 'en';
+  });
+  const auth = translations.authTranslation[language];
 
   return (
     <>
@@ -46,10 +53,10 @@ export default function StepReset({
         />
         <button
           type="button"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
           onClick={() => setShowNewPassword(!showNewPassword)}
         >
-          {showNewPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+          {showNewPassword ? auth.hide : auth.show}
         </button>
       </div>
       <div className="relative mb-4">
@@ -65,10 +72,10 @@ export default function StepReset({
         />
         <button
           type="button"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-700 text-xs"
           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
         >
-          {showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />}
+          {showConfirmPassword ? auth.hide : auth.show}
         </button>
       </div>
       {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
