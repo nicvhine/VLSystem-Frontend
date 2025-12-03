@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 import { loginHandler } from './loginHandlers';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import { ButtonContentLoading } from '@/app/commonComponents/utils/loading';
@@ -144,21 +145,27 @@ export default function LoginFormWithSMS({
                 className="w-full px-4 py-2.5 mb-3 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                autoComplete="off"
+                data-lpignore="true"
+                data-1p-ignore="true"
               />
               <div className="relative mb-4">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   placeholder={auth.password}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
+                  className="w-full px-4 py-2.5 pr-12 border border-gray-200 rounded-lg focus:outline-none text-black focus:ring-2 focus:ring-red-500"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-2.5 text-sm text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? auth.hide : auth.show}
+                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
                 </button>
               </div>
               <p

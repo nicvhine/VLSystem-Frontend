@@ -84,6 +84,12 @@ export function useChangePassword(
       return;
     }
 
+    if (newPassword === currentPassword) {
+      setErrorMessage('New password must be different from current password.');
+      setErrorOpen(true);
+      return;
+    }
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
     if (!passwordRegex.test(newPassword)) {
       setError(

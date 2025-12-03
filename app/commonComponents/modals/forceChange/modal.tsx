@@ -94,7 +94,9 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                   clearMissingField('currentPassword');
                   clearError();
                 }}
-                autoComplete="current-password"
+                autoComplete="off"
+                data-lpignore="true"
+                data-1p-ignore="true"
                 onContextMenu={(e) => e.preventDefault()}
                 onPaste={preventCopyPaste}
                 onCopy={preventCopy}
@@ -130,6 +132,8 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                   clearError();
                 }}
                 autoComplete="new-password"
+                data-lpignore="true"
+                data-1p-ignore="true"
                 onContextMenu={(e) => e.preventDefault()}
                 onPaste={preventCopyPaste}
                 onCopy={preventCopy}
@@ -168,6 +172,8 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 onCopy={preventCopy}
                 onCut={preventCut}
                 autoComplete="new-password"
+                data-lpignore="true"
+                data-1p-ignore="true"
                 onContextMenu={(e) => e.preventDefault()}
               />
               <button
@@ -180,14 +186,7 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
             </div>
           </div>
           {/* Actions */}
-          <div className="mt-6 flex justify-end gap-3">
-            <button
-              onClick={handleCancel}
-              className="px-5 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition disabled:opacity-60"
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
+          <div className="mt-6 flex justify-end">
             <button
               onClick={handleSubmit}
               className="px-5 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-70"

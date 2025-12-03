@@ -47,6 +47,9 @@ export default function StepReset({
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           className="w-full border rounded-md px-3 py-2 pr-10"
+          autoComplete="new-password"
+          data-lpignore="true"
+          data-1p-ignore="true"
         />
         <button
           type="button"
@@ -63,6 +66,9 @@ export default function StepReset({
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           className="w-full border rounded-md px-3 py-2 pr-10"
+          autoComplete="new-password"
+          data-lpignore="true"
+          data-1p-ignore="true"
         />
         <button
           type="button"

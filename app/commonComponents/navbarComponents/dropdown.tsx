@@ -135,11 +135,17 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
 
   // Local email state to reflect immediate changes without full refresh
   const [displayEmail, setDisplayEmail] = useState<string>(email);
+  const [displayPhoneNumber, setDisplayPhoneNumber] = useState<string>(phoneNumber);
 
   // Keep displayEmail in sync with prop updates
   useEffect(() => {
     setDisplayEmail(email);
   }, [email]);
+
+  // Keep displayPhoneNumber in sync with prop updates
+  useEffect(() => {
+    setDisplayPhoneNumber(phoneNumber);
+  }, [phoneNumber]);
 
   // Listen for emailUpdated events to update UI immediately
   useEffect(() => {
@@ -153,6 +159,20 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     };
     window.addEventListener('emailUpdated', onEmailUpdated as EventListener);
     return () => window.removeEventListener('emailUpdated', onEmailUpdated as EventListener);
+  }, []);
+
+  // Listen for phoneNumberUpdated events to update UI immediately
+  useEffect(() => {
+    const onPhoneUpdated = (e: Event) => {
+      try {
+        const ce = e as CustomEvent;
+        if (typeof ce.detail?.phoneNumber === 'string') {
+          setDisplayPhoneNumber(ce.detail.phoneNumber);
+        }
+      } catch {}
+    };
+    window.addEventListener('phoneNumberUpdated', onPhoneUpdated as EventListener);
+    return () => window.removeEventListener('phoneNumberUpdated', onPhoneUpdated as EventListener);
   }, []);
 
   // Determine final image to show
@@ -339,7 +359,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
               <ProfileSettingsPanel
                 username={username}
                 email={displayEmail}
-                phoneNumber={phoneNumber}
+                phoneNumber={displayPhoneNumber}
                 editingEmail={editingEmail}
                 setEditingEmail={setEditingEmail}
                 isEditingEmailField={isEditingEmailField}

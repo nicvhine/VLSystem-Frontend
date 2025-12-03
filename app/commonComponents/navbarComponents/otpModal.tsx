@@ -10,7 +10,8 @@ type Props = {
   setError?: (val: string) => void; 
   handleVerifyOtp: () => Promise<void>;
   handleResendOtp: () => Promise<void>;
-  otpExpiresIn?: number; 
+  otpExpiresIn?: number;
+  otpType?: 'email' | 'sms';
 };
 
 export default function OTPModal({
@@ -21,6 +22,7 @@ export default function OTPModal({
   handleVerifyOtp,
   handleResendOtp,
   otpExpiresIn = 300,
+  otpType = 'email',
 }: Props) {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -110,7 +112,7 @@ export default function OTPModal({
     <div className="flex flex-col items-center text-center p-4">
       <h2 className="text-2xl font-semibold text-gray-900 mb-2">OTP Verification</h2>
       <p className="text-sm text-gray-600 mb-6 max-w-sm">
-        Enter the 6-digit code sent to your email. It will expire in{' '}
+        Enter the 6-digit code sent to your {otpType === 'sms' ? 'phone number' : 'email'}. It will expire in{' '}
         <span className="font-semibold text-red-600">{formatTime(expiryTimer)}</span>.
       </p>
 

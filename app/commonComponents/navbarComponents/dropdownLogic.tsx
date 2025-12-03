@@ -288,11 +288,11 @@ export function useProfileDropdownLogic(
     setSettingsSuccess("Phone number verified successfully!");
     setUserEnteredCode('');
 
-     // Update email in backend
+     // Update phone in backend
      const userId = localStorage.getItem('userId');
      const token = localStorage.getItem('token');
      if (!token) {
-       setEmailError("You must be logged in to update email.");
+       setPhoneError("You must be logged in to update phone number.");
        return false;
      }
   
@@ -421,6 +421,12 @@ export function useProfileDropdownLogic(
 
         if (newPassword !== confirmPassword) {
           setPasswordError('New Password and Confirm Password do not match.');
+          return;
+        }
+
+        // Check that new password differs from current password
+        if (newPassword === currentPassword) {
+          setPasswordError('New password must be different from current password.');
           return;
         }
 

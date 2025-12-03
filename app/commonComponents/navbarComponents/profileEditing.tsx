@@ -76,6 +76,7 @@ export default function ProfileSettingsPanel({
   emailVerificationSent,
   setEmailVerificationSent,
   smsVerificationSent,
+  setSmsVerificationSent,
   enteredEmailCode,
   setEnteredEmailCode,
   enteredSmsCode,
@@ -173,6 +174,8 @@ export default function ProfileSettingsPanel({
         setShowSuccessModal(true);
         setEnteredEmailCode('');
         setEmailVerificationSent(false);
+        // Clear the input field so it shows the new email as placeholder
+        setEditingEmail('');
       } else {
         setModalMsg(emailError || 'Failed to verify the code.');
         setShowErrorModal(true);
@@ -196,6 +199,8 @@ export default function ProfileSettingsPanel({
         setShowSuccessModal(true);
         setEnteredSmsCode('');
         setSmsVerificationSent(false);
+        // Clear the input field so it shows the new phone number as placeholder
+        setEditingPhone('');
       } else {
         setModalMsg(phoneError || 'Failed to verify the code.');
         setShowErrorModal(true);
@@ -211,6 +216,12 @@ export default function ProfileSettingsPanel({
     setLoading(true);
     await handleAccountSettingsUpdate();
     setLoading(false);
+    // Show success modal and auto-close after 5 seconds
+    setModalMsg('Password updated successfully!');
+    setShowSuccessModal(true);
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 5000);
   };
 
 
@@ -412,6 +423,7 @@ export default function ProfileSettingsPanel({
                 error={otpType === 'email' ? emailError : phoneError}
                 handleVerifyOtp={otpType === 'email' ? handleVerifyOtpAndNotify : handleVerifySmsAndNotify}
                 handleResendOtp={otpType === 'email' ? async () => await sendEmailCode() : async () => await sendSmsCode()}
+                otpType={otpType || 'email'}
               />
             </div>
           </div>,

@@ -178,6 +178,12 @@ export default function ForgotPasswordModal({ forgotRole, setForgotRole, setShow
       setResetLoading(false);
       return;
     }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      setError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
+      setResetLoading(false);
+      return;
+    }
     try {
       const res = await fetch(`${BASE_URL}/borrowers/reset-password/${borrowerId}`, {
         method: 'PUT',
