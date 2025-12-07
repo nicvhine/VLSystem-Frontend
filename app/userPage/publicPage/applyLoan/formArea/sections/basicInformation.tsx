@@ -36,6 +36,7 @@ export default function BasicInformation({
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [nameError, setNameError] = useState("");
+  const [dobError, setDobError] = useState("");
   const [duplicateError, setDuplicateError] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -46,6 +47,39 @@ export default function BasicInformation({
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAppAddress(e.target.value);
+  };
+
+  const calculateAge = (birthDate: string): number => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  const handleDobChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAppDob(value);
+
+    if (value) {
+      const age = calculateAge(value);
+      if (age < 18) {
+        setDobError(
+          language === "en"
+            ? "You must be at least 18 years old to apply."
+            : "Kinahanglan ka labing menos 18 anyos aron maka-apply."
+        );
+      } else {
+        setDobError("");
+      }
+    } else {
+      setDobError("");
+    }
   };
 
   useEffect(() => {
@@ -254,12 +288,13 @@ export default function BasicInformation({
           <input
             type="date"
             value={appDob}
-            onChange={(e) => setAppDob(e.target.value)}
-            max={new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-              .toISOString()
-              .split("T")[0]}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Date of Birth')) ? 'border-red-500' : 'border-gray-200'}`}
+            onChange={handleDobChange}
+            max={new Date().toISOString().split("T")[0]}
+            className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+              (showFieldErrors && missingFields.includes('Date of Birth')) || dobError ? 'border-red-500' : 'border-gray-200'
+            }`}
           />
+          {dobError && <p className="text-red-500 text-sm mt-1">{dobError}</p>}
         </div>
 
         {/* Contact */}

@@ -78,6 +78,27 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
 
   const { setNotificationPreferences } = useAccountSettings();
 
+  // Helper function to ensure valid image URL
+  const getValidImageUrl = (url: string | null | undefined): string => {
+    if (!url || url === 'null' || url === 'undefined' || url === '') {
+      return '/idPic.jpg';
+    }
+    // If it's a blob URL (preview), return as-is
+    if (url.startsWith('blob:')) {
+      return url;
+    }
+    // If it's already a valid absolute URL, return it
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // If it starts with a slash, it's a valid relative path
+    if (url.startsWith('/')) {
+      return url;
+    }
+    // Otherwise, prepend a slash to make it a valid relative path
+    return `/${url}`;
+  };
+
   // Load user data, role, notifications
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -89,9 +110,12 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
     setRoleState(localStorage.getItem('role') || '');
 
     const storedPic = localStorage.getItem('profilePic');
-    if (storedPic) {
+    if (storedPic && storedPic !== 'null' && storedPic !== 'undefined' && storedPic !== '[object Object]') {
       setProfilePic(storedPic);
       setOriginalPic(storedPic);
+    } else {
+      setProfilePic('');
+      setOriginalPic('');
     }
 
     const storedNotifications = localStorage.getItem('notificationPreferences');
@@ -225,11 +249,11 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
       try {
         const ev = e as CustomEvent;
         const pic = ev.detail?.profilePic;
-        if (pic) {
+        if (pic && pic !== 'null' && pic !== 'undefined' && pic !== '[object Object]' && typeof pic === 'string') {
           setProfilePic(pic);
           setOriginalPic(pic);
         } else {
-          // removed -> show initial
+          // removed or invalid -> show initial
           setProfilePic('');
           setOriginalPic('');
         }
@@ -315,7 +339,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
             >
               {previewPic || profilePic ? (
                 <Image
-                  src={profilePic || '/idPic.jpg'}
+                  src={getValidImageUrl(previewPic || profilePic)}
                   alt="Profile"
                   width={40}
                   height={40}
@@ -746,7 +770,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
               >
                 {previewPic || profilePic ? (
                <Image
-               src={profilePic || '/idPic.jpg'} 
+               src={getValidImageUrl(previewPic || profilePic)}
                alt="Profile"
                width={40}
                height={40}

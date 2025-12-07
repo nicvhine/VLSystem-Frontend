@@ -27,6 +27,10 @@ export default function CustomAmountModal({
   const [customAmount, setCustomAmount] = useState(collection.periodBalance.toFixed(2));
   const [isPaying, setIsPaying] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string>("gcash");
+  const [amountError, setAmountError] = useState("");
+
+  // Safety check for activeLoan
+  const loanBalance = activeLoan?.remainingBalance || activeLoan?.balance || 0;
 
   useEffect(() => {
     const t = setTimeout(() => setAnimateIn(true), 10);
@@ -53,6 +57,12 @@ export default function CustomAmountModal({
     const amount = parseFloat(customAmount);
     if (isNaN(amount) || amount <= 0) {
       setErrorMsg('Please enter a valid amount.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    if (amount > loanBalance) {
+      setErrorMsg(`Payment amount cannot exceed your remaining loan balance of ₱${loanBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`);
       setShowErrorModal(true);
       return;
     }
@@ -110,27 +120,61 @@ export default function CustomAmountModal({
         {/* BODY */}
         <div className="p-6 space-y-5">
           {/* Amount Summary */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 flex justify-between items-center">
-            <div>
-              <p className="text-xs text-gray-500">Amount Due</p>
-              <p className="text-xl font-semibold text-gray-800">
-                ₱
-                {Number(collection.periodBalance).toLocaleString("en-PH", {
-                  minimumFractionDigits: 2,
-                })}
-              </p>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="text-xs text-gray-500">Amount Due</p>
+                <p className="text-xl font-semibold text-gray-800">
+                  ₱
+                  {Number(collection.periodBalance).toLocaleString("en-PH", {
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-500">Loan Balance</p>
+                <p className="text-sm font-medium text-gray-700">
+                  ₱{loanBalance.toLocaleString("en-PH", {
+                    minimumFractionDigits: 2,
+                  })}
+                </p>
+              </div>
             </div>
-            <div className="w-32">
-              <label className="text-sm font-medium text-gray-700">Enter Amount</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Enter Payment Amount</label>
               <input
                 id="customAmountInput"
-                type="number"
-                min="1"
-                step="0.01"
+                type="text"
                 value={customAmount}
-                onChange={(e) => setCustomAmount(e.target.value)}
-                className="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-black focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Allow only numbers and decimal point
+                  if (/^\d*\.?\d*$/.test(value) || value === '') {
+                    setCustomAmount(value);
+                    const num = parseFloat(value);
+                    if (value && !isNaN(num)) {
+                      if (num < 0) {
+                        setAmountError('Amount cannot be negative.');
+                      } else if (num > loanBalance) {
+                        setAmountError(`Cannot exceed loan balance of ₱${loanBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`);
+                      } else if (num === 0) {
+                        setAmountError('Amount must be greater than zero.');
+                      } else {
+                        setAmountError('');
+                      }
+                    } else if (value) {
+                      setAmountError('Please enter a valid amount.');
+                    } else {
+                      setAmountError('');
+                    }
+                  }
+                }}
+                className={`w-full border rounded-lg px-3 py-2 text-black focus:ring-2 focus:ring-red-500 transition ${
+                  amountError ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="0.00"
               />
+              {amountError && <p className="text-red-500 text-xs mt-1.5">{amountError}</p>}
             </div>
           </div>
 
@@ -240,9 +284,9 @@ export default function CustomAmountModal({
 
           <button
             onClick={handleCustomPay}
-            disabled={isPaying}
+            disabled={isPaying || !!amountError || !customAmount}
             className={`px-6 py-2.5 rounded-lg text-white font-medium transition ${
-              isPaying ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+              isPaying || !!amountError || !customAmount ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
             }`}
           >
             {isPaying ? "Processing..." : `Checkout`}
