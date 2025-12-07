@@ -93,9 +93,13 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       if (!ref.relation.trim()) missing.push(`Reference ${i + 1} Relationship`);
     });
 
-    // Agent
-    if (!props.appAgent.trim()) missing.push("Agent");
-    props.setAgentMissingError(!props.appAgent.trim());
+    // Agent (not required if "no agent" is selected)
+    if (!props.appAgent.trim() || props.appAgent === '') {
+      missing.push("Agent");
+      props.setAgentMissingError(true);
+    } else {
+      props.setAgentMissingError(false);
+    }
 
     // Collateral
     if (props.requiresCollateral) {

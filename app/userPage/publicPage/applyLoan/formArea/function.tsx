@@ -89,6 +89,32 @@ export const handleFileChange = (
   const files = Array.from(input.files);
   if (!files.length) return;
 
+  // Check for PDF files and reject them
+  const hasPDF = files.some(file => file.type === 'application/pdf');
+  if (hasPDF) {
+    setDocumentUploadError?.(
+      language === "en"
+        ? "PDF files are not allowed. Only PNG and JPG files are accepted."
+        : "Dili pwede ang PDF. PNG ug JPG ra ang madawat."
+    );
+    setShowDocumentUploadErrorModal?.(true);
+    input.value = "";
+    return;
+  }
+
+  // Check for non-image files
+  const hasNonImage = files.some(file => !file.type.startsWith('image/'));
+  if (hasNonImage) {
+    setDocumentUploadError?.(
+      language === "en"
+        ? "Only PNG and JPG image files are accepted."
+        : "PNG ug JPG nga litrato ra ang madawat."
+    );
+    setShowDocumentUploadErrorModal?.(true);
+    input.value = "";
+    return;
+  }
+
   setUploadedFiles(prev => {
     const remaining = requiredDocumentsCount - prev.length;
 

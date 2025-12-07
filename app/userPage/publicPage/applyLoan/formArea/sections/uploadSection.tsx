@@ -88,6 +88,23 @@ export default function UploadSection({
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? '2x2 Photo Upload' : 'I-upload ang 2x2 nga Litrato'}
+          <span className="relative inline-flex group align-middle ml-2">
+            <button
+              type="button"
+              aria-label={language === 'en' ? 'File format information' : 'Impormasyon sa format sa file'}
+              className="h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-[10px] leading-5 inline-flex items-center justify-center select-none focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
+              tabIndex={0}
+            >
+              i
+            </button>
+            <div
+              role="tooltip"
+              className="absolute z-30 top-1/2 left-full ml-2 -translate-y-1/2 w-max rounded-md bg-gray-100 text-gray-800 text-xs p-2 shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none font-normal"
+            >
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-100 rotate-45 border-l border-t border-gray-200"></div>
+              <span className="whitespace-nowrap">{language === 'en' ? 'Only PNG & JPG files are accepted' : 'PNG ug JPG ra ang madawat'}</span>
+            </div>
+          </span>
         </h4>
   <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-red-300 transition-colors ${(showFieldErrors && missingFields.includes('2x2 Photo')) ? 'border-red-500' : 'border-gray-200'}`}> 
           <input
@@ -130,6 +147,23 @@ export default function UploadSection({
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
           {language === 'en' ? 'Document Upload' : 'I-upload ang mga Dokumento'}
+          <span className="relative inline-flex group align-middle ml-2">
+            <button
+              type="button"
+              aria-label={language === 'en' ? 'File format information' : 'Impormasyon sa format sa file'}
+              className="h-5 w-5 rounded-full bg-gray-200 text-gray-700 text-[10px] leading-5 inline-flex items-center justify-center select-none focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500"
+              tabIndex={0}
+            >
+              i
+            </button>
+            <div
+              role="tooltip"
+              className="absolute z-30 top-1/2 left-full ml-2 -translate-y-1/2 w-max rounded-md bg-gray-100 text-gray-800 text-xs p-2 shadow-lg border border-gray-200 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none font-normal"
+            >
+              <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-gray-100 rotate-45 border-l border-t border-gray-200"></div>
+              <span className="whitespace-nowrap">{language === 'en' ? 'Only PNG & JPG files are accepted' : 'PNG ug JPG ra ang madawat'}</span>
+            </div>
+          </span>
         </h4>
   <div className={`border-2 border-dashed rounded-lg p-6 hover:border-red-300 transition-colors ${(showFieldErrors && missingFields.includes('Document Upload')) ? 'border-red-500' : 'border-gray-200'}`}> 
           <div className="flex items-center gap-3 w-full">
@@ -138,7 +172,7 @@ export default function UploadSection({
               id="documents-upload"
               type="file"
               multiple
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".jpg,.jpeg,.png"
               onChange={handleFileChange}
               disabled={typeof requiredDocumentsCount === 'number' ? (documents.length >= requiredDocumentsCount) : false}
               className="sr-only"
