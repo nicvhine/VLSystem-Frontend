@@ -238,8 +238,12 @@ export default function Page() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {paginatedUsers.map((user) => (
-                    <tr key={user.userId} className="hover:bg-gray-50 transition-colors cursor-pointer">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
+                    <tr key={user.userId} className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                      user.status === 'Inactive' ? 'bg-gray-100' : ''
+                    }`}>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{user.userId}</td>
                       {editingUserId === user.userId ? (
                         <>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -288,27 +292,27 @@ export default function Page() {
                         </>
                       ) : (
                         <>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                          }`}>{user.name}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                          }`}>{user.email}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                          }`}>{user.phoneNumber}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                                ${user.role === "manager"
-                                  ? "text-black"
-                                  : user.role === "collector"
-                                  ? "text-black"
-                                  : user.role === "loan officer"
-                                  ? "text-black"
-                                  : user.role === "head"
-                                  ? "text-black"
-                                  : "text-black"}
-                              `}
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                user.status === 'Inactive' ? 'text-gray-400' : 'text-black'
+                              }`}
                             >
                               {getRoleTranslation(user.role)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400 font-medium' : 'text-gray-700'
+                          }`}>{user.status}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                             <div className="relative inline-flex items-center justify-center">
                               <button
