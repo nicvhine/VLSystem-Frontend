@@ -61,7 +61,7 @@ export default function PaymentModal({
           }}
         />
         <p className="text-xs text-gray-600 mb-4">
-          Loan Balance: ₱{selectedCollection.loanBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+          Loan Balance: {formatCurrency(selectedCollection.loanBalance)}
         </p>
         <div className="flex justify-end gap-3">
           <button

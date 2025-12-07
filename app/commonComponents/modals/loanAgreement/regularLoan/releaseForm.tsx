@@ -21,6 +21,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const currentRole = (localStorage.getItem("role") || "").toLowerCase();
 
   // Calculate service fee based on loan amount
   const calculateServiceFee = (principal: number): number => {
@@ -220,6 +221,7 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
                   value={serviceFee}
                   onChange={(e) => setServiceFee(e.target.value)}
                   className="mt-1 w-full text-gray-900 font-semibold border-b border-gray-400 focus:outline-none focus:ring-0 print:border-none"
+                  disabled={currentRole !== "loan officer"} 
                 />
               </div>
               <div>

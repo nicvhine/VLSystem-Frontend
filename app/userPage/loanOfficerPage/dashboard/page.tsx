@@ -17,7 +17,7 @@ export default function LoanOfficerDashboard() {
           <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
             {/* Statistics sidebar - full width on mobile, fixed width on desktop */}
             <div className="w-full lg:w-72 lg:flex-shrink-0">
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 mt-5">
                 <LoanStatistics />
               </div>
             </div>
