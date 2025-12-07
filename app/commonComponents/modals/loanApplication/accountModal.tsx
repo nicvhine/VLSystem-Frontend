@@ -354,18 +354,22 @@ export default forwardRef(function AccountModal({ a }: AccountModalProps = {}, r
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="relative">
-            <h2 className="text-xl font-semibold text-black mb-2">{i.ma1}</h2>
+          <div className="flex items-start justify-between mb-2">
+            <div>
+              <h2 className="text-xl font-semibold text-black">{i.ma1}</h2>
+              <p className="text-sm text-gray-600 mt-1">{i.ma2}</p>
+            </div>
             <button
               onClick={handleModalClose}
-              className={`absolute top-3 right-3 p-2 text-gray-500 rounded-full ${isProcessing ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
+              className={`flex-shrink-0 p-1 text-gray-500 rounded-full ${isProcessing ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-100'}`}
               disabled={isProcessing}
               aria-label="Close"
             >
-              ×
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-          <p className="text-sm text-gray-600 mb-4">{i.ma2}</p>
 
           {/* Applicant summary + validations */}
           <div className="mb-3">

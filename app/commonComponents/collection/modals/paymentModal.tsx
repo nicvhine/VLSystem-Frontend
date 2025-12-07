@@ -42,13 +42,27 @@ export default function PaymentModal({
         </p>
         <label className="block text-sm text-black mb-1">Enter Amount</label>
         <input
-          type="number"
-          className="w-full border border-gray-300 px-3 py-2 rounded mb-4"
+          type="text"
+          className="w-full border border-gray-300 px-3 py-2 rounded mb-4 text-black"
           value={paymentAmount}
-          onChange={(e) => setPaymentAmount(parseFloat(e.target.value))}
-          min={0}
-          max={selectedCollection.periodAmount - selectedCollection.paidAmount + 100000}
+          onChange={(e) => {
+            const value = e.target.value;
+            // Allow only numbers and decimal point
+            if (/^\d*\.?\d*$/.test(value) || value === '') {
+              const num = parseFloat(value) || 0;
+              // Prevent negative numbers and amounts exceeding loan balance
+              if (num >= 0 && num <= selectedCollection.loanBalance) {
+                setPaymentAmount(num);
+              } else if (num > selectedCollection.loanBalance) {
+                // Set to max loan balance if exceeded
+                setPaymentAmount(selectedCollection.loanBalance);
+              }
+            }
+          }}
         />
+        <p className="text-xs text-gray-600 mb-4">
+          Loan Balance: ₱{selectedCollection.loanBalance.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+        </p>
         <div className="flex justify-end gap-3">
           <button
             className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"

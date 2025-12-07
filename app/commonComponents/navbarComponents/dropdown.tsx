@@ -14,6 +14,27 @@ import TermsGateModal from '@/app/commonComponents/modals/termsPrivacy/TermsGate
 import PrivacyContentModal from '@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal';
 import TermsContentModal from '@/app/commonComponents/modals/termsPrivacy/TermsContentModal';
 
+// Helper function to ensure valid image URL
+const getValidImageUrl = (url: string | null | undefined): string => {
+  if (!url || url === 'null' || url === 'undefined' || url === '') {
+    return '/idPic.jpg';
+  }
+  // If it's a blob URL (preview), return as-is
+  if (url.startsWith('blob:')) {
+    return url;
+  }
+  // If it's already a valid absolute URL, return it
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  // If it starts with a slash, it's a valid relative path
+  if (url.startsWith('/')) {
+    return url;
+  }
+  // Otherwise, prepend a slash to make it a valid relative path
+  return `/${url}`;
+};
+
 interface ProfileDropdownProps {
   name: string;
   email: string;
@@ -42,7 +63,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   } = props;
 
   // Profile picture upload hook
-  const { previewPic, isUploading, isWorking, handleFileChange, handleCancelUpload, handleSaveProfilePic, handleRemoveProfilePic } =
+  const { previewPic, isUploading, isWorking, validationError, clearValidationError, handleFileChange, handleCancelUpload, handleSaveProfilePic, handleRemoveProfilePic } =
     useProfilePicUpload({ currentProfilePic: props.profilePic, username });
 
   // Local modals for feedback
@@ -51,6 +72,14 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
   const [modalMsg, setModalMsg] = useState('');
   const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
+
+  // Show validation errors from profile pic upload
+  useEffect(() => {
+    if (validationError) {
+      setModalMsg(validationError);
+      setShowErrorModal(true);
+    }
+  }, [validationError]);
 
   // Terms and Privacy modals
   const [showTermsGate, setShowTermsGate] = useState(false);
@@ -212,6 +241,10 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
     setIsDropdownOpen(false);
     setIsEditing(false);
     setShowPhotoActions(false);
+    // Cancel any pending upload when closing dropdown
+    if (isUploading) {
+      handleCancelUpload();
+    }
   };
 
   return (
@@ -245,7 +278,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
           >
             {hasImage ? (
               <Image
-                src={finalProfilePic || ''}
+                src={getValidImageUrl(finalProfilePic)}
                 alt="Profile"
                 width={80}
                 height={80}
@@ -444,7 +477,7 @@ export default function ProfileDropdown(props: ProfileDropdownProps) {
         <SuccessModal isOpen={showSuccessModal} message={modalMsg} onClose={() => setShowSuccessModal(false)} />
       )}
       {showErrorModal && (
-        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => setShowErrorModal(false)} />
+        <ErrorModal isOpen={showErrorModal} message={modalMsg} onClose={() => { setShowErrorModal(false); clearValidationError(); }} />
       )}
 
       {/* Terms and Privacy Modals */}
