@@ -64,24 +64,24 @@ export async function loginHandler({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-
+    
+      const staffData = await staffRes.json(); 
+    
       if (staffRes.ok) {
-        const data = await staffRes.json();
-        const user = data.user;
-
-        localStorage.setItem("token", data.token);
+        const user = staffData.user;
+    
+        localStorage.setItem("token", staffData.token);
         localStorage.setItem("fullName", user.name || user.username || user.email);
         localStorage.setItem("email", user.email);
         user.phoneNumber && localStorage.setItem("phoneNumber", user.phoneNumber);
         localStorage.setItem("username", user.username);
         localStorage.setItem("role", user.role?.toLowerCase() || "staff");
-        localStorage.setItem("darkMode", user.darkMode?.toString() || "false");
         user.profilePic && localStorage.setItem("profilePic", user.profilePic);
         user.userId && localStorage.setItem("userId", user.userId);
         user.isFirstLogin
           ? localStorage.setItem("forcePasswordChange", "true")
           : localStorage.removeItem("forcePasswordChange");
-
+    
         const redirectMap: Record<string, string> = {
           sysad: "/userPage/sysadPage/dashboard",
           head: "/userPage/headPage/dashboard",
@@ -89,15 +89,18 @@ export async function loginHandler({
           "loan officer": "/userPage/loanOfficerPage/dashboard",
           collector: "/commonComponents/collection",
         };
-
+    
         onClose();
         router.push(redirectMap[user.role?.toLowerCase() || ""] || "/");
         loggedIn = true;
         return;
+      } else {
+        setErrorMsg?.(staffData.error || "Invalid credentials or user not found.");
+        setShowErrorModal?.(true);
+        return;
       }
     }
-
-    // --- Show error if neither login worked ---
+    
     if (!loggedIn) {
       setErrorMsg?.("Invalid credentials or user not found.");
       setShowErrorModal?.(true);

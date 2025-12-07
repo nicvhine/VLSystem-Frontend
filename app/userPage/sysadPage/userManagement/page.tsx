@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from 'next/navigation';
-import { authFetch } from "@/app/commonComponents/loanApplication/function";
 import emailjs from "emailjs-com";
 import { FiSearch, FiUserPlus, FiMoreVertical } from "react-icons/fi";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
@@ -12,6 +11,9 @@ import CreateUserModal from "../../headPage/userPage/createUserModal";
 import { useTranslation } from "../translationHook";
 import { User } from "@/app/commonComponents/utils/Types/userPage";
 import React from "react";
+
+import { useUserActions } from "./hooks/useUserActions";
+import { useResetPassword } from "./hooks/useResetPassword";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -23,6 +25,24 @@ export default function UserManagementPage() {
   const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
+  const { handleCreateUser } = useUserActions();
+
+  // Translation hook
+  const { s, language } = useTranslation();
+
+  const {
+    confirmResetUser,
+    resetPasswordLoading,
+    initiateResetPassword,
+    cancelResetPassword,
+    handleResetPasswordConfirmed,
+    errorMessage,
+    successMessage,
+    openErrorModal,
+    closeErrorModal,
+    openSuccessModal,
+    closeSuccessModal
+  } = useResetPassword(s);
 
   // Search and filter
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,7 +64,6 @@ export default function UserManagementPage() {
 
   // Reset password state
   const [resettingUserId, setResettingUserId] = useState<string | null>(null);
-  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
 
   // Toggle status state
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
@@ -57,21 +76,9 @@ export default function UserManagementPage() {
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   // Confirm modal state
-  const [confirmResetUser, setConfirmResetUser] = useState<User | null>(null);
   const [confirmToggleUser, setConfirmToggleUser] = useState<User | null>(null);
 
-  // Error modal state
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const openErrorModal = (msg: string) => setErrorMessage(msg);
-  const closeErrorModal = () => setErrorMessage(null);
 
-  // Success modal state
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const openSuccessModal = (msg: string) => setSuccessMessage(msg);
-  const closeSuccessModal = () => setSuccessMessage(null);
-
-  // Translation hook
-  const { s, language } = useTranslation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -108,149 +115,38 @@ export default function UserManagementPage() {
 
     const fetchUsers = async () => {
       try {
-        const res = await authFetch(`${BASE_URL}/users`);
+        const token = localStorage.getItem("token"); 
+        if (!token) throw new Error("No authentication token found.");
+    
+        const res = await fetch(`${BASE_URL}/users`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+    
+        if (res.status === 403) {
+          throw new Error("You do not have permission to access this resource.");
+        }
+    
+        if (!res.ok) {
+          throw new Error("Failed to fetch users.");
+        }
+    
         const data = await res.json();
         setActiveStaff(Array.isArray(data) ? data : []);
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching users:", err);
-        openErrorModal(s.t67);
+        openErrorModal(err.message || "An error occurred while fetching users.");
       } finally {
         setLoading(false);
       }
     };
+    
 
     fetchUsers();
   }, [router]);
-
-  const sendEmail = async ({
-    to_name,
-    email,
-    user_username,
-    user_password,
-    onError,
-  }: {
-    to_name: string;
-    email?: string | null;
-    user_username: string;
-    user_password: string;
-    onError: (msg: string) => void;
-  }) => {
-    if (!email) return;
-    try {
-      const result = await emailjs.send(
-        "service_gsrml74",
-        "template_ry9tq57",
-        { to_name, email, user_username, user_password },
-        "6VII8ATdscjZi3UYW"
-      );
-      console.log("Email sent:", result?.text || result);
-    } catch (error: any) {
-      console.error("EmailJS error:", error);
-      onError("Email failed: " + (error?.text || error.message || "Unknown error"));
-    }
-  };
-
-  const handleCreateUser = async (
-    input: Omit<User, "userId" | "lastActive" | "status">
-  ): Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> => {
-    try {
-      const payload = { ...input };
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${BASE_URL}/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        // Try to parse server error
-        let msg = s.t95;
-        try {
-          const data = await res.json();
-          msg = data?.error || data?.message || msg;
-        } catch {
-          try { msg = await res.text(); } catch {}
-        }
-
-        // Map known uniqueness errors to field-level errors
-        const fieldErrors: { email?: string; phoneNumber?: string; name?: string } = {};
-        if (/email\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.email = "Email already in use.";
-        if (/phone\s*number\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.phoneNumber = "Phone number already in use.";
-        if (/name\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.name = "Name already in use.";
-
-        if (fieldErrors.email || fieldErrors.phoneNumber || fieldErrors.name) {
-          // Let caller show inline errors
-          return { success: false, fieldErrors };
-        }
-
-        setErrorMessage(msg);
-        setErrorModalOpen(true);
-        return { success: false, message: msg };
-      }
-
-      const { user: createdUser, credentials } = await res.json();
-      setUsers((prev) => [...prev, createdUser]);
-      setSuccessMessage(s.t93);
-
-      console.log("Email to send:", createdUser.email);
-
-      await sendEmail({
-        to_name: createdUser.name,
-        email: createdUser.email,
-        user_username: credentials.username,
-        user_password: credentials.tempPassword,
-        onError: (msg: string) => {
-          console.error("Email error callback:", msg);
-          setErrorMessage(msg);
-          setErrorModalOpen(true);
-          setTimeout(() => setErrorModalOpen(false), 5000);
-        },
-      });
-
-      return { success: true };
-
-    } catch (err: any) {
-      setErrorMessage(err.message || s.t95);
-      setErrorModalOpen(true);
-      return { success: false, message: err.message };
-    }
-  };
-
-
-
-  // Reset password handlers
-  const initiateResetPassword = (user: User) => setConfirmResetUser(user);
-  const cancelResetPassword = () => setConfirmResetUser(null);
-
-  const handleResetPasswordConfirmed = async () => {
-    if (!confirmResetUser) return;
-
-    try {
-      setResettingUserId(confirmResetUser.userId);
-      setResetPasswordLoading(true);
-      
-      const res = await authFetch(`${BASE_URL}/users/reset-password/${confirmResetUser.userId}`, { method: "POST" });
-      if (!res.ok) throw new Error(s.t67);
-
-      const { defaultPassword } = await res.json();
-      
-      await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_RESET_TEMPLATE_ID!,
-        { to_name: confirmResetUser.name, to_email: confirmResetUser.email, temp_password: defaultPassword },
-        process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
-      );
-      
-      openSuccessModal(`${s.t87} ${confirmResetUser.name}. ${s.t51} ${s.t88}`);
-    } catch (err) {
-      console.error("Reset password/email error:", err);
-      openErrorModal(s.t67);
-    } finally {
-      setResetPasswordLoading(false);
-      setResettingUserId(null);
-      setConfirmResetUser(null);
-    }
-  };
 
   // Toggle status handlers (Activate/Deactivate)
   const initiateToggleStatus = (user: User) => setConfirmToggleUser(user);
@@ -263,11 +159,17 @@ export default function UserManagementPage() {
       setTogglingUserId(confirmToggleUser.userId);
       const newStatus = confirmToggleUser.status === 'Active' ? 'Inactive' : 'Active';
       
-      const res = await authFetch(`${BASE_URL}/users/${confirmToggleUser.userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const token = localStorage.getItem("token");
+        if (!token) throw new Error("No authentication token found.");
+
+        const res = await fetch(`${BASE_URL}/users/${confirmToggleUser.userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ status: newStatus }),
+        });
       
       if (!res.ok) throw new Error(s.t97);
 
@@ -313,11 +215,17 @@ export default function UserManagementPage() {
       // Explicitly exclude status from edit payload - status can only be changed via Activate/Deactivate
       const { status, ...editPayload } = editFormData;
       
-      const res = await authFetch(`${BASE_URL}/users/${editingUserId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editPayload),
-      });
+      const token = localStorage.getItem("token");
+        if (!token) throw new Error("No authentication token found.");
+
+        const res = await fetch(`${BASE_URL}/users/${editingUserId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify(editPayload),
+        });
 
       if (!res.ok) throw new Error(s.t96);
 
@@ -334,26 +242,6 @@ export default function UserManagementPage() {
     }
   };
 
-  // Delete user handlers
-  const initiateDeleteUser = (user: User) => setDeletingUser(user);
-  const cancelDeleteUser = () => setDeletingUser(null);
-
-  const handleDeleteUserConfirmed = async () => {
-    if (!deletingUser) return;
-
-    try {
-      const res = await authFetch(`${BASE_URL}/users/${deletingUser.userId}`, { method: "DELETE" });
-      if (!res.ok) throw new Error(s.t67);
-
-      setActiveStaff(prev => prev.filter(u => u.userId !== deletingUser.userId));
-      openSuccessModal(`${s.t89} ${s.t92} ${deletingUser.name}`); 
-    } catch (err) {
-      console.error("Delete user error:", err);
-      openErrorModal(s.t67);
-    } finally {
-      setDeletingUser(null);
-    }
-  };
 
   // Filter and search users
   const filteredUsers = activeStaff.filter(user => {
@@ -437,15 +325,6 @@ export default function UserManagementPage() {
           />
         )}
 
-        {deletingUser && (
-          <ConfirmModal
-            isOpen={!!deletingUser}
-            title={s.t73}
-            message={`${s.t48.replace('this user', deletingUser.name)}`}
-            onConfirm={handleDeleteUserConfirmed}
-            onCancel={cancelDeleteUser}
-          />
-        )}
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">

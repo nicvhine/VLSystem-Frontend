@@ -298,16 +298,32 @@ export default function SimulatorModal({
 
             {loanType && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{pub.loanAmount}</label>
-                <input
-                  type="number"
-                  className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500 ${amountError ? "border-red-500" : "border-gray-300"}`}
-                  value={selectedLoanAmount}
-                  onChange={(e) => setSelectedLoanAmount(e.target.value)}
-                  placeholder="Enter amount"
-                />
-                {amountError && <p className="text-sm mt-1 text-red-600">{amountError}</p>}
-              </div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {pub.loanAmount}
+              </label>
+            
+              {/* RANGE NOTE */}
+              {loanOptions.length > 0 && (
+                <p className="text-xs text-gray-500 mb-2">
+                  Allowed range: ₱{Math.min(...loanOptions).toLocaleString()} – ₱{Math.max(...loanOptions).toLocaleString()}
+                </p>
+              )}
+            
+              <input
+                type="number"
+                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-red-500 ${
+                  amountError ? "border-red-500" : "border-gray-300"
+                }`}
+                value={selectedLoanAmount}
+                onChange={(e) => setSelectedLoanAmount(e.target.value)}
+                placeholder="Enter amount"
+              />
+            
+              {amountError && (
+                <p className="text-sm mt-1 text-red-600">{amountError}</p>
+              )}
+            </div>
+            
             )}
           </div>
 
