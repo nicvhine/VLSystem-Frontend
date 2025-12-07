@@ -71,6 +71,7 @@ export default function UserManagementPage() {
   // Edit user state
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
+  const [editValidationErrors, setEditValidationErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
 
   // Delete user state
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
@@ -206,10 +207,37 @@ export default function UserManagementPage() {
   const handleCancelEdit = () => {
     setEditingUserId(null);
     setEditFormData({});
+    setEditValidationErrors({});
   };
 
   const handleSaveEdit = async () => {
     if (!editingUserId) return;
+
+    // Validation
+    const errors: { name?: string; email?: string; phoneNumber?: string } = {};
+    
+    if (!editFormData.name || editFormData.name.trim() === '') {
+      errors.name = language === 'en' ? 'Name is required' : 'Kinahanglan ang ngalan';
+    }
+    
+    if (!editFormData.email || editFormData.email.trim() === '') {
+      errors.email = language === 'en' ? 'Email is required' : 'Kinahanglan ang email';
+    } else if (!/^[^\s@]+@gmail\.com$/.test(editFormData.email)) {
+      errors.email = language === 'en' ? 'Email must be a @gmail.com address' : 'Ang email kinahanglan @gmail.com';
+    }
+    
+    if (!editFormData.phoneNumber || editFormData.phoneNumber.trim() === '') {
+      errors.phoneNumber = language === 'en' ? 'Phone number is required' : 'Kinahanglan ang phone number';
+    } else if (!/^\d{11}$/.test(editFormData.phoneNumber)) {
+      errors.phoneNumber = language === 'en' ? 'Phone number must be 11 digits' : 'Ang phone number kinahanglan 11 ka numero';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setEditValidationErrors(errors);
+      return;
+    }
+
+    setEditValidationErrors({});
 
     try {
       // Explicitly exclude status from edit payload - status can only be changed via Activate/Deactivate
@@ -256,8 +284,16 @@ export default function UserManagementPage() {
     return matchesSearch && matchesRole;
   });
 
-  // Sort users
+  // Sort users - Active users first, then inactive users at the bottom
   const sortedUsers = [...filteredUsers].sort((a, b) => {
+    // First, sort by status (Active first, Inactive last)
+    const statusA = a.status === 'Active' ? 0 : 1;
+    const statusB = b.status === 'Active' ? 0 : 1;
+    if (statusA !== statusB) {
+      return statusA - statusB;
+    }
+
+    // Then apply secondary sorting within same status group
     if (sortBy === 'name') {
       return a.name.localeCompare(b.name);
     }
@@ -432,18 +468,49 @@ export default function UserManagementPage() {
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {paginatedUsers.map((user, index) => (
-                <tr key={user.userId || index} className="hover:bg-gray-50 transition-colors cursor-pointer">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
+                <tr key={user.userId || index} className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                  user.status === 'Inactive' ? 'bg-gray-100' : ''
+                }`}>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                    user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{user.userId}</td>
                   {editingUserId === user.userId ? (
                     <>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.name || ''} onChange={(e) => handleEditChange("name", e.target.value)} />
+                        <input 
+                          className={`border rounded px-2 py-1 w-full ${
+                            editValidationErrors.name ? 'border-red-500' : 'border-gray-300'
+                          }`} 
+                          value={editFormData.name || ''} 
+                          onChange={(e) => handleEditChange("name", e.target.value)} 
+                        />
+                        {editValidationErrors.name && (
+                          <p className="text-xs text-red-500 mt-1">{editValidationErrors.name}</p>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.email || ''} onChange={(e) => handleEditChange("email", e.target.value)} />
+                        <input 
+                          className={`border rounded px-2 py-1 w-full ${
+                            editValidationErrors.email ? 'border-red-500' : 'border-gray-300'
+                          }`} 
+                          value={editFormData.email || ''} 
+                          onChange={(e) => handleEditChange("email", e.target.value)} 
+                        />
+                        {editValidationErrors.email && (
+                          <p className="text-xs text-red-500 mt-1">{editValidationErrors.email}</p>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.phoneNumber || ''} onChange={(e) => handleEditChange("phoneNumber", e.target.value)} />
+                        <input 
+                          className={`border rounded px-2 py-1 w-full ${
+                            editValidationErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'
+                          }`} 
+                          value={editFormData.phoneNumber || ''} 
+                          onChange={(e) => handleEditChange("phoneNumber", e.target.value)} 
+                        />
+                        {editValidationErrors.phoneNumber && (
+                          <p className="text-xs text-red-500 mt-1">{editValidationErrors.phoneNumber}</p>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.role || ''} onChange={(e) => handleEditChange("role", e.target.value)}>
@@ -476,11 +543,21 @@ export default function UserManagementPage() {
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber || 'N/A'}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 capitalize">{user.role === 'sysad' ? s.t98 : user.role}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status || 'Active'}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                      }`}>{user.name}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                      }`}>{user.email}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                      }`}>{user.phoneNumber || 'N/A'}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm capitalize ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                      }`}>{user.role === 'sysad' ? s.t98 : user.role}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        user.status === 'Inactive' ? 'text-gray-400 font-medium' : 'text-gray-700'
+                      }`}>{user.status || 'Active'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                         <div className="relative inline-flex items-center justify-center">
                           <button
@@ -529,7 +606,7 @@ export default function UserManagementPage() {
                               <div
                                 ref={actionPopoverRef}
                                 style={style}
-                                className="rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none fixed"
+                                className="rounded-md bg-white shadow-xl border border-gray-200 focus:outline-none fixed"
                                 role="menu"
                               >
                                 <button
