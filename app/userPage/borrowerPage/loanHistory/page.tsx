@@ -220,7 +220,7 @@ export default function LoanHistoryPage() {
                             className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
                               loan.status === 'Active'
                                 ? 'bg-green-100 text-green-800'
-                                : loan.status === 'Inactive'
+                                : loan.status === 'Closed' 
                                 ? 'bg-gray-100 text-gray-700'
                                 : 'bg-blue-50 text-blue-700'
                             } border`}
