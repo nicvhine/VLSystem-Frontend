@@ -28,6 +28,10 @@ const teamMembers = [
 const TeamSection: React.FC<TeamSectionProps> = ({ language }) => {
   const ceo = teamMembers.find(member => member.role.en === "Chief Executive Officer");
   const others = teamMembers.filter(member => member.role.en !== "Chief Executive Officer");
+  
+  // Separate the last two members (Jason Scott and Emma Lopez)
+  const regularMembers = others.slice(0, -2);
+  const lastTwoMembers = others.slice(-2);
 
   return (
     <section className="py-24 bg-gray-50 text-black" id="team">
@@ -52,9 +56,9 @@ const TeamSection: React.FC<TeamSectionProps> = ({ language }) => {
           </div>
         )}
 
-        {/* Grid for the rest */}
+        {/* Grid for the regular members */}
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-          {others.map((member, index) => (
+          {regularMembers.map((member, index) => (
             <div
               key={index}
               className="bg-white rounded-xl shadow-md p-6 text-center transition-transform transform hover:-translate-y-2 hover:shadow-lg"
@@ -71,6 +75,32 @@ const TeamSection: React.FC<TeamSectionProps> = ({ language }) => {
               <p className="text-sm text-gray-500">{member.role[language]}</p>
             </div>
           ))}
+        </div>
+
+        {/* Centered grid for the last two members */}
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 mt-10">
+          {/* Empty placeholder for first column */}
+          <div></div>
+          {/* Jason Scott and Emma Lopez in the middle */}
+          {lastTwoMembers.map((member, index) => (
+            <div
+              key={`last-${index}`}
+              className="bg-white rounded-xl shadow-md p-6 text-center transition-transform transform hover:-translate-y-2 hover:shadow-lg"
+            >
+              <div className="relative w-24 h-24 mx-auto mb-4">
+                <Image
+                  src={member.img}
+                  alt={member.name}
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">{member.name}</h3>
+              <p className="text-sm text-gray-500">{member.role[language]}</p>
+            </div>
+          ))}
+          {/* Empty placeholder for last column */}
+          <div></div>
         </div>
       </div>
     </section>
