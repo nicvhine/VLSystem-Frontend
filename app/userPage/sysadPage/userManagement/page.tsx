@@ -224,12 +224,34 @@ export default function UserManagementPage() {
       errors.email = language === 'en' ? 'Email is required' : 'Kinahanglan ang email';
     } else if (!/^[^\s@]+@gmail\.com$/.test(editFormData.email)) {
       errors.email = language === 'en' ? 'Email must be a @gmail.com address' : 'Ang email kinahanglan @gmail.com';
+    } else {
+      // Check for duplicate email (excluding current user)
+      const duplicateEmail = activeStaff.find(u => 
+        u.userId !== editingUserId && 
+        u.email?.toLowerCase() === editFormData.email?.toLowerCase()
+      );
+      if (duplicateEmail) {
+        errors.email = language === 'en' 
+          ? 'This email is already used by another user' 
+          : 'Kini nga email gigamit na sa lain nga user';
+      }
     }
     
     if (!editFormData.phoneNumber || editFormData.phoneNumber.trim() === '') {
       errors.phoneNumber = language === 'en' ? 'Phone number is required' : 'Kinahanglan ang phone number';
     } else if (!/^\d{11}$/.test(editFormData.phoneNumber)) {
       errors.phoneNumber = language === 'en' ? 'Phone number must be 11 digits' : 'Ang phone number kinahanglan 11 ka numero';
+    } else {
+      // Check for duplicate phone number (excluding current user)
+      const duplicatePhone = activeStaff.find(u => 
+        u.userId !== editingUserId && 
+        u.phoneNumber === editFormData.phoneNumber
+      );
+      if (duplicatePhone) {
+        errors.phoneNumber = language === 'en' 
+          ? 'This phone number is already used by another user' 
+          : 'Kini nga phone number gigamit na sa lain nga user';
+      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -255,7 +277,33 @@ export default function UserManagementPage() {
           body: JSON.stringify(editPayload),
         });
 
-      if (!res.ok) throw new Error(s.t96);
+      if (!res.ok) {
+        let errorMessage = s.t96;
+        try {
+          const data = await res.json();
+          errorMessage = data?.error || data?.message || errorMessage;
+          
+          // Check for specific duplicate errors from backend
+          const fieldErrors: { email?: string; phoneNumber?: string } = {};
+          if (/email\s+already\s+(registered|in use|exists)/i.test(errorMessage)) {
+            fieldErrors.email = language === 'en' 
+              ? 'This email is already used by another user' 
+              : 'Kini nga email gigamit na sa lain nga user';
+          }
+          if (/phone\s*number\s+already\s+(registered|in use|exists)/i.test(errorMessage)) {
+            fieldErrors.phoneNumber = language === 'en' 
+              ? 'This phone number is already used by another user' 
+              : 'Kini nga phone number gigamit na sa lain nga user';
+          }
+          
+          if (fieldErrors.email || fieldErrors.phoneNumber) {
+            setEditValidationErrors(fieldErrors);
+            return;
+          }
+        } catch {}
+        
+        throw new Error(errorMessage);
+      }
 
       setActiveStaff(prev => prev.map(u => 
         u.userId === editingUserId ? { ...u, ...editPayload } as User : u
@@ -264,9 +312,9 @@ export default function UserManagementPage() {
       openSuccessModal(s.t94);
       setEditingUserId(null);
       setEditFormData({});
-    } catch (err) {
+    } catch (err: any) {
       console.error("Edit user error:", err);
-      openErrorModal(s.t96);
+      openErrorModal(err.message || s.t96);
     }
   };
 

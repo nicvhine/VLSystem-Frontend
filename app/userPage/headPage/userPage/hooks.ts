@@ -184,7 +184,21 @@ export function useUsersLogic() {
     .filter(u => Object.values(u).some(v => v?.toString().toLowerCase().includes(searchQuery.toLowerCase())))
     .filter(u => !roleFilter || u.role === roleFilter);
 
-  const sortedUsers = sortBy ? [...filteredUsers].sort((a, b) => a[sortBy].localeCompare(b[sortBy])) : filteredUsers;
+  // Sort users - Active users first, then inactive users at the bottom
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    // First, sort by status (Active first, Inactive last)
+    const statusA = a.status === 'Active' ? 0 : 1;
+    const statusB = b.status === 'Active' ? 0 : 1;
+    if (statusA !== statusB) {
+      return statusA - statusB;
+    }
+
+    // Then apply secondary sorting within same status group
+    if (sortBy) {
+      return a[sortBy].localeCompare(b[sortBy]);
+    }
+    return 0;
+  });
 
   return {
     users,
