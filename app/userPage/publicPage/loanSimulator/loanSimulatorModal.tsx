@@ -401,11 +401,6 @@ export default function SimulatorModal({
                     className="w-full border border-gray-300 rounded px-2 py-1 text-right focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
                   />
                 </div>
-
-                <div className="flex justify-between text-green-600 font-semibold">
-                  <span>Remaining Principal:</span>
-                  <span>{formatCurrency(col.remainingPrincipal)}</span>
-                </div>
               </div>
             ))}
           </div>
