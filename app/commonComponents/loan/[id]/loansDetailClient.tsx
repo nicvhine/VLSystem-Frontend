@@ -112,10 +112,13 @@ const PaymentProgressCard = ({
   const isOpenTerm = loanType?.toLowerCase() === "open-term loan";
   
   // totalLoan is what we divide by
-  const totalLoan = isOpenTerm ? appLoanAmount || 0 : appTotalPayable || 0;
+  const totalLoan = loanType?.toLowerCase() === "open-term loan"
+  ? appLoanAmount || 0       // Open-Term Loan
+  : appTotalPayable || 0;    // Regular Loan
 
-  // amountPaid is either paidAmount for Regular loans, or (appLoanAmount - balance) for Open-Term
-  const amountPaid = isOpenTerm ? ((appLoanAmount || 0) - (balance || 0)) : paidAmount;
+  const amountPaid = loanType?.toLowerCase() === "open-term loan"
+    ? (appLoanAmount || 0) - (balance || 0)   // Open-Term Loan
+    : (appTotalPayable || 0) - (balance || 0)                     // Regular Loan
 
   const percentage = totalLoan > 0 ? (amountPaid / totalLoan) * 100 : 0;
 
@@ -376,8 +379,8 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
               paidAmount={loan.currentLoan?.paidAmount ?? 0}
               balance={loan.currentLoan?.remainingBalance ?? 0}
               loanType={loan.loanType}
-              appLoanAmount={loan.appLoanAmount ?? 0} // use appLoanAmount for Open-Term loans
-              appTotalPayable={loan.currentLoan?.totalPayable ?? 0} // for Regular loans
+              appLoanAmount={loan.appLoanAmount ?? 0} 
+              appTotalPayable={loan.appTotalPayable ?? 0} 
               t1={t1}
             />
           </div>
