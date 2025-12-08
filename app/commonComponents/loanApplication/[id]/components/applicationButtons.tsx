@@ -247,12 +247,13 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
                     animation: pointLeft 1.5s ease-in-out infinite;
                   }
                 `}</style>
-                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 flex items-center gap-2 point-left">
-                  <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-red-500"></div>
-                  <div className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
-                    Please update release form.
-                  </div>
+              <div className="absolute right-full top-1/2 -translate-y-1/2 ml-3 flex items-center gap-2 point-left flex-row-reverse">
+                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[8px] border-l-red-600"></div>
+
+                <div className="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+                  Please update release form.
                 </div>
+              </div>
               </>
             )}
           </div>
