@@ -9,6 +9,7 @@ export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCar
   if (!activeLoan) return null;
 
   const t = translations.loanTermsTranslator[language];
+  const isOpenTerm = activeLoan.loanType === 'Open-Term Loan';
 
   const formatCurrency = (value?: number | string) =>
     `₱${Number(value ?? 0).toLocaleString()}`;
@@ -22,18 +23,23 @@ export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCar
 
       {/* Content */}
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
+        
         {/* Left Column */}
         <div className="flex flex-col gap-4 border-b md:border-b-0 pb-4 md:pb-0 md:pr-6">
           <DetailRow label={t.l11 || 'Loan ID'} value={activeLoan.loanId} />
+
           <DetailRow
             label={t.l10 || 'Loan Type'}
             value={translateLoanType(activeLoan.loanType, language)}
             breakText
           />
+
           <DetailRow
             label={t.l13 || 'Date Disbursed'}
             value={activeLoan.dateDisbursed ? formatDate(activeLoan.dateDisbursed) : '-'}
           />
+
+          {/* Interest Rate should always show */}
           <DetailRow
             label={t.l5 || 'Interest Rate'}
             value={`${activeLoan.appInterestRate ?? 0}%`}
@@ -46,14 +52,21 @@ export default function LoanDetailsCard({ activeLoan, language }: LoanDetailsCar
             label={t.l4 || 'Principal'}
             value={formatCurrency(activeLoan.appLoanAmount)}
           />
-          <DetailRow
-            label={t.l6 || 'Total Interest'}
-            value={formatCurrency(activeLoan.appTotalInterestAmount)}
-          />
-          <DetailRow
-            label={t.l7 || 'Total Payable'}
-            value={formatCurrency(activeLoan.appTotalPayable)}
-          />
+
+          {/* Hide only these when open-term */}
+          {!isOpenTerm && (
+            <>
+              <DetailRow
+                label={t.l6 || 'Total Interest'}
+                value={formatCurrency(activeLoan.appTotalInterestAmount)}
+              />
+
+              <DetailRow
+                label={t.l7 || 'Total Payable'}
+                value={formatCurrency(activeLoan.appTotalPayable)}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>
