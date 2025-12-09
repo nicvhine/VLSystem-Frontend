@@ -106,7 +106,6 @@ export function useUsersLogic() {
 
       const { user: createdUser, credentials } = await res.json();
       setUsers((prev) => [...prev, createdUser]);
-      setSuccessMessage("User created successfully.");
 
       await sendEmail({
         to_name: createdUser.name,
@@ -130,22 +129,36 @@ export function useUsersLogic() {
     }
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleToggleStatus = (user: User) => {
+    const newStatus = user.status === 'Active' ? 'Inactive' : 'Active';
+    const action = newStatus === 'Active' ? 'Activate' : 'Deactivate';
+    
     setDecisionConfig({
-      title: "Delete User?",
-      message: "This action cannot be undone. Do you want to continue?",
-      confirmText: "Delete",
-      danger: true,
+      title: `${action} User?`,
+      message: `Are you sure you want to ${action.toLowerCase()} ${user.name}?`,
+      confirmText: action,
+      danger: newStatus === 'Inactive',
       onConfirm: async () => {
         try {
           const token = localStorage.getItem("token");
-          const res = await fetch(`${BASE_URL}/users/${userId}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
-          if (!res.ok) throw new Error(await res.text() || "Failed to delete user");
-          setUsers((prev) => prev.filter(u => u.userId !== userId));
+          const res = await fetch(`${BASE_URL}/users/${user.userId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ status: newStatus }),
+          });
+          
+          if (!res.ok) throw new Error("Failed to update user status");
+          
+          setUsers((prev) => prev.map(u => 
+            u.userId === user.userId ? { ...u, status: newStatus } : u
+          ));
           setDecisionModalOpen(false);
-          setSuccessMessage("User deleted successfully.");
+          setSuccessMessage(`User ${action.toLowerCase()}d successfully.`);
         } catch (err: any) {
-          setErrorMessage(err.message || "Failed to delete user");
+          setErrorMessage(err.message || "Failed to update user status");
           setErrorModalOpen(true);
         }
       },
@@ -284,7 +297,7 @@ export function useUsersLogic() {
     setRoleFilter,
     sortedUsers,
     handleCreateUser,
-    handleDeleteUser,
+    handleToggleStatus,
     handleSaveEdit,
     successMessage,
     setSuccessMessage,

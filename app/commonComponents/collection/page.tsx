@@ -99,6 +99,13 @@ export default function CollectionsPage() {
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date: Date | null) => date && setSelectedDate(date)}
+                  onMonthChange={(date: Date) => {
+                    // When month changes, update to the same day of the new month
+                    const currentDay = selectedDate.getDate();
+                    const newDate = new Date(date);
+                    newDate.setDate(Math.min(currentDay, new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()));
+                    setSelectedDate(newDate);
+                  }}
                   inline
                   dayClassName={(date) => {
                     const hasCollection = collections.some(col => {

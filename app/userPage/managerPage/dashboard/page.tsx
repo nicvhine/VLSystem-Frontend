@@ -162,9 +162,15 @@ export default function ManagerDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Left: Total & Active Borrowers */}
-            <div className="flex flex-col justify-start space-y-4">
-              <StatCard title="Total Borrowers" value={stats?.totalBorrowers ?? 0} />
-              <StatCard title="Active Borrowers" value={stats?.activeBorrowers ?? 0} />
+            <div className="flex flex-col justify-between h-full gap-6">
+              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+                <span className="text-2xl font-bold text-gray-900">{stats?.totalBorrowers ?? 0}</span>
+                <span className="text-gray-500 text-sm mt-1">Total Borrowers</span>
+              </div>
+              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+                <span className="text-2xl font-bold text-gray-900">{stats?.activeBorrowers ?? 0}</span>
+                <span className="text-gray-500 text-sm mt-1">Active Borrowers</span>
+              </div>
             </div>
 
             {/* Center: Top Borrowers */}
@@ -206,9 +212,15 @@ export default function ManagerDashboard() {
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     {/* Left: Total & Closed Loans */}
-    <div className="flex flex-col justify-start space-y-4">
-      <StatCard title="Total Loans" value={stats?.totalLoans ?? 0} />
-      <StatCard title="Closed Loans" value={stats?.closedLoans ?? 0} />
+    <div className="flex flex-col justify-between h-full gap-6">
+      <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+        <span className="text-2xl font-bold text-gray-900">{stats?.totalLoans ?? 0}</span>
+        <span className="text-gray-500 text-sm mt-1">Total Loans</span>
+      </div>
+      <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+        <span className="text-2xl font-bold text-gray-900">{stats?.closedLoans ?? 0}</span>
+        <span className="text-gray-500 text-sm mt-1">Closed Loans</span>
+      </div>
     </div>
 
     {/* Center: Top Agents */}
@@ -249,8 +261,9 @@ export default function ManagerDashboard() {
         <Section title="Collection Overview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <div className=" gap-4 ">
-              <StatCard title="Total Collected" value={formatCurrency(stats?.totalCollected ?? 0)} />
+            <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center h-full">
+              <span className="text-2xl font-bold mt-2 text-gray-900">{formatCurrency(stats?.totalCollected ?? 0)}</span>
+              <span className="text-gray-500 text-sm mt-1">Total Collected</span>
             </div>
 
             {/* Top Collectors */}

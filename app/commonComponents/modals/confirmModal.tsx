@@ -3,6 +3,7 @@
 import { FC, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ConfirmModalProps } from "../utils/Types/modal";
+import { LoadingSpinner } from "../utils/loading";
 
 const ConfirmModal: FC<ConfirmModalProps> = ({
   show,
@@ -57,10 +58,13 @@ const ConfirmModal: FC<ConfirmModalProps> = ({
         <p className="mb-6 text-center">{bodyText}</p>
         <div className="flex justify-end gap-4">
           <button
-            className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-semibold"
+            className={`px-4 py-2 rounded bg-red-600 text-white font-semibold flex items-center gap-2 justify-center ${
+              loading ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700'
+            }`}
             onClick={onConfirm}
             disabled={loading}
           >
+            {loading && <LoadingSpinner size={4} />}
             {loading ? processingText : confirmText}
           </button>
           <button
