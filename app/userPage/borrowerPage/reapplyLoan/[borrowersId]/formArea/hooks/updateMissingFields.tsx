@@ -31,6 +31,7 @@ interface UpdateMissingFieldsParams {
     appAgent: any;
     photo2x2: File[];
     uploadedFiles: File[];
+    requiredDocumentsCount: number;
     missingFields: string[];
     setMissingFields: (fields: string[]) => void;
 }
@@ -69,6 +70,7 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
     requiresCollateral,
     requires2x2,
         uploadedFiles,
+        requiredDocumentsCount,
         missingFields,
         setMissingFields
     } = params;
@@ -115,10 +117,11 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
             if (!ref.relation.trim()) next.push(`Reference ${i + 1} Relationship`);
         });
 
-    // Agent - coerce safely to string before trimming
+    // Agent - coerce safely to string before trimming, accept 'no agent' as valid
     const rawAgent = appAgent ?? "";
     const agentString = typeof rawAgent === "string" ? rawAgent : (rawAgent?.name ?? String(rawAgent));
-    if (!agentString.trim()) next.push('Agent');
+    // Only push to missing if agent is empty AND it's not 'no agent'
+    if (!agentString.trim() && agentString !== 'no agent') next.push('Agent');
 
         // Collateral
         if (requiresCollateral) {
@@ -132,7 +135,8 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
         if (requires2x2) {
             if (photo2x2.length === 0) next.push('2x2 Photo');
         }
-        if (uploadedFiles.length === 0) next.push('Document Upload');
+        // Check for exact document count
+        if (uploadedFiles.length !== requiredDocumentsCount) next.push('Document Upload');
 
         // Only update if different to avoid extra renders
         // Update directly with new array (avoid passing a function — setter expects string[])
@@ -169,6 +173,7 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
         appAgent,
         photo2x2,
         uploadedFiles,
+        requiredDocumentsCount,
         setMissingFields
     ]);
 }

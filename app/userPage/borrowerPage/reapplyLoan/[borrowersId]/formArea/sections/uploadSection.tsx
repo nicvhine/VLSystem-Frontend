@@ -201,6 +201,17 @@ export default function UploadSection({
           {language === 'en' ? 'Document Upload' : 'I-upload ang mga Dokumento'}
         </h4>
 
+        {/* Document count progress */}
+        {typeof requiredDocumentsCount === 'number' && (
+          <div className="mb-3 text-sm">
+            <span className={documents.length === requiredDocumentsCount ? 'text-green-600 font-medium' : 'text-gray-600'}>
+              {language === 'en' 
+                ? `${documents.length} of ${requiredDocumentsCount} documents uploaded` 
+                : `${documents.length} sa ${requiredDocumentsCount} nga dokumento na-upload`}
+            </span>
+          </div>
+        )}
+
         <div
           className={`border-2 border-dashed rounded-lg p-6 hover:border-red-300 transition-colors ${
             showFieldErrors && missingFields.includes('Document Upload')

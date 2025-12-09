@@ -28,6 +28,8 @@ interface EditPrincipalModalProps {
   onSave: (newAmount: number) => void;
   onClose: () => void;
   loading?: boolean;
+  showSuccess?: (msg: string) => void;
+  showError?: (msg: string) => void;
 }
 
 const loanOptions = {
@@ -61,6 +63,8 @@ export default function EditPrincipalModal({
   onSave,
   onClose,
   loading = false,
+  showSuccess,
+  showError,
 }: EditPrincipalModalProps) {
   const [amount, setAmount] = useState(currentAmount);
   const [loanApp, setLoanApp] = useState<LoanApplication | null>(null);
@@ -162,18 +166,31 @@ export default function EditPrincipalModal({
   const handleSave = async () => {
     if (!loanApp) return;
     if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid amount");
+      if (showError) {
+        showError("Please enter a valid amount");
+      } else {
+        alert("Please enter a valid amount");
+      }
       return;
     }
 
     if (amountError) {
-      alert(amountError);
+      if (showError) {
+        showError(amountError);
+      } else {
+        alert(amountError);
+      }
       return;
     }
 
     const { min, max } = getLoanLimits(loanApp.loanType);
     if (amount < min || amount > max) {
-      alert(`Amount must be between ₱${min.toLocaleString()} and ₱${max.toLocaleString()}`);
+      const errorMsg = `Amount must be between ₱${min.toLocaleString()} and ₱${max.toLocaleString()}`;
+      if (showError) {
+        showError(errorMsg);
+      } else {
+        alert(errorMsg);
+      }
       return;
     }
 
@@ -192,10 +209,17 @@ export default function EditPrincipalModal({
 
       const data = await res.json();
       onSave(Number(data.updatedApp.appLoanAmount));
+      if (showSuccess) {
+        showSuccess("Principal amount updated successfully!");
+      }
       handleModalClose();
     } catch (err) {
       console.error(err);
-      alert("Error updating principal");
+      if (showError) {
+        showError("Error updating principal. Please try again.");
+      } else {
+        alert("Error updating principal");
+      }
     }
   };
 
