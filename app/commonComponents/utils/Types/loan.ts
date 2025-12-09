@@ -88,5 +88,7 @@ export interface PreviousLoan {
     collateralDescription: string;
     ownershipStatus: string;
     balance?: number; 
+    appInterestRate: number;
+    appLoanTerms: number;
   }
   

@@ -394,8 +394,8 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
                 <Info label={t1.t21} value={loan.loanId} />
                 <Info label={t1.t22} value={`₱${Number(loan.appLoanAmount).toLocaleString()}`} />
                 <Info label={t1.t23} value={loan.loanType} />
-                <Info label={t1.t24} value={`${loan.currentLoan?.termsInMonths ?? '—'} months`} />
-                <Info label={t1.t25} value={`${loan.currentLoan?.interestRate ?? '—'}%`} />
+                <Info label={t1.t24} value={`${loan.appLoanTerms ?? '—'} months`} />
+                <Info label={t1.t25} value={`${loan.appInterestRate ?? '—'}%`} />
                 <Info label={t1.t26} value={formatDateTime(loan.dateDisbursed)} />
               </div>
             </div>
