@@ -32,8 +32,11 @@ export default function ReleaseForm({ isOpen, onClose, application }: ReleaseFor
       setShowModal(true);
       setTimeout(() => setAnimateIn(true), 10);
       setIsSaved(false);
-      setServiceFee(application?.appServiceFee || "");
-    } else {
+      setServiceFee(
+        application?.appServiceFee !== undefined && application?.appServiceFee !== null
+          ? String(application.appServiceFee)
+          : ""
+      );    } else {
       setAnimateIn(false);
       setTimeout(() => setShowModal(false), 300);
     }
