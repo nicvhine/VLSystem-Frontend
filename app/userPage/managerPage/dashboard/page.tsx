@@ -264,16 +264,16 @@ export default function ManagerDashboard() {
               ) : (
                 <div className="space-y-4">
                   {topCollectorsData.map((c: any) => {
-                    const collected = Number(c.collectedByCollector) || 0;
+                    const paid = Number(c.paidCollections) || 0;
                     const total = Number(c.totalAssigned) || 1;
-                    const progressPercent = Math.min((collected / total) * 100, 100);
+                    const progressPercent = Math.min((paid / total) * 100, 100);
 
                     return (
                       <div key={c.collectorId}>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm text-gray-700">{c.name}</span>
                           <span className="text-sm font-semibold">
-                            {formatCurrency(collected)} / {formatCurrency(total)} ({progressPercent.toFixed(2)}%)
+                            {paid} / {total} ({progressPercent.toFixed(2)}%)
                           </span>
                         </div>
                         <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">

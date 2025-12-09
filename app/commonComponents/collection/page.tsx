@@ -152,7 +152,6 @@ export default function CollectionsPage() {
                 </div>
                 <div className="text-right">
                   <h3 className="text-3xl sm:text-4xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
-                  <p className="text-sm text-gray-400 mt-1">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
                 </div>
               </div>
             </div>
