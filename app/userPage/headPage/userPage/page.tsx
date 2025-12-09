@@ -50,7 +50,7 @@ export default function Page() {
     setDecisionModalOpen,
     decisionConfig,
     setDecisionConfig,
-    handleDeleteUser,
+    handleToggleStatus,
     handleSaveEdit,
     setUsers,
     editingUserId,  
@@ -131,12 +131,12 @@ export default function Page() {
     setOpenActionId((prev) => (prev === userId ? null : userId));
   };
 
-  const handleAction = (action: "edit" | "delete", user: User) => {
+  const handleAction = (action: "edit" | "activate" | "deactivate", user: User) => {
     setOpenActionId(null);
     if (action === "edit") {
       handleEditClick(user);
-    } else {
-      handleDeleteUser(user.userId);
+    } else if (action === "activate" || action === "deactivate") {
+      handleToggleStatus(user);
     }
   };
 
@@ -337,73 +337,87 @@ export default function Page() {
                             user.status === 'Inactive' ? 'text-gray-400 font-medium' : 'text-gray-700'
                           }`}>{user.status}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
-                            <div className="relative inline-flex items-center justify-center">
-                              <button
-                                ref={(el) => { actionButtonRefs.current[user.userId] = el; }}
-                                onClick={() => toggleActions(user.userId)}
-                                className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 text-gray-600"
-                                aria-haspopup="menu"
-                                aria-expanded={openActionId === user.userId}
-                                aria-label={t.l16}
-                              >
-                                <FiMoreVertical className="w-5 h-5" />
-                              </button>
-                              {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
-                                const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
-                                const menuWidth = 128;
-                                const menuHeight = 96;
-                                const viewportHeight = window.innerHeight;
-                                const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? viewportHeight;
-                                const spaceBelow = Math.min(paginationTop, viewportHeight) - rect.bottom;
-                                const spaceAbove = rect.top;
-                                
-                                let top: number;
-                                // Prefer below, only go above if not enough space below AND enough space above
-                                if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
-                                  top = rect.top - menuHeight + 6;
-                                } else {
-                                  top = rect.bottom + 8;
-                                }
-                                
-                                let left = rect.right - menuWidth;
-                                if (left < 8) {
-                                  left = 8;
-                                } else if (left + menuWidth > window.innerWidth - 8) {
-                                  left = window.innerWidth - menuWidth - 8;
-                                }
-                                
-                                const style: React.CSSProperties = {
-                                  position: "fixed",
-                                  top: `${top}px`,
-                                  left: `${left}px`,
-                                  width: menuWidth,
-                                  zIndex: 9999,
-                                };
-                                return (
-                                  <div
-                                    ref={actionPopoverRef}
-                                    style={style}
-                                    className="rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
-                                    role="menu"
-                                  >
-                                    <button
-                                      onClick={() => handleAction("edit", user)}
-                                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                      role="menuitem"
+                            {user.role === "sysad" ? (
+                              <span className="text-gray-400 text-sm">-</span>
+                            ) : (
+                              <div className="relative inline-flex items-center justify-center">
+                                <button
+                                  ref={(el) => { actionButtonRefs.current[user.userId] = el; }}
+                                  onClick={() => toggleActions(user.userId)}
+                                  className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 text-gray-600"
+                                  aria-haspopup="menu"
+                                  aria-expanded={openActionId === user.userId}
+                                  aria-label={t.l16}
+                                >
+                                  <FiMoreVertical className="w-5 h-5" />
+                                </button>
+                                {openActionId === user.userId && actionButtonRefs.current[user.userId] && (() => {
+                                  const rect = actionButtonRefs.current[user.userId]!.getBoundingClientRect();
+                                  const menuWidth = 128;
+                                  const menuHeight = 96;
+                                  const viewportHeight = window.innerHeight;
+                                  const paginationTop = paginationRef.current?.getBoundingClientRect().top ?? viewportHeight;
+                                  const spaceBelow = Math.min(paginationTop, viewportHeight) - rect.bottom;
+                                  const spaceAbove = rect.top;
+                                  
+                                  let top: number;
+                                  // Prefer below, only go above if not enough space below AND enough space above
+                                  if (spaceBelow < menuHeight + 16 && spaceAbove > menuHeight + 16) {
+                                    top = rect.top - menuHeight + 6;
+                                  } else {
+                                    top = rect.bottom + 8;
+                                  }
+                                  
+                                  let left = rect.right - menuWidth;
+                                  if (left < 8) {
+                                    left = 8;
+                                  } else if (left + menuWidth > window.innerWidth - 8) {
+                                    left = window.innerWidth - menuWidth - 8;
+                                  }
+                                  
+                                  const style: React.CSSProperties = {
+                                    position: "fixed",
+                                    top: `${top}px`,
+                                    left: `${left}px`,
+                                    width: menuWidth,
+                                    zIndex: 9999,
+                                  };
+                                  return (
+                                    <div
+                                      ref={actionPopoverRef}
+                                      style={style}
+                                      className="rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+                                      role="menu"
                                     >
-                                      {b.b2}
-                                    </button>
-                                    <button
-                                      onClick={() => handleAction("delete", user)}
-                                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                      role="menuitem"
-                                    >
-                                      {b.b3}
-                                    </button>
-                                  </div>
-                                );
-                              })()}
-                            </div>
+                                      <button
+                                        onClick={() => handleAction("edit", user)}
+                                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                        role="menuitem"
+                                      >
+                                        {b.b2}
+                                      </button>
+                                      {user.status === 'Active' ? (
+                                        <button
+                                          onClick={() => handleAction("deactivate", user)}
+                                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                          role="menuitem"
+                                        >
+                                          Deactivate
+                                        </button>
+                                      ) : (
+                                        <button
+                                          onClick={() => handleAction("activate", user)}
+                                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                                          role="menuitem"
+                                        >
+                                          Activate
+                                        </button>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+                            )}
                           </td>
                         </>
                       )}
@@ -467,7 +481,12 @@ export default function Page() {
           <CreateUserModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onCreate={handleCreateUser}
+            onCreate={(user) => handleCreateUser(user).then(result => {
+              if (result.success) {
+                return { ...result, showSuccess: () => setSuccessMessage("User created successfully.") };
+              }
+              return result;
+            })}
             language={language}
           />
           {successMessage && (

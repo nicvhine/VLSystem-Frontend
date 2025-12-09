@@ -306,16 +306,16 @@ export async function exportDashboardToPDF(
     pdf.setFontSize(9);
     topCollectorsArray.slice(0, 5).forEach((collector: any) => {
       checkPageBreak(15);
-      const collected = Number(collector.collectedByCollector) || 0;
+      const paid = Number(collector.paidCollections) || 0;
       const total = Number(collector.totalAssigned) || 1;
-      const progressPercent = Math.min((collected / total) * 100, 100);
+      const progressPercent = Math.min((paid / total) * 100, 100);
 
-      // Collector name and amount
+      // Collector name and count
       pdf.setTextColor(55, 65, 81);
       pdf.text(collector.name || 'N/A', margin, yPosition);
       pdf.text(
-        `${formatCurrency(collected)} / ${formatCurrency(total)} (${progressPercent.toFixed(2)}%)`,
-        margin + contentWidth - 70,
+        `${paid} / ${total} (${progressPercent.toFixed(2)}%)`,
+        margin + contentWidth - 50,
         yPosition
       );
       yPosition += 4;

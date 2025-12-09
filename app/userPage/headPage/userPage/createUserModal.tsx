@@ -33,9 +33,10 @@ export default function CreateUserModal({
     name: "",
     email: "",
     phoneNumber: "",
-    role: "head" as const,
+    role: "manager" as const,
     status: "Active" as const,
   });
+  const [isCreating, setIsCreating] = useState(false);
 
   // Form validation errors
   const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
@@ -107,12 +108,8 @@ export default function CreateUserModal({
   }, [isOpen]);
 
   const handleModalClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onClose();
-      setIsVisible(false);
-      setShowConfirm(false);
-    }, 150);
+    setShowConfirm(false);
+    onClose();
   };
 
 
@@ -188,9 +185,11 @@ export default function CreateUserModal({
   };
 
   const handleConfirmCreate = async () => {
+    setIsCreating(true);
     // Clear previous errors
     setErrors((prev) => ({ ...prev, email: undefined }));
     const result = await Promise.resolve(onCreate(newUser) as any);
+    setIsCreating(false);
     if (result && typeof result === 'object' && result.success === false) {
       // Show inline field errors and keep modal open
       if (result.fieldErrors) {
@@ -204,10 +203,15 @@ export default function CreateUserModal({
       setShowConfirm(false);
       return;
     }
-    // Success path: close and reset form
-    handleModalClose();
-    setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
+    // Success path: close modals and reset form
     setShowConfirm(false);
+    onClose();
+    setNewUser({ name: "", email: "", phoneNumber: "", role: "manager", status: "Active" });
+    
+    // Trigger success message after modal is closed
+    if (result && result.success && result.showSuccess) {
+      result.showSuccess();
+    }
   };
 
   if (!isVisible) return null;
@@ -284,7 +288,6 @@ export default function CreateUserModal({
               value={newUser.role}
               onChange={handleChange}
             >
-              <option value="head">{b.b14}</option>
               <option value="manager">{b.b15}</option>
               <option value="loan officer">{b.b16}</option>
               <option value="collector">{b.b17}</option>
@@ -294,17 +297,24 @@ export default function CreateUserModal({
             <button
               type="button"
               onClick={handleModalClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
+              disabled={isCreating}
+              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-md ${
+                isCreating ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               {b.b5}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-red-600 text-white rounded-md"
+              className={`px-4 py-2 bg-red-600 text-white rounded-md ${
+                (!!errors.name || !!errors.email || !!errors.phoneNumber ||
+                !newUser.name.trim() || !newUser.email.trim() || !newUser.phoneNumber.trim() ||
+                checking.name || checking.email || checking.phoneNumber || isCreating) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               disabled={
                 !!errors.name || !!errors.email || !!errors.phoneNumber ||
                 !newUser.name.trim() || !newUser.email.trim() || !newUser.phoneNumber.trim() ||
-                checking.name || checking.email || checking.phoneNumber
+                checking.name || checking.email || checking.phoneNumber || isCreating
               }
             >
               {m.u7}
@@ -315,6 +325,7 @@ export default function CreateUserModal({
             message={m.u8}
             onConfirm={handleConfirmCreate}
             onCancel={() => setShowConfirm(false)}
+            loading={isCreating}
           />
         </form>
       </div>

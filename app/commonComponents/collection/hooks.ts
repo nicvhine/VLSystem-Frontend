@@ -136,26 +136,50 @@ export const useCollectionPage = (onModalStateChange?: (isOpen: boolean) => void
   }, [isPaymentModalVisible, isNoteModalVisible, onModalStateChange]);
 
 
-  const filteredCollections = collections.filter((col) => {
-    const userId = localStorage.getItem("userId");
-    const matchesCollector = role === "collector" ? col.collectorId === userId : true;
-    const matchesSearch = (col.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredCollections = useMemo(() => {
+    const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+    let filtered = collections.filter((col) => {
+      const matchesCollector = role === "collector" ? col.collectorId === userId : true;
+      const matchesSearch = (col.name || "").toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Filter for urgent collections (Overdue and Past Due)
+      if (showUrgentOnly) {
+        const matchesUrgent = col.status === "Overdue" || col.status === "Past Due";
+        return matchesCollector && matchesSearch && matchesUrgent;
+      }
+      
+      // Normal date-based filtering when urgent filter is not active
+      const due = new Date(col.dueDate);
+      const selected = selectedDate;
+      const sameDate =
+        !selectedDate ||
+        due.toDateString() === selected.toDateString();
     
-    // Filter for urgent collections (Overdue and Past Due)
-    if (showUrgentOnly) {
-      const matchesUrgent = col.status === "Overdue" || col.status === "Past Due";
-      return matchesCollector && matchesSearch && matchesUrgent;
+      return sameDate && matchesCollector && matchesSearch;
+    });
+
+    // Apply sorting
+    if (sortBy) {
+      filtered = [...filtered].sort((a, b) => {
+        switch (sortBy) {
+          case 'name':
+            return (a.name || '').localeCompare(b.name || '');
+          case 'status':
+            return (a.status || '').localeCompare(b.status || '');
+          case 'dueDate':
+            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          case 'amount':
+            return a.periodAmount - b.periodAmount;
+          case 'balance':
+            return a.loanBalance - b.loanBalance;
+          default:
+            return 0;
+        }
+      });
     }
-    
-    // Normal date-based filtering when urgent filter is not active
-    const due = new Date(col.dueDate);
-    const selected = selectedDate;
-    const sameDate =
-      !selectedDate ||
-      due.toDateString() === selected.toDateString();
-  
-    return sameDate && matchesCollector && matchesSearch;
-  });
+
+    return filtered;
+  }, [collections, role, searchQuery, showUrgentOnly, selectedDate, sortBy]);
   
   // Count urgent collections for the badge
   const urgentCollectionsCount = useMemo(() => {

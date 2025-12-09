@@ -264,40 +264,60 @@ export const handleConfirmPayment = async (
 
     const result = await response.json();
     
-    // Update collections list
+    // Update collections list with new status and paid amount
     const updatedCollection: Collection = result;
     setCollections((prev) =>
-      prev.map((col) =>
-        col.referenceNumber === updatedCollection.referenceNumber
-          ? updatedCollection
-          : col
-      )
+      prev.map((col) => {
+        if (col.referenceNumber === updatedCollection.referenceNumber) {
+          // Update the collection with new data
+          return {
+            ...col,
+            ...updatedCollection,
+            status: updatedCollection.status,
+            paidAmount: updatedCollection.paidAmount,
+            periodBalance: updatedCollection.periodBalance
+          };
+        }
+        return col;
+      })
     );
 
-    // Show receipt modal with payment data
-    if (setShowReceiptModal && setReceiptData && result.paymentLogs && result.paymentLogs.length > 0) {
-      const paymentLog = result.paymentLogs[0];
-      setReceiptData({
-        referenceNumber: paymentLog.referenceNumber,
-        amount: paymentLog.amount,
-        datePaid: paymentLog.datePaid,
-        loanId: paymentLog.loanId,
-        borrowersId: paymentLog.borrowersId,
-        collector: collectorName,
-        mode: paymentLog.mode || 'Cash',
-        paidToCollection: paymentLog.paidToCollection,
-        borrowerName: selectedCollection.name,
-      });
-      setShowReceiptModal(true);
-    }
+    // Payment successful - stop loading and close modals
+    setPaymentLoading(false);
+    
+    // Close confirm payment modal
+    setShowPaymentConfirm(false);
+    
+    // Wait for confirm modal to close, then close main payment modal
+    setTimeout(() => {
+      handleClose();
+      
+      // Show receipt modal after both modals are closed
+      if (setShowReceiptModal && setReceiptData && result.paymentLogs && result.paymentLogs.length > 0) {
+        setTimeout(() => {
+          const paymentLog = result.paymentLogs[0];
+          setReceiptData({
+            referenceNumber: paymentLog.referenceNumber,
+            amount: paymentLog.amount,
+            datePaid: paymentLog.datePaid,
+            loanId: paymentLog.loanId,
+            borrowersId: paymentLog.borrowersId,
+            collector: collectorName,
+            mode: paymentLog.mode || 'Cash',
+            paidToCollection: paymentLog.paidToCollection,
+            borrowerName: selectedCollection.name,
+          });
+          setShowReceiptModal(true);
+        }, 300);
+      }
+    }, 200);
   } catch (err) {
     console.error("Payment failed:", err);
+    setPaymentLoading(false);
     setErrorMsg("Payment failed.");
     setShowErrorModal(true);
-  } finally {
-    setPaymentLoading(false);
     setShowPaymentConfirm(false);
-    handleClose(); 
+    handleClose();
   }
 };
 

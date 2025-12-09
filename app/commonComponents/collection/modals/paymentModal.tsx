@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency } from "../../utils/formatters";
 import { PaymentModalProps } from "../../utils/Types/collection";
+import { LoadingSpinner } from "../../utils/loading";
 
 interface ConfirmPaymentModalProps {
   isOpen: boolean;
@@ -25,13 +26,30 @@ function ConfirmPaymentModal({
   onConfirm,
   isLoading
 }: ConfirmPaymentModalProps) {
-  if (!isOpen) return null;
+  const [isVisible, setIsVisible] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      setTimeout(() => setIsAnimating(true), 10);
+    } else {
+      setIsAnimating(false);
+      setTimeout(() => setIsVisible(false), 200);
+    }
+  }, [isOpen]);
+
+  if (!isVisible) return null;
 
   const newBalance = loanBalance - amount;
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 md:p-8 animate-fade-in">
+    <div className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[60] transition-opacity duration-200 ${
+      isAnimating ? 'opacity-100' : 'opacity-0'
+    }`}>
+      <div className={`bg-white rounded-xl shadow-2xl w-full max-w-md p-6 md:p-8 transform transition-all duration-200 ${
+        isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+      }`}>
         <h2 className="text-xl font-bold mb-6 text-gray-800">Confirm Payment</h2>
 
         <div className="space-y-3 text-gray-700 text-sm">
@@ -61,15 +79,20 @@ function ConfirmPaymentModal({
           <button
             onClick={onCancel}
             disabled={isLoading}
-            className="px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
+            className={`px-5 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition ${
+              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            className={`px-5 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2 ${
+              isLoading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
           >
+            {isLoading && <LoadingSpinner size={4} />}
             {isLoading ? "Processing..." : "Confirm Payment"}
           </button>
         </div>
@@ -86,10 +109,10 @@ export default function PaymentModal({
   setPaymentAmount,
   handleClose,
   handleConfirmPayment,
-  paymentLoading
+  paymentLoading,
+  showPaymentConfirm,
+  setShowPaymentConfirm
 }: PaymentModalProps) {
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-
   if (!isOpen || !selectedCollection) return null;
 
   return (
@@ -99,14 +122,23 @@ export default function PaymentModal({
         className={`fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50 transition-opacity duration-200 ${
           isAnimating ? 'opacity-100' : 'opacity-0'
         }`}
-        onClick={handleClose}
+        onClick={!paymentLoading ? handleClose : undefined}
       >
         <div
-          className={`bg-white rounded-xl shadow-xl w-full max-w-md p-6 md:p-8 transition-transform duration-200 ${
+          className={`bg-white rounded-xl shadow-xl w-full max-w-md p-6 md:p-8 transition-transform duration-200 relative ${
             isAnimating ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Loading Overlay */}
+          {paymentLoading && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm rounded-xl flex items-center justify-center z-10">
+              <div className="flex flex-col items-center gap-3">
+                <LoadingSpinner size={8} />
+                <p className="text-sm text-gray-600 font-medium">Processing payment...</p>
+              </div>
+            </div>
+          )}
           <h2 className="text-lg md:text-xl font-semibold mb-4 text-gray-800">
             Make Payment for {selectedCollection.name}
           </h2>
@@ -141,15 +173,19 @@ export default function PaymentModal({
 
           <div className="flex justify-end gap-3">
             <button
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition ${
+                paymentLoading ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               onClick={handleClose}
               disabled={paymentLoading}
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-              onClick={() => setShowConfirmModal(true)}
+              className={`px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition ${
+                (paymentLoading || paymentAmount <= 0) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+              onClick={() => setShowPaymentConfirm(true)}
               disabled={paymentLoading || paymentAmount <= 0}
             >
               Confirm
@@ -160,15 +196,14 @@ export default function PaymentModal({
 
       {/* Confirmation Modal */}
       <ConfirmPaymentModal
-        isOpen={showConfirmModal}
+        isOpen={showPaymentConfirm}
         borrowerName={selectedCollection.name}
         dueDate={selectedCollection.dueDate}
         loanBalance={selectedCollection.loanBalance}
         amount={paymentAmount}
-        onCancel={() => setShowConfirmModal(false)}
+        onCancel={() => !paymentLoading && setShowPaymentConfirm(false)}
         onConfirm={() => {
           handleConfirmPayment();
-          setShowConfirmModal(false);
         }}
         isLoading={paymentLoading}
       />
