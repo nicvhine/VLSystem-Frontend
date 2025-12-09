@@ -7,7 +7,6 @@ export default function WithCollateral({ application }: ApplicationCardProps) {
 
   return (
     <section>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Collateral Details</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <p className="text-sm font-medium text-gray-500">Collateral Type</p>
