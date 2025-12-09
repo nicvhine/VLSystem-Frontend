@@ -64,13 +64,13 @@ export default function HeadEndorsementsPage() {
       setClosureEndorsements(Array.isArray(closureData?.data) ? closureData.data : []);
 
       // Fetch penalty endorsements
-      const penaltyRes = await fetch(`${BASE_URL}/penalty/endorsements`, {
+      const penaltyRes = await fetch(`${BASE_URL}/penalty`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!penaltyRes.ok) throw new Error(t.m3);
       const penaltyData = await penaltyRes.json();
-      setPenaltyEndorsements(Array.isArray(penaltyData?.data) ? penaltyData.data : []);
+      setPenaltyEndorsements(Array.isArray(penaltyData) ? penaltyData : penaltyData?.data ?? []);
 
       setShowError(false);
       setErrorMsg("");
@@ -217,7 +217,9 @@ export default function HeadEndorsementsPage() {
                     <tr key={e._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 text-sm text-gray-900">{e.endorsementId}</td>
                       <td className="px-6 py-4 text-sm text-gray-900">{e.loanId}</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{e.clientName}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {e.clientName || e.borrowerName || '—'}
+                      </td>
                       {filterType === "Closure" && (
                         <td className="px-6 py-4 text-sm text-gray-900">
                           ₱{loanBalances[e.loanId]?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
@@ -228,13 +230,11 @@ export default function HeadEndorsementsPage() {
                           {e.reason || '—'}
                         </td>
                       )}
-                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(e.createdAt)}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          e.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                          e.status === 'Approved' ? 'bg-green-100 text-green-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {formatDate(e.dateEndorsed || e.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        <span>
                           {e.status}
                         </span>
                       </td>
