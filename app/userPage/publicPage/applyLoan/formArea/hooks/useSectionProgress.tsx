@@ -11,6 +11,8 @@ interface UseSectionProgressParams {
   photo2x2: File[];
   requires2x2: boolean;
   appAgent: string;
+  uploadedFiles: File[];
+  requiredDocumentsCount: number;
   onProgressUpdate?: (progress: Progress) => void;
 }
 
@@ -19,6 +21,8 @@ export function useSectionProgress({
   photo2x2,
   requires2x2,
   appAgent,
+  uploadedFiles,
+  requiredDocumentsCount,
   onProgressUpdate,
 }: UseSectionProgressParams) {
   const prevProgressRef = useRef<Progress | undefined>(undefined);
@@ -62,7 +66,7 @@ export function useSectionProgress({
     missingDetails["photo2x2"] = photoMissing;
     done["photo2x2"] = missingCounts["photo2x2"] === 0;
 
-    const docMissing = missingFields.filter(f => f === "Document Upload");
+    const docMissing = uploadedFiles.length !== requiredDocumentsCount ? ["Document Upload"] : [];
     missingCounts["documents"] = docMissing.length;
     missingDetails["documents"] = docMissing;
     done["documents"] = missingCounts["documents"] === 0;
@@ -85,5 +89,5 @@ export function useSectionProgress({
       prevProgressRef.current = currentProgress;
       onProgressUpdate(currentProgress);
     }
-  }, [missingFields, photo2x2, requires2x2, appAgent, onProgressUpdate]);
+  }, [missingFields, photo2x2, requires2x2, appAgent, uploadedFiles, requiredDocumentsCount, onProgressUpdate]);
 }

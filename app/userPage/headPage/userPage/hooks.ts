@@ -15,6 +15,7 @@ export function useUsersLogic() {
   const [successMessage, setSuccessMessage] = useState("");
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
+  const [editValidationErrors, setEditValidationErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
   const [decisionModalOpen, setDecisionModalOpen] = useState(false);
   const [decisionConfig, setDecisionConfig] = useState<DecisionConfig | null>(null);
 
@@ -154,20 +155,93 @@ export function useUsersLogic() {
 
   const handleSaveEdit = () => {
     if (!editingUserId) return;
+
+    // Validation
+    const errors: { name?: string; email?: string; phoneNumber?: string } = {};
+    
+    if (!editFormData.name || editFormData.name.trim() === '') {
+      errors.name = 'Name is required';
+    }
+    
+    if (!editFormData.email || editFormData.email.trim() === '') {
+      errors.email = 'Email is required';
+    } else if (!/^\S+@\S+\.\S+$/.test(editFormData.email)) {
+      errors.email = 'Please enter a valid email address';
+    } else {
+      // Check for duplicate email (excluding current user)
+      const duplicateEmail = users.find(u => 
+        u.userId !== editingUserId && 
+        u.email?.toLowerCase() === editFormData.email?.toLowerCase()
+      );
+      if (duplicateEmail) {
+        errors.email = 'This email is already used by another user';
+      }
+    }
+    
+    if (!editFormData.phoneNumber || editFormData.phoneNumber.trim() === '') {
+      errors.phoneNumber = 'Phone number is required';
+    } else if (!/^\d{11}$/.test(editFormData.phoneNumber)) {
+      errors.phoneNumber = 'Phone number must be exactly 11 digits';
+    } else {
+      // Check for duplicate phone number (excluding current user)
+      const duplicatePhone = users.find(u => 
+        u.userId !== editingUserId && 
+        u.phoneNumber === editFormData.phoneNumber
+      );
+      if (duplicatePhone) {
+        errors.phoneNumber = 'This phone number is already used by another user';
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setEditValidationErrors(errors);
+      return;
+    }
+
+    setEditValidationErrors({});
+
     setDecisionConfig({
       title: "Save Changes?",
       message: "Are you sure you want to save changes to this user?",
       confirmText: "Save",
       onConfirm: async () => {
         try {
-          const payload: Partial<User> = { ...editFormData, status: editFormData.status ?? "Active" };
+          // Explicitly exclude status from edit payload - status can only be changed via other means
+          const { status, ...editPayload } = editFormData;
           const token = localStorage.getItem("token");
-          const res = await fetch(`${BASE_URL}/users/${editingUserId}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) });
+          const res = await fetch(`${BASE_URL}/users/${editingUserId}`, { method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(editPayload) });
+          
+          if (!res.ok) {
+            let errorMessage = "Failed to save user";
+            try {
+              const data = await res.json();
+              errorMessage = data?.error || data?.message || errorMessage;
+              
+              // Check for specific duplicate errors from backend
+              const fieldErrors: { email?: string; phoneNumber?: string } = {};
+              if (/email\s+already\s+(registered|in use|exists)/i.test(errorMessage)) {
+                fieldErrors.email = 'This email is already used by another user';
+              }
+              if (/phone\s*number\s+already\s+(registered|in use|exists)/i.test(errorMessage)) {
+                fieldErrors.phoneNumber = 'This phone number is already used by another user';
+              }
+              
+              if (fieldErrors.email || fieldErrors.phoneNumber) {
+                setEditValidationErrors(fieldErrors);
+                setDecisionModalOpen(false);
+                return;
+              }
+            } catch {}
+            
+            setDecisionConfig(prev => prev ? { ...prev, error: errorMessage } : prev);
+            return;
+          }
+
           const data = await res.json();
-          if (!res.ok) { setDecisionConfig(prev => prev ? { ...prev, error: data.message } : prev); return; }
           setUsers(prev => prev.map(u => u.userId === data.user.userId ? data.user : u));
           setEditFormData({});
           setEditingUserId(null);
+          setEditValidationErrors({});
           setDecisionModalOpen(false);
           setSuccessMessage("User updated successfully.");
         } catch (err: any) {
@@ -218,6 +292,8 @@ export function useUsersLogic() {
     setDecisionModalOpen,
     decisionConfig,
     setDecisionConfig,
+    editValidationErrors,
+    setEditValidationErrors,
     editingUserId,
     setEditingUserId,
     editFormData,

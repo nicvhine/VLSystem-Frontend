@@ -59,6 +59,8 @@ export default function Page() {
     setEditFormData,
     successMessage,
     setSuccessMessage,
+    editValidationErrors,
+    setEditValidationErrors,
   } = useUsersLogic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -122,6 +124,7 @@ export default function Page() {
   const handleCancelEdit = () => {
     setEditingUserId(null);
     setEditFormData({});
+    setEditValidationErrors({});
   };
 
   const toggleActions = (userId: string) => {
@@ -247,13 +250,40 @@ export default function Page() {
                       {editingUserId === user.userId ? (
                         <>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.name || ''} onChange={(e) => handleEditChange("name", e.target.value)} />
+                            <div>
+                              <input 
+                                className={`border rounded px-2 py-1 w-full ${editValidationErrors.name ? 'border-red-500' : 'border-gray-300'}`} 
+                                value={editFormData.name || ''} 
+                                onChange={(e) => handleEditChange("name", e.target.value)} 
+                              />
+                              {editValidationErrors.name && (
+                                <p className="text-red-500 text-xs mt-1">{editValidationErrors.name}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.email || ''} onChange={(e) => handleEditChange("email", e.target.value)} />
+                            <div>
+                              <input 
+                                className={`border rounded px-2 py-1 w-full ${editValidationErrors.email ? 'border-red-500' : 'border-gray-300'}`} 
+                                value={editFormData.email || ''} 
+                                onChange={(e) => handleEditChange("email", e.target.value)} 
+                              />
+                              {editValidationErrors.email && (
+                                <p className="text-red-500 text-xs mt-1">{editValidationErrors.email}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.phoneNumber || ''} onChange={(e) => handleEditChange("phoneNumber", e.target.value)} />
+                            <div>
+                              <input 
+                                className={`border rounded px-2 py-1 w-full ${editValidationErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`} 
+                                value={editFormData.phoneNumber || ''} 
+                                onChange={(e) => handleEditChange("phoneNumber", e.target.value)} 
+                              />
+                              {editValidationErrors.phoneNumber && (
+                                <p className="text-red-500 text-xs mt-1">{editValidationErrors.phoneNumber}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.role || ''} onChange={(e) => handleEditChange("role", e.target.value)}>
@@ -264,14 +294,7 @@ export default function Page() {
                             </select>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <select
-                              className="border border-gray-300 rounded px-2 py-1 w-full"
-                              value={editFormData.status || 'active'}
-                              onChange={(e) => handleEditChange("status", e.target.value)}
-                            >
-                              <option value="Active">Active</option>
-                              <option value="Inactive">Inactive</option>
-                            </select>
+                            <span className="text-gray-800">{editFormData.status || user.status}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                             <div className="flex items-center justify-center gap-3">
