@@ -339,7 +339,7 @@ export default function ApplicationDetailsPage() {
 
               {/* Buttons */}
               <div className="flex justify-center sm:justify-end space-x-3">
-                {application?.status === "Pending" && (
+                {application?.status === "Pending" && role === "loan officer" ?(
                   isEditing ? (
                     <>
                       <button
@@ -363,7 +363,7 @@ export default function ApplicationDetailsPage() {
                       Edit Details
                     </button>
                   )
-                )}
+                ): null}
 
                 <ApplicationButtons
                   application={application!}
