@@ -379,8 +379,8 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
               paidAmount={loan.currentLoan?.paidAmount ?? 0}
               balance={loan.currentLoan?.remainingBalance ?? 0}
               loanType={loan.loanType}
-              appLoanAmount={loan.appLoanAmount ?? 0} 
-              appTotalPayable={loan.appTotalPayable ?? 0} 
+              appLoanAmount={Number(loan.appLoanAmount) || 0}
+              appTotalPayable={Number(loan.appTotalPayable) || 0}
               t1={t1}
             />
           </div>

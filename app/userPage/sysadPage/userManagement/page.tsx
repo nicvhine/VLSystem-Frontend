@@ -59,12 +59,6 @@ export default function UserManagementPage() {
   const actionPopoverRef = useRef<HTMLDivElement | null>(null);
   const actionButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // Add user modal
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
-
-  // Reset password state
-  const [resettingUserId, setResettingUserId] = useState<string | null>(null);
-
   // Toggle status state
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
 

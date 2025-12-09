@@ -3,7 +3,7 @@ export interface User {
     name: string;
     email: string;
     phoneNumber: string;
-    role: "head" | "manager" | "loan officer" | "collector";
+    role: "head" | "manager" | "loan officer" | "collector" | "sysad";
     status: "Active" | "Inactive";
     lastActive: string;
   }
