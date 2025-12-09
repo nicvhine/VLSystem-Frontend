@@ -397,6 +397,7 @@ export default function LoansDetailClient({ loanId }: LoansDetailClientProps) {
                 <Info label={t1.t24} value={`${loan.appLoanTerms ?? '—'} months`} />
                 <Info label={t1.t25} value={`${loan.appInterestRate ?? '—'}%`} />
                 <Info label={t1.t26} value={formatDateTime(loan.dateDisbursed)} />
+                <Info label={language === 'en' ? 'Agent' : 'Ahente'} value={loan.appAgent?.name || '—'} />
               </div>
             </div>
 

@@ -10,6 +10,7 @@ export const getHeadNavItems = (language: 'en' | 'ceb') => {
     { name: t.tab2, href: '/commonComponents/loanApplication' },
     { name: t.tab5, href: '/userPage/headPage/userPage' },
     { name: t.tab4, href: '/commonComponents/agent' },
+    { name: t.tab14, href: '/userPage/headPage/endorsements' },
   ];
 };
 

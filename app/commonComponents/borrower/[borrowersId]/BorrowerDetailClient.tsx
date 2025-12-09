@@ -166,6 +166,15 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                 </div>
               </div>
 
+              <div className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
+                <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
+                  {language === 'en' ? 'Agent' : 'Ahente'}
+                </p>
+                <p className="text-gray-800 text-sm font-medium">
+                  {mergedData.appAgent?.name || "—"}
+                </p>
+              </div>
+
                 {mergedData.appChildren && mergedData.appChildren !== "0" && (
                   <LabeledField label={t.p6} value={mergedData.appChildren} />
                 )}

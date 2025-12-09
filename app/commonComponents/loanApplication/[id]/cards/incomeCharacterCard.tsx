@@ -349,6 +349,23 @@ export default function IncomeCharactedCard({
           {/* CHARACTER REFERENCES */}
           {activeTab === "references" && (
             <div className="h-full">
+              {/* Agent Section - Always First */}
+              {(application as any)?.appAgent && (
+                <div className="mb-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">
+                      Agent
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-xs font-medium text-gray-500">Name</p>
+                      <p className="text-gray-900">{(application as any)?.appAgent?.name || "—"}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
               {((isEditing ? referencesData : application?.appReferences) || []).length > 0 ? (
                 <div className="space-y-4">
                   {((isEditing ? referencesData : application?.appReferences) || []).map((ref: any, i: number) => (
