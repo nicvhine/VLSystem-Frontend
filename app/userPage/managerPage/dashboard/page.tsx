@@ -249,9 +249,8 @@ export default function ManagerDashboard() {
         <Section title="Collection Overview">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className=" gap-4 ">
               <StatCard title="Total Collected" value={formatCurrency(stats?.totalCollected ?? 0)} />
-              <StatCard title="Collectables" value={formatCurrency(stats?.collectables ?? 0)} />
             </div>
 
             {/* Top Collectors */}
