@@ -10,6 +10,8 @@ interface UseSectionProgressParams {
   missingFields: string[];
   photo2x2: File[];
   requires2x2: boolean;
+  uploadedFiles: File[];
+  requiredDocumentsCount: number;
   // appAgent may sometimes be a string or an object (prefill data). Accept any and coerce.
   appAgent: any;
   onProgressUpdate?: (progress: Progress) => void;
@@ -19,6 +21,8 @@ export function useSectionProgress({
   missingFields,
   photo2x2,
   requires2x2,
+  uploadedFiles,
+  requiredDocumentsCount,
   appAgent,
   onProgressUpdate,
 }: UseSectionProgressParams) {
@@ -63,7 +67,8 @@ export function useSectionProgress({
     missingDetails["photo2x2"] = photoMissing;
     done["photo2x2"] = missingCounts["photo2x2"] === 0;
 
-    const docMissing = missingFields.filter(f => f === "Document Upload");
+    // Check for exact document count
+    const docMissing = uploadedFiles.length !== requiredDocumentsCount ? ["Document Upload"] : [];
     missingCounts["documents"] = docMissing.length;
     missingDetails["documents"] = docMissing;
     done["documents"] = missingCounts["documents"] === 0;
@@ -83,7 +88,8 @@ export function useSectionProgress({
   if (agentString.includes("[object") || agentString.toLowerCase() === "null" || agentString.toLowerCase() === "undefined") {
     agentString = "";
   }
-  const agentMissing = !agentString.trim() ? ["Agent"] : [];
+  // Accept 'no agent' as valid, or any non-empty agent value
+  const agentMissing = (agentString.trim() === '' && agentString !== 'no agent') ? ["Agent"] : [];
     missingCounts["agent"] = agentMissing.length;
     missingDetails["agent"] = agentMissing;
     done["agent"] = missingCounts["agent"] === 0;
@@ -101,5 +107,5 @@ export function useSectionProgress({
       prevProgressRef.current = currentProgress;
       onProgressUpdate(currentProgress);
     }
-  }, [missingFields, photo2x2, requires2x2, appAgent, onProgressUpdate]);
+  }, [missingFields, photo2x2, requires2x2, uploadedFiles, requiredDocumentsCount, appAgent, onProgressUpdate]);
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { FiUser, FiFileText, FiPaperclip, FiPlus, FiTrash2 } from "react-icons/fi";
 import { ApplicationDetailsTabsProps } from "@/app/commonComponents/utils/Types/components";
 import { formatCurrency, capitalizeWords } from "@/app/commonComponents/utils/formatters";
@@ -20,6 +20,10 @@ export default function IncomeCharactedCard({
   setIncomeData,
   referencesData,
   setReferencesData,
+  collateralData,
+  setCollateralData,
+  agentData,
+  setAgentData,
   showSuccess,
   showError
 }: ApplicationDetailsTabsProps & {
@@ -28,6 +32,10 @@ export default function IncomeCharactedCard({
   setIncomeData?: any;
   referencesData?: any[];
   setReferencesData?: any;
+  collateralData?: any;
+  setCollateralData?: any;
+  agentData?: any;
+  setAgentData?: any;
   showSuccess?: (msg: string) => void;
   showError?: (msg: string) => void;
 }) {
@@ -37,6 +45,47 @@ export default function IncomeCharactedCard({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<{ fileName: string; filePath: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [agents, setAgents] = useState<any[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [agentChoice, setAgentChoice] = useState<'no-agent' | 'have-agent' | ''>('');
+
+  // Fetch agents for dropdown
+  React.useEffect(() => {
+    if (isEditing) {
+      const fetchAgents = async () => {
+        setLoadingAgents(true);
+        try {
+          const res = await fetch(`${BASE_URL}/agents/names`);
+          if (!res.ok) throw new Error("Failed to fetch agents");
+          const data = await res.json();
+          setAgents(data.agents || []);
+        } catch (error) {
+          console.error("Error fetching agents:", error);
+        } finally {
+          setLoadingAgents(false);
+        }
+      };
+      fetchAgents();
+    }
+  }, [isEditing]);
+
+  // Initialize agent choice based on current agentData
+  React.useEffect(() => {
+    if (agentData === null || agentData === 'no agent') {
+      setAgentChoice('no-agent');
+    } else if (agentData) {
+      setAgentChoice('have-agent');
+    }
+  }, [agentData]);
+
+  const handleAgentChoiceChange = (choice: 'no-agent' | 'have-agent') => {
+    setAgentChoice(choice);
+    if (choice === 'no-agent') {
+      if (setAgentData) setAgentData(null);
+    } else {
+      if (setAgentData) setAgentData('');
+    }
+  };
 
   const handleIncomeChange = (field: string, value: string) => {
     if (setIncomeData) {
@@ -350,20 +399,87 @@ export default function IncomeCharactedCard({
           {activeTab === "references" && (
             <div className="h-full">
               {/* Agent Section - Always First */}
-              {(application as any)?.appAgent && (
-                <div className="mb-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+              {isEditing ? (
+                <div className="mb-4 p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="bg-blue-600 text-white text-xs font-medium px-2 py-1 rounded">
+                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
                       Agent
                     </span>
                   </div>
-                  <div className="space-y-2">
-                    <div>
-                      <p className="text-xs font-medium text-gray-500">Name</p>
-                      <p className="text-gray-900">{(application as any)?.appAgent?.name || "—"}</p>
+                  
+                  {/* Agent Choice Radio Buttons */}
+                  <div className="mb-3 space-y-2">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="agentChoice"
+                        value="no-agent"
+                        checked={agentChoice === 'no-agent'}
+                        onChange={() => handleAgentChoiceChange('no-agent')}
+                        className="w-3 h-3 text-blue-600 focus:outline-none accent-blue-600"
+                      />
+                      <span className="text-sm text-gray-700">No Agent</span>
+                    </label>
+
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="agentChoice"
+                        value="have-agent"
+                        checked={agentChoice === 'have-agent'}
+                        onChange={() => handleAgentChoiceChange('have-agent')}
+                        className="w-3 h-3 text-blue-600 focus:outline-none accent-blue-600"
+                      />
+                      <span className="text-sm text-gray-700">Have Agent</span>
+                    </label>
+                  </div>
+
+                  {/* Agent Dropdown */}
+                  {agentChoice === 'have-agent' && (
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-medium text-gray-700 mb-1">Select Agent:</p>
+                        {loadingAgents ? (
+                          <p className="text-sm text-gray-500">Loading agents...</p>
+                        ) : (
+                          <select
+                            className="w-full border border-gray-300 rounded px-2 py-1 text-sm text-gray-900"
+                            value={typeof agentData === 'object' ? agentData?.agentId || '' : agentData || ''}
+                            onChange={(e) => {
+                              const selectedAgent = agents.find(a => a.agentId === e.target.value);
+                              if (setAgentData && selectedAgent) {
+                                setAgentData(selectedAgent);
+                              }
+                            }}
+                          >
+                            <option value="">Choose an agent</option>
+                            {agents.map((agent) => (
+                              <option key={agent.agentId} value={agent.agentId}>
+                                {agent.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                (application as any)?.appAgent && (
+                  <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded">
+                        Agent
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs font-medium text-gray-500">Name</p>
+                        <p className="text-sm text-gray-900">{(application as any)?.appAgent?.name || "—"}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )
               )}
               
               {((isEditing ? referencesData : application?.appReferences) || []).length > 0 ? (
@@ -466,10 +582,22 @@ export default function IncomeCharactedCard({
           {activeTab === "collateral" && (
             <div className="h-full">
               {application?.loanType === "Regular Loan With Collateral" && (
-                <WithCollateral application={application} formatCurrency={formatCurrency} />
+                <WithCollateral 
+                  application={application} 
+                  formatCurrency={formatCurrency}
+                  isEditing={isEditing}
+                  collateralData={collateralData}
+                  setCollateralData={setCollateralData}
+                />
               )}
               {application?.loanType === "Open-Term Loan" && (
-                <OpenTerm application={application} formatCurrency={formatCurrency} />
+                <OpenTerm 
+                  application={application} 
+                  formatCurrency={formatCurrency}
+                  isEditing={isEditing}
+                  collateralData={collateralData}
+                  setCollateralData={setCollateralData}
+                />
               )}
             </div>
           )}
