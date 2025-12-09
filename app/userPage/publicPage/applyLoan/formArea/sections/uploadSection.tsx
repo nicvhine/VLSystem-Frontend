@@ -165,6 +165,13 @@ export default function UploadSection({
             </div>
           </span>
         </h4>
+        {requiredDocumentsCount && (
+          <p className="text-sm text-gray-600 mb-3">
+            {language === 'en' 
+              ? `You must upload exactly ${requiredDocumentsCount} documents. Currently uploaded: ${documents.length} / ${requiredDocumentsCount}`
+              : `Kinahanglan nimo i-upload ang eksaktong ${requiredDocumentsCount} ka dokumento. Karon: ${documents.length} / ${requiredDocumentsCount}`}
+          </p>
+        )}
   <div className={`border-2 border-dashed rounded-lg p-6 hover:border-red-300 transition-colors ${(showFieldErrors && missingFields.includes('Document Upload')) ? 'border-red-500' : 'border-gray-200'}`}> 
           <div className="flex items-center gap-3 w-full">
             {/* Hidden input with custom trigger to control dynamic message */}

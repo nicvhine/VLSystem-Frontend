@@ -154,13 +154,15 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                   <p className="text-gray-800 text-sm font-medium">
                     {assignedCollector || "—"}
                   </p>
-                  <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
-                    title="Edit Collector"
-                  >
-                    <FiEdit2 size={16} />
-                  </button>
+                  {role === "manager" && (
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                      title="Edit Collector"
+                    >
+                      <FiEdit2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
 

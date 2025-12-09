@@ -198,6 +198,8 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
     photo2x2,
     requires2x2,
     appAgent,
+    uploadedFiles,
+    requiredDocumentsCount,
     onProgressUpdate,
   });
 
@@ -211,7 +213,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
     appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
     appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
     requiresCollateral, requires2x2, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
-    photo2x2, uploadedFiles, missingFields, setMissingFields,
+    photo2x2, uploadedFiles, requiredDocumentsCount, missingFields, setMissingFields,
   });
 
   const { handleSubmit, performSubmit, isSubmitting, progressOpen, activeStep, uploadProgress } = useFormSubmit({
@@ -219,7 +221,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
     appLoanPurpose, selectedLoan, sourceOfIncome, appTypeBusiness, appBusinessName, appDateStarted,
     appBusinessLoc, appMonthlyIncome, appOccupation, appEmploymentStatus, appCompanyName, appReferences,
     requiresCollateral, collateralType, collateralValue, collateralDescription, ownershipStatus, appAgent,
-    photo2x2, uploadedFiles, missingFields, setMissingFields, setAgentMissingError,
+    photo2x2, uploadedFiles, requiredDocumentsCount, missingFields, setMissingFields, setAgentMissingError,
     API_URL, COMPANY_NAME, TERMS_VERSION, PRIVACY_VERSION, language
   });
 
