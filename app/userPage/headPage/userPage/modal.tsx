@@ -3,21 +3,6 @@
 import React from "react";
 import { DecisionModalProps } from "@/app/commonComponents/utils/Types/modal";
 
-/**
- * Decision modal component for user confirmations
- * Displays a modal with title, message, and confirm/cancel buttons
- * Supports danger styling and error message display
- * @param isOpen - Boolean to control modal visibility
- * @param title - Title text for the modal
- * @param message - Main message content
- * @param confirmText - Text for the confirm button (default: "Confirm")
- * @param cancelText - Text for the cancel button (default: "Cancel")
- * @param onConfirm - Callback function for confirm action
- * @param onCancel - Callback function for cancel action
- * @param danger - Boolean to apply danger styling to confirm button
- * @param error - Optional error message to display
- * @returns JSX element containing the decision modal
- */
 export default function DecisionModal({
   isOpen,
   title,
