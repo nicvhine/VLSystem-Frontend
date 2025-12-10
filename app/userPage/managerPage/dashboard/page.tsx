@@ -1,27 +1,23 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { FiDownload } from 'react-icons/fi';
-import { exportDashboardToPDF } from '@/lib/pdfExport';
-<<<<<<< HEAD
-import translations from '@/app/commonComponents/translation';
-=======
+import { useEffect, useState } from "react";
+import { FiDownload } from "react-icons/fi";
+import { exportDashboardToPDF } from "@/lib/pdfExport";
 import translations from "@/app/commonComponents/translation";
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  BarChart,
   Bar,
-  PieChart,
-  Pie,
+  BarChart,
+  CartesianGrid,
   Cell,
   Legend,
-  ResponsiveContainer
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from "recharts";
 
 type DashboardStats = {
@@ -51,7 +47,6 @@ type TopAgent = {
   totalProcessedLoans: number;
 };
 
-
 export default function ManagerDashboard() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -61,39 +56,38 @@ export default function ManagerDashboard() {
   const [applicationsByType, setApplicationsByType] = useState([]);
   const [topBorrowersData, setTopBorrowersData] = useState<TopBorrower[]>([]);
   const [topAgentsData, setTopAgentsData] = useState<TopAgent[]>([]);
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [language, setLanguage] = useState<"en" | "ceb">("en");
 
   const pieColors = ["#374151", "#6b7280", "#1f2937", "#9ca3af"];
 
   useEffect(() => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('managerLanguage') : null;
-    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+    const saved = typeof window !== "undefined" ? localStorage.getItem("managerLanguage") : null;
+    if (saved === "en" || saved === "ceb") setLanguage(saved);
+
     const onLang = (e: Event) => {
       try {
         const ev = e as CustomEvent;
-        if (ev.detail?.userType === 'manager') {
+        if (ev.detail?.userType === "manager") {
           const lang = ev.detail?.language;
-          if (lang === 'en' || lang === 'ceb') setLanguage(lang);
+          if (lang === "en" || lang === "ceb") setLanguage(lang);
         }
       } catch {}
     };
+
     const onStorage = () => {
-      const l = localStorage.getItem('managerLanguage');
-      if (l === 'en' || l === 'ceb') setLanguage(l);
+      const l = localStorage.getItem("managerLanguage");
+      if (l === "en" || l === "ceb") setLanguage(l);
     };
-    window.addEventListener('languageChange', onLang as EventListener);
-    window.addEventListener('storage', onStorage);
+
+    window.addEventListener("languageChange", onLang as EventListener);
+    window.addEventListener("storage", onStorage);
     return () => {
-      window.removeEventListener('languageChange', onLang as EventListener);
-      window.removeEventListener('storage', onStorage);
+      window.removeEventListener("languageChange", onLang as EventListener);
+      window.removeEventListener("storage", onStorage);
     };
   }, []);
 
-<<<<<<< HEAD
   const t1 = translations.statisticTranslation[language];
-=======
-  const t = translations.statisticTranslation[language];
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
 
   useEffect(() => {
     async function loadStats() {
@@ -129,7 +123,6 @@ export default function ManagerDashboard() {
         });
         const dataAgents = await resAgents.json();
         setTopAgentsData(dataAgents || []);
-
       } catch (error) {
         console.error("Failed to load stats", error);
       }
@@ -144,24 +137,27 @@ export default function ManagerDashboard() {
     setIsGenerating(true);
 
     try {
-      const timestamp = new Date().toISOString().split('T')[0];
-      await exportDashboardToPDF({
-        stats,
-        borrowersOverTime,
-        loanDisbursementOverTime,
-        topCollectorsData,
-        applicationsByType,
-        topBorrowersData,
-        topAgentsData,
-      }, {
-        title: 'Analytics Dashboard Report - Manager',
-        subtitle: `Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
-        filename: `manager-dashboard-report-${timestamp}.pdf`,
-        orientation: 'portrait',
-      });
+      const timestamp = new Date().toISOString().split("T")[0];
+      await exportDashboardToPDF(
+        {
+          stats,
+          borrowersOverTime,
+          loanDisbursementOverTime,
+          topCollectorsData,
+          applicationsByType,
+          topBorrowersData,
+          topAgentsData,
+        },
+        {
+          title: "Analytics Dashboard Report - Manager",
+          subtitle: `Generated on ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}`,
+          filename: `manager-dashboard-report-${timestamp}.pdf`,
+          orientation: "portrait",
+        }
+      );
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error generating PDF:", error);
+      alert(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
     } finally {
       setIsGenerating(false);
     }
@@ -170,30 +166,20 @@ export default function ManagerDashboard() {
   return (
     <div className="min-h-screen p-6 bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-12">
-        
         {/* Header with Export Button */}
         <div className="flex justify-between items-center">
-<<<<<<< HEAD
           <h1 className="text-2xl font-bold text-gray-800">{t1.d1}</h1>
-=======
-        <h1 className="text-2xl font-bold text-gray-800">{t.d1}</h1>
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
           <button
             onClick={handleExportPDF}
             disabled={isGenerating}
             className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiDownload className="w-4 h-4" />
-<<<<<<< HEAD
             {isGenerating ? t1.d2 : t1.d3}
-=======
-            {isGenerating ? t.d2 : t.d3}
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
           </button>
         </div>
 
         {/* Quick Stats */}
-<<<<<<< HEAD
         <Section title={t1.d4}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <StatCard title={t1.d5} value={stats?.totalBorrowers ?? 0} />
@@ -205,48 +191,17 @@ export default function ManagerDashboard() {
         {/* Borrowers Overview */}
         <Section title={t1.d8}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
             {/* Left: Total & Active Borrowers */}
             <div className="flex flex-col justify-start space-y-4">
               <StatCard title={t1.d5} value={stats?.totalBorrowers ?? 0} />
               <StatCard title={t1.d9} value={stats?.activeBorrowers ?? 0} />
-=======
-         <Section title={t.d4}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatCard title={t.d5} value={stats?.totalBorrowers ?? 0} />
-            <StatCard title={t.d6} value={formatCurrency(stats?.totalDisbursed ?? 0)} />
-            <StatCard title={t.d7} value={formatCurrency(stats?.totalCollected ?? 0)} />
-          </div>
-        </Section>
-
-         {/* Borrowers Overview */}
-         <Section title={t.d8}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-            {/* Left: Total & Active Borrowers */}
-            <div className="flex flex-col justify-between h-full gap-6">
-              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
-                <span className="text-2xl font-bold text-gray-900">{stats?.totalBorrowers ?? 0}</span>
-                <span className="text-gray-500 text-sm mt-1">{t.d5}</span>
-              </div>
-              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
-                <span className="text-2xl font-bold text-gray-900">{stats?.activeBorrowers ?? 0}</span>
-                <span className="text-gray-500 text-sm mt-1">{t.d9}</span>
-              </div>
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
             </div>
 
             {/* Center: Top Borrowers */}
             <div className="bg-white rounded-2xl shadow p-4 flex flex-col">
-<<<<<<< HEAD
               <h3 className="text-sm font-semibold mb-2 text-gray-600">{t1.d10}</h3>
               {topBorrowersData.length === 0 ? (
                 <p className="text-gray-500">{t1.d11}</p>
-=======
-              <h3 className="text-sm font-semibold mb-2 text-gray-600">{t.d10}</h3>
-              {topBorrowersData.length === 0 ? (
-                <p className="text-gray-500">{t.d11}</p>
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
               ) : (
                 <ul className="divide-y divide-gray-200">
                   {topBorrowersData.map((borrower, index) => (
@@ -260,96 +215,35 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Right: Borrowers Over Time Chart */}
-<<<<<<< HEAD
             <ChartWrapper title={t1.d12} height={280}>
-=======
-            <ChartWrapper title={t.d12} height={280}>
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={borrowersOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-<<<<<<< HEAD
                   <Line type="monotone" dataKey="new" stroke="#374151" name={t1.d13} />
                   <Line type="monotone" dataKey="active" stroke="#6b7280" name={t1.d14} />
-=======
-                  <Line type="monotone" dataKey="new" stroke="#374151" name={t.d13} />
-                  <Line type="monotone" dataKey="active" stroke="#6b7280" name={t.d14} />
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
                 </LineChart>
               </ResponsiveContainer>
             </ChartWrapper>
-
           </div>
         </Section>
 
-<<<<<<< HEAD
-       {/* Loan Overview */}
-<Section title={t1.d15}>
-  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
-    {/* Left: Total & Closed Loans */}
-    <div className="flex flex-col justify-start space-y-4">
-      <StatCard title={t1.d16} value={stats?.totalLoans ?? 0} />
-      <StatCard title={t1.d17} value={stats?.closedLoans ?? 0} />
-    </div>
-
-    {/* Center: Top Agents */}
-    <div className="bg-white rounded-2xl shadow p-6 flex flex-col">
-      <h3 className="text-sm font-semibold mb-2 text-gray-600">{t1.d18}</h3>
-      {topAgentsData.length === 0 ? (
-        <p className="text-gray-500">{t1.d19}</p>
-      ) : (
-        <ul className="divide-y divide-gray-200">
-          {topAgentsData.map((agent: any) => (
-            <li key={agent.agentId} className="py-2 flex justify-between items-center">
-              <span>{agent.name}</span>
-              <span className="text-gray-500 font-semibold">{formatCurrency(agent.totalProcessedLoans)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-
-    {/* Right: Loan Disbursement Chart */}
-    <ChartWrapper title={t1.d20} height={280}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={loanDisbursementOverTime}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="disbursed" fill="#374151" />
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartWrapper>
-
-  </div>
-</Section>
-=======
         {/* Loan Overview */}
-        <Section title={t.d15}>
+        <Section title={t1.d15}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
             {/* Left: Total & Closed Loans */}
-            <div className="flex flex-col justify-between h-full gap-6">
-              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
-                <span className="text-2xl font-bold text-gray-900">{stats?.totalLoans ?? 0}</span>
-                <span className="text-gray-500 text-sm mt-1">{t.d16}</span>
-              </div>
-              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
-                <span className="text-2xl font-bold text-gray-900">{stats?.closedLoans ?? 0}</span>
-                <span className="text-gray-500 text-sm mt-1">{t.d17}</span>
-              </div>
+            <div className="flex flex-col justify-start space-y-4">
+              <StatCard title={t1.d16} value={stats?.totalLoans ?? 0} />
+              <StatCard title={t1.d17} value={stats?.closedLoans ?? 0} />
             </div>
 
             {/* Center: Top Agents */}
             <div className="bg-white rounded-2xl shadow p-6 flex flex-col">
-              <h3 className="text-sm font-semibold mb-2 text-gray-600">{t.d18}</h3>
+              <h3 className="text-sm font-semibold mb-2 text-gray-600">{t1.d18}</h3>
               {topAgentsData.length === 0 ? (
-                <p className="text-gray-500">{t.d19}</p>
+                <p className="text-gray-500">{t1.d19}</p>
               ) : (
                 <ul className="divide-y divide-gray-200">
                   {topAgentsData.map((agent: any) => (
@@ -363,7 +257,7 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Right: Loan Disbursement Chart */}
-            <ChartWrapper title={t.d20} height={280}>
+            <ChartWrapper title={t1.d20} height={280}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={loanDisbursementOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
@@ -374,16 +268,12 @@ export default function ManagerDashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </ChartWrapper>
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
-
           </div>
         </Section>
 
         {/* Collection Overview */}
-<<<<<<< HEAD
         <Section title={t1.d21}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <StatCard title={t1.d7} value={formatCurrency(stats?.totalCollected ?? 0)} />
               <StatCard title={t1.d22} value={formatCurrency(stats?.collectables ?? 0)} />
@@ -391,9 +281,7 @@ export default function ManagerDashboard() {
 
             {/* Top Collectors */}
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                {t1.d23}
-              </div>
+              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">{t1.d23}</div>
               {topCollectorsData.length === 0 ? (
                 <p className="text-gray-500">{t1.d24}</p>
               ) : (
@@ -402,64 +290,30 @@ export default function ManagerDashboard() {
                     const collected = Number(c.collectedByCollector) || 0;
                     const total = Number(c.totalAssigned) || 1;
                     const progressPercent = Math.min((collected / total) * 100, 100);
-=======
-        <Section title={t.d21}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center h-full">
-              <span className="text-2xl font-bold mt-2 text-gray-900">{formatCurrency(stats?.totalCollected ?? 0)}</span>
-              <span className="text-gray-500 text-sm mt-1">{t.d7}</span>
-            </div>
-
-            {/* Top Collectors */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
-              {t.d23}
-            </div>
-            {topCollectorsData.length === 0 ? (
-              <p className="text-gray-500">{t.d24}</p>
-            ) : (
-              <div className="space-y-4">
-                {topCollectorsData
-                  .filter((c: any) => Number(c.totalAssigned) > 0) // Only show collectors with assignments
-                  .map((c: any) => {
-                    const paid = Number(c.paidCollections) || 0;
-                    const total = Number(c.totalAssigned);
-                    const progressPercent = Math.min((paid / total) * 100, 100);
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
 
                     return (
                       <div key={c.collectorId}>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm text-gray-700">{c.name}</span>
                           <span className="text-sm font-semibold">
-                            {paid} / {total} ({progressPercent.toFixed(2)}%)
+                            {collected} / {total} ({progressPercent.toFixed(2)}%)
                           </span>
                         </div>
                         <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 transition-all duration-300"
-                            style={{ width: `${progressPercent}%` }}
-                          ></div>
+                          <div className="h-full bg-green-500 transition-all duration-300" style={{ width: `${progressPercent}%` }}></div>
                         </div>
                       </div>
                     );
                   })}
-                {topCollectorsData.filter((c: any) => Number(c.totalAssigned) > 0).length === 0 && (
-                  <p className="text-gray-500 text-sm italic">No collectors with active assignments</p>
-                )}
-              </div>
-            )}
-          </div>
-
+                </div>
+              )}
+            </div>
           </div>
         </Section>
 
         {/* Loan Applications Overview */}
-<<<<<<< HEAD
         <Section title={t1.d25}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
             <div className="grid grid-cols-2 gap-4">
               <StatCard title={t1.d26} value={stats?.totalApplications ?? 0} />
               <StatCard title={t1.d27} value={stats?.pendingApplications ?? 0} />
@@ -468,31 +322,18 @@ export default function ManagerDashboard() {
             </div>
 
             <ChartWrapper title={t1.d30} height={280}>
-=======
-        <Section title={t.d25}>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <div className="grid grid-cols-2 gap-4">
-              <StatCard title={t.d26} value={stats?.totalApplications ?? 0} />
-              <StatCard title={t.d27} value={stats?.pendingApplications ?? 0} />
-              <StatCard title={t.d28} value={stats?.approvedApplications ?? 0} />
-              <StatCard title={t.d29} value={stats?.deniedApplications ?? 0} />
-            </div>
-
-            <ChartWrapper title={t.d30} height={280}>
->>>>>>> b32a81d39521240f8bf38f7273b76faf2246680a
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                <Pie
-                  data={applicationsByType}
-                  dataKey="count"
-                  nameKey="type"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={80}
-                  labelLine={false}
-                  label={({ value }) => value?.toString()}
-                >
+                  <Pie
+                    data={applicationsByType}
+                    dataKey="count"
+                    nameKey="type"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    labelLine={false}
+                    label={({ value }) => value?.toString()}
+                  >
                     {applicationsByType.map((entry, index) => (
                       <Cell key={index} fill={pieColors[index % pieColors.length]} />
                     ))}
@@ -501,10 +342,8 @@ export default function ManagerDashboard() {
                 </PieChart>
               </ResponsiveContainer>
             </ChartWrapper>
-
           </div>
         </Section>
-
       </div>
     </div>
   );
