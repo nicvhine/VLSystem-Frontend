@@ -295,17 +295,19 @@ export default function HeadDashboard() {
             </div>
 
             {/* Top Collectors */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                {t.d23}
-              </div>
-              {topCollectorsData.length === 0 ? (
-                <p className="text-gray-500">{t.d24}</p>
-              ) : (
-                <div className="space-y-4">
-                  {topCollectorsData.map((c: any) => {
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
+              {t.d23}
+            </div>
+            {topCollectorsData.length === 0 ? (
+              <p className="text-gray-500">{t.d24}</p>
+            ) : (
+              <div className="space-y-4">
+                {topCollectorsData
+                  .filter((c: any) => Number(c.totalAssigned) > 0) // Only show collectors with assignments
+                  .map((c: any) => {
                     const paid = Number(c.paidCollections) || 0;
-                    const total = Number(c.totalAssigned) || 1;
+                    const total = Number(c.totalAssigned);
                     const progressPercent = Math.min((paid / total) * 100, 100);
 
                     return (
@@ -325,9 +327,12 @@ export default function HeadDashboard() {
                       </div>
                     );
                   })}
-                </div>
-              )}
-            </div>
+                {topCollectorsData.filter((c: any) => Number(c.totalAssigned) > 0).length === 0 && (
+                  <p className="text-gray-500 text-sm italic">No collectors with active assignments</p>
+                )}
+              </div>
+            )}
+          </div>
 
           </div>
         </Section>

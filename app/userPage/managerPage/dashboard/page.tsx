@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { FiDownload } from 'react-icons/fi';
 import { exportDashboardToPDF } from '@/lib/pdfExport';
+import translations from "@/app/commonComponents/translation";
 import {
   LineChart,
   Line,
@@ -56,8 +57,35 @@ export default function ManagerDashboard() {
   const [applicationsByType, setApplicationsByType] = useState([]);
   const [topBorrowersData, setTopBorrowersData] = useState<TopBorrower[]>([]);
   const [topAgentsData, setTopAgentsData] = useState<TopAgent[]>([]);
+  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
 
   const pieColors = ["#374151", "#6b7280", "#1f2937", "#9ca3af"];
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('headLanguage') : null;
+    if (saved === 'en' || saved === 'ceb') setLanguage(saved);
+    const onLang = (e: Event) => {
+      try {
+        const ev = e as CustomEvent;
+        if (ev.detail?.userType === 'head') {
+          const lang = ev.detail?.language;
+          if (lang === 'en' || lang === 'ceb') setLanguage(lang);
+        }
+      } catch {}
+    };
+    const onStorage = () => {
+      const l = localStorage.getItem('headLanguage');
+      if (l === 'en' || l === 'ceb') setLanguage(l);
+    };
+    window.addEventListener('languageChange', onLang as EventListener);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('languageChange', onLang as EventListener);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  const t = translations.statisticTranslation[language];
 
   useEffect(() => {
     async function loadStats() {
@@ -149,35 +177,35 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Quick Stats */}
-        <Section title="Quick Stats">
+         <Section title={t.d4}>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <StatCard title="Total Borrowers" value={stats?.totalBorrowers ?? 0} />
-            <StatCard title="Total Disbursed" value={formatCurrency(stats?.totalDisbursed ?? 0)} />
-            <StatCard title="Total Collected" value={formatCurrency(stats?.totalCollected ?? 0)} />
+            <StatCard title={t.d5} value={stats?.totalBorrowers ?? 0} />
+            <StatCard title={t.d6} value={formatCurrency(stats?.totalDisbursed ?? 0)} />
+            <StatCard title={t.d7} value={formatCurrency(stats?.totalCollected ?? 0)} />
           </div>
         </Section>
 
-        {/* Borrowers Overview */}
-        <Section title="Borrowers Overview">
+         {/* Borrowers Overview */}
+         <Section title={t.d8}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Left: Total & Active Borrowers */}
             <div className="flex flex-col justify-between h-full gap-6">
               <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
                 <span className="text-2xl font-bold text-gray-900">{stats?.totalBorrowers ?? 0}</span>
-                <span className="text-gray-500 text-sm mt-1">Total Borrowers</span>
+                <span className="text-gray-500 text-sm mt-1">{t.d5}</span>
               </div>
               <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
                 <span className="text-2xl font-bold text-gray-900">{stats?.activeBorrowers ?? 0}</span>
-                <span className="text-gray-500 text-sm mt-1">Active Borrowers</span>
+                <span className="text-gray-500 text-sm mt-1">{t.d9}</span>
               </div>
             </div>
 
             {/* Center: Top Borrowers */}
             <div className="bg-white rounded-2xl shadow p-4 flex flex-col">
-              <h3 className="text-sm font-semibold mb-2 text-gray-600">Top Borrowers</h3>
+              <h3 className="text-sm font-semibold mb-2 text-gray-600">{t.d10}</h3>
               {topBorrowersData.length === 0 ? (
-                <p className="text-gray-500">No borrowers data</p>
+                <p className="text-gray-500">{t.d11}</p>
               ) : (
                 <ul className="divide-y divide-gray-200">
                   {topBorrowersData.map((borrower, index) => (
@@ -191,15 +219,15 @@ export default function ManagerDashboard() {
             </div>
 
             {/* Right: Borrowers Over Time Chart */}
-            <ChartWrapper title="Borrowers Over Time" height={280}>
+            <ChartWrapper title={t.d12} height={280}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={borrowersOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="new" stroke="#374151" name="New Borrowers" />
-                  <Line type="monotone" dataKey="active" stroke="#6b7280" name="Active Borrowers" />
+                  <Line type="monotone" dataKey="new" stroke="#374151" name={t.d13} />
+                  <Line type="monotone" dataKey="active" stroke="#6b7280" name={t.d14} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartWrapper>
@@ -269,34 +297,39 @@ export default function ManagerDashboard() {
             {/* Top Collectors */}
             <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
               <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                Top Collectors
+                {t.d23}
               </div>
               {topCollectorsData.length === 0 ? (
-                <p className="text-gray-500">No collectors available</p>
+                <p className="text-gray-500">{t.d24}</p>
               ) : (
                 <div className="space-y-4">
-                  {topCollectorsData.map((c: any) => {
-                    const paid = Number(c.paidCollections) || 0;
-                    const total = Number(c.totalAssigned) || 1;
-                    const progressPercent = Math.min((paid / total) * 100, 100);
+                  {topCollectorsData
+                    .filter((c: any) => Number(c.totalAssigned) > 0) // Only show collectors with assignments
+                    .map((c: any) => {
+                      const paid = Number(c.paidCollections) || 0;
+                      const total = Number(c.totalAssigned);
+                      const progressPercent = Math.min((paid / total) * 100, 100);
 
-                    return (
-                      <div key={c.collectorId}>
-                        <div className="flex justify-between mb-1">
-                          <span className="text-sm text-gray-700">{c.name}</span>
-                          <span className="text-sm font-semibold">
-                            {paid} / {total} ({progressPercent.toFixed(2)}%)
-                          </span>
+                      return (
+                        <div key={c.collectorId}>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm text-gray-700">{c.name}</span>
+                            <span className="text-sm font-semibold">
+                              {paid} / {total} ({progressPercent.toFixed(2)}%)
+                            </span>
+                          </div>
+                          <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-green-500 transition-all duration-300"
+                              style={{ width: `${progressPercent}%` }}
+                            ></div>
+                          </div>
                         </div>
-                        <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-green-500 transition-all duration-300"
-                            style={{ width: `${progressPercent}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  {topCollectorsData.filter((c: any) => Number(c.totalAssigned) > 0).length === 0 && (
+                    <p className="text-gray-500 text-sm italic">No collectors with active assignments</p>
+                  )}
                 </div>
               )}
             </div>
