@@ -226,13 +226,37 @@ const ApplicationButtons: React.FC<ApplicationButtonsProps> = ({
 
       {(application.status === "Disbursed" || application.status === "Active") && (
         <>
-          <button
-            ref={buttonRef}
-            onClick={toggleDropdown}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
-          >
-            {a.b5}
-          </button>
+          <div className="relative">
+            <button
+              ref={buttonRef}
+              onClick={toggleDropdown}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+            >
+              {a.b5}
+            </button>
+            
+            {/* Floating reminder for missing service fee */}
+            {role === "loan officer" && application.hasServiceFee === "false" && (
+              <>
+                <style jsx>{`
+                  @keyframes pointLeft {
+                    0%, 100% { transform: translateX(0); }
+                    50% { transform: translateX(-8px); }
+                  }
+                  .point-left {
+                    animation: pointLeft 1.5s ease-in-out infinite;
+                  }
+                `}</style>
+              <div className="absolute right-full top-1/2 -translate-y-1/2 ml-3 flex items-center gap-2 point-left flex-row-reverse">
+                <div className="w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-l-[8px] border-l-red-600"></div>
+
+                <div className="bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+                  Please update release form.
+                </div>
+              </div>
+              </>
+            )}
+          </div>
 
           {showDocsDropdown && dropdownPos && createPortal(
             <div

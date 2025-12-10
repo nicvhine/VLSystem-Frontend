@@ -6,6 +6,8 @@ import { LoanComputationCardProps } from "@/app/commonComponents/utils/Types/com
 import { FiEdit } from "react-icons/fi";
 import EditPrincipalModal from "@/app/commonComponents/modals/editPrincipalModal";
 import { Application } from "@/app/commonComponents/utils/Types/application";
+import SuccessModal from "@/app/commonComponents/modals/successModal";
+import ErrorModal from "@/app/commonComponents/modals/errorModal";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -13,6 +15,24 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
   const [loanApp, setLoanApp] = useState(application);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const showSuccess = (msg: string) => {
+    setErrorModalOpen(false);
+    setSuccessMessage(msg);
+    setSuccessModalOpen(true);
+    setTimeout(() => setSuccessModalOpen(false), 5000);
+  };
+
+  const showError = (msg: string) => {
+    setSuccessModalOpen(false);
+    setErrorMessage(msg);
+    setErrorModalOpen(true);
+    setTimeout(() => setErrorModalOpen(false), 3000);
+  };
 
   useEffect(() => {
     setLoanApp(application);
@@ -143,8 +163,24 @@ export default function LoanComputationCard({ application, t, l }: LoanComputati
         }}
         onClose={() => setIsEditOpen(false)}
         loading={loading}
+        showSuccess={showSuccess}
+        showError={showError}
       />
     )}
+
+    {/* Success Modal */}
+    <SuccessModal
+      isOpen={successModalOpen}
+      message={successMessage}
+      onClose={() => setSuccessModalOpen(false)}
+    />
+
+    {/* Error Modal */}
+    <ErrorModal
+      isOpen={errorModalOpen}
+      message={errorMessage}
+      onClose={() => setErrorModalOpen(false)}
+    />
 
     </div>
   );

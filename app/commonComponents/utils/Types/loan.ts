@@ -14,6 +14,7 @@ export interface Loan {
   loanType: string;
   creditScore: number;
   balance: number;
+  remainingBalance: number;
 }
 
 export interface CharacterReference {
@@ -70,7 +71,7 @@ export interface PreviousLoan {
     businessType: string;
     dateStarted: string;
     businessLocation: string;
-    totalPayable: string;
+    appTotalPayable: string;
     appLoanAmount: string;
     dateDisbursed: string;
     appLoanType: string;
@@ -87,5 +88,7 @@ export interface PreviousLoan {
     collateralDescription: string;
     ownershipStatus: string;
     balance?: number; 
+    appInterestRate: number;
+    appLoanTerms: number;
   }
   

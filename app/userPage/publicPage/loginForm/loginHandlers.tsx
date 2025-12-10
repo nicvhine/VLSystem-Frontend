@@ -17,11 +17,11 @@ export async function loginHandler({
   router,
   setShowErrorModal,
   setErrorMsg,
-}: LoginParams) {
+}: LoginParams): Promise<boolean> {
   if (!username || !password) {
     setErrorMsg?.("Please enter both username and password.");
     setShowErrorModal?.(true);
-    return;
+    return false;
   }
 
   try {
@@ -50,8 +50,7 @@ export async function loginHandler({
 
         onClose();
         router.push("/userPage/borrowerPage/dashboard");
-        loggedIn = true;
-        return;
+        return true;
       }
     } catch {
       // silently ignore borrower login errors
@@ -92,22 +91,22 @@ export async function loginHandler({
     
         onClose();
         router.push(redirectMap[user.role?.toLowerCase() || ""] || "/");
-        loggedIn = true;
-        return;
+        return true;
       } else {
         setErrorMsg?.(staffData.error || "Invalid credentials or user not found.");
         setShowErrorModal?.(true);
-        return;
+        return false;
       }
     }
     
-    if (!loggedIn) {
-      setErrorMsg?.("Invalid credentials or user not found.");
-      setShowErrorModal?.(true);
-    }
+    // Should not reach here, but just in case
+    setErrorMsg?.("Invalid credentials or user not found.");
+    setShowErrorModal?.(true);
+    return false;
   } catch (err) {
     console.error("Login error:", err);
     setErrorMsg?.("Error connecting to the server.");
     setShowErrorModal?.(true);
+    return false;
   }
 }

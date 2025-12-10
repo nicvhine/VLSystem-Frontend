@@ -7,13 +7,6 @@ import { addMonthsSafe } from "./logic";
 import { formatCurrency, capitalizeWords } from "../../../utils/formatters";
 import { AgreementModalProps } from "../../../utils/Types/modal";
 
-/**
- * Signatory section component for loan agreement
- * Displays role and name with signature line
- * @param role - Role/title of the signatory
- * @param name - Name of the signatory
- * @returns JSX element containing the signatory section
- */
 function SignatorySection({ role, name }: { role: string; name: string }) {
   return (
     <div className="flex flex-col space-y-6">

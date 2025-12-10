@@ -35,6 +35,7 @@ interface UseFormSubmitProps {
   appAgent: string;
   photo2x2: File[];
   uploadedFiles: File[];
+  requiredDocumentsCount: number;
   missingFields: string[];
   setMissingFields: (fields: string[]) => void;
   setAgentMissingError: (val: boolean) => void;
@@ -121,9 +122,13 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       if (!ref.relation.trim()) missing.push(`Reference ${i + 1} Relationship`);
     });
 
-    // Agent
-    if (!props.appAgent.trim()) missing.push("Agent");
-    props.setAgentMissingError(!props.appAgent.trim());
+    // Agent - accept 'no agent' as valid, or any non-empty value
+    if (!props.appAgent || (!props.appAgent.trim() && props.appAgent !== 'no agent')) {
+      missing.push("Agent");
+      props.setAgentMissingError(true);
+    } else {
+      props.setAgentMissingError(false);
+    }
 
     // Collateral
     if (props.requiresCollateral) {
@@ -133,9 +138,9 @@ export function useFormSubmit(props: UseFormSubmitProps) {
       if (!props.ownershipStatus) missing.push("Ownership Status");
     }
 
-    // Uploads
+    // Uploads - check exact document count
     if (props.photo2x2.length === 0) missing.push("2x2 Photo");
-    if (props.uploadedFiles.length === 0) missing.push("Document Upload");
+    if (props.uploadedFiles.length !== props.requiredDocumentsCount) missing.push("Document Upload");
 
     props.setMissingFields(missing);
     return missing.length === 0;

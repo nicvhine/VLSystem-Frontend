@@ -28,9 +28,10 @@ interface EditPrincipalModalProps {
   onSave: (newAmount: number) => void;
   onClose: () => void;
   loading?: boolean;
+  showSuccess?: (msg: string) => void;
+  showError?: (msg: string) => void;
 }
 
-// Loan options
 const loanOptions = {
   "Regular Loan With Collateral": [
     { amount: 20000, months: 8, interest: 7 },
@@ -62,6 +63,8 @@ export default function EditPrincipalModal({
   onSave,
   onClose,
   loading = false,
+  showSuccess,
+  showError,
 }: EditPrincipalModalProps) {
   const [amount, setAmount] = useState(currentAmount);
   const [loanApp, setLoanApp] = useState<LoanApplication | null>(null);
@@ -70,7 +73,6 @@ export default function EditPrincipalModal({
   const [isAnimating, setIsAnimating] = useState(false);
   const [amountError, setAmountError] = useState<string>("");
 
-  // Animation lifecycle
   useEffect(() => {
     setIsVisible(true);
     const timer = setTimeout(() => setIsAnimating(true), 10);
@@ -98,7 +100,6 @@ export default function EditPrincipalModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [isVisible, loading]);
 
-  // Fetch application details
   useEffect(() => {
     const fetchApp = async () => {
       try {
@@ -115,31 +116,32 @@ export default function EditPrincipalModal({
     fetchApp();
   }, [applicationId]);
 
-  // Compute preview
   const computePreview = (principal: number, loanType: string): LoanPreview => {
     const key: LoanOptionKey = loanType as LoanOptionKey;
     const options = loanOptions[key];
 
     let selectedOption;
     if (key === "Open-Term Loan") {
-      selectedOption = options.find(opt => opt.amount >= principal) || options[options.length - 1];
+      selectedOption =
+        options.find(opt => opt.amount >= principal) || options[options.length - 1];
     } else {
-      selectedOption = options
-        .filter(opt => opt.amount <= principal)
-        .sort((a, b) => b.amount - a.amount)[0] || options[0];
+      selectedOption =
+        options
+          .filter(opt => opt.amount <= principal)
+          .sort((a, b) => b.amount - a.amount)[0] || options[0];
     }
 
-    const months = 'months' in selectedOption ? selectedOption.months : 12;
+    const months = "months" in selectedOption ? selectedOption.months : 12;
     const interestRate = selectedOption.interest;
-    const principalNum = Number(principal);
+    const p = Number(principal);
 
-    const interestAmount = principalNum * (interestRate / 100);
+    const interestAmount = p * (interestRate / 100);
     const totalInterestAmount = interestAmount * months;
-    const totalPayable = principalNum + totalInterestAmount;
+    const totalPayable = p + totalInterestAmount;
     const monthlyDue = totalPayable / months;
 
     return {
-      principal: principalNum,
+      principal: p,
       months,
       interestRate,
       interestAmount,
@@ -153,7 +155,6 @@ export default function EditPrincipalModal({
     if (loanApp) setPreview(computePreview(amount, loanApp.loanType));
   }, [amount, loanApp]);
 
-  // Get min/max for loan type
   const getLoanLimits = (loanType: string) => {
     const key: LoanOptionKey = loanType as LoanOptionKey;
     const options = loanOptions[key];
@@ -165,20 +166,31 @@ export default function EditPrincipalModal({
   const handleSave = async () => {
     if (!loanApp) return;
     if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid amount");
+      if (showError) {
+        showError("Please enter a valid amount");
+      } else {
+        alert("Please enter a valid amount");
+      }
       return;
     }
 
-    // Check for validation errors
     if (amountError) {
-      alert(amountError);
+      if (showError) {
+        showError(amountError);
+      } else {
+        alert(amountError);
+      }
       return;
     }
 
-    // Enforce limits
     const { min, max } = getLoanLimits(loanApp.loanType);
     if (amount < min || amount > max) {
-      alert(`Amount must be between ₱${min.toLocaleString()} and ₱${max.toLocaleString()}`);
+      const errorMsg = `Amount must be between ₱${min.toLocaleString()} and ₱${max.toLocaleString()}`;
+      if (showError) {
+        showError(errorMsg);
+      } else {
+        alert(errorMsg);
+      }
       return;
     }
 
@@ -186,9 +198,9 @@ export default function EditPrincipalModal({
       const token = localStorage.getItem("token");
       const res = await fetch(`${BASE_URL}/loan-applications/${applicationId}/principal`, {
         method: "PUT",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ newPrincipal: amount }),
       });
@@ -197,10 +209,17 @@ export default function EditPrincipalModal({
 
       const data = await res.json();
       onSave(Number(data.updatedApp.appLoanAmount));
+      if (showSuccess) {
+        showSuccess("Principal amount updated successfully!");
+      }
       handleModalClose();
     } catch (err) {
       console.error(err);
-      alert("Error updating principal");
+      if (showError) {
+        showError("Error updating principal. Please try again.");
+      } else {
+        alert("Error updating principal");
+      }
     }
   };
 
@@ -222,17 +241,16 @@ export default function EditPrincipalModal({
         <button
           onClick={handleModalClose}
           className={`absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition ${
-            loading ? 'opacity-50 cursor-not-allowed hover:text-gray-500' : ''
+            loading ? "opacity-50 cursor-not-allowed hover:text-gray-500" : ""
           }`}
           disabled={loading}
         >
           <FiX size={20} />
         </button>
 
-        <h2 className="text-xl font-semibold mb-4 text-gray-900">
-          Edit Principal
-        </h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-900">Edit Principal</h2>
 
+        {/* Input Field */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Principal Amount
@@ -243,8 +261,7 @@ export default function EditPrincipalModal({
             onChange={(e) => {
               const newAmount = parseFloat(e.target.value) || 0;
               setAmount(newAmount);
-              
-              // Validate against limits
+
               if (loanApp && newAmount > 0) {
                 const { min, max } = getLoanLimits(loanApp.loanType);
                 if (newAmount < min) {
@@ -256,15 +273,13 @@ export default function EditPrincipalModal({
                 }
               }
             }}
-            className={`w-full p-3 border rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 ${
+            className={`w-full p-3 border rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 ${
               amountError ? "border-red-500" : "border-gray-300"
             }`}
             step={0.01}
             disabled={loading}
           />
-          {amountError && (
-            <p className="text-sm text-red-500 mt-1">{amountError}</p>
-          )}
+          {amountError && <p className="text-sm text-red-500 mt-1">{amountError}</p>}
           {loanApp && (() => {
             const { min, max } = getLoanLimits(loanApp.loanType);
             return (
@@ -275,63 +290,78 @@ export default function EditPrincipalModal({
           })()}
         </div>
 
+        {/* ================================
+            UPDATED PREVIEW SECTION
+        ================================= */}
         {preview && (
-  <div className="mb-4 bg-gray-50 p-4 rounded-lg space-y-3">
-    <h3 className="font-semibold text-gray-700 text-lg border-b border-gray-200 pb-1 mb-3">
-      Loan Preview
-    </h3>
+          <div className="mb-4 bg-gray-50 p-4 rounded-lg space-y-3">
+            <h3 className="font-semibold text-gray-700 text-lg border-b border-gray-200 pb-1 mb-3">
+              Loan Preview
+            </h3>
 
-    {/* Principal */}
-    <div className="flex justify-between">
-      <span className="text-gray-600">Principal</span>
-      <span className="font-semibold text-gray-900">₱ {preview.principal.toLocaleString()}</span>
-    </div>
+            {/* Always show Principal */}
+            <div className="flex justify-between">
+              <span className="text-gray-600">Principal</span>
+              <span className="font-semibold text-gray-900">
+                ₱ {preview.principal.toLocaleString()}
+              </span>
+            </div>
 
-    {/* Loan Term & Interest */}
-    <div className="flex justify-between">
-      <span className="text-gray-600">Term</span>
-      <span className="text-gray-900">{preview.months} months</span>
-    </div>
+            {/* Always show Interest Rate */}
+            <div className="flex justify-between">
+              <span className="text-gray-600">Interest Rate</span>
+              <span className="text-gray-900">{preview.interestRate}%</span>
+            </div>
 
-    <div className="flex justify-between">
-      <span className="text-gray-600">Interest Rate</span>
-      <span className="text-gray-900">{preview.interestRate}%</span>
-    </div>
+            {/* Show full details only if NOT open-term */}
+            {loanApp?.loanType !== "Open-Term Loan" && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Term</span>
+                  <span className="text-gray-900">{preview.months} months</span>
+                </div>
 
-    <div className="flex justify-between">
-      <span className="text-gray-600">Total Interest</span>
-      <span className="font-semibold text-gray-900">₱ {preview.totalInterestAmount.toLocaleString()}</span>
-    </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total Interest</span>
+                  <span className="font-semibold text-gray-900">
+                    ₱ {preview.totalInterestAmount.toLocaleString()}
+                  </span>
+                </div>
 
-    {/* Total Payable & Monthly Due */}
-    <div className="flex justify-between pt-3 border-t border-gray-200">
-      <div>
-        <span className="text-gray-600">Total Payable</span>
-        <div className="text-gray-900 font-bold text-lg">₱ {preview.totalPayable.toLocaleString()}</div>
-      </div>
-      <div className="text-right">
-        <span className="text-gray-600">Monthly Due</span>
-        <div className="text-gray-900 font-bold text-lg">₱ {preview.monthlyDue.toLocaleString()}</div>
-      </div>
-    </div>
-  </div>
-)}
-
+                <div className="flex justify-between pt-3 border-t border-gray-200">
+                  <div>
+                    <span className="text-gray-600">Total Payable</span>
+                    <div className="text-gray-900 font-bold text-lg">
+                      ₱ {preview.totalPayable.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-gray-600">Monthly Due</span>
+                    <div className="text-gray-900 font-bold text-lg">
+                      ₱ {preview.monthlyDue.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={handleModalClose}
             className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium ${
-              loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-300'
+              loading ? "opacity-60 cursor-not-allowed" : "hover:bg-gray-300"
             }`}
             disabled={loading}
           >
             Cancel
           </button>
+
           <button
             onClick={handleSave}
             className={`px-4 py-2 bg-red-600 text-white rounded-lg transition-colors font-medium ${
-              loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-red-700'
+              loading ? "opacity-60 cursor-not-allowed" : "hover:bg-red-700"
             }`}
             disabled={loading}
           >
@@ -342,5 +372,7 @@ export default function EditPrincipalModal({
     </div>
   );
 
-  return typeof window !== 'undefined' ? createPortal(modalContent, document.body) : null;
+  return typeof window !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : null;
 }

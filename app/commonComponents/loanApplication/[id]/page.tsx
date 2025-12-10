@@ -55,6 +55,8 @@ export default function ApplicationDetailsPage() {
   const [profileData, setProfileData] = useState<any>({});
   const [incomeData, setIncomeData] = useState<any>({});
   const [referencesData, setReferencesData] = useState<any>([]);
+  const [collateralData, setCollateralData] = useState<any>({});
+  const [agentData, setAgentData] = useState<any>(null);
 
   const [isAgreementOpen, setIsAgreementOpen] = useState<"loan" | "release" | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -136,6 +138,13 @@ export default function ApplicationDetailsPage() {
       appMonthlyIncome: application.appMonthlyIncome || "",
     });
     setReferencesData(application.appReferences || []);
+    setCollateralData({
+      collateralType: application.collateralType || "",
+      collateralDescription: application.collateralDescription || "",
+      ownershipStatus: (application as any).ownershipStatus || (application as any).ownershipStatys || "",
+      collateralValue: application.collateralValue || "",
+    });
+    setAgentData((application as any).appAgent || null);
   }, [application, isEditing]);
 
   const handleCancelEdit = () => {
@@ -167,6 +176,13 @@ export default function ApplicationDetailsPage() {
         appMonthlyIncome: application.appMonthlyIncome || "",
       });
       setReferencesData(application.appReferences || []);
+      setCollateralData({
+        collateralType: application.collateralType || "",
+        collateralDescription: application.collateralDescription || "",
+        ownershipStatus: (application as any).ownershipStatus || (application as any).ownershipStatys || "",
+        collateralValue: application.collateralValue || "",
+      });
+      setAgentData((application as any).appAgent || null);
     }
   };
 
@@ -224,6 +240,8 @@ export default function ApplicationDetailsPage() {
         ...profileData,
         ...incomeData,
         appReferences: referencesData,
+        ...collateralData,
+        appAgent: agentData,
       };
 
       const res = await authFetch(`${BASE_URL}/loan-applications/${application?.applicationId}`, {
@@ -321,7 +339,7 @@ export default function ApplicationDetailsPage() {
 
               {/* Buttons */}
               <div className="flex justify-center sm:justify-end space-x-3">
-                {application?.status === "Pending" && (
+                {application?.status === "Pending" && role === "loan officer" ?(
                   isEditing ? (
                     <>
                       <button
@@ -345,7 +363,7 @@ export default function ApplicationDetailsPage() {
                       Edit Details
                     </button>
                   )
-                )}
+                ): null}
 
                 <ApplicationButtons
                   application={application!}
@@ -394,6 +412,10 @@ export default function ApplicationDetailsPage() {
                 setIncomeData={setIncomeData}
                 referencesData={referencesData}
                 setReferencesData={setReferencesData}
+                collateralData={collateralData}
+                setCollateralData={setCollateralData}
+                agentData={agentData}
+                setAgentData={setAgentData}
                 showSuccess={showSuccess}
                 showError={showError}
               />

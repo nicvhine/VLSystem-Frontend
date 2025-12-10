@@ -30,6 +30,7 @@ interface UpdateMissingFieldsParams {
     appAgent: string;
     photo2x2: File[];
     uploadedFiles: File[];
+    requiredDocumentsCount: number;
     missingFields: string[];
     setMissingFields: (fields: string[]) => void;
 }
@@ -68,6 +69,7 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
     requiresCollateral,
     requires2x2,
         uploadedFiles,
+        requiredDocumentsCount,
         missingFields,
         setMissingFields
     } = params;
@@ -129,7 +131,7 @@ export function useUpdateMissingFields(params: UpdateMissingFieldsParams) {
         if (requires2x2) {
             if (photo2x2.length === 0) next.push('2x2 Photo');
         }
-        if (uploadedFiles.length === 0) next.push('Document Upload');
+        if (uploadedFiles.length !== requiredDocumentsCount) next.push('Document Upload');
 
         // Only update if different to avoid extra renders
         // Update directly with new array (avoid passing a function — setter expects string[])

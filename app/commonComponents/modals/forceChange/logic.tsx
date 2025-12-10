@@ -25,6 +25,7 @@ export function useChangePassword(
   const [successOpen, setSuccessOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [passwordChanged, setPasswordChanged] = useState<boolean | null>(null);
+  const [attemptCount, setAttemptCount] = useState(0);
 
   const borrowersId = typeof window !== 'undefined' ? localStorage.getItem('borrowersId') : '';
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : '';
@@ -56,6 +57,34 @@ export function useChangePassword(
 
     fetchStatus();
   }, [role, borrowersId, userId, token]);
+
+  // Logout function
+  const handleLogout = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      // Clear all auth-related data
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('borrowersId');
+      localStorage.removeItem('role');
+      localStorage.removeItem('forcePasswordChange');
+      
+      // Redirect to login page
+      window.location.href = '/';
+    }
+  }, []);
+
+  // Check if attempts exceeded
+  useEffect(() => {
+    if (attemptCount >= 3) {
+      setErrorMessage('Maximum attempts reached. You will be logged out for security reasons.');
+      setErrorOpen(true);
+      
+      // Logout after showing error message
+      setTimeout(() => {
+        handleLogout();
+      }, 3000);
+    }
+  }, [attemptCount, handleLogout]);
 
   // Prevent copy/paste
   const preventCopyPaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => e.preventDefault(), []);
@@ -137,12 +166,31 @@ export function useChangePassword(
           if (onSuccess) onSuccess();
         }, 3000);
       } else {
-        setErrorMessage(result.message || 'Failed to change password');
+        // Increment attempt count on failed password change
+        setAttemptCount((prev) => prev + 1);
+        const remainingAttempts = 3 - (attemptCount + 1);
+        
+        if (remainingAttempts > 0) {
+          setErrorMessage(
+            `${result.message || 'Failed to change password'}. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`
+          );
+        } else {
+          setErrorMessage('Maximum attempts reached. You will be logged out for security reasons.');
+        }
         setErrorOpen(true);
       }
     } catch (err) {
       console.error('Password change error:', err);
-      setErrorMessage('Something went wrong. Please try again.');
+      setAttemptCount((prev) => prev + 1);
+      const remainingAttempts = 3 - (attemptCount + 1);
+      
+      if (remainingAttempts > 0) {
+        setErrorMessage(
+          `Something went wrong. Please try again. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`
+        );
+      } else {
+        setErrorMessage('Maximum attempts reached. You will be logged out for security reasons.');
+      }
       setErrorOpen(true);
     }
   };
@@ -183,6 +231,7 @@ export function useChangePassword(
     successOpen, setSuccessOpen,
     successMessage, setSuccessMessage,
     passwordChanged,
+    attemptCount,
     SuccessModalComponent: (
       <SuccessModal
         isOpen={successOpen}

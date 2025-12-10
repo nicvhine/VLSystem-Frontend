@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import ConfirmModal from "@/app/commonComponents/modals/confirmModal";
 import translations from "@/app/commonComponents/translation";
 
-// Props interface for CreateUserModal component
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +18,7 @@ interface CreateUserModalProps {
     }
   ) => Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> | void;
   language?: "en" | "ceb";
+  currentUserRole?: string; // Add this prop to receive current user's role
 }
 
 
@@ -27,15 +27,17 @@ export default function CreateUserModal({
   onClose,
   onCreate,
   language: languageOverride,
+  currentUserRole,
 }: CreateUserModalProps) {
   // Form state for new user data
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     phoneNumber: "",
-    role: "head" as const,
+    role: "manager" as const,
     status: "Active" as const,
   });
+  const [isCreating, setIsCreating] = useState(false);
 
   // Form validation errors
   const [errors, setErrors] = useState<{ name?: string; email?: string; phoneNumber?: string }>({});
@@ -47,6 +49,7 @@ export default function CreateUserModal({
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [language, setLanguage] = useState<"en" | "ceb">(languageOverride ?? "en");
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     if (languageOverride) {
@@ -55,10 +58,13 @@ export default function CreateUserModal({
   }, [languageOverride]);
 
   useEffect(() => {
+    // Get current user's role from localStorage or prop
+    const storedRole = currentUserRole || localStorage.getItem("role") || "";
+    setUserRole(storedRole);
+
     if (languageOverride) return;
     if (typeof window === "undefined") return;
 
-    const storedRole = localStorage.getItem("role") || "";
     const keyMap: Record<string, string> = {
       head: "headLanguage",
       "loan officer": "loanOfficerLanguage",
@@ -89,7 +95,7 @@ export default function CreateUserModal({
 
     window.addEventListener("languageChange", handleLanguageChange as EventListener);
     return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
-  }, [languageOverride]);
+  }, [languageOverride, currentUserRole]);
 
   const m = translations.managementTranslation[language];
   const b = translations.buttonTranslation[language];
@@ -107,12 +113,8 @@ export default function CreateUserModal({
   }, [isOpen]);
 
   const handleModalClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onClose();
-      setIsVisible(false);
-      setShowConfirm(false);
-    }, 150);
+    setShowConfirm(false);
+    onClose();
   };
 
 
@@ -188,9 +190,11 @@ export default function CreateUserModal({
   };
 
   const handleConfirmCreate = async () => {
+    setIsCreating(true);
     // Clear previous errors
     setErrors((prev) => ({ ...prev, email: undefined }));
     const result = await Promise.resolve(onCreate(newUser) as any);
+    setIsCreating(false);
     if (result && typeof result === 'object' && result.success === false) {
       // Show inline field errors and keep modal open
       if (result.fieldErrors) {
@@ -204,10 +208,15 @@ export default function CreateUserModal({
       setShowConfirm(false);
       return;
     }
-    // Success path: close and reset form
-    handleModalClose();
-    setNewUser({ name: "", email: "", phoneNumber: "", role: "head", status: "Active" });
+    // Success path: close modals and reset form
     setShowConfirm(false);
+    onClose();
+    setNewUser({ name: "", email: "", phoneNumber: "", role: "manager", status: "Active" });
+    
+    // Trigger success message after modal is closed
+    if (result && result.success && result.showSuccess) {
+      result.showSuccess();
+    }
   };
 
   if (!isVisible) return null;
@@ -284,7 +293,8 @@ export default function CreateUserModal({
               value={newUser.role}
               onChange={handleChange}
             >
-              <option value="head">{b.b14}</option>
+              {/* Only show "head" option if current user is sysad */}
+              {userRole === "sysad" && <option value="head">{b.b14}</option>}
               <option value="manager">{b.b15}</option>
               <option value="loan officer">{b.b16}</option>
               <option value="collector">{b.b17}</option>
@@ -294,17 +304,24 @@ export default function CreateUserModal({
             <button
               type="button"
               onClick={handleModalClose}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md"
+              disabled={isCreating}
+              className={`px-4 py-2 bg-gray-200 text-gray-700 rounded-md ${
+                isCreating ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               {b.b5}
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-red-600 text-white rounded-md"
+              className={`px-4 py-2 bg-red-600 text-white rounded-md ${
+                (!!errors.name || !!errors.email || !!errors.phoneNumber ||
+                !newUser.name.trim() || !newUser.email.trim() || !newUser.phoneNumber.trim() ||
+                checking.name || checking.email || checking.phoneNumber || isCreating) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               disabled={
                 !!errors.name || !!errors.email || !!errors.phoneNumber ||
                 !newUser.name.trim() || !newUser.email.trim() || !newUser.phoneNumber.trim() ||
-                checking.name || checking.email || checking.phoneNumber
+                checking.name || checking.email || checking.phoneNumber || isCreating
               }
             >
               {m.u7}
@@ -315,6 +332,7 @@ export default function CreateUserModal({
             message={m.u8}
             onConfirm={handleConfirmCreate}
             onCancel={() => setShowConfirm(false)}
+            loading={isCreating}
           />
         </form>
       </div>

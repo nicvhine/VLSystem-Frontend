@@ -648,12 +648,12 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
                           onClick={async () => {
                           try {
                             const token = localStorage.getItem('token');
-                            console.log('📌 Full notification object:', notif);
+                            console.log('Full notification object:', notif);
                             const notifId = notif._id || notif.id;
-                            console.log('📌 Using notification ID:', notifId);
+                            console.log('Using notification ID:', notifId);
                             
                             if (!notifId) {
-                              console.error('❌ No valid notification ID found!');
+                              console.error('No valid notification ID found!');
                               return;
                             }
                             
@@ -672,7 +672,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
                             // Mark as read on server and wait for it to complete
                             const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
                             const markAsReadUrl = `${BASE_URL}/notifications/${apiRole}/${notifId}/read`;
-                            console.log('📡 Calling API:', markAsReadUrl);
+                            console.log('Calling API:', markAsReadUrl);
                             try {
                               const response = await fetch(markAsReadUrl, {
                                 method: 'PUT',

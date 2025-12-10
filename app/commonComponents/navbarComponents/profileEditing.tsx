@@ -191,22 +191,17 @@ export default function ProfileSettingsPanel({
       setPhoneError("Please enter the verification code."); 
       return;
     }
+  
     try {
-      const ok = await verifySmsCode();
-      if (ok) {
-        setShowOtpModal(false);
-        setModalMsg('Phone number verified and updated successfully.');
-        setShowSuccessModal(true);
-        setEnteredSmsCode('');
-        setSmsVerificationSent(false);
-        // Clear the input field so it shows the new phone number as placeholder
-        setEditingPhone('');
-      } else {
-        setModalMsg(phoneError || 'Failed to verify the code.');
-        setShowErrorModal(true);
-      }
+      await verifySmsCode(); 
+      setShowOtpModal(false);
+      setModalMsg('Phone number verified and updated successfully.');
+      setShowSuccessModal(true);
+      setEnteredSmsCode('');
+      setSmsVerificationSent(false);
+      setEditingPhone('');
     } catch {
-      setModalMsg('An error occurred while verifying OTP.');
+      setModalMsg(phoneError || 'Failed to verify the code.');
       setShowErrorModal(true);
     }
   };

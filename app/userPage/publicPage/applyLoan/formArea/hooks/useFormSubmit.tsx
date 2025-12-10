@@ -33,6 +33,7 @@ interface UseFormSubmitProps {
   appAgent: string;
   photo2x2: File[];
   uploadedFiles: File[];
+  requiredDocumentsCount: number;
   missingFields: string[];
   setMissingFields: (fields: string[]) => void;
   setAgentMissingError: (val: boolean) => void;
@@ -111,7 +112,7 @@ export function useFormSubmit(props: UseFormSubmitProps) {
 
     // Uploads
     if (props.photo2x2.length === 0) missing.push("2x2 Photo");
-    if (props.uploadedFiles.length === 0) missing.push("Document Upload");
+    if (props.uploadedFiles.length !== props.requiredDocumentsCount) missing.push("Document Upload");
 
     props.setMissingFields(missing);
     return missing.length === 0;

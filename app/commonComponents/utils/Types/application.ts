@@ -50,6 +50,7 @@ export interface Application {
   appNetReleased: number;
   appServiceFee: number;
   denialReason: string;
+  hasServiceFee: string;
 }
 
 export interface ApplicationCardProps {

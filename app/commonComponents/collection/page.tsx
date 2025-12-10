@@ -99,6 +99,13 @@ export default function CollectionsPage() {
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date: Date | null) => date && setSelectedDate(date)}
+                  onMonthChange={(date: Date) => {
+                    // When month changes, update to the same day of the new month
+                    const currentDay = selectedDate.getDate();
+                    const newDate = new Date(date);
+                    newDate.setDate(Math.min(currentDay, new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()));
+                    setSelectedDate(newDate);
+                  }}
                   inline
                   dayClassName={(date) => {
                     const hasCollection = collections.some(col => {
@@ -152,7 +159,6 @@ export default function CollectionsPage() {
                 </div>
                 <div className="text-right">
                   <h3 className="text-3xl sm:text-4xl font-bold text-gray-800">{formatCurrency(overallTotalCollected)}</h3>
-                  <p className="text-sm text-gray-400 mt-1">of {formatCurrency(overallTotalTarget)} ({overallTargetAchieved}%)</p>
                 </div>
               </div>
             </div>

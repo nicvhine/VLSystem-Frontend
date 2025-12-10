@@ -190,9 +190,15 @@ export default function HeadDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
             {/* Left: Total & Active Borrowers */}
-            <div className="flex flex-col justify-start space-y-4">
-              <StatCard title={t.d5} value={stats?.totalBorrowers ?? 0} />
-              <StatCard title={t.d9} value={stats?.activeBorrowers ?? 0} />
+            <div className="flex flex-col justify-between h-full gap-6">
+              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+                <span className="text-2xl font-bold text-gray-900">{stats?.totalBorrowers ?? 0}</span>
+                <span className="text-gray-500 text-sm mt-1">{t.d5}</span>
+              </div>
+              <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+                <span className="text-2xl font-bold text-gray-900">{stats?.activeBorrowers ?? 0}</span>
+                <span className="text-gray-500 text-sm mt-1">{t.d9}</span>
+              </div>
             </div>
 
             {/* Center: Top Borrowers */}
@@ -234,9 +240,15 @@ export default function HeadDashboard() {
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
     {/* Left: Total & Closed Loans */}
-    <div className="flex flex-col justify-start space-y-4">
-      <StatCard title={t.d16} value={stats?.totalLoans ?? 0} />
-      <StatCard title={t.d17} value={stats?.closedLoans ?? 0} />
+    <div className="flex flex-col justify-between h-full gap-6">
+      <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+        <span className="text-2xl font-bold text-gray-900">{stats?.totalLoans ?? 0}</span>
+        <span className="text-gray-500 text-sm mt-1">{t.d16}</span>
+      </div>
+      <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center flex-1">
+        <span className="text-2xl font-bold text-gray-900">{stats?.closedLoans ?? 0}</span>
+        <span className="text-gray-500 text-sm mt-1">{t.d17}</span>
+      </div>
     </div>
 
     {/* Center: Top Agents */}
@@ -277,31 +289,33 @@ export default function HeadDashboard() {
         <Section title={t.d21}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <StatCard title={t.d7} value={formatCurrency(stats?.totalCollected ?? 0)} />
-              <StatCard title={t.d22} value={formatCurrency(stats?.collectables ?? 0)} />
+            <div className="bg-white rounded-2xl shadow p-6 flex flex-col justify-center items-center text-center h-full">
+              <span className="text-2xl font-bold mt-2 text-gray-900">{formatCurrency(stats?.totalCollected ?? 0)}</span>
+              <span className="text-gray-500 text-sm mt-1">{t.d7}</span>
             </div>
 
             {/* Top Collectors */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
-              <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
-                {t.d23}
-              </div>
-              {topCollectorsData.length === 0 ? (
-                <p className="text-gray-500">{t.d24}</p>
-              ) : (
-                <div className="space-y-4">
-                  {topCollectorsData.map((c: any) => {
-                    const collected = Number(c.collectedByCollector) || 0;
-                    const total = Number(c.totalAssigned) || 1;
-                    const progressPercent = Math.min((collected / total) * 100, 100);
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-200 w-full">
+            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-600">
+              {t.d23}
+            </div>
+            {topCollectorsData.length === 0 ? (
+              <p className="text-gray-500">{t.d24}</p>
+            ) : (
+              <div className="space-y-4">
+                {topCollectorsData
+                  .filter((c: any) => Number(c.totalAssigned) > 0) // Only show collectors with assignments
+                  .map((c: any) => {
+                    const paid = Number(c.paidCollections) || 0;
+                    const total = Number(c.totalAssigned);
+                    const progressPercent = Math.min((paid / total) * 100, 100);
 
                     return (
                       <div key={c.collectorId}>
                         <div className="flex justify-between mb-1">
                           <span className="text-sm text-gray-700">{c.name}</span>
                           <span className="text-sm font-semibold">
-                            {formatCurrency(collected)} / {formatCurrency(total)} ({progressPercent.toFixed(2)}%)
+                            {paid} / {total} ({progressPercent.toFixed(2)}%)
                           </span>
                         </div>
                         <div className="h-4 w-full bg-gray-200 rounded-full overflow-hidden">
@@ -313,9 +327,12 @@ export default function HeadDashboard() {
                       </div>
                     );
                   })}
-                </div>
-              )}
-            </div>
+                {topCollectorsData.filter((c: any) => Number(c.totalAssigned) > 0).length === 0 && (
+                  <p className="text-gray-500 text-sm italic">No collectors with active assignments</p>
+                )}
+              </div>
+            )}
+          </div>
 
           </div>
         </Section>

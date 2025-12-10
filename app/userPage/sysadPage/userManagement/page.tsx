@@ -27,6 +27,47 @@ export default function UserManagementPage() {
   const router = useRouter();
   const { handleCreateUser } = useUserActions();
 
+  // Function to refresh users list
+  const refreshUsers = async () => {
+    try {
+      const token = localStorage.getItem("token"); 
+      if (!token) return;
+  
+      const res = await fetch(`${BASE_URL}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+  
+      if (res.ok) {
+        const data = await res.json();
+        setActiveStaff(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Error refreshing users:", err);
+    }
+  };
+
+  // Wrapper function for creating user with success modal
+  const handleCreateUserWrapper = async (user: Omit<User, "userId" | "lastActive" | "status">) => {
+    const result = await handleCreateUser(user);
+    
+    if (result.success) {
+      // Close modal
+      setIsModalOpen(false);
+      
+      // Show success modal
+      openSuccessModal(s.t93);
+      
+      // Refresh the user list to show newly added user
+      await refreshUsers();
+    }
+    
+    return result;
+  };
+
   // Translation hook
   const { s, language } = useTranslation();
 
@@ -58,12 +99,6 @@ export default function UserManagementPage() {
   const [openActionId, setOpenActionId] = useState<string | null>(null);
   const actionPopoverRef = useRef<HTMLDivElement | null>(null);
   const actionButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-
-  // Add user modal
-  const [showAddUserModal, setShowAddUserModal] = useState(false);
-
-  // Reset password state
-  const [resettingUserId, setResettingUserId] = useState<string | null>(null);
 
   // Toggle status state
   const [togglingUserId, setTogglingUserId] = useState<string | null>(null);
@@ -224,12 +259,34 @@ export default function UserManagementPage() {
       errors.email = language === 'en' ? 'Email is required' : 'Kinahanglan ang email';
     } else if (!/^[^\s@]+@gmail\.com$/.test(editFormData.email)) {
       errors.email = language === 'en' ? 'Email must be a @gmail.com address' : 'Ang email kinahanglan @gmail.com';
+    } else {
+      // Check for duplicate email (excluding current user)
+      const duplicateEmail = activeStaff.find(u => 
+        u.userId !== editingUserId && 
+        u.email?.toLowerCase() === editFormData.email?.toLowerCase()
+      );
+      if (duplicateEmail) {
+        errors.email = language === 'en' 
+          ? 'This email is already used by another user' 
+          : 'Kini nga email gigamit na sa lain nga user';
+      }
     }
     
     if (!editFormData.phoneNumber || editFormData.phoneNumber.trim() === '') {
       errors.phoneNumber = language === 'en' ? 'Phone number is required' : 'Kinahanglan ang phone number';
     } else if (!/^\d{11}$/.test(editFormData.phoneNumber)) {
       errors.phoneNumber = language === 'en' ? 'Phone number must be 11 digits' : 'Ang phone number kinahanglan 11 ka numero';
+    } else {
+      // Check for duplicate phone number (excluding current user)
+      const duplicatePhone = activeStaff.find(u => 
+        u.userId !== editingUserId && 
+        u.phoneNumber === editFormData.phoneNumber
+      );
+      if (duplicatePhone) {
+        errors.phoneNumber = language === 'en' 
+          ? 'This phone number is already used by another user' 
+          : 'Kini nga phone number gigamit na sa lain nga user';
+      }
     }
 
     if (Object.keys(errors).length > 0) {
@@ -255,7 +312,33 @@ export default function UserManagementPage() {
           body: JSON.stringify(editPayload),
         });
 
-      if (!res.ok) throw new Error(s.t96);
+      if (!res.ok) {
+        let errorMessage = s.t96;
+        try {
+          const data = await res.json();
+          errorMessage = data?.error || data?.message || errorMessage;
+          
+          // Check for specific duplicate errors from backend
+          const fieldErrors: { email?: string; phoneNumber?: string } = {};
+          if (/email\s+already\s+(registered|in use|exists)/i.test(errorMessage)) {
+            fieldErrors.email = language === 'en' 
+              ? 'This email is already used by another user' 
+              : 'Kini nga email gigamit na sa lain nga user';
+          }
+          if (/phone\s*number\s+already\s+(registered|in use|exists)/i.test(errorMessage)) {
+            fieldErrors.phoneNumber = language === 'en' 
+              ? 'This phone number is already used by another user' 
+              : 'Kini nga phone number gigamit na sa lain nga user';
+          }
+          
+          if (fieldErrors.email || fieldErrors.phoneNumber) {
+            setEditValidationErrors(fieldErrors);
+            return;
+          }
+        } catch {}
+        
+        throw new Error(errorMessage);
+      }
 
       setActiveStaff(prev => prev.map(u => 
         u.userId === editingUserId ? { ...u, ...editPayload } as User : u
@@ -264,9 +347,9 @@ export default function UserManagementPage() {
       openSuccessModal(s.t94);
       setEditingUserId(null);
       setEditFormData({});
-    } catch (err) {
+    } catch (err: any) {
       console.error("Edit user error:", err);
-      openErrorModal(s.t96);
+      openErrorModal(err.message || s.t96);
     }
   };
 
@@ -709,7 +792,7 @@ export default function UserManagementPage() {
         <CreateUserModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onCreate={handleCreateUser}
+          onCreate={handleCreateUserWrapper}
           language={language}
         />
       </div>

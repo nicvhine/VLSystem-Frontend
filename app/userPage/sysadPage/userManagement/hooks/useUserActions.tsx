@@ -35,9 +35,15 @@ export const useUserActions = () => {
         }
 
         const fieldErrors: { email?: string; phoneNumber?: string; name?: string } = {};
-        if (/email\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.email = "Email already in use.";
-        if (/phone\s*number\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.phoneNumber = "Phone number already in use.";
-        if (/name\s+already\s+(registered|in use)/i.test(msg)) fieldErrors.name = "Name already in use.";
+        if (/email\s+already\s+(registered|in use|exists)/i.test(msg)) {
+          fieldErrors.email = "This email is already registered. Please use a different email address.";
+        }
+        if (/phone\s*number\s+already\s+(registered|in use|exists)/i.test(msg)) {
+          fieldErrors.phoneNumber = "This phone number is already registered. Please use a different phone number.";
+        }
+        if (/name\s+already\s+(registered|in use|exists)/i.test(msg)) {
+          fieldErrors.name = "This name is already registered. Please use a different name.";
+        }
 
         if (fieldErrors.email || fieldErrors.phoneNumber || fieldErrors.name) {
           return { success: false, fieldErrors };

@@ -20,6 +20,8 @@ export default function Page() {
     return 'en';
   });
 
+  const [currentUserRole, setCurrentUserRole] = useState<string>("");
+
   // Listen for language changes
   useEffect(() => {
     const handleLanguageChange = (event: CustomEvent) => {
@@ -30,6 +32,14 @@ export default function Page() {
 
     window.addEventListener('languageChange', handleLanguageChange as EventListener);
     return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
+  }, []);
+
+  // Get current user role
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const role = localStorage.getItem("role") || "";
+      setCurrentUserRole(role);
+    }
   }, []);
 
   const t = translations.loanTermsTranslator[language];
@@ -50,7 +60,7 @@ export default function Page() {
     setDecisionModalOpen,
     decisionConfig,
     setDecisionConfig,
-    handleDeleteUser,
+    handleToggleStatus,
     handleSaveEdit,
     setUsers,
     editingUserId,  
@@ -59,6 +69,8 @@ export default function Page() {
     setEditFormData,
     successMessage,
     setSuccessMessage,
+    editValidationErrors,
+    setEditValidationErrors,
   } = useUsersLogic();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -91,15 +103,19 @@ export default function Page() {
       window.removeEventListener("resize", closeOnResize);
     };
   }, [openActionId]);
+
+  // Filter out sysad users from the display
+  const filteredUsers = sortedUsers.filter(user => user.role.toLowerCase() !== "sysad");
+
   // Pagination
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.max(1, Math.ceil(sortedUsers.length / pageSize));
-  const paginatedUsers = sortedUsers.slice(
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const paginatedUsers = filteredUsers.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-  const totalCount = sortedUsers.length;
+  const totalCount = filteredUsers.length;
   const showingStart = totalCount === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const showingEnd = totalCount === 0 ? 0 : Math.min(totalCount, currentPage * pageSize);
 
@@ -122,18 +138,19 @@ export default function Page() {
   const handleCancelEdit = () => {
     setEditingUserId(null);
     setEditFormData({});
+    setEditValidationErrors({});
   };
 
   const toggleActions = (userId: string) => {
     setOpenActionId((prev) => (prev === userId ? null : userId));
   };
 
-  const handleAction = (action: "edit" | "delete", user: User) => {
+  const handleAction = (action: "edit" | "activate" | "deactivate", user: User) => {
     setOpenActionId(null);
     if (action === "edit") {
       handleEditClick(user);
-    } else {
-      handleDeleteUser(user.userId);
+    } else if (action === "activate" || action === "deactivate") {
+      handleToggleStatus(user);
     }
   };
 
@@ -238,36 +255,60 @@ export default function Page() {
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {paginatedUsers.map((user) => (
-                    <tr key={user.userId} className="hover:bg-gray-50 transition-colors cursor-pointer">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">{user.userId}</td>
+                    <tr key={user.userId} className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                      user.status === 'Inactive' ? 'bg-gray-100' : ''
+                    }`}>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{user.userId}</td>
                       {editingUserId === user.userId ? (
                         <>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.name || ''} onChange={(e) => handleEditChange("name", e.target.value)} />
+                            <div>
+                              <input 
+                                className={`border rounded px-2 py-1 w-full ${editValidationErrors.name ? 'border-red-500' : 'border-gray-300'}`} 
+                                value={editFormData.name || ''} 
+                                onChange={(e) => handleEditChange("name", e.target.value)} 
+                              />
+                              {editValidationErrors.name && (
+                                <p className="text-red-500 text-xs mt-1">{editValidationErrors.name}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.email || ''} onChange={(e) => handleEditChange("email", e.target.value)} />
+                            <div>
+                              <input 
+                                className={`border rounded px-2 py-1 w-full ${editValidationErrors.email ? 'border-red-500' : 'border-gray-300'}`} 
+                                value={editFormData.email || ''} 
+                                onChange={(e) => handleEditChange("email", e.target.value)} 
+                              />
+                              {editValidationErrors.email && (
+                                <p className="text-red-500 text-xs mt-1">{editValidationErrors.email}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <input className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.phoneNumber || ''} onChange={(e) => handleEditChange("phoneNumber", e.target.value)} />
+                            <div>
+                              <input 
+                                className={`border rounded px-2 py-1 w-full ${editValidationErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`} 
+                                value={editFormData.phoneNumber || ''} 
+                                onChange={(e) => handleEditChange("phoneNumber", e.target.value)} 
+                              />
+                              {editValidationErrors.phoneNumber && (
+                                <p className="text-red-500 text-xs mt-1">{editValidationErrors.phoneNumber}</p>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                             <select className="border border-gray-300 rounded px-2 py-1 w-full" value={editFormData.role || ''} onChange={(e) => handleEditChange("role", e.target.value)}>
-                              <option value="head">Head</option>
+                              {currentUserRole !== "head" && <option value="head">Head</option>}
                               <option value="manager">Manager</option>
                               <option value="loan officer">Loan Officer</option>
                               <option value="collector">Collector</option>
                             </select>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            <select
-                              className="border border-gray-300 rounded px-2 py-1 w-full"
-                              value={editFormData.status || 'active'}
-                              onChange={(e) => handleEditChange("status", e.target.value)}
-                            >
-                              <option value="Active">Active</option>
-                              <option value="Inactive">Inactive</option>
-                            </select>
+                            <span className="text-gray-800">{editFormData.status || user.status}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                             <div className="flex items-center justify-center gap-3">
@@ -288,27 +329,27 @@ export default function Page() {
                         </>
                       ) : (
                         <>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.name}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phoneNumber}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                          }`}>{user.name}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                          }`}>{user.email}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                          }`}>{user.phoneNumber}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                                ${user.role === "manager"
-                                  ? "text-black"
-                                  : user.role === "collector"
-                                  ? "text-black"
-                                  : user.role === "loan officer"
-                                  ? "text-black"
-                                  : user.role === "head"
-                                  ? "text-black"
-                                  : "text-black"}
-                              `}
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                                user.status === 'Inactive' ? 'text-gray-400' : 'text-black'
+                              }`}
                             >
                               {getRoleTranslation(user.role)}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
+                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                            user.status === 'Inactive' ? 'text-gray-400 font-medium' : 'text-gray-700'
+                          }`}>{user.status}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-center w-[120px]">
                             <div className="relative inline-flex items-center justify-center">
                               <button
@@ -366,13 +407,23 @@ export default function Page() {
                                     >
                                       {b.b2}
                                     </button>
-                                    <button
-                                      onClick={() => handleAction("delete", user)}
-                                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                      role="menuitem"
-                                    >
-                                      {b.b3}
-                                    </button>
+                                    {user.status === 'Active' ? (
+                                      <button
+                                        onClick={() => handleAction("deactivate", user)}
+                                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        role="menuitem"
+                                      >
+                                        Deactivate
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={() => handleAction("activate", user)}
+                                        className="flex w-full items-center gap-2 px-4 py-2 text-sm text-green-600 hover:bg-green-50"
+                                        role="menuitem"
+                                      >
+                                        Activate
+                                      </button>
+                                    )}
                                   </div>
                                 );
                               })()}
@@ -382,9 +433,9 @@ export default function Page() {
                       )}
                     </tr>
                   ))}
-                  {sortedUsers.length === 0 && (
+                  {filteredUsers.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="text-center py-10 text-gray-500 font-semibold">
+                      <td colSpan={7} className="text-center py-10 text-gray-500 font-semibold">
                         No users found.
                       </td>
                     </tr>
@@ -440,8 +491,14 @@ export default function Page() {
           <CreateUserModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onCreate={handleCreateUser}
+            onCreate={(user) => handleCreateUser(user).then(result => {
+              if (result.success) {
+                return { ...result, showSuccess: () => setSuccessMessage("User created successfully.") };
+              }
+              return result;
+            })}
             language={language}
+            currentUserRole={currentUserRole}
           />
           {successMessage && (
             <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={() => setSuccessMessage("")} />

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { FiPrinter, FiX } from 'react-icons/fi';
 import { createPortal } from 'react-dom';
+import { formatCurrency } from '../utils/formatters';
 
 interface ReceiptModalProps {
   payment: {
@@ -223,7 +224,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ payment, borrowerName, show
                 </div>
                 <div className="flex justify-between text-base font-bold mt-2">
                   <span>AMOUNT PAID:</span>
-                  <span>₱{payment.amount.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span>{formatCurrency(payment.amount)}</span>
                 </div>
               </div>
 
