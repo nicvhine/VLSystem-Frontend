@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import ConfirmModal from "@/app/commonComponents/modals/confirmModal";
 import translations from "@/app/commonComponents/translation";
 
-// Props interface for CreateUserModal component
 interface CreateUserModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +18,7 @@ interface CreateUserModalProps {
     }
   ) => Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> | void;
   language?: "en" | "ceb";
+  currentUserRole?: string; // Add this prop to receive current user's role
 }
 
 
@@ -27,6 +27,7 @@ export default function CreateUserModal({
   onClose,
   onCreate,
   language: languageOverride,
+  currentUserRole,
 }: CreateUserModalProps) {
   // Form state for new user data
   const [newUser, setNewUser] = useState({
@@ -48,6 +49,7 @@ export default function CreateUserModal({
   const [isAnimating, setIsAnimating] = useState(false);
 
   const [language, setLanguage] = useState<"en" | "ceb">(languageOverride ?? "en");
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     if (languageOverride) {
@@ -56,10 +58,13 @@ export default function CreateUserModal({
   }, [languageOverride]);
 
   useEffect(() => {
+    // Get current user's role from localStorage or prop
+    const storedRole = currentUserRole || localStorage.getItem("role") || "";
+    setUserRole(storedRole);
+
     if (languageOverride) return;
     if (typeof window === "undefined") return;
 
-    const storedRole = localStorage.getItem("role") || "";
     const keyMap: Record<string, string> = {
       head: "headLanguage",
       "loan officer": "loanOfficerLanguage",
@@ -90,7 +95,7 @@ export default function CreateUserModal({
 
     window.addEventListener("languageChange", handleLanguageChange as EventListener);
     return () => window.removeEventListener("languageChange", handleLanguageChange as EventListener);
-  }, [languageOverride]);
+  }, [languageOverride, currentUserRole]);
 
   const m = translations.managementTranslation[language];
   const b = translations.buttonTranslation[language];
@@ -288,6 +293,8 @@ export default function CreateUserModal({
               value={newUser.role}
               onChange={handleChange}
             >
+              {/* Only show "head" option if current user is sysad */}
+              {userRole === "sysad" && <option value="head">{b.b14}</option>}
               <option value="manager">{b.b15}</option>
               <option value="loan officer">{b.b16}</option>
               <option value="collector">{b.b17}</option>
