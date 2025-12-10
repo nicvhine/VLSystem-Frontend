@@ -27,6 +27,47 @@ export default function UserManagementPage() {
   const router = useRouter();
   const { handleCreateUser } = useUserActions();
 
+  // Function to refresh users list
+  const refreshUsers = async () => {
+    try {
+      const token = localStorage.getItem("token"); 
+      if (!token) return;
+  
+      const res = await fetch(`${BASE_URL}/users`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+  
+      if (res.ok) {
+        const data = await res.json();
+        setActiveStaff(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Error refreshing users:", err);
+    }
+  };
+
+  // Wrapper function for creating user with success modal
+  const handleCreateUserWrapper = async (user: Omit<User, "userId" | "lastActive" | "status">) => {
+    const result = await handleCreateUser(user);
+    
+    if (result.success) {
+      // Close modal
+      setIsModalOpen(false);
+      
+      // Show success modal
+      openSuccessModal(s.t93);
+      
+      // Refresh the user list to show newly added user
+      await refreshUsers();
+    }
+    
+    return result;
+  };
+
   // Translation hook
   const { s, language } = useTranslation();
 
@@ -751,7 +792,7 @@ export default function UserManagementPage() {
         <CreateUserModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          onCreate={handleCreateUser}
+          onCreate={handleCreateUserWrapper}
           language={language}
         />
       </div>
