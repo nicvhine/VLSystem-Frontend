@@ -93,19 +93,44 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
       </Wrapper>
     );
 
-  const mergedData = { ...borrower, ...latestApplication };
-  const hasProfilePic = mergedData?.profilePic?.filePath;
+  // Use borrower data for personal info, fallback to latest application only if borrower data is missing
+  const personalData = {
+    name: borrower.name || latestApplication?.appName || "—",
+    email: borrower.email || latestApplication?.appEmail || "—",
+    phoneNumber: borrower.phoneNumber || latestApplication?.appContact || "—",
+    address: borrower.address || latestApplication?.appAddress || "—",
+    dob: borrower.dob || latestApplication?.appDob || "—",
+    maritalStatus: borrower.maritalStatus || latestApplication?.appMarital || "—",
+    children: borrower.children || latestApplication?.appChildren || "—",
+    spouseName: borrower.spouseName || latestApplication?.appSpouseName || "",
+    spouseOccupation: borrower.spouseOccupation || latestApplication?.appSpouseOccupation || "",
+  };
+
+  // Use latest application data for income/business info (this is application-specific)
+  const incomeData = {
+    monthlyIncome: latestApplication?.appMonthlyIncome || "—",
+    sourceOfIncome: latestApplication?.sourceOfIncome?.toLowerCase() || "",
+    typeBusiness: latestApplication?.appTypeBusiness || "—",
+    businessName: latestApplication?.appBusinessName || "—",
+    dateStarted: latestApplication?.appDateStarted || "—",
+    businessLoc: latestApplication?.appBusinessLoc || "—",
+    occupation: latestApplication?.appOccupation || "—",
+    employmentStatus: latestApplication?.appEmploymentStatus || "—",
+    companyName: latestApplication?.appCompanyName || "—",
+  };
+
+  // Profile picture and agent from latest application
+  const hasProfilePic = latestApplication?.profilePic?.filePath;
   const imageSrc =
-    hasProfilePic && mergedData.profilePic.filePath.startsWith("https")
-      ? mergedData.profilePic.filePath
+    hasProfilePic && latestApplication.profilePic.filePath.startsWith("https")
+      ? latestApplication.profilePic.filePath
       : hasProfilePic
-      ? `${BASE_URL}/${mergedData.profilePic.filePath}`
+      ? `${BASE_URL}/${latestApplication.profilePic.filePath}`
       : null;
 
   const latestLoanId = stats?.latestLoan?.loanId;
   const latestAppId =
     latestApplication?.applicationId || stats?.latestLoan?.applicationId;
-  const sourceOfIncome = mergedData?.sourceOfIncome?.toLowerCase();
 
   return (
     <Wrapper>
@@ -118,7 +143,7 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                 {imageSrc ? (
                   <img
                     src={imageSrc}
-                    alt={mergedData.name}
+                    alt={personalData.name}
                     className="h-full w-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
@@ -128,8 +153,8 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
                   <User className="text-red-600 w-16 h-16" />
                 )}
               </div>
-              <h1 className="text-3xl font-bold tracking-tight">{mergedData.name}</h1>
-              <p className="text-sm opacity-80 mt-1">{mergedData.borrowersId}</p>
+              <h1 className="text-3xl font-bold tracking-tight">{personalData.name}</h1>
+              <p className="text-sm opacity-80 mt-1">{borrowersId}</p>
             </div>
           </div>
 
@@ -138,72 +163,71 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
             {/* PERSONAL */}
             <Card title={t.t1}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
-                <LabeledField label={t.p1} value={mergedData.email} />
-                <LabeledField label={t.p2} value={mergedData.appContact} />
-                <LabeledField label={t.p3} value={mergedData.appAddress} span />
-                <LabeledField label={t.p4} value={mergedData.appDob} />
-                <LabeledField label={t.p5} value={mergedData.appMarital} />
+                <LabeledField label={t.p1} value={personalData.email} />
+                <LabeledField label={t.p2} value={personalData.phoneNumber} />
+                <LabeledField label={t.p3} value={personalData.address} span />
+                <LabeledField label={t.p4} value={personalData.dob} />
+                <LabeledField label={t.p5} value={personalData.maritalStatus} />
 
-                {/* NEW FIELD */}
-
+                {/* Assigned Collector */}
                 <div className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
-                <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
-                  Assigned Collector
-                </p>
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-800 text-sm font-medium">
-                    {assignedCollector || "—"}
+                  <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
+                    Assigned Collector
                   </p>
-                  {role === "manager" && (
-                    <button
-                      onClick={() => setIsModalOpen(true)}
-                      className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
-                      title="Edit Collector"
-                    >
-                      <FiEdit2 size={16} />
-                    </button>
-                  )}
+                  <div className="flex items-center justify-between">
+                    <p className="text-gray-800 text-sm font-medium">
+                      {assignedCollector || "—"}
+                    </p>
+                    {role === "manager" && (
+                      <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="text-red-600 hover:text-red-700 transition-colors p-1 hover:bg-red-50 rounded"
+                        title="Edit Collector"
+                      >
+                        <FiEdit2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
-                <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
-                  {language === 'en' ? 'Agent' : 'Ahente'}
-                </p>
-                <p className="text-gray-800 text-sm font-medium">
-                  {mergedData.appAgent?.name || "—"}
-                </p>
-              </div>
+                {/* Agent */}
+                <div className="flex flex-col bg-white border border-gray-100 rounded-xl p-4 hover:shadow-sm transition">
+                  <p className="text-xs uppercase tracking-wide text-gray-600 mb-1">
+                    {language === 'en' ? 'Agent' : 'Ahente'}
+                  </p>
+                  <p className="text-gray-800 text-sm font-medium">
+                    {latestApplication?.appAgent?.name || "—"}
+                  </p>
+                </div>
 
-                {mergedData.appChildren && mergedData.appChildren !== "0" && (
-                  <LabeledField label={t.p6} value={mergedData.appChildren} />
+                {personalData.children && personalData.children !== "0" && (
+                  <LabeledField label={t.p6} value={personalData.children} />
                 )}
-                {mergedData.appSpouseName && (
-                  <LabeledField label={t.p7} value={mergedData.appSpouseName} />
+                {personalData.spouseName && (
+                  <LabeledField label={t.p7} value={personalData.spouseName} />
                 )}
-                {mergedData.appSpouseOccupation && (
-                  <LabeledField label={t.p8} value={mergedData.appSpouseOccupation} />
+                {personalData.spouseOccupation && (
+                  <LabeledField label={t.p8} value={personalData.spouseOccupation} />
                 )}
               </div>
             </Card>
 
-
             {/* INCOME */}
             <Card title={t.t2}>
-              {sourceOfIncome?.includes("business") ? (
+              {incomeData.sourceOfIncome?.includes("business") ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
-                  <LabeledField label={t.i1} value={formatCurrency(mergedData.appMonthlyIncome)} />
-                  <LabeledField label={t.i2} value={mergedData.appTypeBusiness} />
-                  <LabeledField label={t.i3} value={mergedData.appBusinessName} />
-                  <LabeledField label={t.i4} value={mergedData.appDateStarted} />
-                  <LabeledField label={t.i5} value={mergedData.appBusinessLoc} span />
+                  <LabeledField label={t.i1} value={formatCurrency(incomeData.monthlyIncome)} />
+                  <LabeledField label={t.i2} value={incomeData.typeBusiness} />
+                  <LabeledField label={t.i3} value={incomeData.businessName} />
+                  <LabeledField label={t.i4} value={incomeData.dateStarted} />
+                  <LabeledField label={t.i5} value={incomeData.businessLoc} span />
                 </div>
-              ) : sourceOfIncome?.includes("employ") ? (
+              ) : incomeData.sourceOfIncome?.includes("employ") ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
-                  <LabeledField label={t.i1} value={`₱${mergedData.appMonthlyIncome}`} />
-                  <LabeledField label={t.i6} value={mergedData.appOccupation} />
-                  <LabeledField label={t.i7} value={mergedData.appEmploymentStatus} />
-                  <LabeledField label={t.i8} value={mergedData.appCompanyName} />
+                  <LabeledField label={t.i1} value={formatCurrency(incomeData.monthlyIncome)} />
+                  <LabeledField label={t.i6} value={incomeData.occupation} />
+                  <LabeledField label={t.i7} value={incomeData.employmentStatus} />
+                  <LabeledField label={t.i8} value={incomeData.companyName} />
                 </div>
               ) : (
                 <p className="text-gray-600 italic text-sm">{t.m3}</p>
@@ -241,14 +265,12 @@ export default function BorrowerDetailClient({ borrowersId }: Props) {
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             borrowerId={borrowersId}
-            currentCollector={assignedCollectorId} // userId
+            currentCollector={assignedCollectorId}
             onUpdated={(newCollectorId, newCollectorName) => {
               setAssignedCollectorId(newCollectorId);
-              setAssignedCollector(newCollectorName); // display name
+              setAssignedCollector(newCollectorName);
             }}
           />
-
-
         </div>
       </div>
     </Wrapper>

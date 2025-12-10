@@ -90,7 +90,6 @@ export const useBorrowerDetails = (borrowersId: string) => {
         setBorrower(borrowerData.borrowerDetails);
         setLatestApplication(borrowerData.latestApplication);
 
-        // 2️⃣ Fetch borrower stats
         const resStats = await fetch(`${BASE_URL}/borrowers/${borrowersId}/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
