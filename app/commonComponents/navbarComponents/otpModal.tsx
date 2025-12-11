@@ -8,7 +8,7 @@ type Props = {
   setOtp: (val: string) => void;
   error: string;
   setError?: (val: string) => void; 
-  handleVerifyOtp: () => Promise<void>;
+  handleVerifyOtp: () => Promise<void>; 
   handleResendOtp: () => Promise<void>;
   otpExpiresIn?: number;
   otpType?: 'email' | 'sms';
