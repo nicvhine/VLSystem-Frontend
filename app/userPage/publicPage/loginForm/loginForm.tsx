@@ -6,13 +6,13 @@ import ErrorModal from '@/app/commonComponents/modals/errorModal';
 import { ButtonContentLoading } from '@/app/commonComponents/utils/loading';
 import translationData from '@/app/commonComponents/translation';
 import { AlertTriangle } from 'lucide-react';
-import OTPModal from './loginOtpModal';
 
 interface Props {
   onClose: () => void;
   router: any;
   setShowForgotModal: (show: boolean) => void;
   setForgotRole: (role: 'borrower' | 'staff' | '') => void;
+  setShowSMSModal: (show: boolean) => void;
   language?: 'en' | 'ceb';
 }
 
@@ -21,12 +21,12 @@ export default function LoginFormWithSMS({
   router,
   setShowForgotModal,
   setForgotRole,
+  setShowSMSModal,
   language = 'en',
 }: Props) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showSMSModal, setShowSMSModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -133,21 +133,20 @@ export default function LoginFormWithSMS({
     <>
       <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
       
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div className="bg-white p-6 md:p-7 rounded-2xl shadow-lg w-full max-w-lg relative">
-          <button className="absolute top-3 right-3 text-gray-500 hover:text-gray-700" onClick={onClose}>&times;</button>
+      <div>
+        <div>
           <h2 className="text-2xl font-semibold mb-1 text-center">{auth.welcomeBack}</h2>
           <p className="mb-4 text-center text-gray-600">{auth.loginSubtitle}</p>
 
           {attemptCount > 0 && !isLockedOut && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2 text-red-800">
+              <div className="flex items-center justify-center gap-2 text-red-800">
                 <AlertTriangle className="w-4 h-4" />
                 <p className="text-sm font-medium">
                   Warning: {remainingAttempts} attempt{remainingAttempts > 1 ? 's' : ''}
                 </p>
               </div>
-              <p className="text-xs text-red-700 mt-1">
+              <p className="text-xs text-red-700 mt-1 text-center">
                 Account locks after {remainingAttempts} more failed attempt{remainingAttempts > 1 ? 's' : ''}.
               </p>
             </div>
@@ -155,11 +154,11 @@ export default function LoginFormWithSMS({
 
           {isLockedOut && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-center gap-2 text-red-800">
+              <div className="flex items-center justify-center gap-2 text-red-800">
                 <AlertTriangle className="w-4 h-4" />
                 <p className="text-sm font-medium">Account Temporarily Locked</p>
               </div>
-              <p className="text-xs text-red-700 mt-1">
+              <p className="text-xs text-red-700 mt-1 text-center">
                 Wait {formatCooldownTime(cooldownTime)} before trying again.
               </p>
             </div>
@@ -215,12 +214,6 @@ export default function LoginFormWithSMS({
           </form>
         </div>
       </div>
-
-      <OTPModal 
-        isVisible={showSMSModal} 
-        onClose={() => setShowSMSModal(false)} 
-        router={router} 
-      />
     </>
   );
 }

@@ -28,6 +28,7 @@ export default function OTPModal({
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
+  const [animateIn, setAnimateIn] = useState(false);
 
   const inputRefs = useRef<HTMLInputElement[]>([]);
 
@@ -40,8 +41,13 @@ export default function OTPModal({
   }, []);
 
   useEffect(() => {
-    if (!isVisible) return;
-    inputRefs.current[0]?.focus();
+    if (isVisible) {
+      const timer = setTimeout(() => setAnimateIn(true), 10);
+      inputRefs.current[0]?.focus();
+      return () => clearTimeout(timer);
+    } else {
+      setAnimateIn(false);
+    }
   }, [isVisible]);
 
   // Countdown timers
@@ -138,15 +144,22 @@ export default function OTPModal({
     <>
       <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
 
-      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div className="bg-white p-6 rounded-md w-80 text-center">
+      <div className={`fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[60] px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`bg-white p-6 md:p-7 rounded-xl shadow-2xl w-full max-w-sm text-center relative transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition"
+          >
+            ✖
+          </button>
+          
           <h2 className="text-2xl font-semibold mb-2">{auth.enterSmsCode}</h2>
           <p className="text-sm text-gray-600 mb-6">
             Enter the 6-digit code sent to your {otpType === 'sms' ? 'phone number' : 'email'}. Expires in{' '}
             <span className="font-semibold text-red-600">{formatTime(expiryTimer)}</span>.
           </p>
 
-          <div className="flex justify-center gap-2.5 mb-5" onPaste={handlePaste}>
+          <div className="flex justify-center gap-2.5 mb-6" onPaste={handlePaste}>
             {[...Array(6)].map((_, i) => (
               <input
                 key={i}
@@ -159,36 +172,40 @@ export default function OTPModal({
                 ref={(el) => { if (el) inputRefs.current[i] = el; }}
                 className={`w-9 h-11 md:w-10 md:h-12 rounded-lg border text-center text-xl font-semibold tracking-widest
                   ${otp[i] ? 'border-red-500 text-gray-900' : 'border-gray-300 text-gray-800'}
-                  focus:border-red-500 focus:ring-2 focus:ring-red-500/30 outline-none`}
+                  focus:border-red-500 focus:ring-2 focus:ring-red-500/30 outline-none transition-all duration-200`}
               />
             ))}
           </div>
 
-          <button
-            onClick={handleVerify}
-            disabled={otp.length !== 6 || isVerifying}
-            className="px-6 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:scale-95 transition-transform duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-4"
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={handleVerify}
+              disabled={otp.length !== 6 || isVerifying}
+              className="w-36 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isVerifying ? (
               <>
                 <Loader2 className="animate-spin w-5 h-5" /> Verifying...
               </>
             ) : 'Verify'}
-          </button>
-
-          {resendTimer > 0 ? (
-            <p className="text-sm text-gray-600">
-              Didn’t get the code? <span className="font-medium text-gray-800">Resend in {resendTimer}s</span>
-            </p>
-          ) : (
-            <button
-              onClick={handleResend}
-              disabled={isResending}
-              className="text-red-600 font-medium hover:underline disabled:opacity-50 flex items-center justify-center gap-1"
-            >
-              {isResending ? <><Loader2 className="animate-spin w-4 h-4" /> Sending...</> : 'Resend Code'}
             </button>
-          )}
+          </div>
+
+          <div className="flex justify-center">
+            {resendTimer > 0 ? (
+              <p className="text-sm text-gray-600">
+                Didn't get the code? <span className="font-medium text-gray-800">Resend in {resendTimer}s</span>
+              </p>
+            ) : (
+              <button
+                onClick={handleResend}
+                disabled={isResending}
+                className="text-red-600 font-medium hover:underline disabled:opacity-50 flex items-center justify-center gap-1 transition-all duration-150"
+              >
+                {isResending ? <><Loader2 className="animate-spin w-4 h-4" /> Sending...</> : 'Resend Code'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </>
