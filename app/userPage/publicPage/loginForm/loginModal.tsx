@@ -18,6 +18,8 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
   const [showModal, setShowModal] = useState(false);
   const [animateIn, setAnimateIn] = useState(false);
   const [showSMSModal, setShowSMSModal] = useState(false);
+  const [otpRole, setOtpRole] = useState<'borrower' | 'staff'>('borrower');
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -58,12 +60,12 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
 
             {showForgotModal ? (
               <ForgotPasswordModal
-              forgotRole={forgotRole}
-              setForgotRole={(role: string | null) =>
-                setForgotRole(role === "borrower" || role === "staff" || role === "" ? role : "")
-              }
-              setShowForgotModal={setShowForgotModal}
-            /> 
+                forgotRole={forgotRole}
+                setForgotRole={(role: string | null) =>
+                  setForgotRole(role === "borrower" || role === "staff" || role === "" ? role : "")
+                }
+                setShowForgotModal={setShowForgotModal}
+              /> 
             ) : (
               <LoginForm
                 onClose={onClose}
@@ -71,6 +73,7 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
                 setShowForgotModal={setShowForgotModal}
                 setForgotRole={setForgotRole}
                 setShowSMSModal={setShowSMSModal}
+                setOtpRole={setOtpRole}
                 language={language}
               />
             )}
@@ -78,14 +81,12 @@ export default function LoginModal({ isOpen, onClose, language = 'en' }: LoginMo
         </div>
       )}
 
-      {/* OTP Modal - Separate and on top */}
+      {/* OTP Modal */}
       <OTPModal 
         isVisible={showSMSModal} 
-        onClose={() => {
-          setShowSMSModal(false);
-          onClose();
-        }} 
+        onClose={() => { setShowSMSModal(false); onClose(); }} 
         router={router} 
+        otpRole={otpRole} 
       />
     </>
   );

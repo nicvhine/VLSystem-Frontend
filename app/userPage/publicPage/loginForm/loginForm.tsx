@@ -10,9 +10,10 @@ import { AlertTriangle } from 'lucide-react';
 interface Props {
   onClose: () => void;
   router: any;
-  setShowForgotModal: (show: boolean) => void;
-  setForgotRole: (role: 'borrower' | 'staff' | '') => void;
-  setShowSMSModal: (show: boolean) => void;
+  setShowForgotModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setForgotRole: React.Dispatch<React.SetStateAction<'borrower' | 'staff' | '' | null>>;
+  setShowSMSModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setOtpRole?: React.Dispatch<React.SetStateAction<'borrower' | 'staff'>>; 
   language?: 'en' | 'ceb';
 }
 
@@ -21,6 +22,7 @@ export default function LoginFormWithSMS({
   router,
   setShowForgotModal,
   setForgotRole,
+  setOtpRole,
   setShowSMSModal,
   language = 'en',
 }: Props) {
