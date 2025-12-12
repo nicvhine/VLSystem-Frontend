@@ -101,6 +101,7 @@ export default function LoginFormWithSMS({
         setErrorMsg, 
         setShowErrorModal, 
         setShowSMSModal, 
+        setOtpRole,  
         router 
       });
 
