@@ -1,7 +1,6 @@
 'use client';
+
 import { useState, useEffect, useRef } from "react";
-import translationData from '@/app/commonComponents/translation';
-import { ButtonContentLoading } from '@/app/commonComponents/utils/loading';
 import { Loader2 } from 'lucide-react';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
 
@@ -9,7 +8,7 @@ interface OTPModalProps {
   isVisible: boolean;
   onClose: () => void;
   router: any;
-  otpType?: 'sms' | 'email';
+  otpRole: 'borrower' | 'staff'; // <-- explicit role
   otpExpiresIn?: number;
 }
 
@@ -17,7 +16,7 @@ export default function OTPModal({
   isVisible,
   onClose,
   router,
-  otpType = 'sms',
+  otpRole,
   otpExpiresIn = 300,
 }: OTPModalProps) {
   const [otp, setOtp] = useState('');
@@ -27,18 +26,9 @@ export default function OTPModal({
   const [expiryTimer, setExpiryTimer] = useState(otpExpiresIn);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [animateIn, setAnimateIn] = useState(false);
 
   const inputRefs = useRef<HTMLInputElement[]>([]);
-
-  const auth = translationData.authTranslation[language];
-  const e = translationData.errorTranslation[language];
-
-  useEffect(() => {
-    const savedLang = localStorage.getItem("language");
-    if (savedLang === 'en' || savedLang === 'ceb') setLanguage(savedLang);
-  }, []);
 
   useEffect(() => {
     if (isVisible) {
@@ -63,18 +53,11 @@ export default function OTPModal({
     return () => clearInterval(interval);
   }, [expiryTimer]);
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? '0' + s : s}`;
-  };
-
   const handleChange = (value: string, index: number) => {
     const sanitized = value.replace(/\D/g, '');
     const otpArray = otp.padEnd(6, '').split('');
     otpArray[index] = sanitized.slice(-1);
-    const newOtp = otpArray.join('');
-    setOtp(newOtp);
+    setOtp(otpArray.join(''));
 
     if (sanitized && index < 5) inputRefs.current[index + 1]?.focus();
   };
@@ -93,31 +76,58 @@ export default function OTPModal({
     });
   };
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (otp.length !== 6 || isVerifying) return;
     setIsVerifying(true);
 
-    const savedCode = sessionStorage.getItem('verificationCode');
-    const role = sessionStorage.getItem('userRole');
+    try {
+      if (otpRole === 'borrower') {
+        const borrowersId = localStorage.getItem("borrowersId");
+        if (!borrowersId) throw new Error("Borrower ID not found.");
 
-    if (otp === savedCode) {
-      sessionStorage.removeItem('verificationCode');
-      sessionStorage.removeItem('userRole');
-      onClose();
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/borrowers/verify-login-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ borrowersId, otp }),
+        });
 
-      const redirectMap: Record<string, string> = {
-        borrower: '/userPage/borrowerPage/dashboard',
-        head: '/userPage/headPage/dashboard',
-        manager: '/userPage/managerPage/dashboard',
-        'loan officer': '/userPage/loanOfficerPage/dashboard',
-        collector: '/commonComponents/collection',
-      };
-      router.push(redirectMap[role || ''] || '/');
-    } else {
-      setErrorMsg(e.incorrectVerificationCode);
+        const data = await res.json();
+
+        if (res.ok) {
+          onClose();
+          router.push('/userPage/borrowerPage/dashboard');
+        } else {
+          setErrorMsg(data.error || "Incorrect verification code");
+          setShowErrorModal(true);
+        }
+      } else if (otpRole === 'staff') {
+        const savedCode = sessionStorage.getItem('verificationCode');
+        const role = sessionStorage.getItem('userRole');
+
+        if (otp === savedCode) {
+          sessionStorage.removeItem('verificationCode');
+          sessionStorage.removeItem('userRole');
+          onClose();
+
+          const redirectMap: Record<string, string> = {
+            head: '/userPage/headPage/dashboard',
+            manager: '/userPage/managerPage/dashboard',
+            'loan officer': '/userPage/loanOfficerPage/dashboard',
+            collector: '/commonComponents/collection',
+          };
+          router.push(redirectMap[role || ''] || '/');
+        } else {
+          setErrorMsg("Incorrect verification code");
+          setShowErrorModal(true);
+        }
+      }
+    } catch (err) {
+      console.error("OTP verification error:", err);
+      setErrorMsg("Error verifying OTP.");
       setShowErrorModal(true);
+    } finally {
+      setIsVerifying(false);
     }
-    setIsVerifying(false);
   };
 
   const handleResend = async () => {
@@ -125,20 +135,44 @@ export default function OTPModal({
     setIsResending(true);
 
     try {
-      // Simulate API resend here
-      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-      sessionStorage.setItem('verificationCode', newCode);
+      if (otpRole === 'staff') {
+        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+        sessionStorage.setItem('verificationCode', newCode);
+        setOtp('');
+        inputRefs.current[0]?.focus();
+        setResendTimer(60);
+        setExpiryTimer(otpExpiresIn);
+      } else if (otpRole === 'borrower') {
+        const borrowersId = localStorage.getItem("borrowersId");
+        if (!borrowersId) throw new Error("Borrower ID not found.");
 
-      setOtp('');
-      inputRefs.current[0]?.focus();
-      setResendTimer(60);
-      setExpiryTimer(otpExpiresIn);
+        await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/borrowers/send-login-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ borrowersId }),
+        });
+
+        setOtp('');
+        inputRefs.current[0]?.focus();
+        setResendTimer(60);
+        setExpiryTimer(otpExpiresIn);
+      }
+    } catch (err) {
+      console.error("OTP resend error:", err);
+      setErrorMsg("Error resending OTP.");
+      setShowErrorModal(true);
     } finally {
       setIsResending(false);
     }
   };
 
   if (!isVisible) return null;
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' + s : s}`;
+  };
 
   return (
     <>
@@ -153,9 +187,9 @@ export default function OTPModal({
             ✖
           </button>
           
-          <h2 className="text-2xl font-semibold mb-2">{auth.enterSmsCode}</h2>
+          <h2 className="text-2xl font-semibold mb-2">Enter OTP</h2>
           <p className="text-sm text-gray-600 mb-6">
-            Enter the 6-digit code sent to your {otpType === 'sms' ? 'phone number' : 'email'}. Expires in{' '}
+            Enter the 6-digit code sent to your {otpRole === 'borrower' ? 'phone number' : 'email'}. Expires in{' '}
             <span className="font-semibold text-red-600">{formatTime(expiryTimer)}</span>.
           </p>
 
@@ -182,12 +216,8 @@ export default function OTPModal({
               onClick={handleVerify}
               disabled={otp.length !== 6 || isVerifying}
               className="w-36 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:scale-95 transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isVerifying ? (
-              <>
-                <Loader2 className="animate-spin w-5 h-5" /> Verifying...
-              </>
-            ) : 'Verify'}
+            >
+              {isVerifying ? <><Loader2 className="animate-spin w-5 h-5" /> Verifying...</> : 'Verify'}
             </button>
           </div>
 
