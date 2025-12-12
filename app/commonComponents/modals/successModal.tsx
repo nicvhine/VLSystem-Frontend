@@ -40,7 +40,7 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ isOpen, message, onClose })
   const content = (
     <>
       <div
-        className={`fixed bottom-6 right-6 z-50 pointer-events-none min-w-[220px] max-w-xs transition-none ${animation === 'fade-in' ? 'success-fade-in' : ''} ${animation === 'fade-out' ? 'success-fade-out' : ''}`}
+        className={`fixed bottom-6 right-6 z-[70] pointer-events-none min-w-[220px] max-w-xs transition-none ${animation === 'fade-in' ? 'success-fade-in' : ''} ${animation === 'fade-out' ? 'success-fade-out' : ''}`}
       >
         <div className="bg-green-100 border border-green-300 text-green-800 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 relative">
           <span className="flex-1 text-sm">{message}</span>

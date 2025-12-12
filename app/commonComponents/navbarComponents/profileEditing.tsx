@@ -250,8 +250,8 @@ export default function ProfileSettingsPanel({
                   setEmailError('Only Gmail addresses are accepted.');
                 }
               }}
-              placeholder={email}
-              className="bg-white border border-gray-300 rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition text-sm"
+              placeholder={email || 'Enter email address'}
+              className="bg-white border border-gray-300 rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition text-sm placeholder:text-gray-500"
             />
             <div className="min-h-[1rem]">
               {editingEmail.trim() !== '' && editingEmail.toLowerCase() !== email.toLowerCase() && !emailError && (
@@ -294,9 +294,9 @@ export default function ProfileSettingsPanel({
                   setPhoneError('Phone number must start with 09 and be exactly 11 digits.');
                 }
               }}
-              placeholder={phoneNumber}
+              placeholder={phoneNumber || 'Enter phone number'}
               maxLength={11}
-              className="bg-white border border-gray-300 text-sm rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition"
+              className="bg-white border border-gray-300 text-sm rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition placeholder:text-gray-500"
             />
             <div className="min-h-[1rem]">
               {editingPhone.trim() !== '' && editingPhone !== phoneNumber && !phoneError && (

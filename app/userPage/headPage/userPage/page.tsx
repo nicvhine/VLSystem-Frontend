@@ -499,6 +499,7 @@ export default function Page() {
             })}
             language={language}
             currentUserRole={currentUserRole}
+            existingUsers={sortedUsers}
           />
           {successMessage && (
             <SuccessModal isOpen={!!successMessage} message={successMessage} onClose={() => setSuccessMessage("")} />
