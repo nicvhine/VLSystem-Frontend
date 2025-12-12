@@ -8,7 +8,7 @@ interface OTPModalProps {
   isVisible: boolean;
   onClose: () => void;
   router: any;
-  otpRole: 'borrower' | 'staff'; // <-- explicit role
+  otpRole: 'borrower' | 'staff'; 
   otpExpiresIn?: number;
 }
 
@@ -29,29 +29,39 @@ export default function OTPModal({
   const [animateIn, setAnimateIn] = useState(false);
 
   const inputRefs = useRef<HTMLInputElement[]>([]);
+  const hasInitialized = useRef(false); // Track if timers have been initialized
 
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => setAnimateIn(true), 10);
       inputRefs.current[0]?.focus();
+
+      // Only reset timers on first open or when modal reopens
+      if (!hasInitialized.current) {
+        setExpiryTimer(otpExpiresIn); 
+        setResendTimer(60);
+        hasInitialized.current = true;
+      }
+
       return () => clearTimeout(timer);
     } else {
       setAnimateIn(false);
+      hasInitialized.current = false; // Reset for next open
     }
-  }, [isVisible]);
+  }, [isVisible, otpExpiresIn]);
 
-  // Countdown timers
+  // Countdown timers - only run when isVisible
   useEffect(() => {
-    if (resendTimer <= 0) return;
+    if (!isVisible || resendTimer <= 0) return;
     const interval = setInterval(() => setResendTimer(t => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [resendTimer]);
+  }, [resendTimer, isVisible]);
 
   useEffect(() => {
-    if (expiryTimer <= 0) return;
+    if (!isVisible || expiryTimer <= 0) return;
     const interval = setInterval(() => setExpiryTimer(t => t - 1), 1000);
     return () => clearInterval(interval);
-  }, [expiryTimer]);
+  }, [expiryTimer, isVisible]);
 
   const handleChange = (value: string, index: number) => {
     const sanitized = value.replace(/\D/g, '');
@@ -115,6 +125,7 @@ export default function OTPModal({
             manager: '/userPage/managerPage/dashboard',
             'loan officer': '/userPage/loanOfficerPage/dashboard',
             collector: '/commonComponents/collection',
+            sysad: '/userPage/sysadPage/dashboard',
           };
           router.push(redirectMap[role || ''] || '/');
         } else {
