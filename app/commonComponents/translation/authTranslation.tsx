@@ -1,7 +1,7 @@
 const authTranslation = {
   en: {
     // SMS Verification
-    enterSmsCode: "Enter SMS Code",
+    enterSmsCode: "Enter Code",
     sixDigitCode: "6-digit code",
     enterSixDigitCode: "Enter 6-digit code",
     verify: "Verify",
@@ -59,7 +59,7 @@ const authTranslation = {
   },
   ceb: {
     // SMS Verification
-    enterSmsCode: "Isulod ang SMS Code",
+    enterSmsCode: "Isulod ang Code",
     sixDigitCode: "6-ka digit nga code",
     enterSixDigitCode: "Isulod ang 6-ka digit nga code",
     verify: "I-verify",
