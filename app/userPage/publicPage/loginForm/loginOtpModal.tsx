@@ -77,6 +77,7 @@ export default function OTPModal({
   };
 
   const handleVerify = async () => {
+    console.log("Verifying OTP for role:", otpRole);
     if (otp.length !== 6 || isVerifying) return;
     setIsVerifying(true);
 
