@@ -237,22 +237,34 @@ export default function ProfileSettingsPanel({
             {emailError && <p className="text-xs text-red-500 mb-1">{emailError}</p>}
           </div>
           <div className="flex flex-col">
-            <input
-              type="email"
-              value={editingEmail}
-              onChange={(e) => {
-                const value = e.target.value;
-                setEditingEmail(value);
-                // Clear error when user starts typing
-                if (emailError) setEmailError('');
-                // Validate Gmail only
-                if (value && !value.toLowerCase().endsWith('@gmail.com')) {
-                  setEmailError('Only Gmail addresses are accepted.');
-                }
-              }}
-              placeholder={email || 'Enter email address'}
-              className="bg-white border border-gray-300 rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition text-sm placeholder:text-gray-500"
-            />
+          <input
+            type="email"
+            value={editingEmail}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEditingEmail(value);
+
+              // Clear previous error
+              setEmailError('');
+
+              // Same email as current
+              if (
+                value &&
+                email &&
+                value.trim().toLowerCase() === email.trim().toLowerCase()
+              ) {
+                setEmailError("Entered email is what you're currently using.");
+                return;
+              }
+
+              // Validate Gmail only
+              if (value && !value.toLowerCase().endsWith('@gmail.com')) {
+                setEmailError('Only Gmail addresses are accepted.');
+              }
+            }}
+            placeholder={email || 'Enter email address'}
+            className="bg-white border border-gray-300 rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition text-sm placeholder:text-gray-500"
+          />
             <div className="min-h-[1rem]">
               {editingEmail.trim() !== '' && editingEmail.toLowerCase() !== email.toLowerCase() && !emailError && (
                 <button
@@ -287,6 +299,17 @@ export default function ProfileSettingsPanel({
                 // Only allow numbers
                 if (value && !/^\d*$/.test(value)) return;
                 setEditingPhone(value);
+
+                 // Same number as current
+                  if (
+                    value &&
+                    phoneNumber &&
+                    value.trim().toLowerCase() === phoneNumber.trim().toLowerCase()
+                  ) {
+                    setPhoneError("Entered phone number is what you're currently using.");
+                    return;
+                  }
+
                 // Clear error when user starts typing
                 if (phoneError) setPhoneError('');
                 // Validate phone format
@@ -294,7 +317,7 @@ export default function ProfileSettingsPanel({
                   setPhoneError('Phone number must start with 09 and be exactly 11 digits.');
                 }
               }}
-              placeholder={phoneNumber || 'Enter phone number'}
+              placeholder={phoneNumber}
               maxLength={11}
               className="bg-white border border-gray-300 text-sm rounded-md p-2.5 focus:ring-1 focus:ring-red-600 focus:border-red-600 outline-none transition placeholder:text-gray-500"
             />

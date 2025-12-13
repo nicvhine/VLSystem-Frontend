@@ -77,7 +77,7 @@ export async function loginHandler({
       const user = staffData.user;
       localStorage.setItem("token", staffData.token);
       localStorage.setItem("fullName", user.name || user.username || user.email);
-      localStorage.setItem("email", user.phoneNumber);
+      localStorage.setItem("phoneNumber", user.phoneNumber);
       localStorage.setItem("email", user.email);
       localStorage.setItem("username", user.username);
       localStorage.setItem("role", user.role?.toLowerCase() || "staff");
