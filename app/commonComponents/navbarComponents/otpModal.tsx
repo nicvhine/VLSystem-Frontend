@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import SuccessModal from '@/app/commonComponents/modals/successModal';
 
 type Props = {
   otp: string;
@@ -12,6 +13,9 @@ type Props = {
   handleResendOtp: () => Promise<void>;
   otpExpiresIn?: number;
   otpType?: 'email' | 'sms';
+  showSuccessModal?: boolean;
+  successMessage?: string;
+  onCloseSuccessModal?: () => void;
 };
 
 export default function OTPModal({
@@ -23,6 +27,9 @@ export default function OTPModal({
   handleResendOtp,
   otpExpiresIn = 300,
   otpType = 'email',
+  showSuccessModal = false,
+  successMessage = 'Verification successful!',
+  onCloseSuccessModal,
 }: Props) {
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -179,6 +186,15 @@ export default function OTPModal({
           </div>
         )}
       </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && onCloseSuccessModal && (
+        <SuccessModal 
+          isOpen={showSuccessModal} 
+          message={successMessage} 
+          onClose={onCloseSuccessModal} 
+        />
+      )}
     </div>
   );
 }

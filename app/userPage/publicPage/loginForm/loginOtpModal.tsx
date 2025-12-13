@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Loader2 } from 'lucide-react';
 import ErrorModal from '@/app/commonComponents/modals/errorModal';
+import SuccessModal from '@/app/commonComponents/modals/successModal';
 
 interface OTPModalProps {
   isVisible: boolean;
@@ -27,6 +28,7 @@ export default function OTPModal({
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [animateIn, setAnimateIn] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const inputRefs = useRef<HTMLInputElement[]>([]);
   const hasInitialized = useRef(false); // Track if timers have been initialized
@@ -105,8 +107,12 @@ export default function OTPModal({
         const data = await res.json();
 
         if (res.ok) {
-          onClose();
-          router.push('/userPage/borrowerPage/dashboard');
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false);
+            onClose();
+            router.push('/userPage/borrowerPage/dashboard');
+          }, 1500);
         } else {
           setErrorMsg(data.error || "Incorrect verification code");
           setShowErrorModal(true);
@@ -118,16 +124,21 @@ export default function OTPModal({
         if (otp === savedCode) {
           sessionStorage.removeItem('verificationCode');
           sessionStorage.removeItem('userRole');
-          onClose();
+          
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false);
+            onClose();
 
-          const redirectMap: Record<string, string> = {
-            head: '/userPage/headPage/dashboard',
-            manager: '/userPage/managerPage/dashboard',
-            'loan officer': '/userPage/loanOfficerPage/dashboard',
-            collector: '/commonComponents/collection',
-            sysad: '/userPage/sysadPage/dashboard',
-          };
-          router.push(redirectMap[role || ''] || '/');
+            const redirectMap: Record<string, string> = {
+              head: '/userPage/headPage/dashboard',
+              manager: '/userPage/managerPage/dashboard',
+              'loan officer': '/userPage/loanOfficerPage/dashboard',
+              collector: '/commonComponents/collection',
+              sysad: '/userPage/sysadPage/dashboard',
+            };
+            router.push(redirectMap[role || ''] || '/');
+          }, 1500);
         } else {
           setErrorMsg("Incorrect verification code");
           setShowErrorModal(true);
@@ -188,8 +199,6 @@ export default function OTPModal({
 
   return (
     <>
-      <ErrorModal isOpen={showErrorModal} message={errorMsg} onClose={() => setShowErrorModal(false)} />
-
       <div className={`fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-[60] px-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
         <div className={`bg-white p-6 md:p-7 rounded-xl shadow-2xl w-full max-w-sm text-center relative transform transition-all duration-300 ease-out ${animateIn ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}>
           <button
@@ -250,6 +259,20 @@ export default function OTPModal({
           </div>
         </div>
       </div>
+
+      {/* Success Modal */}
+      <SuccessModal 
+        isOpen={showSuccessModal} 
+        message="Login successful! Redirecting..." 
+        onClose={() => setShowSuccessModal(false)} 
+      />
+
+      {/* Error Modal */}
+      <ErrorModal 
+        isOpen={showErrorModal} 
+        message={errorMsg} 
+        onClose={() => setShowErrorModal(false)} 
+      />
     </>
   );
 }

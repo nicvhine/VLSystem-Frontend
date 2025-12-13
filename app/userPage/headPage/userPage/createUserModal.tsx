@@ -18,7 +18,8 @@ interface CreateUserModalProps {
     }
   ) => Promise<{ success: boolean; fieldErrors?: { email?: string; phoneNumber?: string; name?: string }; message?: string }> | void;
   language?: "en" | "ceb";
-  currentUserRole?: string; // Add this prop to receive current user's role
+  currentUserRole?: string;
+  existingUsers?: Array<{ name: string; email: string; phoneNumber: string; userId: string }>;
 }
 
 
@@ -28,6 +29,7 @@ export default function CreateUserModal({
   onCreate,
   language: languageOverride,
   currentUserRole,
+  existingUsers = [],
 }: CreateUserModalProps) {
   // Form state for new user data
   const [newUser, setNewUser] = useState({
@@ -122,6 +124,14 @@ export default function CreateUserModal({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    
+    // Update the value first
+    setNewUser((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    
+    // Validate format only, don't touch duplicate errors
     let error = "";
     if (name === "name") {
       if (!/^[A-Za-z ]*$/.test(value)) error = "Name must contain only letters and spaces.";
@@ -130,60 +140,103 @@ export default function CreateUserModal({
       else if (value && !value.includes(" ")) error = "Please enter a full name (first and last).";
     }
     if (name === "email") {
-      if (!/^\S+@\S+\.\S+$/.test(value)) error = "Please enter a valid email address.";
+      if (value && !/^\S+@\S+\.\S+$/.test(value)) error = "Please enter a valid email address.";
     }
     if (name === "phoneNumber") {
       if (!/^\d*$/.test(value)) error = "Phone number must contain only digits.";
       else if (value.length !== 11 && value.length > 0) error = "Phone number must be exactly 11 digits.";
     }
-    setErrors((prev) => ({ ...prev, [name]: error }));
-    setNewUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    
+    // Only update error if there's a format error
+    // Don't clear duplicate errors from onBlur checks
+    if (error) {
+      setErrors((prev) => ({ ...prev, [name]: error }));
+    } else {
+      // Only clear the error if it's not a duplicate error
+      setErrors((prev) => {
+        const currentError = prev[name as keyof typeof prev];
+        if (currentError && !currentError.includes('already in use')) {
+          return { ...prev, [name]: "" };
+        }
+        return prev;
+      });
+    }
   };
 
-  // Async uniqueness checks
-  const USER_URL = process.env.NEXT_PUBLIC_USER_URL as string | undefined;
-
-  const checkFieldUniqueness = async (field: 'email' | 'phoneNumber' | 'name', value: string) => {
-    if (!USER_URL) return; // fallback: skip
-    if (!value?.trim()) return; // nothing to check
-    try {
-      setChecking((p) => ({ ...p, [field]: true }));
-      const endpoint = field === 'email' ? 'check-email' : field === 'phoneNumber' ? 'check-phone' : 'check-name';
-      const res = await fetch(`${USER_URL}/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [field]: value.trim() }),
+  // Check for duplicates on blur - LOCAL check against existingUsers
+  const checkDuplicate = (field: 'name' | 'email' | 'phoneNumber', value: string) => {
+    if (!value?.trim()) return; // Don't check empty values
+    
+    let isDuplicate = false;
+    let errorMsg = "";
+    
+    if (field === 'name') {
+      isDuplicate = existingUsers.some(u => u.name?.toLowerCase() === value.trim().toLowerCase());
+      errorMsg = "Name already in use.";
+    } else if (field === 'email') {
+      isDuplicate = existingUsers.some(u => u.email?.toLowerCase() === value.trim().toLowerCase());
+      errorMsg = "Email already in use.";
+    } else if (field === 'phoneNumber') {
+      isDuplicate = existingUsers.some(u => u.phoneNumber === value.trim());
+      errorMsg = "Phone number already in use.";
+    }
+    
+    if (isDuplicate) {
+      setErrors(prev => ({ ...prev, [field]: errorMsg }));
+    } else {
+      // Clear duplicate error only if current error is a duplicate error
+      setErrors(prev => {
+        const currentError = prev[field];
+        if (currentError && currentError.includes('already in use')) {
+          return { ...prev, [field]: "" };
+        }
+        return prev;
       });
-      if (res.status === 409) {
-        const msg = field === 'email' ? 'Email already in use.' : field === 'phoneNumber' ? 'Phone number already in use.' : 'Name already in use.';
-        setErrors((prev) => ({ ...prev, [field]: msg }));
-      } else if (!res.ok) {
-        // Non-409 errors: do not block, but show a soft hint
-        setErrors((prev) => ({ ...prev, [field]: undefined }));
-      } else {
-        // available
-        setErrors((prev) => ({ ...prev, [field]: undefined }));
-      }
-    } catch (e) {
-      // network error: do not block form
-    } finally {
-      setChecking((p) => ({ ...p, [field]: false }));
     }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: typeof errors = {};
+    
+    // Format validation
     if (!newUser.name.trim()) newErrors.name = "Please enter a name.";
     else if (!/^[A-Za-z ]{2,50}$/.test(newUser.name.trim())) newErrors.name = "Name must be 2-50 letters and spaces only.";
     else if (!newUser.name.trim().includes(" ")) newErrors.name = "Please enter a full name (first and last).";
+    else {
+      // Check for duplicate name (case-insensitive)
+      const duplicateName = existingUsers.find(u => 
+        u.name?.toLowerCase() === newUser.name?.trim().toLowerCase()
+      );
+      if (duplicateName) {
+        newErrors.name = "Name already in use.";
+      }
+    }
+    
     if (!newUser.email.trim()) newErrors.email = "Please enter an email address.";
     else if (!/^\S+@\S+\.\S+$/.test(newUser.email.trim())) newErrors.email = "Please enter a valid email address.";
+    else {
+      // Check for duplicate email (case-insensitive)
+      const duplicateEmail = existingUsers.find(u => 
+        u.email?.toLowerCase() === newUser.email?.trim().toLowerCase()
+      );
+      if (duplicateEmail) {
+        newErrors.email = "Email already in use.";
+      }
+    }
+    
     if (!newUser.phoneNumber.trim()) newErrors.phoneNumber = "Please enter a phone number.";
     else if (!/^\d{11}$/.test(newUser.phoneNumber.trim())) newErrors.phoneNumber = "Phone number must be exactly 11 digits.";
+    else {
+      // Check for duplicate phone number
+      const duplicatePhone = existingUsers.find(u => 
+        u.phoneNumber === newUser.phoneNumber?.trim()
+      );
+      if (duplicatePhone) {
+        newErrors.phoneNumber = "Phone number already in use.";
+      }
+    }
+    
     setErrors(newErrors);
     if (Object.values(newErrors).some(Boolean)) return;
     setShowConfirm(true);
@@ -245,7 +298,7 @@ export default function CreateUserModal({
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.name}
               onChange={handleChange}
-              onBlur={() => checkFieldUniqueness('name', newUser.name)}
+              onBlur={(e) => checkDuplicate('name', e.target.value)}
               minLength={2}
               maxLength={50}
               pattern="[A-Za-z ]+"
@@ -262,7 +315,7 @@ export default function CreateUserModal({
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.email}
               onChange={handleChange}
-              onBlur={() => checkFieldUniqueness('email', newUser.email)}
+              onBlur={(e) => checkDuplicate('email', e.target.value)}
               required
               autoComplete="off"
             />
@@ -276,7 +329,7 @@ export default function CreateUserModal({
               className={`w-full rounded-md border px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-500 ${errors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
               value={newUser.phoneNumber}
               onChange={handleChange}
-              onBlur={() => checkFieldUniqueness('phoneNumber', newUser.phoneNumber)}
+              onBlur={(e) => checkDuplicate('phoneNumber', e.target.value)}
               minLength={11}
               maxLength={11}
               pattern="\d{11}"
