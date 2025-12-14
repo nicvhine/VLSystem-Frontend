@@ -11,6 +11,7 @@ const loanTermsTranslator = {
       l8: "Loan Term",
       l9: "Period Amount",
       l10: "Loan Type",
+      l111: "Total Interest",
   
       // Table Headers
       l11: "ID",
@@ -88,6 +89,7 @@ const loanTermsTranslator = {
       l8: "Termino sa Pahulam",
       l9: "Kantidad kada Panahon",
       l10: "Klase sa Pahulam",
+      l111: "Kinatibuk-ang Interes",
   
       // Table Headers
       l11: "ID",

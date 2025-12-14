@@ -227,9 +227,14 @@ export default function SimulatorModal({
       setCollections([first, second]);
       setResult(null);
     } else {
-      const totalInterest = (amt * rate) / 100;
-      const totalRepayment = amt + totalInterest;
-      const paymentPerPeriod = totalRepayment / months;
+      // const totalInterest = interest * months;
+      // const totalRepayment = amt + totalInterest;
+      // const paymentPerPeriod = totalRepayment / months;
+
+      const interestAmount = amt * rate / 100;
+      const totalInterest = interestAmount * months;
+      const totalPayable = amt + totalInterest;
+      const monthlyDue = totalPayable / months;
 
       setResult({
         paymentPeriod:
@@ -238,10 +243,11 @@ export default function SimulatorModal({
             : "15th of the Month",
         principalAmount: `₱${amt.toLocaleString()}`,
         interestRate: `${rate}%`,
-        interest: `₱${totalInterest.toLocaleString()}`,
-        totalPayment: `₱${totalRepayment.toLocaleString()}`,
+        interest: `₱${interestAmount.toLocaleString()}`,
+        totalInterest: `₱${totalInterest.toLocaleString()}`,
+        totalPayment: `₱${totalPayable.toLocaleString()}`,
         loanTerm: `${months} ${pub.months}`,
-        paymentPerPeriod: `₱${paymentPerPeriod.toLocaleString(undefined, {
+        paymentPerPeriod: `₱${monthlyDue.toLocaleString(undefined, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}`,
@@ -345,6 +351,7 @@ export default function SimulatorModal({
                 <div className="mb-4"><div className="font-semibold">{t.l4}:</div><div>{result.principalAmount}</div></div>
                 <div className="mb-4"><div className="font-semibold">{t.l5}:</div><div>{result.interestRate}</div></div>
                 <div className="mb-4"><div className="font-semibold">{t.l6}:</div><div>{result.interest}</div></div>
+                <div className="mb-4"><div className="font-semibold">{t.l111}:</div><div>{result.totalInterest}</div></div>
                 <div className="mb-4"><div className="font-semibold">{t.l7}:</div><div>{result.totalPayment}</div></div>
               </div>
               <div>
