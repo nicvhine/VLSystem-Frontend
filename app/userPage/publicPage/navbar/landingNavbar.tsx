@@ -42,7 +42,7 @@ export default function LandingNavbar({
   const isLoginOpen = parentIsLoginOpen !== undefined ? parentIsLoginOpen : localIsLoginOpen;
   const setIsLoginOpen = parentSetIsLoginOpen || setLocalIsLoginOpen;
 
-  // Paths that only show language toggle + login button
+  // Paths that only show language toggle + login button + loan simulator
   const minimalPaths = ['/userPage/publicPage/applyLoan'];
   const isMinimalNavbar = minimalPaths.some(path => pathname.startsWith(path));
 
@@ -83,31 +83,65 @@ export default function LandingNavbar({
 
           {/* ✅ Minimal navbar (userPage, publicPage, applyLoan) */}
           {isMinimalNavbar ? (
-            <div className="flex items-center gap-6">
-              {/* Language toggle */}
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="sr-only"
-                  checked={language === 'ceb'}
-                  onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
-                />
-                <div className="relative w-12 h-6 bg-gray-300 rounded-full transition-all">
-                  <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
-                </div>
-                <span className="ml-3 text-sm font-medium text-gray-900">
-                  {language === 'en' ? pub.english : pub.cebuano}
-                </span>
-              </label>
+            <>
+              {/* Desktop minimal nav */}
+              <div className="hidden sm:flex items-center gap-6">
+                {/* Loan Simulator button */}
+                <button
+                  onClick={() => setIsCalculationOpen(true)}
+                  className="text-sm font-medium text-gray-700 hover:text-gray-900 transition px-3 py-2 rounded-lg hover:bg-gray-100"
+                >
+                  {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
+                </button>
 
-              {/* Login button */}
+                {/* Language toggle */}
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={language === 'ceb'}
+                    onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
+                  />
+                  <div className="relative w-12 h-6 bg-gray-300 rounded-full transition-all">
+                    <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
+                  </div>
+                  <span className="ml-3 text-sm font-medium text-gray-900">
+                    {language === 'en' ? pub.english : pub.cebuano}
+                  </span>
+                </label>
+
+                {/* Login button */}
+                <button
+                  onClick={() => setIsLoginOpen(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                >
+                  {pub.login}
+                </button>
+              </div>
+
+              {/* 📱 Mobile menu button for minimal navbar */}
               <button
-                onClick={() => setIsLoginOpen(true)}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="sm:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
               >
-                {pub.login}
+                <span className="sr-only">Open menu</span>
+                <svg
+                  className="h-6 w-6"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
               </button>
-            </div>
+            </>
           ) : (
             <>
               {/* 🌐 Full desktop nav */}
@@ -187,6 +221,51 @@ export default function LandingNavbar({
             </>
           )}
         </div>
+
+        {/* 📱 Mobile menu for minimal navbar (apply loan pages) */}
+        {isMinimalNavbar && isMenuOpen && (
+          <div className="sm:hidden mt-4 pb-3 border-t border-gray-200">
+            <div className="pt-4 flex flex-col gap-4">
+              {/* Loan Simulator button */}
+              <button
+                onClick={() => {
+                  setIsCalculationOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="text-left text-base font-medium text-gray-900 hover:text-gray-700 py-2"
+              >
+                {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
+              </button>
+
+              {/* Language toggle */}
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={language === 'ceb'}
+                  onChange={() => setLanguage(language === 'en' ? 'ceb' : 'en')}
+                />
+                <div className="relative w-12 h-6 bg-gray-300 rounded-full transition-all">
+                  <div className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all ${language === 'ceb' ? 'translate-x-6' : ''}`}></div>
+                </div>
+                <span className="ml-3 text-sm font-medium text-gray-900">
+                  {language === 'en' ? pub.english : pub.cebuano}
+                </span>
+              </label>
+
+              {/* Login button */}
+              <button
+                onClick={() => {
+                  setIsLoginOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition text-center"
+              >
+                {pub.login}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 📱 Mobile menu (shown only when not minimal) */}
         {!isMinimalNavbar && (

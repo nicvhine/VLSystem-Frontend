@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import LandingNavbar from "../navbar/landingNavbar";
 import LoginModal from "../loginForm/loginModal";
+import SimulatorModal from "../loanSimulator/loanSimulatorModal";
 import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
 import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
 import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
@@ -17,6 +18,7 @@ const FormArea = dynamic(() => import('./formArea/formArea'), { ssr: false });
 export default function ApplicationPage() {
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [loanType, setLoanType] = useState<string>('');
   const [showInfoOverlay, setShowInfoOverlay] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
@@ -97,8 +99,10 @@ export default function ApplicationPage() {
         isLoginOpen={isLoginOpen}
         setIsLoginOpen={setIsLoginOpen}
         isBlurred={showTermsModal || showTosContent || showPrivacyContent}
+        setIsCalculationOpen={setIsCalculationOpen}
       />
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} language={language} />
+      <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} language={language} />
 
       {/* Terms / Privacy Modals */}
       {showTermsModal && (

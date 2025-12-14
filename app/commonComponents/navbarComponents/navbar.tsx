@@ -22,7 +22,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
 
   const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
-  export default function Navbar({ role, isBlurred = false }: NavbarProps) {
+  export default function Navbar({ role, isBlurred = false, setIsCalculationOpen }: NavbarProps) {
     const router = useRouter();
     const pathname = usePathname();
 
@@ -103,11 +103,69 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    setName(localStorage.getItem('fullName') || '');
-    setEmail(localStorage.getItem('email') || '');
-    setPhoneNumber(localStorage.getItem('phoneNumber') || '');
-    setUsername(localStorage.getItem('username') || '');
-    setRoleState(localStorage.getItem('role') || '');
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    const borrowersId = localStorage.getItem('borrowersId');
+    const currentRole = localStorage.getItem('role');
+
+    // Fetch fresh user data from backend
+    if (token && userId && role) {
+      const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
+      const id = apiRole === 'borrower' ? borrowersId : userId;
+      const userEndpoint = apiRole === 'borrower' 
+        ? `${BASE_URL}/borrowers/${id}` 
+        : `${BASE_URL}/staff/${id}`;
+
+      fetch(userEndpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data) {
+            const userData = data.borrower || data.staff || data;
+            if (userData.fullName) {
+              setName(userData.fullName);
+              localStorage.setItem('fullName', userData.fullName);
+            }
+            if (userData.email) {
+              setEmail(userData.email);
+              localStorage.setItem('email', userData.email);
+            }
+            if (userData.phoneNumber) {
+              setPhoneNumber(userData.phoneNumber);
+              localStorage.setItem('phoneNumber', userData.phoneNumber);
+            }
+            if (userData.username) {
+              setUsername(userData.username);
+              localStorage.setItem('username', userData.username);
+            }
+            if (userData.profilePic) {
+              const pic = userData.profilePic;
+              if (pic && pic !== 'null' && pic !== 'undefined' && pic !== '[object Object]') {
+                setProfilePic(pic);
+                setOriginalPic(pic);
+                localStorage.setItem('profilePic', pic);
+              }
+            }
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching user data:', error);
+          // Fallback to localStorage if fetch fails
+          setName(localStorage.getItem('fullName') || '');
+          setEmail(localStorage.getItem('email') || '');
+          setPhoneNumber(localStorage.getItem('phoneNumber') || '');
+          setUsername(localStorage.getItem('username') || '');
+        });
+    } else {
+      // Fallback to localStorage if no token
+      setName(localStorage.getItem('fullName') || '');
+      setEmail(localStorage.getItem('email') || '');
+      setPhoneNumber(localStorage.getItem('phoneNumber') || '');
+      setUsername(localStorage.getItem('username') || '');
+    }
+
+    setRoleState(currentRole || '');
 
     const storedPic = localStorage.getItem('profilePic');
     if (storedPic && storedPic !== 'null' && storedPic !== 'undefined' && storedPic !== '[object Object]') {
@@ -127,7 +185,6 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
       });
     }
 
-    const token = localStorage.getItem('token');
     if (token && role) {
       const apiRole = role === 'loanOfficer' ? 'loan-officer' : role;
       const borrowersId = localStorage.getItem('borrowersId');
@@ -512,9 +569,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
                               </div>
                             </div>
                             <p
-                              className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words"
-                              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                              title={notif.message}
+                              className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words whitespace-pre-wrap"
                             >
                               {notif.message}
                             </p>
@@ -563,6 +618,15 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
                 );
               })}
             </ul>
+
+            {setIsCalculationOpen && (
+              <button
+                onClick={() => setIsCalculationOpen(true)}
+                className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-all"
+              >
+                {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
+              </button>
+            )}
 
             <label className="flex items-center cursor-pointer">
               <input
@@ -733,9 +797,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
                                 </div>
                               </div>
                               <p
-                                className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words"
-                                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                                title={notif.message}
+                                className="text-[13px] text-gray-800 mt-0.5 leading-snug break-words whitespace-pre-wrap"
                               >
                                 {notif.message}
                               </p>
@@ -802,6 +864,7 @@ import { pickNotifDate, formatRelative, formatFull} from '../utils/notification'
             }}
             onOpenProfileSettings={handleMobileProfileSettings}
             onLogout={handleMobileLogout}
+            setIsCalculationOpen={setIsCalculationOpen}
           />
         )}
       </div>

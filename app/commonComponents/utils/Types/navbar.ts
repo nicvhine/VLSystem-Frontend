@@ -25,9 +25,11 @@ export interface MobileMenuProps {
   user?: MobileMenuUser;
   onOpenProfileSettings?: () => void;
   onLogout?: () => void;
+  setIsCalculationOpen?: (open: boolean) => void;
 }
 
 export interface NavbarProps {
   role: 'manager' | 'loanOfficer' | 'head' | 'collector' | 'borrower' | 'sysad';
   isBlurred?: boolean;
+  setIsCalculationOpen?: (open: boolean) => void;
 }

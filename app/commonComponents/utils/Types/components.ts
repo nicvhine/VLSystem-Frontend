@@ -106,6 +106,7 @@ export interface BasicInformationProps {
   setAppSpouseOccupation: (value: string) => void;
   appAddress: string;
   setAppAddress: (value: string) => void;
+  appReferences?: { name: string; contact: string; relation: string }[];
   missingFields?: string[];
   showFieldErrors?: boolean;
   // When true, the form was prefilled from an existing application. DOB should be non-editable in that case.

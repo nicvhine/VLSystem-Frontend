@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MapComponent from "../../MapComponent"; 
 import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 /**
  * Basic information form section component
@@ -50,6 +52,7 @@ export default function BasicInformation({
   setAppSpouseOccupation,
   appAddress,
   setAppAddress,
+  appReferences = [],
   missingFields = [],
   showFieldErrors = false,
   borrowersId = "",
@@ -58,10 +61,62 @@ export default function BasicInformation({
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [nameError, setNameError] = useState("");
+  const [conflictWarning, setConflictWarning] = useState("");
+  const [spouseNameError, setSpouseNameError] = useState("");
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAppAddress(e.target.value);
   };
+
+  // Check for contact/email conflicts (same contact/email with different name)
+  useEffect(() => {
+    const checkContactConflict = async () => {
+      if (!appName || !appContact || !appEmail || appContact.length < 11) return;
+  
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BASE_URL}/loan-applications/check-contact-conflict`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ appName, appContact, appEmail }),
+        });
+  
+        const data = await res.json();
+  
+        if (data.hasConflict && data.conflicts && data.conflicts.length > 0) {
+          const conflict = data.conflicts[0];
+          let conflictMessage = "";
+          
+          if (conflict.matchType === 'both') {
+            conflictMessage = language === "en"
+              ? `Warning: This phone number and email are already registered under the name "${conflict.existingName}".`
+              : `Babala: Kining numero sa telepono ug email naka-rehistro na ubos sa ngalan nga "${conflict.existingName}".`;
+          } else if (conflict.matchType === 'phone') {
+            conflictMessage = language === "en"
+              ? `Warning: This phone number is already registered under the name "${conflict.existingName}".`
+              : `Babala: Kining numero sa telepono naka-rehistro na ubos sa ngalan nga "${conflict.existingName}".`;
+          } else if (conflict.matchType === 'email') {
+            conflictMessage = language === "en"
+              ? `Warning: This email is already registered under the name "${conflict.existingName}".`
+              : `Babala: Kining email naka-rehistro na ubos sa ngalan nga "${conflict.existingName}".`;
+          }
+
+          setConflictWarning(conflictMessage);
+        } else {
+          setConflictWarning("");
+        }
+        
+      } catch (err) {
+        console.error("Error checking contact conflict:", err);
+      }
+    };
+  
+    const timeout = setTimeout(checkContactConflict, 800);
+    return () => clearTimeout(timeout);
+  }, [appName, appContact, appEmail, language, BASE_URL]);
 
   return (
   <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
@@ -69,6 +124,12 @@ export default function BasicInformation({
         <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
         {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
       </h4>
+
+      {conflictWarning && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+          <p className="text-sm text-yellow-800 font-medium">{conflictWarning}</p>
+        </div>
+      )}
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Name */}
@@ -220,11 +281,44 @@ export default function BasicInformation({
               {language === "en" ? "Spouse Name:" : "Ngalan sa Bana/Asawa:"}
             </label>
             <input
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Spouse Name')) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Spouse Name') || spouseNameError)) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter spouse name" : "Isulod ang ngalan sa bana/asawa"}
               value={appSpouseName}
-              onChange={(e) => setAppSpouseName(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow letters, spaces, periods, and hyphens
+                if (/^[A-Za-zñÑ.\-\s]*$/.test(value)) {
+                  setAppSpouseName(value);
+                  
+                  // Validate spouse name
+                  const trimmedValue = value.trim();
+                  const words = trimmedValue.split(/\s+/).filter(Boolean);
+                  
+                  if (trimmedValue && words.length < 2) {
+                    setSpouseNameError(
+                      language === "en"
+                        ? "Please enter at least first and last name."
+                        : "Palihug isulod ang labing menos ngalan ug apelyido."
+                    );
+                  } else if (trimmedValue && appName && trimmedValue.toLowerCase() === appName.toLowerCase()) {
+                    setSpouseNameError(
+                      language === "en"
+                        ? "Spouse name cannot be the same as applicant name."
+                        : "Ang ngalan sa bana/asawa dili mahimong pareho sa applicant."
+                    );
+                  } else if (trimmedValue && appReferences.some(ref => ref.name.trim().toLowerCase() === trimmedValue.toLowerCase())) {
+                    setSpouseNameError(
+                      language === "en"
+                        ? "Spouse name cannot be the same as any reference name."
+                        : "Ang ngalan sa bana/asawa dili mahimong pareho sa reperensya."
+                    );
+                  } else {
+                    setSpouseNameError("");
+                  }
+                }
+              }}
             />
+            {spouseNameError && <p className="text-red-500 text-sm mt-1">{spouseNameError}</p>}
           </div>
           <div>
             <label className="block font-medium mb-2 text-gray-700">
