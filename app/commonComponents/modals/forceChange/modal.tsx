@@ -153,10 +153,6 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                 autoComplete="new-password"
                 data-lpignore="true"
                 data-1p-ignore="true"
-                onContextMenu={(e) => e.preventDefault()}
-                onPaste={preventCopyPaste}
-                onCopy={preventCopy}
-                onCut={preventCut}
                 disabled={attemptCount >= 3}
               />
               <button
@@ -192,13 +188,9 @@ export default function ChangePasswordModal({ onClose, onSuccess }: ChangePasswo
                   clearMissingField('confirmPassword');
                   clearError();
                 }}
-                onPaste={preventCopyPaste}
-                onCopy={preventCopy}
-                onCut={preventCut}
                 autoComplete="new-password"
                 data-lpignore="true"
                 data-1p-ignore="true"
-                onContextMenu={(e) => e.preventDefault()}
                 disabled={attemptCount >= 3}
               />
               <button

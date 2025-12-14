@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { FiX, FiCheck, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import FormArea from "./formArea/formArea";
 import Navbar from "@/app/commonComponents/navbarComponents/navbar";
+import SimulatorModal from "../../../publicPage/loanSimulator/loanSimulatorModal";
 import TermsGateModal from "@/app/commonComponents/modals/termsPrivacy/TermsGateModal";
 import TermsContentModal from "@/app/commonComponents/modals/termsPrivacy/TermsContentModal";
 import PrivacyContentModal from "@/app/commonComponents/modals/termsPrivacy/PrivacyContentModal";
@@ -16,6 +17,7 @@ export default function ApplicationPage() {
   const params = useParams() as { borrowersId?: string };
   const [language, setLanguage] = useState<'en' | 'ceb'>('en');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isCalculationOpen, setIsCalculationOpen] = useState(false);
   const [loanType, setLoanType] = useState<string>('');
   const [showInfoOverlay, setShowInfoOverlay] = useState(false);
   const [pageLoaded, setPageLoaded] = useState(false);
@@ -100,7 +102,8 @@ export default function ApplicationPage() {
 
   return (
     <div className={isMobile ? "min-h-screen flex flex-col bg-white text-black" : "h-screen flex flex-col bg-white text-black"}>
-      <Navbar role='borrower' isBlurred={showTermsModal || showTosContent || showPrivacyContent}/>
+      <Navbar role='borrower' isBlurred={showTermsModal || showTosContent || showPrivacyContent} setIsCalculationOpen={setIsCalculationOpen}/>
+      <SimulatorModal isOpen={isCalculationOpen} onClose={() => setIsCalculationOpen(false)} language={language} />
 
       {/* Terms / Privacy Modals */}
       {showTermsModal && (

@@ -165,7 +165,7 @@ export default function PaymentHistoryPage() {
                           <td className="px-6 py-4 text-green-700">₱{(payment.amount ?? 0).toLocaleString()}</td>
                           <td className="px-6 py-4 text-sm text-gray-800 font-medium">{payment.mode}</td>
                           <td className="px-6 py-4">
-                            <button onClick={() => setModalPayment(payment)} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition">{t.t33}</button>
+                            <button onClick={() => setModalPayment(payment)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition">{t.t33}</button>
                           </td>
                         </tr>
                       );
@@ -180,7 +180,7 @@ export default function PaymentHistoryPage() {
                           <td className="px-6 py-4 text-green-700">₱{(payment.amount ?? 0).toLocaleString()}</td>
                           <td className="px-6 py-4 text-sm text-gray-800 font-medium">{payment.mode}</td>
                           <td className="px-6 py-4">
-                            <button onClick={() => setModalPayment(payment)} className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition">{t.t33}</button>
+                            <button onClick={() => setModalPayment(payment)} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-md text-sm transition">{t.t33}</button>
                           </td>
                         </tr>
                       );

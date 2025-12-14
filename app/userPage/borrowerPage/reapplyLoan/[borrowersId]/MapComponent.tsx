@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 // Do NOT import 'leaflet' at module top-level (it accesses window during import and breaks SSR).
 // We'll dynamically import it on the client inside useEffect.
 
@@ -41,6 +41,15 @@ function MapEvents({
   return null;
 }
 
+// Component to handle map centering
+function MapCenterUpdater({ center }: { center: [number, number] }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, 15);
+  }, [center, map]);
+  return null;
+}
+
 export default function MapComponent({
   address,
   setAddress,
@@ -49,6 +58,7 @@ export default function MapComponent({
 }: MapComponentProps) {
   const [isClient, setIsClient] = useState(false);
   const [customIcon, setCustomIcon] = useState<any | null>(null);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -79,6 +89,40 @@ export default function MapComponent({
     })();
   }, []);
 
+  // Geocode address when user types
+  useEffect(() => {
+    if (!address || address.length < 3) return;
+
+    // Clear previous timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    // Set new timeout to avoid excessive API calls
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+            address
+          )}&format=json&limit=1`
+        );
+        const data = await res.json();
+        if (data && data.length > 0) {
+          const { lat, lon } = data[0];
+          setMarkerPosition([parseFloat(lat), parseFloat(lon)]);
+        }
+      } catch (err) {
+        console.error("Geocoding error:", err);
+      }
+    }, 1000); // Wait 1 second after user stops typing
+
+    setSearchTimeout(timeout);
+
+    return () => {
+      if (timeout) clearTimeout(timeout);
+    };
+  }, [address]);
+
   if (!isClient) return null;
 
   return (
@@ -94,6 +138,7 @@ export default function MapComponent({
         />
 
         <MapEvents setAddress={setAddress} setMarkerPosition={setMarkerPosition} />
+        {markerPosition && <MapCenterUpdater center={markerPosition} />}
 
         {markerPosition && customIcon && (
           <Marker position={markerPosition} icon={customIcon}>

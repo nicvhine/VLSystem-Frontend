@@ -16,6 +16,7 @@ interface ReferencesProps {
   setAppReferences: React.Dispatch<React.SetStateAction<Reference[]>>;
   appContact: string;
   appName: string;
+  appSpouseName?: string;
   missingFields?: string[];
   showFieldErrors?: boolean;
 }
@@ -37,7 +38,8 @@ export default function References({
   appReferences,
   setAppReferences,
   appContact,
-  appName, 
+  appName,
+  appSpouseName = "",
   missingFields = [],
   showFieldErrors = false,
 }: ReferencesProps) {
@@ -58,13 +60,18 @@ export default function References({
           ? "Reference name cannot be applicant's name."
           : "Dili pwede nga parehas sa ngalan sa aplikante.";
       }
+      if (lowerValue !== "" && appSpouseName && lowerValue === appSpouseName.trim().toLowerCase()) {
+        return language === "en"
+          ? "Reference name cannot be the spouse's name."
+          : "Dili pwede nga parehas sa ngalan sa asawa.";
+      }
       const isDuplicate = appReferences.filter((r, i) => r.name.trim().toLowerCase() === lowerValue && lowerValue !== "").length > 1;
       if (isDuplicate) {
         return language === "en" ? "Duplicate name not allowed." : "Dili pwede ang parehas nga ngalan.";
       }
       return "";
     });
-  }, [appReferences, language, appName]);
+  }, [appReferences, language, appName, appSpouseName]);
 
  const refErrors = useMemo(() => {
   return appReferences.map((ref, idx) => {

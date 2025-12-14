@@ -303,7 +303,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
             appMarital={appMarital} setAppMarital={setAppMarital} appChildren={appChildren} setAppChildren={setAppChildren}
             appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
             setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
-            missingFields={missingFields} borrowersId={borrowersId} resetForm={resetForm}
+            appReferences={appReferences} missingFields={missingFields} borrowersId={borrowersId} resetForm={resetForm}
           />
         </div>
 
@@ -322,7 +322,7 @@ export default forwardRef<{ submitForm: () => Promise<void> }, FormAreaProps>(fu
 
         <div id="references">
           <References language={language} appReferences={appReferences} setAppReferences={setAppReferences}
-            appContact={appContact} appName={appName} missingFields={missingFields} />
+            appContact={appContact} appName={appName} appSpouseName={appSpouseName} missingFields={missingFields} />
         </div>
 
         <div id="agent">

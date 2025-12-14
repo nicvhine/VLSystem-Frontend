@@ -29,6 +29,7 @@ export default function BasicInformation({
   setAppSpouseOccupation,
   appAddress,
   setAppAddress,
+  appReferences = [],
   missingFields = [],
   showFieldErrors = false,
   resetForm,
@@ -41,6 +42,7 @@ export default function BasicInformation({
   const [modalMessage, setModalMessage] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalAnimating, setIsModalAnimating] = useState(false);
+  const [spouseNameError, setSpouseNameError] = useState("");
 
 
   const router = useRouter();
@@ -146,6 +148,57 @@ export default function BasicInformation({
     const timeout = setTimeout(checkDuplicate, 500);
     return () => clearTimeout(timeout);
   }, [appName, appDob, appEmail, language, BASE_URL]);
+
+  // Check for contact/email conflicts (same contact/email with different name)
+  useEffect(() => {
+    const checkContactConflict = async () => {
+      if (!appName || !appContact || !appEmail || appContact.length < 11) return;
+  
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BASE_URL}/loan-applications/check-contact-conflict`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ appName, appContact, appEmail }),
+        });
+  
+        const data = await res.json();
+  
+        if (data.hasConflict && data.conflicts && data.conflicts.length > 0) {
+          const conflict = data.conflicts[0];
+          let conflictMessage = "";
+          
+          if (conflict.matchType === 'both') {
+            conflictMessage = language === "en"
+              ? `Warning: This phone number (${appContact}) and email (${appEmail}) are already registered under the name "${conflict.existingName}". Please verify your information.`
+              : `Babala: Kining numero sa telepono (${appContact}) ug email (${appEmail}) naka-rehistro na ubos sa ngalan nga "${conflict.existingName}". Palihug susiha ang imong impormasyon.`;
+          } else if (conflict.matchType === 'phone') {
+            conflictMessage = language === "en"
+              ? `Warning: This phone number (${appContact}) is already registered under the name "${conflict.existingName}". Please verify your information.`
+              : `Babala: Kining numero sa telepono (${appContact}) naka-rehistro na ubos sa ngalan nga "${conflict.existingName}". Palihug susiha ang imong impormasyon.`;
+          } else if (conflict.matchType === 'email') {
+            conflictMessage = language === "en"
+              ? `Warning: This email (${appEmail}) is already registered under the name "${conflict.existingName}". Please verify your information.`
+              : `Babala: Kining email (${appEmail}) naka-rehistro na ubos sa ngalan nga "${conflict.existingName}". Palihug susiha ang imong impormasyon.`;
+          }
+
+          setModalMessage(conflictMessage);
+          setDuplicateError("Contact/Email conflict detected");
+          setIsModalVisible(true);
+          setTimeout(() => setIsModalAnimating(true), 10);
+        }
+        
+      } catch (err) {
+        console.error("Error checking contact conflict:", err);
+      }
+    };
+  
+    const timeout = setTimeout(checkContactConflict, 800);
+    return () => clearTimeout(timeout);
+  }, [appName, appContact, appEmail, language, BASE_URL]);
   
   const handleModalClose = () => {
     setIsModalAnimating(false);
@@ -405,11 +458,44 @@ export default function BasicInformation({
               {language === "en" ? "Spouse Name:" : "Ngalan sa Bana/Asawa:"}
             </label>
             <input
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Spouse Name')) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Spouse Name') || spouseNameError)) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter spouse name" : "Isulod ang ngalan sa bana/asawa"}
               value={appSpouseName}
-              onChange={(e) => setAppSpouseName(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                // Only allow letters, spaces, periods, and hyphens
+                if (/^[A-Za-zñÑ.\-\s]*$/.test(value)) {
+                  setAppSpouseName(value);
+                  
+                  // Validate spouse name
+                  const trimmedValue = value.trim();
+                  const words = trimmedValue.split(/\s+/).filter(Boolean);
+                  
+                  if (trimmedValue && words.length < 2) {
+                    setSpouseNameError(
+                      language === "en"
+                        ? "Please enter at least first and last name."
+                        : "Palihug isulod ang labing menos ngalan ug apelyido."
+                    );
+                  } else if (trimmedValue && appName && trimmedValue.toLowerCase() === appName.toLowerCase()) {
+                    setSpouseNameError(
+                      language === "en"
+                        ? "Spouse name cannot be the same as applicant name."
+                        : "Ang ngalan sa bana/asawa dili mahimong pareho sa applicant."
+                    );
+                  } else if (trimmedValue && appReferences.some(ref => ref.name.trim().toLowerCase() === trimmedValue.toLowerCase())) {
+                    setSpouseNameError(
+                      language === "en"
+                        ? "Spouse name cannot be the same as any reference name."
+                        : "Ang ngalan sa bana/asawa dili mahimong pareho sa reperensya."
+                    );
+                  } else {
+                    setSpouseNameError("");
+                  }
+                }
+              }}
             />
+            {spouseNameError && <p className="text-red-500 text-sm mt-1">{spouseNameError}</p>}
           </div>
           <div>
             <label className="block font-medium mb-2 text-gray-700">

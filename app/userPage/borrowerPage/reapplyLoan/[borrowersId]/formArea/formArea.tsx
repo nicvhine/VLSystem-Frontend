@@ -303,7 +303,7 @@ const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
             appMarital={appMarital} setAppMarital={setAppMarital} appChildren={appChildren} setAppChildren={setAppChildren}
             appSpouseName={appSpouseName} setAppSpouseName={setAppSpouseName} appSpouseOccupation={appSpouseOccupation}
             setAppSpouseOccupation={setAppSpouseOccupation} appAddress={appAddress} setAppAddress={setAppAddress}
-            missingFields={missingFields}
+            appReferences={appReferences} missingFields={missingFields}
             borrowersId={borrowersId || ''}
             isPrefilled={isPrefilled}
           />
@@ -324,7 +324,7 @@ const FormArea = forwardRef<FormAreaRef, FormAreaProps>(
 
         <div id="references">
           <References language={language} appReferences={appReferences} setAppReferences={setAppReferences}
-            appContact={appContact} appName={appName} missingFields={missingFields} />
+            appContact={appContact} appName={appName} appSpouseName={appSpouseName} missingFields={missingFields} />
         </div>
 
         <div id="agent">

@@ -102,7 +102,7 @@ export default function LedgerModal({
                       <td className="p-2 text-red-600">
                         {formatCurrency(p.amount)}
                       </td>
-                      <td className="p-2 text-blue-600">
+                      <td className="p-2 text-red-600">
                         {formatCurrency(runningBalance)}
                       </td>
                       <td className="p-2">{p.mode || "Unknown"}</td>
