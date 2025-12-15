@@ -75,27 +75,47 @@ export async function loginHandler({
 
     if (staffRes.ok) {
       const user = staffData.user;
-      localStorage.setItem("token", staffData.token);
-      localStorage.setItem("fullName", user.name || user.username || user.email);
-      localStorage.setItem("phoneNumber", user.phoneNumber);
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("username", user.username);
-      localStorage.setItem("role", user.role?.toLowerCase() || "staff");
-      user.profilePic && localStorage.setItem("profilePic", user.profilePic);
-      user.userId && localStorage.setItem("userId", user.userId);
-      user.isFirstLogin
-        ? localStorage.setItem("forcePasswordChange", "true")
-        : localStorage.removeItem("forcePasswordChange");
+      
+      // Debug: Log the user data
+      console.log("Staff login successful, user data:", user);
+      console.log("User ID:", user.userId);
+      
+      // Store user info temporarily with "pending" prefix (will be confirmed after OTP)
+      localStorage.setItem("pendingToken", staffData.token);
+      localStorage.setItem("pendingFullName", user.name || user.username || user.email);
+      localStorage.setItem("pendingPhoneNumber", user.phoneNumber || "");
+      localStorage.setItem("pendingEmail", user.email);
+      localStorage.setItem("pendingUsername", user.username);
+      localStorage.setItem("pendingRole", user.role?.toLowerCase() || "staff");
+      localStorage.setItem("pendingUserId", user.userId); // IMPORTANT: Store with "pending" prefix
+      if (user.profilePic) localStorage.setItem("pendingProfilePic", user.profilePic);
+      if (user.isFirstLogin) localStorage.setItem("pendingForcePasswordChange", "true");
+      
+      // Debug: Verify it was stored
+      console.log("Stored pendingUserId:", localStorage.getItem("pendingUserId"));
+      console.log("All pending items:", {
+        pendingUserId: localStorage.getItem("pendingUserId"),
+        pendingEmail: localStorage.getItem("pendingEmail"),
+        pendingRole: localStorage.getItem("pendingRole")
+      });
 
-      // Generate OTP for staff
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      sessionStorage.setItem("verificationCode", otpCode);
-      sessionStorage.setItem("userRole", user.role?.toLowerCase() || "staff");
+      // Backend generates OTP and stores it, returns the OTP code
+      const otpRes = await fetch(`${BASE_URL}/users/generate-login-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.userId }),
+      });
 
-      // Send OTP via email
+      const otpData = await otpRes.json();
+      
+      if (!otpRes.ok) {
+        throw new Error("Failed to generate OTP");
+      }
+
+      // Send OTP via EmailJS (frontend only)
       const templateParams = {
         to_email: user.email,
-        passcode: otpCode,
+        passcode: otpData.otp, // OTP from backend
         time: new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString(),
       };
 
@@ -106,6 +126,7 @@ export async function loginHandler({
         process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
 
+      // Don't store OTP anywhere on frontend!
       setOtpRole?.('staff');
       setShowSMSModal?.(true);
       return true;
