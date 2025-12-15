@@ -61,7 +61,8 @@ export default function BasicInformation({
   const [error, setError] = useState("");
   const [markerPosition, setMarkerPosition] = useState<[number, number] | null>(null);
   const [nameError, setNameError] = useState("");
-  const [conflictWarning, setConflictWarning] = useState("");
+  const [phoneConflictError, setPhoneConflictError] = useState("");
+  const [emailConflictError, setEmailConflictError] = useState("");
   const [spouseNameError, setSpouseNameError] = useState("");
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,7 +72,11 @@ export default function BasicInformation({
   // Check for contact/email conflicts (same contact/email with different name)
   useEffect(() => {
     const checkContactConflict = async () => {
-      if (!appName || !appContact || !appEmail || appContact.length < 11) return;
+      if (!appName || !appContact || !appEmail || appContact.length < 11) {
+        setPhoneConflictError("");
+        setEmailConflictError("");
+        return;
+      }
   
       try {
         const token = localStorage.getItem("token");
@@ -86,27 +91,29 @@ export default function BasicInformation({
   
         const data = await res.json();
   
-        if (data.hasConflict && data.conflicts && data.conflicts.length > 0) {
-          const conflict = data.conflicts[0];
-          let conflictMessage = "";
-          
-          if (conflict.matchType === 'both') {
-            conflictMessage = language === "en"
-              ? `Warning: This phone number and email are already registered under the name "${conflict.existingName}".`
-              : `Babala: Kining numero sa telepono ug email naka-rehistro na ubos sa ngalan nga "${conflict.existingName}".`;
-          } else if (conflict.matchType === 'phone') {
-            conflictMessage = language === "en"
-              ? `Warning: This phone number is already registered under the name "${conflict.existingName}".`
-              : `Babala: Kining numero sa telepono naka-rehistro na ubos sa ngalan nga "${conflict.existingName}".`;
-          } else if (conflict.matchType === 'email') {
-            conflictMessage = language === "en"
-              ? `Warning: This email is already registered under the name "${conflict.existingName}".`
-              : `Babala: Kining email naka-rehistro na ubos sa ngalan nga "${conflict.existingName}".`;
+        if (data.hasConflict) {
+          // Set phone conflict error
+          if (data.phoneConflict) {
+            const phoneError = language === "en"
+              ? "This phone number is already registered."
+              : "Kining numero sa telepono naka-rehistro na.";
+            setPhoneConflictError(phoneError);
+          } else {
+            setPhoneConflictError("");
           }
-
-          setConflictWarning(conflictMessage);
+          
+          // Set email conflict error
+          if (data.emailConflict) {
+            const emailError = language === "en"
+              ? "This email is already registered."
+              : "Kining email naka-rehistro na.";
+            setEmailConflictError(emailError);
+          } else {
+            setEmailConflictError("");
+          }
         } else {
-          setConflictWarning("");
+          setPhoneConflictError("");
+          setEmailConflictError("");
         }
         
       } catch (err) {
@@ -124,12 +131,6 @@ export default function BasicInformation({
         <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
         {language === "en" ? "Basic Information" : "Pangunang Impormasyon"}
       </h4>
-
-      {conflictWarning && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-          <p className="text-sm text-yellow-800 font-medium">{conflictWarning}</p>
-        </div>
-      )}
 
   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Name */}
@@ -212,10 +213,11 @@ export default function BasicInformation({
                 setError("");
               }
             }}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Contact Number') || error)) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Contact Number') || error || phoneConflictError)) ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
           />
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {phoneConflictError && <p className="text-red-500 text-sm mt-1">{phoneConflictError}</p>}
         </div>
 
         {/* Email */}
@@ -232,13 +234,14 @@ export default function BasicInformation({
                 value = value.replace(/@.*/, "");
                 setAppEmail(value + "@gmail.com");
               }}
-                className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && missingFields.includes('Email Address')) ? 'border-red-500' : 'border-gray-200'}`}
+                className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Email Address') || emailConflictError)) ? 'border-red-500' : 'border-gray-200'}`}
               placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
             />
             <span className="px-4 py-3 border border-l-0 border-gray-200 rounded-r-lg bg-gray-100 text-gray-700 select-none">
               @gmail.com
             </span>
           </div>
+          {emailConflictError && <p className="text-red-500 text-sm mt-1">{emailConflictError}</p>}
         </div>
       </div>
 

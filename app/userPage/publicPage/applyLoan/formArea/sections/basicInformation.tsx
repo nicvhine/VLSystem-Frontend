@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
-import { FiX } from "react-icons/fi";
-import { useRouter } from "next/navigation";
 import MapComponent from "../../MapComponent"; 
 import { BasicInformationProps } from "@/app/commonComponents/utils/Types/components";
 
@@ -39,13 +36,9 @@ export default function BasicInformation({
   const [nameError, setNameError] = useState("");
   const [dobError, setDobError] = useState("");
   const [duplicateError, setDuplicateError] = useState("");
-  const [modalMessage, setModalMessage] = useState("");
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isModalAnimating, setIsModalAnimating] = useState(false);
+  const [phoneConflictError, setPhoneConflictError] = useState("");
+  const [emailConflictError, setEmailConflictError] = useState("");
   const [spouseNameError, setSpouseNameError] = useState("");
-
-
-  const router = useRouter();
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAppAddress(e.target.value);
@@ -152,7 +145,11 @@ export default function BasicInformation({
   // Check for contact/email conflicts (same contact/email with different name)
   useEffect(() => {
     const checkContactConflict = async () => {
-      if (!appName || !appContact || !appEmail || appContact.length < 11) return;
+      if (!appName || !appContact || !appEmail || appContact.length < 11) {
+        setPhoneConflictError("");
+        setEmailConflictError("");
+        return;
+      }
   
       try {
         const token = localStorage.getItem("token");
@@ -167,28 +164,29 @@ export default function BasicInformation({
   
         const data = await res.json();
   
-        if (data.hasConflict && data.conflicts && data.conflicts.length > 0) {
-          const conflict = data.conflicts[0];
-          let conflictMessage = "";
-          
-          if (conflict.matchType === 'both') {
-            conflictMessage = language === "en"
-              ? `Warning: This phone number (${appContact}) and email (${appEmail}) are already registered under the name "${conflict.existingName}". Please verify your information.`
-              : `Babala: Kining numero sa telepono (${appContact}) ug email (${appEmail}) naka-rehistro na ubos sa ngalan nga "${conflict.existingName}". Palihug susiha ang imong impormasyon.`;
-          } else if (conflict.matchType === 'phone') {
-            conflictMessage = language === "en"
-              ? `Warning: This phone number (${appContact}) is already registered under the name "${conflict.existingName}". Please verify your information.`
-              : `Babala: Kining numero sa telepono (${appContact}) naka-rehistro na ubos sa ngalan nga "${conflict.existingName}". Palihug susiha ang imong impormasyon.`;
-          } else if (conflict.matchType === 'email') {
-            conflictMessage = language === "en"
-              ? `Warning: This email (${appEmail}) is already registered under the name "${conflict.existingName}". Please verify your information.`
-              : `Babala: Kining email (${appEmail}) naka-rehistro na ubos sa ngalan nga "${conflict.existingName}". Palihug susiha ang imong impormasyon.`;
+        if (data.hasConflict) {
+          // Set phone conflict error
+          if (data.phoneConflict) {
+            const phoneError = language === "en"
+              ? "This phone number is already registered."
+              : "Kining numero sa telepono naka-rehistro na.";
+            setPhoneConflictError(phoneError);
+          } else {
+            setPhoneConflictError("");
           }
-
-          setModalMessage(conflictMessage);
-          setDuplicateError("Contact/Email conflict detected");
-          setIsModalVisible(true);
-          setTimeout(() => setIsModalAnimating(true), 10);
+          
+          // Set email conflict error
+          if (data.emailConflict) {
+            const emailError = language === "en"
+              ? "This email is already registered."
+              : "Kining email naka-rehistro na.";
+            setEmailConflictError(emailError);
+          } else {
+            setEmailConflictError("");
+          }
+        } else {
+          setPhoneConflictError("");
+          setEmailConflictError("");
         }
         
       } catch (err) {
@@ -199,98 +197,9 @@ export default function BasicInformation({
     const timeout = setTimeout(checkContactConflict, 800);
     return () => clearTimeout(timeout);
   }, [appName, appContact, appEmail, language, BASE_URL]);
-  
-  const handleModalClose = () => {
-    setIsModalAnimating(false);
-    setTimeout(() => {
-      setIsModalVisible(false);
-      setModalMessage("");
-      setDuplicateError("");
-      // Navigate to landing page
-      router.push('/userPage/publicPage');
-    }, 150);
-  };
-
-  const handleClearForm = () => {
-    setIsModalAnimating(false);
-    setTimeout(() => {
-      setIsModalVisible(false);
-      setModalMessage("");
-      setDuplicateError("");
-      // Clear form data from localStorage
-      localStorage.removeItem('loanApplicationFormData');
-      localStorage.removeItem('selectedLoanType');
-      // Reset all form state
-      if (resetForm) {
-        resetForm();
-      }
-      // Reload the page to reset everything
-      window.location.reload();
-    }, 150);
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) handleModalClose();
-  };
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isModalVisible) handleModalClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isModalVisible]);
-
-  const modalContent = isModalVisible && modalMessage && (
-    <div
-      className={`fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-150 ${
-        isModalAnimating ? "opacity-100" : "opacity-0"
-      }`}
-      onClick={handleBackdropClick}
-    >
-      <div
-        className={`bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative text-black transform transition-all duration-150 ${
-          isModalAnimating ? "scale-100 opacity-100" : "scale-95 opacity-0"
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          onClick={handleModalClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
-        >
-          <FiX size={20} />
-        </button>
-
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          {language === "en" ? "Application Notice" : "Pahibalo sa Aplikasyon"}
-        </h2>
-
-        <p className="text-gray-700 text-sm leading-relaxed mb-6">
-          {modalMessage}
-        </p>
-
-        <div className="flex justify-end gap-3">
-          <button
-            onClick={handleClearForm}
-            className="px-6 py-2 bg-gray-500 text-white rounded-lg transition-colors font-medium hover:bg-gray-600"
-          >
-            {language === "en" ? "Clear Form" : "I-clear ang Form"}
-          </button>
-          <button
-            onClick={handleModalClose}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg transition-colors font-medium hover:bg-red-700"
-          >
-            {language === "en" ? "OK" : "Sige"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <>
-      {typeof window !== 'undefined' && modalContent && createPortal(modalContent, document.body)}
-      
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
           <span className="w-2 h-2 bg-red-600 rounded-full mr-3"></span>
@@ -378,10 +287,11 @@ export default function BasicInformation({
                 setError("");
               }
             }}
-              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Contact Number') || error)) ? 'border-red-500' : 'border-gray-200'}`}
+              className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${(showFieldErrors && (missingFields.includes('Contact Number') || error || phoneConflictError)) ? 'border-red-500' : 'border-gray-200'}`}
             placeholder={language === "en" ? "Enter contact number" : "Isulod ang numero sa kontak"}
           />
           {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          {phoneConflictError && <p className="text-red-500 text-sm mt-1">{phoneConflictError}</p>}
         </div>
 
         {/* Email */}
@@ -399,7 +309,7 @@ export default function BasicInformation({
               setAppEmail(value + "@gmail.com");
             }}
             className={`w-full border p-3 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-              (showFieldErrors && missingFields.includes("Email Address")) ? "border-red-500" : "border-gray-200"
+              (showFieldErrors && (missingFields.includes("Email Address") || emailConflictError)) ? "border-red-500" : "border-gray-200"
             }`}
             placeholder={language === "en" ? "Enter email" : "Isulod ang email"}
           />
@@ -408,6 +318,7 @@ export default function BasicInformation({
           </span>
         </div>
         {duplicateError && <p className="text-red-500 text-sm mt-1">{duplicateError}</p>}
+        {emailConflictError && <p className="text-red-500 text-sm mt-1">{emailConflictError}</p>}
       </div>
       </div>
 
