@@ -31,14 +31,26 @@ export default function OTPModal({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const inputRefs = useRef<HTMLInputElement[]>([]);
-  const hasInitialized = useRef(false); // Track if timers have been initialized
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => setAnimateIn(true), 10);
       inputRefs.current[0]?.focus();
 
-      // Only reset timers on first open or when modal reopens
+      // Debug: Check localStorage when modal opens
+      if (otpRole === 'staff') {
+        console.log("OTP Modal opened for staff");
+        console.log("pendingUserId on modal open:", localStorage.getItem('pendingUserId'));
+        console.log("All localStorage keys:", Object.keys(localStorage));
+        console.log("All pending items:", {
+          pendingUserId: localStorage.getItem("pendingUserId"),
+          pendingEmail: localStorage.getItem("pendingEmail"),
+          pendingRole: localStorage.getItem("pendingRole"),
+          pendingToken: localStorage.getItem("pendingToken")
+        });
+      }
+
       if (!hasInitialized.current) {
         setExpiryTimer(otpExpiresIn); 
         setResendTimer(60);
@@ -48,11 +60,10 @@ export default function OTPModal({
       return () => clearTimeout(timer);
     } else {
       setAnimateIn(false);
-      hasInitialized.current = false; // Reset for next open
+      hasInitialized.current = false;
     }
-  }, [isVisible, otpExpiresIn]);
+  }, [isVisible, otpExpiresIn, otpRole]);
 
-  // Countdown timers - only run when isVisible
   useEffect(() => {
     if (!isVisible || resendTimer <= 0) return;
     const interval = setInterval(() => setResendTimer(t => t - 1), 1000);
@@ -118,12 +129,59 @@ export default function OTPModal({
           setShowErrorModal(true);
         }
       } else if (otpRole === 'staff') {
-        const savedCode = sessionStorage.getItem('verificationCode');
-        const role = sessionStorage.getItem('userRole');
+        const userId = localStorage.getItem('pendingUserId');
+        
+        // Debug: Check all pending data
+        console.log("Pending data check:", {
+          userId,
+          email: localStorage.getItem('pendingEmail'),
+          role: localStorage.getItem('pendingRole')
+        });
+        
+        if (!userId) {
+          console.error("No pendingUserId found in localStorage");
+          setErrorMsg("Session expired. Please login again.");
+          setShowErrorModal(true);
+          return;
+        }
 
-        if (otp === savedCode) {
-          sessionStorage.removeItem('verificationCode');
-          sessionStorage.removeItem('userRole');
+        // Verify OTP with backend
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/users/verify-login-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, otp }),
+        });
+
+        const data = await res.json();
+        console.log("Verification response:", data);
+
+        if (res.ok) {
+          // Move pending data to actual localStorage
+          localStorage.setItem("token", localStorage.getItem("pendingToken") || "");
+          localStorage.setItem("fullName", localStorage.getItem("pendingFullName") || "");
+          localStorage.setItem("phoneNumber", localStorage.getItem("pendingPhoneNumber") || "");
+          localStorage.setItem("email", localStorage.getItem("pendingEmail") || "");
+          localStorage.setItem("username", localStorage.getItem("pendingUsername") || "");
+          localStorage.setItem("role", localStorage.getItem("pendingRole") || "");
+          
+          const pendingProfilePic = localStorage.getItem("pendingProfilePic");
+          if (pendingProfilePic) localStorage.setItem("profilePic", pendingProfilePic);
+          
+          const pendingUserId = localStorage.getItem("pendingUserId");
+          if (pendingUserId) localStorage.setItem("userId", pendingUserId);
+          
+          if (localStorage.getItem("pendingForcePasswordChange")) {
+            localStorage.setItem("forcePasswordChange", "true");
+          }
+
+          // Clear all pending data
+          [
+            "pendingToken", "pendingFullName", "pendingPhoneNumber", 
+            "pendingEmail", "pendingUsername", "pendingRole", 
+            "pendingProfilePic", "pendingUserId", "pendingForcePasswordChange"
+          ].forEach(key => localStorage.removeItem(key));
+
+          const role = localStorage.getItem("role");
           
           setShowSuccessModal(true);
           setTimeout(() => {
@@ -140,7 +198,7 @@ export default function OTPModal({
             router.push(redirectMap[role || ''] || '/');
           }, 1500);
         } else {
-          setErrorMsg("Incorrect verification code");
+          setErrorMsg(data.error || "Incorrect verification code");
           setShowErrorModal(true);
         }
       }
@@ -159,8 +217,43 @@ export default function OTPModal({
 
     try {
       if (otpRole === 'staff') {
-        const newCode = Math.floor(100000 + Math.random() * 900000).toString();
-        sessionStorage.setItem('verificationCode', newCode);
+        const userId = localStorage.getItem('pendingUserId');
+        const email = localStorage.getItem('pendingEmail');
+        
+        if (!userId || !email) {
+          setErrorMsg("Session expired. Please login again.");
+          setShowErrorModal(true);
+          return;
+        }
+
+        // Backend generates new OTP
+        const otpRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/users/generate-login-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        });
+
+        const otpData = await otpRes.json();
+
+        if (!otpRes.ok) {
+          throw new Error("Failed to generate OTP");
+        }
+
+        // Send via EmailJS
+        const emailjs = (await import('emailjs-com')).default;
+        const templateParams = {
+          to_email: email,
+          passcode: otpData.otp,
+          time: new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString(),
+        };
+
+        await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID!,
+          templateParams,
+          process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
+        );
+
         setOtp('');
         inputRefs.current[0]?.focus();
         setResendTimer(60);
