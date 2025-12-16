@@ -24,7 +24,6 @@ export default function MobileMenu({
   user,
   onOpenProfileSettings,
   onLogout,
-  setIsCalculationOpen,
 }: MobileMenuProps) {
   const pathname = usePathname();
   const t = navbarTranslation[language];
@@ -51,16 +50,6 @@ export default function MobileMenu({
               </li>
             );
           })}
-          {setIsCalculationOpen && (
-            <li>
-              <button
-                onClick={() => setIsCalculationOpen(true)}
-                className="block w-full text-left px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 transition-all"
-              >
-                {language === 'en' ? 'Loan Simulation' : 'Simulasyon sa Pahulam'}
-              </button>
-            </li>
-          )}
         </ul>
 
         <div className="flex items-center space-x-3 px-4">

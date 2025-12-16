@@ -77,6 +77,10 @@ export function useProfileDropdownLogic(
   useEffect(() => {
     setEmailVerified(false);
     setUserEnteredCode('');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailError && editingEmail && !editingEmail.includes(" ")) {
+      setEmailError("");
+    }
   }, [editingEmail]);
 
   //EMAIL CODE 
