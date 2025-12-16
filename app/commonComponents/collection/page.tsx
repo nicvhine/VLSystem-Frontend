@@ -14,6 +14,7 @@ import PaymentModal from "./modals/paymentModal";
 import NoteModal from "./modals/noteModal";
 import ErrorModal from "@/app/commonComponents/modals/errorModal";
 import ReceiptModal from "@/app/commonComponents/modals/receiptModal";
+import SuccessModal from "@/app/commonComponents/modals/successModal";
 
 import { formatCurrency } from "../utils/formatters";
 import { Collection } from "../utils/Types/collection";
@@ -58,8 +59,11 @@ export default function CollectionsPage() {
   } = useCollectionPage();
 
   const [paymentLoading, setPaymentLoading] = React.useState(false);
+  const [noteLoading, setNoteLoading] = React.useState(false);
   const [loading, setLoading] = useState(false);
   const [showPenaltyModal, setShowPenaltyModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
   const [selectedPenaltyCollection, setSelectedPenaltyCollection] = useState<Collection | null>(null);
@@ -378,6 +382,9 @@ export default function CollectionsPage() {
               setCollections,
               setErrorMsg,
               setShowErrorModal,
+              setNoteLoading,
+              setSuccessMessage,
+              setShowSuccessModal,
               () => handleNoteModalClose(
                 setIsNoteModalAnimating,
                 setShowNoteModal,
@@ -386,6 +393,7 @@ export default function CollectionsPage() {
                 setNoteText
               )
             )}
+            noteLoading={noteLoading}
           />
 
           <PenaltyEndorseModal
@@ -419,6 +427,12 @@ export default function CollectionsPage() {
               }}
             />
           )}
+
+          <SuccessModal
+            isOpen={showSuccessModal}
+            message={successMessage}
+            onClose={() => setShowSuccessModal(false)}
+          />
         </div>
       </div>
     </Wrapper>

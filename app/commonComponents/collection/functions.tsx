@@ -269,13 +269,14 @@ export const handleConfirmPayment = async (
     setCollections((prev) =>
       prev.map((col) => {
         if (col.referenceNumber === updatedCollection.referenceNumber) {
-          // Update the collection with new data
+          // Update the collection with new data, but preserve the decrypted name
           return {
             ...col,
-            ...updatedCollection,
             status: updatedCollection.status,
             paidAmount: updatedCollection.paidAmount,
-            periodBalance: updatedCollection.periodBalance
+            periodBalance: updatedCollection.periodBalance,
+            loanBalance: updatedCollection.loanBalance || col.loanBalance,
+            periodAmount: updatedCollection.periodAmount || col.periodAmount
           };
         }
         return col;
@@ -328,36 +329,63 @@ export const handleSaveNote = async (
   setCollections: (cb: (prev: Collection[]) => Collection[]) => void,
   setErrorMsg: (msg: string) => void,
   setShowErrorModal: (v: boolean) => void,
+  setNoteLoading: (v: boolean) => void,
+  setSuccessMessage: (msg: string) => void,
+  setShowSuccessModal: (v: boolean) => void,
   handleClose: () => void
 ) => {
   if (!selectedCollection) return;
 
+  setNoteLoading(true);
+
   try {
+    const token = localStorage.getItem("token");
     const response = await fetch(
       `${BASE_URL}/collections/${selectedCollection.referenceNumber}/note`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ note: noteText }),
       }
     );
 
-    if (!response.ok) throw new Error("Failed to save note");
+    const responseText = await response.text();
+    console.log("Note save response:", responseText);
 
-    const updatedCollection: Collection = await response.json();
+    if (!response.ok) {
+      let errorMsg = "Failed to save note";
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMsg = errorData.error || errorMsg;
+      } catch (e) {
+        errorMsg = responseText || errorMsg;
+      }
+      throw new Error(errorMsg);
+    }
+
+    const updatedCollection: Collection = JSON.parse(responseText);
 
     setCollections((prev) =>
       prev.map((col) =>
         col.referenceNumber === updatedCollection.referenceNumber
-          ? updatedCollection
+          ? { ...col, note: updatedCollection.note }
           : col
       )
     );
-  } catch (err) {
+    
+    setNoteLoading(false);
+    handleClose();
+    
+    // Show success modal
+    setSuccessMessage("Note saved successfully!");
+    setShowSuccessModal(true);
+  } catch (err: any) {
     console.error("Saving note failed:", err);
-    setErrorMsg("Failed to save note.");
+    setNoteLoading(false);
+    setErrorMsg(err.message || "Failed to save note.");
     setShowErrorModal(true);
-  } finally {
-    handleClose(); 
   }
 };

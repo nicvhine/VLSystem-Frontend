@@ -47,7 +47,8 @@ export interface NoteModalProps extends BaseModalProps<Collection> {
   setNoteText: Dispatch<SetStateAction<string>>;
   handleSaveNote: () => void;
   handleClose: () => void;  
-  selectedCollection?: Collection;  
+  selectedCollection?: Collection;
+  noteLoading?: boolean;
 }
 
 export interface PaymentModalProps extends BaseModalProps<Collection> {
