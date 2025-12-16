@@ -20,11 +20,11 @@ export const sendEmail = async ({
   if (!email) return;
   try {
     const result = await emailjs.send(
-      "service_gsrml74",
-      "template_ry9tq57",
+      process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
+      process.env.NEXT_PUBLIC_EMAILJS_RESET_TEMPLATE_ID!,
       { to_name, email, user_username, user_password },
-      "6VII8ATdscjZi3UYW"
-    );
+      process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
+      );
     console.log("Email sent:", result?.text || result);
   } catch (error: any) {
     console.error("EmailJS error:", error);
