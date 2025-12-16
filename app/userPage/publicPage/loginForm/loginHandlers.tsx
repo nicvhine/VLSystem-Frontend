@@ -42,6 +42,7 @@ export async function loginHandler({
       localStorage.setItem("token", data.token || "");
       localStorage.setItem("fullName", data.fullName || data.name || username);
       localStorage.setItem("email", data.email);
+      localStorage.setItem("phoneNumber", data.phoneNumber);
       localStorage.setItem("role", "borrower");
       data.borrowersId && localStorage.setItem("borrowersId", data.borrowersId);
       data.profilePic && localStorage.setItem("profilePic", data.profilePic);
