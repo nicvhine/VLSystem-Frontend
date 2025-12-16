@@ -100,23 +100,23 @@ export default function OTPModal({
   };
 
   const handleVerify = async () => {
-    console.log("Verifying OTP for role:", otpRole);
+    console.log("🔍 Verifying OTP for role:", otpRole);
     if (otp.length !== 6 || isVerifying) return;
     setIsVerifying(true);
-
+  
     try {
       if (otpRole === 'borrower') {
         const borrowersId = localStorage.getItem("borrowersId");
         if (!borrowersId) throw new Error("Borrower ID not found.");
-
+  
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/borrowers/verify-login-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ borrowersId, otp }),
         });
-
+  
         const data = await res.json();
-
+  
         if (res.ok) {
           setShowSuccessModal(true);
           setTimeout(() => {
@@ -129,65 +129,102 @@ export default function OTPModal({
           setShowErrorModal(true);
         }
       } else if (otpRole === 'staff') {
+        // Get pending data from localStorage
         const userId = localStorage.getItem('pendingUserId');
+        const token = localStorage.getItem('pendingToken');
+        const fullName = localStorage.getItem('pendingFullName');
+        const phoneNumber = localStorage.getItem('pendingPhoneNumber');
+        const email = localStorage.getItem('pendingEmail');
+        const username = localStorage.getItem('pendingUsername');
+        const role = localStorage.getItem('pendingRole');
+        const profilePic = localStorage.getItem('pendingProfilePic');
+        const forcePasswordChange = localStorage.getItem('pendingForcePasswordChange');
         
-        // Debug: Check all pending data
-        console.log("Pending data check:", {
+        console.log("📦 Pending data retrieved:", {
           userId,
-          email: localStorage.getItem('pendingEmail'),
-          role: localStorage.getItem('pendingRole')
+          email,
+          role,
+          hasToken: !!token,
+          fullName,
+          username
         });
         
         if (!userId) {
-          console.error("No pendingUserId found in localStorage");
+          console.error("❌ No pendingUserId found in localStorage");
+          console.log("📋 All localStorage keys:", Object.keys(localStorage));
           setErrorMsg("Session expired. Please login again.");
           setShowErrorModal(true);
+          setIsVerifying(false);
           return;
         }
-
+  
         // Verify OTP with backend
+        console.log("🔐 Verifying OTP with backend for userId:", userId);
         const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/users/verify-login-otp`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, otp }),
         });
-
+  
         const data = await res.json();
-        console.log("Verification response:", data);
-
+        console.log("📨 Backend verification response:", data);
+  
         if (res.ok) {
-          // Move pending data to actual localStorage
-          localStorage.setItem("token", localStorage.getItem("pendingToken") || "");
-          localStorage.setItem("fullName", localStorage.getItem("pendingFullName") || "");
-          localStorage.setItem("phoneNumber", localStorage.getItem("pendingPhoneNumber") || "");
-          localStorage.setItem("email", localStorage.getItem("pendingEmail") || "");
-          localStorage.setItem("username", localStorage.getItem("pendingUsername") || "");
-          localStorage.setItem("role", localStorage.getItem("pendingRole") || "");
+          console.log("✅ OTP verified successfully! Moving pending data to actual localStorage...");
           
-          const pendingProfilePic = localStorage.getItem("pendingProfilePic");
-          if (pendingProfilePic) localStorage.setItem("profilePic", pendingProfilePic);
+          // Move ALL pending data to actual localStorage
+          localStorage.setItem("token", token || "");
+          localStorage.setItem("userId", userId);
+          localStorage.setItem("fullName", fullName || "");
+          localStorage.setItem("phoneNumber", phoneNumber || "");
+          localStorage.setItem("email", email || "");
+          localStorage.setItem("username", username || "");
+          localStorage.setItem("role", role || "");
           
-          const pendingUserId = localStorage.getItem("pendingUserId");
-          if (pendingUserId) localStorage.setItem("userId", pendingUserId);
+          if (profilePic) {
+            localStorage.setItem("profilePic", profilePic);
+          }
           
-          if (localStorage.getItem("pendingForcePasswordChange")) {
+          if (forcePasswordChange) {
             localStorage.setItem("forcePasswordChange", "true");
           }
-
-          // Clear all pending data
-          [
-            "pendingToken", "pendingFullName", "pendingPhoneNumber", 
-            "pendingEmail", "pendingUsername", "pendingRole", 
-            "pendingProfilePic", "pendingUserId", "pendingForcePasswordChange"
-          ].forEach(key => localStorage.removeItem(key));
-
-          const role = localStorage.getItem("role");
+  
+          // Log what was set
+          console.log("✅ Data moved to localStorage:", {
+            token: !!localStorage.getItem("token"),
+            userId: localStorage.getItem("userId"),
+            fullName: localStorage.getItem("fullName"),
+            email: localStorage.getItem("email"),
+            username: localStorage.getItem("username"),
+            role: localStorage.getItem("role"),
+            phoneNumber: localStorage.getItem("phoneNumber"),
+            profilePic: localStorage.getItem("profilePic")
+          });
+  
+          // Clear ALL pending data
+          const pendingKeys = [
+            "pendingToken", 
+            "pendingFullName", 
+            "pendingPhoneNumber", 
+            "pendingEmail", 
+            "pendingUsername", 
+            "pendingRole", 
+            "pendingProfilePic", 
+            "pendingUserId", 
+            "pendingForcePasswordChange"
+          ];
+          
+          pendingKeys.forEach(key => localStorage.removeItem(key));
+          console.log("🧹 Cleared all pending data");
+  
+          const finalRole = localStorage.getItem("role");
+          console.log("🚀 Redirecting to dashboard for role:", finalRole);
           
           setShowSuccessModal(true);
           setTimeout(() => {
             setShowSuccessModal(false);
             onClose();
-
+  
             const redirectMap: Record<string, string> = {
               head: '/userPage/headPage/dashboard',
               manager: '/userPage/managerPage/dashboard',
@@ -195,15 +232,19 @@ export default function OTPModal({
               collector: '/commonComponents/collection',
               sysad: '/userPage/sysadPage/dashboard',
             };
-            router.push(redirectMap[role || ''] || '/');
+            
+            const redirectPath = redirectMap[finalRole || ''] || '/';
+            console.log("🎯 Redirecting to:", redirectPath);
+            router.push(redirectPath);
           }, 1500);
         } else {
+          console.error("❌ OTP verification failed:", data.error);
           setErrorMsg(data.error || "Incorrect verification code");
           setShowErrorModal(true);
         }
       }
     } catch (err) {
-      console.error("OTP verification error:", err);
+      console.error("💥 OTP verification error:", err);
       setErrorMsg("Error verifying OTP.");
       setShowErrorModal(true);
     } finally {
