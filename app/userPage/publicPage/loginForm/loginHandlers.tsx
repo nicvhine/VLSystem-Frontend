@@ -127,7 +127,7 @@ export async function loginHandler({
       const templateParams = {
         to_email: user.email,
         passcode: otpData.otp,
-        time: new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString(),
+        time: new Date(Date.now() + 5 * 60 * 1000).toLocaleTimeString(),
       };
     
       await emailjs.send(

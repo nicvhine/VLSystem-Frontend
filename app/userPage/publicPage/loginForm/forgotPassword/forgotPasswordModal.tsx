@@ -36,13 +36,13 @@ const maskPhone = (phone: string) => {
 // Send OTP via Email
 const sendOtpViaEmail = async (toEmail: string, otp: string) => {
   try {
-    const expiry = new Date(Date.now() + 15 * 60000).toLocaleTimeString();
+    const expiry = new Date(Date.now() + 5 * 60000).toLocaleTimeString();
     await emailjs.send(
-      'service_eph6uoe',
-      'template_nucwh85',
+      process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
+      process.env.NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID!,
       { to_email: toEmail, passcode: otp, time: expiry },
-      '-PgL14MSf1VScXI94'
-    );
+      process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
+      );
   } catch (error) {
     console.error('EmailJS error:', error);
   }

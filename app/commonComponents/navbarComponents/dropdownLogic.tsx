@@ -21,6 +21,15 @@ export function useProfileDropdownLogic(
   const [smsVerified, setSmsVerified] = useState(false);
   const [enteredEmailCode, setEnteredEmailCode] = useState('');
   const [enteredSmsCode, setEnteredSmsCode] = useState('');
+  const role = (localStorage.getItem('role') || '').toLowerCase();
+  const userId = localStorage.getItem('userId') || '';
+  const borrowersId = localStorage.getItem('borrowersId') || '';
+
+  const isBorrower = role === 'borrower';
+
+  const accountEndpoint = isBorrower
+  ? `borrowers/${borrowersId}`
+  : `users/${userId}`;
   
   const {
     editingEmail,
@@ -77,10 +86,6 @@ export function useProfileDropdownLogic(
   useEffect(() => {
     setEmailVerified(false);
     setUserEnteredCode('');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailError && editingEmail && !editingEmail.includes(" ")) {
-      setEmailError("");
-    }
   }, [editingEmail]);
 
   //EMAIL CODE 
@@ -123,7 +128,7 @@ export function useProfileDropdownLogic(
       setEmailVerificationCode(code);
       setEmailVerified(false);
   
-      const time = new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString();
+      const time = new Date(Date.now() + 5 * 60 * 1000).toLocaleTimeString();
   
       const templateParams = {
         to_email: editingEmail,
@@ -132,10 +137,10 @@ export function useProfileDropdownLogic(
       };
   
       const emailResponse = await emailjs.send(
-        "service_eph6uoe",
-        "template_nucwh85",
+        process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_OTP_TEMPLATE_ID!,
         templateParams,
-        "-PgL14MSf1VScXI94"
+        process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
       );
   
       if (emailResponse.status !== 200) {
@@ -176,7 +181,6 @@ export function useProfileDropdownLogic(
     setUserEnteredCode('');
   
     // Update email in backend
-    const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
     if (!token) {
       setEmailError("You must be logged in to update email.");
@@ -184,14 +188,14 @@ export function useProfileDropdownLogic(
     }
   
     try {
-      const emailRes = await fetch(`${BASE_URL}/users/${userId}/update-email`, {
+      const emailRes = await fetch(`${BASE_URL}/${accountEndpoint}/update-email`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ email: editingEmail }),
-      });
+      });      
   
       if (emailRes.status === 409) {
         const data = await emailRes.json();
@@ -297,14 +301,14 @@ export function useProfileDropdownLogic(
      }
   
     try {
-      const res = await fetch(`${BASE_URL}/users/${userId}/update-phoneNumber`, {
-        method: "PUT",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+      const res = await fetch(`${BASE_URL}/${accountEndpoint}/update-phoneNumber`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ phoneNumber: editingPhone }),
-      });
+      });      
   
       if (res.status === 409) {
         const data = await res.json();
