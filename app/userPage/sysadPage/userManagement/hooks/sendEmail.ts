@@ -20,10 +20,10 @@ export const sendEmail = async ({
   if (!email) return;
   try {
     const result = await emailjs.send(
-      process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_SERVICE_ID!,
-      process.env.NEXT_PUBLIC_EMAILJS_RESET_TEMPLATE_ID!,
+      "service_q6fw4rq",
+      "template_686re51",
       { to_name, email, user_username, user_password },
-      process.env.NEXT_PUBLIC_EMAILJS_VLSYSTEM_PUBLIC_KEY!
+      "wuNA27EINdg21kAA_",
       );
     console.log("Email sent:", result?.text || result);
   } catch (error: any) {
