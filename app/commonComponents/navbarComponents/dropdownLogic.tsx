@@ -31,9 +31,11 @@ export function useProfileDropdownLogic(
     setRole((localStorage.getItem('role') || '').toLowerCase());
     setUserId(localStorage.getItem('userId') || '');
     setBorrowersId(localStorage.getItem('borrowersId') || '');
-    setIsBorrower(role === 'borrower');
   }, []);
 
+  useEffect(() => {
+    setIsBorrower(role === 'borrower');
+  }, [role]);
 
   const accountEndpoint = isBorrower
   ? `borrowers/${borrowersId}`
