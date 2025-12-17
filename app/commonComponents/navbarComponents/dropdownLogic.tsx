@@ -21,11 +21,19 @@ export function useProfileDropdownLogic(
   const [smsVerified, setSmsVerified] = useState(false);
   const [enteredEmailCode, setEnteredEmailCode] = useState('');
   const [enteredSmsCode, setEnteredSmsCode] = useState('');
-  const role = (localStorage.getItem('role') || '').toLowerCase();
-  const userId = localStorage.getItem('userId') || '';
-  const borrowersId = localStorage.getItem('borrowersId') || '';
 
-  const isBorrower = role === 'borrower';
+  let role;
+  let userId;
+  let borrowersId;
+  let isBorrower
+
+  useEffect(() => {
+    role = (localStorage.getItem('role') || '').toLowerCase();
+    userId = localStorage.getItem('userId') || '';
+    borrowersId = localStorage.getItem('borrowersId') || '';
+    isBorrower = role === 'borrower';
+  }, []);
+
 
   const accountEndpoint = isBorrower
   ? `borrowers/${borrowersId}`
