@@ -22,16 +22,16 @@ export function useProfileDropdownLogic(
   const [enteredEmailCode, setEnteredEmailCode] = useState('');
   const [enteredSmsCode, setEnteredSmsCode] = useState('');
 
-  let role;
-  let userId;
-  let borrowersId;
-  let isBorrower
+  const [role, setRole] = useState('');
+  const [userId, setUserId] = useState('');
+  const [borrowersId, setBorrowersId] = useState('');
+  const [isBorrower, setIsBorrower] = useState(false);
 
   useEffect(() => {
-    role = (localStorage.getItem('role') || '').toLowerCase();
-    userId = localStorage.getItem('userId') || '';
-    borrowersId = localStorage.getItem('borrowersId') || '';
-    isBorrower = role === 'borrower';
+    setRole((localStorage.getItem('role') || '').toLowerCase());
+    setUserId(localStorage.getItem('userId') || '');
+    setBorrowersId(localStorage.getItem('borrowersId') || '');
+    setIsBorrower(role === 'borrower');
   }, []);
 
 
