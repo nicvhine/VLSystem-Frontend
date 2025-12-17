@@ -88,19 +88,19 @@ export default function SysAdDashboard() {
             <table className="min-w-full divide-y divide-gray-100">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">ID</th>
                   <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{s.t37}</th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{s.t41}</th>
-                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{s.t39}</th>
                   <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{s.t38}</th>
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">{s.t41}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {activeStaff.slice(0, 5).map((staff) => (
                   <tr key={staff.userId} className="hover:bg-gray-50 transition">
+                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-800 whitespace-nowrap">{staff.userId}</td>
                     <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-800 whitespace-nowrap">{staff.name}</td>
-                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-600 capitalize whitespace-nowrap">{staff.role}</td>
-                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{staff.email}</td>
-                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{staff.username}</td>
+                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-600 capitalize whitespace-nowrap">{staff.username}</td>
+                    <td className="px-4 sm:px-6 py-4 text-xs sm:text-sm text-gray-600 whitespace-nowrap">{staff.role}</td>
                   </tr>
                 ))}
               </tbody>

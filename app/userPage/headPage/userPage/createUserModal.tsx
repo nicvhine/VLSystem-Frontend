@@ -11,6 +11,7 @@ interface CreateUserModalProps {
   onCreate: (
     user: {
       name: string;
+      username: string;
       email: string;
       phoneNumber: string;
       role: "head" | "manager" | "loan officer" | "collector";
@@ -34,6 +35,7 @@ export default function CreateUserModal({
   // Form state for new user data
   const [newUser, setNewUser] = useState({
     name: "",
+    username: "",
     email: "",
     phoneNumber: "",
     role: "manager" as const,
@@ -264,7 +266,7 @@ export default function CreateUserModal({
     // Success path: close modals and reset form
     setShowConfirm(false);
     onClose();
-    setNewUser({ name: "", email: "", phoneNumber: "", role: "manager", status: "Active" });
+    setNewUser({ name: "", username: "", email: "", phoneNumber: "", role: "manager", status: "Active" });
     
     // Trigger success message after modal is closed
     if (result && result.success && result.showSuccess) {

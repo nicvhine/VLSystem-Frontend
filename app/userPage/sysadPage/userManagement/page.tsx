@@ -541,9 +541,10 @@ export default function UserManagementPage() {
             <thead>
               <tr>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">ID</th>
-                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t37}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t39}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t38}</th>
+                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t39}</th>
+                <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t40}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t41}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-left whitespace-nowrap">{s.t42}</th>
                 <th className="bg-gray-50 px-6 py-4 text-xs font-medium text-gray-500 uppercase tracking-wider text-center whitespace-nowrap">{s.t43}</th>
@@ -629,6 +630,9 @@ export default function UserManagementPage() {
                       <td className={`px-6 py-4 whitespace-nowrap text-sm ${
                         user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
                       }`}>{user.name}</td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
+                      }`}>{user.username}</td>
                       <td className={`px-6 py-4 whitespace-nowrap text-sm ${
                         user.status === 'Inactive' ? 'text-gray-400' : 'text-gray-700'
                       }`}>{user.email}</td>
